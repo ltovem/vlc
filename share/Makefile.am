@@ -1,6 +1,44 @@
+all: js css html preserve
 CLEANFILES = skins2/default.vlt
 MOSTLYCLEANFILES =
 EXTRA_DIST =
+
+JS_TARGETS = --js $(srcdir)/lua/http/src/services/command.service.js \
+--js $(srcdir)/lua/http/src/services/bus.service.js \
+--js $(srcdir)/lua/http/src/services/initialize.service.js \
+--js $(srcdir)/lua/http/src/components/player/plyr.methods.js \
+--js $(srcdir)/lua/http/src/components/controls/sidenav.component.js \
+--js $(srcdir)/lua/http/src/components/playlist/playlist.component.js \
+--js $(srcdir)/lua/http/src/components/playlist/buttons.playlist.component.js \
+--js $(srcdir)/lua/http/src/components/controls/filebrowser.component.js \
+--js $(srcdir)/lua/http/src/components/vlm/vlm.component.js \
+--js $(srcdir)/lua/http/src/components/equalizer/equalizer.component.js \
+--js $(srcdir)/lua/http/src/components/track-synchronisation/tracksync.component.js \
+--js $(srcdir)/lua/http/src/components/sot/stream.manager.component.js \
+--js $(srcdir)/lua/http/src/components/svg-icon/svg-icon.component.js \
+--js_output_file $(srcdir)/lua/http/dist/js/script.min.js
+
+JS_VENDORS_TARGETS = --js $(srcdir)/lua/http/src/vendors/bootstrap/javascripts/bootstrap.js \
+--js $(srcdir)/lua/http/src/vendors/vue/vue.js \
+--js $(srcdir)/lua/http/src/vendors/plyr/plyr.js \
+--js $(srcdir)/lua/http/src/vendors/jstree/jstree.js \
+--js_output_file $(srcdir)/lua/http/dist/js/vendors.min.js
+
+CLOSURE = java -jar $(srcdir)/../extras/tools/closure_compiler.jar
+CLOSURE_FLAGS =
+JS_DIST_DIR := $(srcdir)/lua/http/dist/js
+FRONT_INDEX = $(srcdir)/lua/http/index.html
+FRONT_HEAD = $(srcdir)/lua/http/head.html
+FRONT_BODY = $(srcdir)/lua/http/body.html
+FRONT_FOOT = $(srcdir)/lua/http/foot.html
+
+SASS_TARGETS = $(srcdir)/lua/http/src/scss/main.scss
+SASS_VENDORS_TARGETS = $(srcdir)/lua/http/src/scss/vendors.scss
+SASS_DIST_DIR = $(srcdir)/lua/http/dist/css
+SASSC = sassc $(SASS_TARGETS) $(SASS_DIST_DIR)/style.css
+SASSC_FLAGS =
+SASSC_VENDORS = sassc $(SASS_VENDORS_TARGETS) $(SASS_DIST_DIR)/vendors.min.css --style compressed
+SASSC_VENDORS_FLAGS = -I $(srcdir)/lua/http/src/vendors/bootstrap/stylesheets/
 
 desktopdir = $(datadir)/applications
 if !HAVE_WIN32
@@ -122,6 +160,26 @@ luac_verbose_0 = @echo "  LUAC   $@";
 	$(AM_V_at)mkdir -p "$$(dirname '$@')"
 	$(luac_verbose)$(LUAC) -o $@ $<
 
+js:
+	${MKDIR_P} $(JS_DIST_DIR)
+	$(CLOSURE) $(JS_VENDORS_TARGETS) $(CLOSURE_FLAGS) $<
+	$(CLOSURE) $(JS_TARGETS) $(CLOSURE_FLAGS) $<
+
+css:
+	${MKDIR_P} $(SASS_DIST_DIR)
+	$(SASSC_VENDORS) $(SASSC_VENDORS_FLAGS) $<
+	$(SASSC) $(SASSC_FLAGS) $<
+
+html:
+	cat $(FRONT_HEAD) $(FRONT_BODY) > $(FRONT_INDEX)
+	find $(srcdir)/lua/http -name '*.component.html' -print | xargs cat >> $(FRONT_INDEX)
+	cat $(FRONT_FOOT) >> $(FRONT_INDEX)
+
+preserve:
+	cp -r $(srcdir)/lua/http/src/vendors $(srcdir)/lua/http/dist/
+	cp -r $(srcdir)/lua/http/src/assets $(srcdir)/lua/http/dist/
+	cp -r $(srcdir)/icons/ $(srcdir)/lua/http/dist/assets/vlc-icons
+
 if BUILD_LUA
 nobase_pkglibexec_SCRIPTS += \
 	lua/extensions/VLSub.luac \
@@ -183,67 +241,20 @@ nobase_doc_DATA = \
 	$(NULL)
 
 nobase_dist_pkgdata_DATA += \
-	lua/http/view.html \
-	lua/http/mobile.html \
-	lua/http/dialogs/create_stream.html \
-	lua/http/dialogs/equalizer_window.html \
-	lua/http/dialogs/mosaic_window.html \
-	lua/http/dialogs/batch_window.html \
-	lua/http/dialogs/error_window.html \
-	lua/http/dialogs/browse_window.html \
-	lua/http/dialogs/stream_window.html \
-	lua/http/dialogs/offset_window.html \
-	lua/http/dialogs/stream_config_window.html \
-	lua/http/custom.lua \
-	lua/http/vlm.html \
-	lua/http/images/buttons.png \
-	lua/http/images/speaker-32.png \
-	lua/http/images/vlc-48.png \
-	lua/http/images/Audio-48.png \
-	lua/http/images/Folder-48.png \
-	lua/http/images/Other-48.png \
-	lua/http/images/Back-48.png \
-	lua/http/images/Video-48.png \
-	lua/http/images/vlc16x16.png \
-	lua/http/mobile_equalizer.html \
-	lua/http/vlm_export.html \
-	lua/http/mobile_browse.html \
-	lua/http/favicon.ico \
-	lua/http/mobile_view.html \
 	lua/http/requests/playlist.xml \
-	lua/http/requests/playlist.json \
-	lua/http/requests/README.txt \
-	lua/http/requests/playlist_jstree.xml \
-	lua/http/requests/browse.xml \
-	lua/http/requests/browse.json \
-	lua/http/requests/vlm_cmd.xml \
-	lua/http/requests/status.xml \
-	lua/http/requests/status.json \
-	lua/http/requests/rd.json \
-	lua/http/requests/rd.xml \
-	lua/http/requests/vlm.xml \
-	lua/http/index.html \
-	lua/http/css/ui-lightness/jquery-ui-1.8.13.custom.css \
-	lua/http/css/ui-lightness/images/ui-bg_diagonals-thick_20_666666_40x40.png \
-	lua/http/css/ui-lightness/images/ui-bg_flat_10_000000_40x100.png \
-	lua/http/css/ui-lightness/images/ui-icons_ffffff_256x240.png \
-	lua/http/css/ui-lightness/images/ui-bg_gloss-wave_35_f6a828_500x100.png \
-	lua/http/css/ui-lightness/images/ui-bg_glass_65_ffffff_1x400.png \
-	lua/http/css/ui-lightness/images/ui-icons_222222_256x240.png \
-	lua/http/css/ui-lightness/images/ui-bg_glass_100_f6f6f6_1x400.png \
-	lua/http/css/ui-lightness/images/ui-bg_highlight-soft_100_eeeeee_1x100.png \
-	lua/http/css/ui-lightness/images/ui-bg_highlight-soft_75_ffe45c_1x100.png \
-	lua/http/css/ui-lightness/images/ui-bg_diagonals-thick_18_b81900_40x40.png \
-	lua/http/css/ui-lightness/images/ui-icons_ffd27a_256x240.png \
-	lua/http/css/ui-lightness/images/ui-icons_228ef1_256x240.png \
-	lua/http/css/ui-lightness/images/ui-icons_ef8c08_256x240.png \
-	lua/http/css/ui-lightness/images/ui-bg_glass_100_fdf5ce_1x400.png \
-	lua/http/css/main.css \
-	lua/http/css/mobile.css \
-	lua/http/js/ui.js \
-	lua/http/js/common.js \
-	lua/http/js/jquery.jstree.js \
-	lua/http/js/controllers.js
+    lua/http/requests/playlist.json \
+    lua/http/requests/README.txt \
+    lua/http/requests/playlist_jstree.xml \
+    lua/http/requests/browse.xml \
+    lua/http/requests/browse.json \
+    lua/http/requests/vlm_cmd.xml \
+    lua/http/requests/status.xml \
+    lua/http/requests/status.json \
+    lua/http/requests/vlm.xml \
+	lua/http/custom.lua \
+	lua/http/favicon.ico \
+	lua/http/index.html
+
 endif
 MOSTLYCLEANFILES += $(nobase_pkgdata_DATA)
 

@@ -1,0 +1,36 @@
+.svg-icon {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+}
+
+.svg-icon > svg {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: inherit;
+    vertical-align: middle;
+    fill: currentColor;
+    stroke: none;
+}
+
+.svg-fill {
+    fill: currentColor;
+    stroke: none;
+}
+
+.svg-up {
+    transform: rotate(-90deg);
+}
+
+.svg-right {
+     /*default*/
+     transform: rotate(0deg);
+}
+
+.svg-down {
+    transform: rotate(90deg);
+}
+
+.svg-left {
+    transform: rotate(180deg);
+}
