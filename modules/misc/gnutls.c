@@ -739,12 +739,14 @@ error:
     "hash functions and compression methods can be selected. " \
     "Refer to GNU TLS documentation for detailed syntax.")
 static const char *const priorities_values[] = {
+    "@SYSTEM",
     "PERFORMANCE",
     "NORMAL",
     "SECURE128",
     "SECURE256",
 };
 static const char *const priorities_text[] = {
+    N_("System (default to system crypto ciphers policy)"),
     N_("Performance (prioritize faster ciphers)"),
     N_("Normal"),
     N_("Secure 128-bit (or higher)"),
