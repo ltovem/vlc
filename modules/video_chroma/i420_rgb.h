@@ -21,7 +21,7 @@
  *****************************************************************************/
 #include <limits.h>
 
-#if !defined (PLUGIN_SSE2)
+#if !defined (PLUGIN_AVX2) && !defined (PLUGIN_SSE2)
 # define PLUGIN_PLAIN
 #endif
 

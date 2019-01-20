@@ -31,11 +31,56 @@
 #include <vlc_cpu.h>
 
 #include "i420_rgb.h"
-#ifdef PLUGIN_SSE2
+#if defined( PLUGIN_SSE2 )
 # include "i420_rgb_sse2.h"
 # define VLC_TARGET VLC_SSE
 # define SIMD_ALIGN 16
+# define SIMD_CALL SSE2_CALL
+# define SIMD_END SSE2_END
+# define SIMD_YUV_MUL SSE2_YUV_MUL
+# define SIMD_YUV_ADD SSE2_YUV_ADD
+# define SIMD_INIT_16_ALIGNED          SSE2_INIT_16_ALIGNED
+# define SIMD_INIT_16_UNALIGNED        SSE2_INIT_16_UNALIGNED
+# define SIMD_INIT_32_ALIGNED          SSE2_INIT_32_ALIGNED
+# define SIMD_INIT_32_UNALIGNED        SSE2_INIT_32_UNALIGNED
+# define SIMD_UNPACK_15_ALIGNED        SSE2_UNPACK_15_ALIGNED
+# define SIMD_UNPACK_15_UNALIGNED      SSE2_UNPACK_15_UNALIGNED
+# define SIMD_UNPACK_16_ALIGNED        SSE2_UNPACK_16_ALIGNED
+# define SIMD_UNPACK_16_UNALIGNED      SSE2_UNPACK_16_UNALIGNED
+# define SIMD_UNPACK_32_ARGB_ALIGNED   SSE2_UNPACK_32_ARGB_ALIGNED
+# define SIMD_UNPACK_32_ARGB_UNALIGNED SSE2_UNPACK_32_ARGB_UNALIGNED
+# define SIMD_UNPACK_32_RGBA_ALIGNED   SSE2_UNPACK_32_RGBA_ALIGNED
+# define SIMD_UNPACK_32_RGBA_UNALIGNED SSE2_UNPACK_32_RGBA_UNALIGNED
+# define SIMD_UNPACK_32_BGRA_ALIGNED   SSE2_UNPACK_32_BGRA_ALIGNED
+# define SIMD_UNPACK_32_BGRA_UNALIGNED SSE2_UNPACK_32_BGRA_UNALIGNED
+# define SIMD_UNPACK_32_ABGR_ALIGNED   SSE2_UNPACK_32_ABGR_ALIGNED
+# define SIMD_UNPACK_32_ABGR_UNALIGNED SSE2_UNPACK_32_ABGR_UNALIGNED
+#elif defined( PLUGIN_AVX2 )
+# include "i420_rgb_avx2.h"
+# define VLC_TARGET VLC_AVX
+# define SIMD_ALIGN 32
+# define SIMD_CALL AVX2_CALL
+# define SIMD_END AVX2_END
+# define SIMD_YUV_MUL AVX2_YUV_MUL
+# define SIMD_YUV_ADD AVX2_YUV_ADD
+# define SIMD_INIT_16_ALIGNED          AVX2_INIT_16_ALIGNED
+# define SIMD_INIT_16_UNALIGNED        AVX2_INIT_16_UNALIGNED
+# define SIMD_INIT_32_ALIGNED          AVX2_INIT_32_ALIGNED
+# define SIMD_INIT_32_UNALIGNED        AVX2_INIT_32_UNALIGNED
+# define SIMD_UNPACK_15_ALIGNED        AVX2_UNPACK_15_ALIGNED
+# define SIMD_UNPACK_15_UNALIGNED      AVX2_UNPACK_15_UNALIGNED
+# define SIMD_UNPACK_16_ALIGNED        AVX2_UNPACK_16_ALIGNED
+# define SIMD_UNPACK_16_UNALIGNED      AVX2_UNPACK_16_UNALIGNED
+# define SIMD_UNPACK_32_ARGB_ALIGNED   AVX2_UNPACK_32_ARGB_ALIGNED
+# define SIMD_UNPACK_32_ARGB_UNALIGNED AVX2_UNPACK_32_ARGB_UNALIGNED
+# define SIMD_UNPACK_32_RGBA_ALIGNED   AVX2_UNPACK_32_RGBA_ALIGNED
+# define SIMD_UNPACK_32_RGBA_UNALIGNED AVX2_UNPACK_32_RGBA_UNALIGNED
+# define SIMD_UNPACK_32_BGRA_ALIGNED   AVX2_UNPACK_32_BGRA_ALIGNED
+# define SIMD_UNPACK_32_BGRA_UNALIGNED AVX2_UNPACK_32_BGRA_UNALIGNED
+# define SIMD_UNPACK_32_ABGR_ALIGNED   AVX2_UNPACK_32_ABGR_ALIGNED
+# define SIMD_UNPACK_32_ABGR_UNALIGNED AVX2_UNPACK_32_ABGR_UNALIGNED
 #endif
+
 
 /*****************************************************************************
  * SetOffset: build offset array for conversion functions
@@ -159,7 +204,7 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -177,11 +222,11 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_16_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_15_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_15_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -197,11 +242,11 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
 
-                SSE2_CALL (
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_15_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_15_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -227,11 +272,11 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_15_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_15_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -247,11 +292,11 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
 
-                SSE2_CALL (
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_15_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_15_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -270,8 +315,8 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
 
@@ -337,7 +382,7 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -355,11 +400,11 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_16_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_16_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_16_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -375,11 +420,11 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
 
-                SSE2_CALL (
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_16_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_16_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -405,11 +450,11 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL(
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_16_UNALIGNED
+                SIMD_CALL(
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_16_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -425,11 +470,11 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
 
-                SSE2_CALL(
-                    SSE2_INIT_16_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_16_UNALIGNED
+                SIMD_CALL(
+                    SIMD_INIT_16_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_16_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -448,8 +493,8 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
 
@@ -515,7 +560,7 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -533,11 +578,11 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ARGB_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ARGB_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -553,11 +598,11 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ARGB_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ARGB_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -583,11 +628,11 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ARGB_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ARGB_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -603,11 +648,11 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ARGB_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ARGB_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -626,8 +671,8 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
 
@@ -692,7 +737,7 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -710,11 +755,11 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_RGBA_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_RGBA_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -730,11 +775,11 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_RGBA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_RGBA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -760,11 +805,11 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_RGBA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_RGBA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -780,11 +825,11 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_RGBA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_RGBA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -803,8 +848,8 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
 
@@ -869,7 +914,7 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -887,11 +932,11 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_BGRA_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_BGRA_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -907,11 +952,11 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_BGRA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_BGRA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -937,11 +982,11 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_BGRA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_BGRA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -957,11 +1002,11 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_BGRA_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_BGRA_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -980,8 +1025,8 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
 
@@ -1046,7 +1091,7 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     (p_filter->fmt_out.video.i_y_offset + p_filter->fmt_out.video.i_visible_height) :
                     (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height);
 
-#ifdef PLUGIN_SSE2
+#if defined (PLUGIN_SSE2) || defined (PLUGIN_AVX2)
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
@@ -1064,11 +1109,11 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_ALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ABGR_ALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_ALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ABGR_ALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -1084,11 +1129,11 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ABGR_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ABGR_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -1114,11 +1159,11 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
             for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ABGR_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ABGR_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -1134,11 +1179,11 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                 p_u -= i_rewind >> 1;
                 p_v -= i_rewind >> 1;
                 p_buffer -= i_rewind;
-                SSE2_CALL (
-                    SSE2_INIT_32_UNALIGNED
-                    SSE2_YUV_MUL
-                    SSE2_YUV_ADD
-                    SSE2_UNPACK_32_ABGR_UNALIGNED
+                SIMD_CALL (
+                    SIMD_INIT_32_UNALIGNED
+                    SIMD_YUV_MUL
+                    SIMD_YUV_ADD
+                    SIMD_UNPACK_32_ABGR_UNALIGNED
                 );
                 p_y += SIMD_ALIGN;
                 p_u += (SIMD_ALIGN / 2);
@@ -1157,7 +1202,7 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         }
     }
 
-    /* make sure all SSE2 stores are visible thereafter */
-    SSE2_END;
+    /* make sure all stores are visible thereafter */
+    SIMD_END;
 #endif
 }
