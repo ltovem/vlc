@@ -268,7 +268,7 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
                                - p_dest->p->i_visible_pitch
                                - ( p_filter->fmt_out.video.i_x_offset * 2 );
 
-#if !defined(PLUGIN_SSE2)
+#if defined(PLUGIN_PLAIN) || defined(PLUGIN_ALTIVEC)
     for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
     {
         p_line1 = p_line2;
@@ -300,15 +300,11 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
 #endif
 
 #elif defined(PLUGIN_SSE2)
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
 
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line2|(intptr_t)p_y2))) )
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;
@@ -332,9 +328,8 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
             p_line2 += i_dest_margin;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;
@@ -468,7 +463,7 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
                                - p_dest->p->i_visible_pitch
                                - ( p_filter->fmt_out.video.i_x_offset * 2 );
 
-#if !defined(PLUGIN_SSE2)
+#if defined(PLUGIN_PLAIN) || defined(PLUGIN_ALTIVEC)
     for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
     {
         p_line1 = p_line2;
@@ -500,14 +495,11 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
 #endif
 
 #elif defined(PLUGIN_SSE2)
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line2|(intptr_t)p_y2))) )
+
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;
@@ -531,9 +523,8 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
             p_line2 += i_dest_margin;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;
@@ -666,7 +657,7 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
                                - p_dest->p->i_visible_pitch
                                - ( p_filter->fmt_out.video.i_x_offset * 2 );
 
-#if !defined(PLUGIN_SSE2)
+#if defined(PLUGIN_PLAIN) || defined(PLUGIN_ALTIVEC)
     for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
     {
         p_line1 = p_line2;
@@ -698,14 +689,11 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
 #endif
 
 #elif defined(PLUGIN_SSE2)
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line2|(intptr_t)p_y2))) )
+
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;
@@ -729,9 +717,8 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
             p_line2 += i_dest_margin;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
         {
             p_line1 = p_line2;

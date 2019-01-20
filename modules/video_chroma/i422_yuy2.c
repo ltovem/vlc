@@ -164,10 +164,10 @@ static void I422_YUY2( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line|(intptr_t)p_y))) )
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line | (intptr_t)p_y))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
@@ -184,8 +184,8 @@ static void I422_YUY2( filter_t *p_filter, picture_t *p_source,
             p_line += i_dest_margin;
         }
     }
-    else {
-        /* use slower SSE2 unaligned fetch and store */
+    else /* unaligned */
+    {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
@@ -254,10 +254,10 @@ static void I422_YVYU( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line|(intptr_t)p_y))) )
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line | (intptr_t)p_y))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
@@ -274,8 +274,8 @@ static void I422_YVYU( filter_t *p_filter, picture_t *p_source,
             p_line += i_dest_margin;
         }
     }
-    else {
-        /* use slower SSE2 unaligned fetch and store */
+    else /* unaligned */
+    {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
@@ -344,10 +344,10 @@ static void I422_UYVY( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch|p_dest->p->i_pitch|
-        ((intptr_t)p_line|(intptr_t)p_y))) )
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+        ((intptr_t)p_line | (intptr_t)p_y))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
@@ -364,8 +364,8 @@ static void I422_UYVY( filter_t *p_filter, picture_t *p_source,
             p_line += i_dest_margin;
         }
     }
-    else {
-        /* use slower SSE2 unaligned fetch and store */
+    else /* unaligned */
+    {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
             for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )

@@ -162,19 +162,14 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -223,9 +218,8 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -346,19 +340,14 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -407,9 +396,8 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -530,19 +518,14 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -591,9 +574,8 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -713,19 +695,14 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -774,9 +751,8 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -896,19 +872,14 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -957,9 +928,8 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -1079,19 +1049,14 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
     i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
 
-    /*
-    ** SSE2 128 bits fetch/store instructions are faster
-    ** if memory access is 16 bytes aligned
-    */
-
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch|
-                    p_dest->p->i_pitch|
-                    ((intptr_t)p_y)|
+    /* If 16-byte aligned, use faster aligned fetch and store */
+    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
+                    p_dest->p->i_pitch |
+                    ((intptr_t)p_y) |
                     ((intptr_t)p_buffer))) )
     {
-        /* use faster SSE2 aligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
@@ -1140,9 +1105,8 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
             p_buffer = b_hscale ? p_buffer_start : p_pic;
         }
     }
-    else
+    else /* unaligned */
     {
-        /* use slower SSE2 unaligned fetch and store */
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
