@@ -63,6 +63,7 @@ vlc_module_begin ()
     set_callback_video_converter( Activate, 120 )
 # define vlc_CPU_capable() vlc_CPU_SSE2()
 # define VLC_TARGET VLC_SSE
+# define SIMD_ALIGN 16
 #endif
 vlc_module_end ()
 
@@ -164,17 +165,17 @@ static void I422_YUY2( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line | (intptr_t)p_y))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_YUYV_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_YUYV( p_line, p_y, p_u, p_v );
             }
@@ -188,11 +189,11 @@ static void I422_YUY2( filter_t *p_filter, picture_t *p_source,
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_YUYV_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_YUYV( p_line, p_y, p_u, p_v );
             }
@@ -254,17 +255,17 @@ static void I422_YVYU( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line | (intptr_t)p_y))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_YVYU_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_YVYU( p_line, p_y, p_u, p_v );
             }
@@ -278,11 +279,11 @@ static void I422_YVYU( filter_t *p_filter, picture_t *p_source,
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_YVYU_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_YVYU( p_line, p_y, p_u, p_v );
             }
@@ -344,17 +345,17 @@ static void I422_UYVY( filter_t *p_filter, picture_t *p_source,
 
 #if defined (PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line | (intptr_t)p_y))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_UYVY_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_UYVY( p_line, p_y, p_u, p_v );
             }
@@ -368,11 +369,11 @@ static void I422_UYVY( filter_t *p_filter, picture_t *p_source,
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) ; i_y-- ; )
         {
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV422_UYVY_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV422_UYVY( p_line, p_y, p_u, p_v );
             }

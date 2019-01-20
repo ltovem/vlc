@@ -1,7 +1,7 @@
 /*****************************************************************************
  * i420_rgb16_x86.c : YUV to bitmap RGB conversion module for vlc
  *****************************************************************************
- * Copyright (C) 2000 VLC authors and VideoLAN
+ * Copyright (C) 2000, 2021 VLC authors and VideoLAN
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
  *          Damien Fouilleul <damienf@videolan.org>
@@ -34,6 +34,7 @@
 #ifdef PLUGIN_SSE2
 # include "i420_rgb_sse2.h"
 # define VLC_TARGET VLC_SSE
+# define SIMD_ALIGN 16
 #endif
 
 /*****************************************************************************
@@ -160,21 +161,21 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)/16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_16_ALIGNED
@@ -182,10 +183,10 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_15_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
             /* Here we do some unaligned reads and duplicate conversions, but
              * at least we have all the pixels */
@@ -202,9 +203,9 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_15_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 2 );
@@ -224,7 +225,7 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)/16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_16_UNALIGNED
@@ -232,10 +233,10 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_15_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
             /* Here we do some unaligned reads and duplicate conversions, but
              * at least we have all the pixels */
@@ -252,9 +253,9 @@ void I420_R5G5B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_15_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 2 );
@@ -338,21 +339,21 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)/16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_16_ALIGNED
@@ -360,10 +361,10 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_16_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
             /* Here we do some unaligned reads and duplicate conversions, but
              * at least we have all the pixels */
@@ -380,9 +381,9 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_16_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 2 );
@@ -402,7 +403,7 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)/16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL(
                     SSE2_INIT_16_UNALIGNED
@@ -410,10 +411,10 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_16_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
             /* Here we do some unaligned reads and duplicate conversions, but
              * at least we have all the pixels */
@@ -430,9 +431,9 @@ void I420_R5G6B5( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_16_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 2 );
@@ -516,21 +517,21 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_ALIGNED
@@ -538,10 +539,10 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ARGB_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -558,9 +559,9 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ARGB_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -580,7 +581,7 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_UNALIGNED
@@ -588,10 +589,10 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ARGB_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -608,9 +609,9 @@ void I420_A8R8G8B8( filter_t *p_filter, picture_t *p_src,
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ARGB_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -693,21 +694,21 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_ALIGNED
@@ -715,10 +716,10 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_RGBA_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -735,9 +736,9 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_RGBA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -757,7 +758,7 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_UNALIGNED
@@ -765,10 +766,10 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_RGBA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -785,9 +786,9 @@ void I420_R8G8B8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_RGBA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN/ 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -870,21 +871,21 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_ALIGNED
@@ -892,10 +893,10 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_BGRA_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -912,9 +913,9 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_BGRA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -934,7 +935,7 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_UNALIGNED
@@ -942,10 +943,10 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_BGRA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -962,9 +963,9 @@ void I420_B8G8R8A8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_BGRA_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -1047,21 +1048,21 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
 
 #ifdef PLUGIN_SSE2
 
-    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & 15;
+    i_rewind = (-(p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width)) & (SIMD_ALIGN-1);
 
     p_buffer = b_hscale ? p_buffer_start : p_pic;
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_src->p[Y_PLANE].i_pitch |
-                    p_dest->p->i_pitch |
-                    ((intptr_t)p_y) |
-                    ((intptr_t)p_buffer))) )
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_src->p[Y_PLANE].i_pitch |
+                                p_dest->p->i_pitch |
+                                ((intptr_t)p_y) |
+                                ((intptr_t)p_buffer))) )
     {
         for( i_y = 0; i_y < (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height); i_y++ )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_ALIGNED
@@ -1069,10 +1070,10 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ABGR_ALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -1089,9 +1090,9 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ABGR_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );
@@ -1111,7 +1112,7 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
         {
             p_pic_start = p_pic;
 
-            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16; i_x--; )
+            for ( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN; i_x--; )
             {
                 SSE2_CALL (
                     SSE2_INIT_32_UNALIGNED
@@ -1119,10 +1120,10 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ABGR_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
-                p_buffer += 16;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
+                p_buffer += SIMD_ALIGN;
             }
 
             /* Here we do some unaligned reads and duplicate conversions, but
@@ -1139,9 +1140,9 @@ void I420_A8B8G8R8( filter_t *p_filter, picture_t *p_src, picture_t *p_dest )
                     SSE2_YUV_ADD
                     SSE2_UNPACK_32_ABGR_UNALIGNED
                 );
-                p_y += 16;
-                p_u += 8;
-                p_v += 8;
+                p_y += SIMD_ALIGN;
+                p_u += (SIMD_ALIGN / 2);
+                p_v += (SIMD_ALIGN / 2);
             }
             SCALE_WIDTH;
             SCALE_HEIGHT( 420, 4 );

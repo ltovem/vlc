@@ -49,6 +49,7 @@
 #elif defined (PLUGIN_SSE2)
 #    define DEST_FOURCC "YUY2,YUNV,YVYU,UYVY,UYNV,Y422,IUYV"
 #    define VLC_TARGET VLC_SSE
+#    define SIMD_ALIGN 16
 #elif defined (PLUGIN_ALTIVEC)
 #    define DEST_FOURCC "YUY2,YUNV,YVYU,UYVY,UYNV,Y422"
 #    define VLC_TARGET
@@ -301,8 +302,8 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
 
 #elif defined(PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
@@ -313,11 +314,11 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_YUYV_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_YUYV( );
             }
@@ -338,11 +339,11 @@ static void I420_YUY2( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_YUYV_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_YUYV( );
             }
@@ -496,8 +497,8 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
 
 #elif defined(PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
@@ -508,11 +509,11 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_YVYU_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_YVYU( );
             }
@@ -533,11 +534,11 @@ static void I420_YVYU( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_YVYU_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_YVYU( );
             }
@@ -690,8 +691,8 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
 
 #elif defined(PLUGIN_SSE2)
 
-    /* If 16-byte aligned, use faster aligned fetch and store */
-    if( 0 == (15 & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
+    /* If aligned, use faster aligned fetch and store */
+    if( 0 == ((SIMD_ALIGN-1) & (p_source->p[Y_PLANE].i_pitch | p_dest->p->i_pitch |
         ((intptr_t)p_line2 | (intptr_t)p_y2))) )
     {
         for( i_y = (p_filter->fmt_in.video.i_y_offset + p_filter->fmt_in.video.i_visible_height) / 2 ; i_y-- ; )
@@ -702,11 +703,11 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_UYVY_ALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_UYVY( );
             }
@@ -727,11 +728,11 @@ static void I420_UYVY( filter_t *p_filter, picture_t *p_source,
             p_y1 = p_y2;
             p_y2 += p_source->p[Y_PLANE].i_pitch;
 
-            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / 16 ; i_x-- ; )
+            for( i_x = (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) / SIMD_ALIGN ; i_x-- ; )
             {
                 SSE2_CALL( SSE2_YUV420_UYVY_UNALIGNED );
             }
-            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % 16 ) / 2; i_x-- ; )
+            for( i_x = ( (p_filter->fmt_in.video.i_x_offset + p_filter->fmt_in.video.i_visible_width) % SIMD_ALIGN ) / 2; i_x-- ; )
             {
                 C_YUV420_UYVY( );
             }
