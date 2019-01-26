@@ -24,6 +24,10 @@
 #   include "config.h"
 #endif
 
+#ifdef CAN_COMPILE_SSE2
+#   include <stdalign.h>
+#endif
+
 #include <stdint.h>
 #include <assert.h>
 
@@ -143,6 +147,139 @@ static void DarkenField( picture_t *p_dst,
     } /* if process_chroma */
 }
 
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static void DarkenFieldSSE2( picture_t *p_dst,
+                            const int i_field, const int i_strength,
+                            bool process_chroma )
+{
+    assert( p_dst != NULL );
+    assert( i_field == 0 || i_field == 1 );
+    assert( i_strength >= 1 && i_strength <= 3 );
+
+    const uint8_t  remove_high_u8 = 0xFF >> i_strength;
+    const uint32_t remove_high_u32 = remove_high_u8 * 0x01010101;
+
+    int i_plane = Y_PLANE;
+    uint8_t *p_out, *p_out_end;
+    int w = p_dst->p[i_plane].i_visible_pitch;
+    p_out = p_dst->p[i_plane].p_pixels;
+    p_out_end = p_out + p_dst->p[i_plane].i_pitch
+                      * p_dst->p[i_plane].i_visible_lines;
+
+    /* skip first line for bottom field */
+    if( i_field == 1 )
+        p_out += p_dst->p[i_plane].i_pitch;
+
+    int wm16 = w % 16;   /* remainder */
+    int w16  = w - wm16; /* part of width that is divisible by 16 */
+    for( ; p_out < p_out_end ; p_out += 2*p_dst->p[i_plane].i_pitch )
+    {
+        uint8_t *po = p_out;
+        int x = 0;
+
+        __asm__ volatile (
+            "movd %0, %%xmm1\n"
+            "movd %1, %%xmm2\n"
+            "pshufd $0, %%xmm2, %%xmm2\n" /* duplicate 32-bits across reg */
+            :: "m" (i_strength), "m" (remove_high_u32)
+            : "xmm1", "xmm2"
+        );
+        for( ; x < w16; x += 16 )
+        {
+            __asm__ volatile (
+                "movdqu %0, %%xmm0\n"
+                "psrlq %%xmm1, %%xmm0\n"
+                "pand %%xmm2, %%xmm0\n"
+                "movdqu %%xmm0, %0\n"
+                : "=m" (*po) :: "xmm0", "memory"
+            );
+            po++;
+        }
+
+        /* handle the width remainder */
+        uint8_t *po_temp = (uint8_t *)po;
+        for( ; x < w; ++x, ++po_temp )
+            (*po_temp) = ( ((*po_temp) >> i_strength) & remove_high_u8 );
+    }
+
+    /* Process chroma if the field chromas are independent.
+
+       The origin (black) is at YUV = (0, 128, 128) in the uint8 format.
+       The chroma processing is a bit more complicated than luma,
+       and needs SIMD for vectorization.
+    */
+    if( process_chroma )
+    {
+        for( i_plane++ /* luma already handled */;
+             i_plane < p_dst->i_planes;
+             i_plane++ )
+        {
+            w = p_dst->p[i_plane].i_visible_pitch;
+            wm16 = w % 16;   /* remainder */
+            w16  = w - wm16; /* part of width that is divisible by 16 */
+
+            p_out = p_dst->p[i_plane].p_pixels;
+            p_out_end = p_out + p_dst->p[i_plane].i_pitch
+                              * p_dst->p[i_plane].i_visible_lines;
+
+            /* skip first line for bottom field */
+            if( i_field == 1 )
+                p_out += p_dst->p[i_plane].i_pitch;
+
+            for( ; p_out < p_out_end ; p_out += 2*p_dst->p[i_plane].i_pitch )
+            {
+                int x = 0;
+
+                __asm__ volatile (
+                    "mov $0x80808080, %%eax\n"
+                    "movd %%eax, %%xmm5\n"
+                    "pshufd $0, %%xmm5, %%xmm5\n" /* 128 pattern */
+                    "movd %0, %%xmm6\n"
+                    "movd %1, %%xmm7\n"
+                    "pshufd $0, %%xmm7, %%xmm7\n" /* duplicate 32-bits across reg */
+                    :: "m" (i_strength), "m" (remove_high_u32)
+                    : "eax", "xmm5", "xmm6", "xmm7"
+                );
+
+                uint8_t *po16 = p_out;
+                for( ; x < w16; x += 16 )
+                {
+                    __asm__ volatile (
+                        "movdqu %0, %%xmm0\n"
+
+                        "movdqa %%xmm5, %%xmm2\n" /* 128 */
+                        "movdqa %%xmm0, %%xmm1\n" /* copy of data */
+                        "psubusb %%xmm2, %%xmm1\n" /* xmm1 = max(data - 128, 0) */
+                        "psubusb %%xmm0, %%xmm2\n" /* xmm2 = max(128 - data, 0) */
+
+                        /* >> i_strength */
+                        "psrlq %%xmm6, %%xmm1\n"
+                        "psrlq %%xmm6, %%xmm2\n"
+                        "pand %%xmm7, %%xmm1\n"
+                        "pand %%xmm7, %%xmm2\n"
+
+                        /* collect results from pos./neg. parts */
+                        "psubb %%xmm2, %%xmm1\n"
+                        "paddb %%xmm5, %%xmm1\n"
+
+                        "movdqu %%xmm1, %0\n"
+
+                        : "=m" (*po16) :: "xmm0", "xmm1", "xmm2", "memory"
+                    );
+                    po16++;
+                }
+
+                /* C version - handle the width remainder */
+                uint8_t *po = p_out;
+                for( ; x < w; ++x, ++po )
+                    (*po) = 128 + ( ((*po) - 128) / (1 << i_strength) );
+            } /* for p_out... */
+        } /* for i_plane... */
+    } /* if process_chroma */
+}
+#endif
+
 /*****************************************************************************
  * Public functions
  *****************************************************************************/
@@ -229,6 +366,13 @@ int RenderPhosphor( filter_t *p_filter,
     */
     if( p_sys->phosphor.i_dimmer_strength > 0 )
     {
+#ifdef CAN_COMPILE_SSE2
+        if( vlc_CPU_SSE2() )
+            DarkenFieldSSE2( p_dst, !i_field, p_sys->phosphor.i_dimmer_strength,
+                p_sys->chroma->p[1].h.num == p_sys->chroma->p[1].h.den &&
+                p_sys->chroma->p[2].h.num == p_sys->chroma->p[2].h.den );
+        else
+#endif
             DarkenField( p_dst, !i_field, p_sys->phosphor.i_dimmer_strength,
                 p_sys->chroma->p[1].h.num == p_sys->chroma->p[1].h.den &&
                 p_sys->chroma->p[2].h.num == p_sys->chroma->p[2].h.den );

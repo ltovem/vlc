@@ -73,6 +73,87 @@ static inline int XDeint8x8DetectC( uint8_t *src, int i_src )
     return fc < 1 ? false : true;
 }
 
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static inline int XDeint8x8DetectSSE2( uint8_t *src, int i_src )
+{
+
+    int y, x;
+    int32_t ff, fr;
+    int fc;
+
+    /* Detect interlacing */
+    fc = 0;
+    __asm__ volatile ("pxor %%xmm7, %%xmm7" ::: "xmm7");
+    for( y = 0; y < 9; y += 2 )
+    {
+        ff = fr = 0;
+        __asm__ volatile (
+            "pxor %%xmm5, %%xmm5\n"
+            "pxor %%xmm6, %%xmm6\n"
+            ::: "xmm5", "xmm6"
+        );
+        for( x = 0; x < 8; x+=4 )
+        {
+            __asm__ volatile (
+                "movd %0, %%xmm0\n"
+                "movd %1, %%xmm1\n"
+                "movd %2, %%xmm2\n"
+                "movd %3, %%xmm3\n"
+
+                "punpcklbw %%xmm7, %%xmm0\n"
+                "punpcklbw %%xmm7, %%xmm1\n"
+                "punpcklbw %%xmm7, %%xmm2\n"
+                "punpcklbw %%xmm7, %%xmm3\n"
+
+                "movq %%xmm0, %%xmm4\n"
+
+                "psubw %%xmm2, %%xmm4\n"
+                "psubw %%xmm1, %%xmm0\n"
+                "psubw %%xmm1, %%xmm2\n"
+                "psubw %%xmm1, %%xmm3\n"
+
+                "pmaddwd %%xmm0, %%xmm0\n"
+                "pmaddwd %%xmm2, %%xmm2\n"
+                "pmaddwd %%xmm3, %%xmm3\n"
+                "pmaddwd %%xmm4, %%xmm4\n"
+                "paddd %%xmm0, %%xmm2\n"
+                "paddd %%xmm4, %%xmm3\n"
+                "paddd %%xmm2, %%xmm5\n"
+                "paddd %%xmm3, %%xmm6\n"
+
+                :: "m" (src[        x]),
+                   "m" (src[1*i_src+x]),
+                   "m" (src[2*i_src+x]),
+                   "m" (src[3*i_src+x])
+                : "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6"
+            );
+        }
+
+        __asm__ volatile (
+            "movq %%xmm5, %%xmm0\n"
+            "psrlq $32, %%xmm0\n"
+            "paddd %%xmm0, %%xmm5\n"
+            "movd %%xmm5, %0\n"
+
+            "movq %%xmm6, %%xmm0\n"
+            "psrlq $32, %%xmm0\n"
+            "paddd %%xmm0, %%xmm6\n"
+            "movd %%xmm6, %1\n"
+
+            : "=m" (fr), "=m" (ff)
+            :: "xmm0", "xmm5", "xmm6", "memory"
+        );
+
+        if( ff < 6*fr/8 && fr > 32 )
+            fc++;
+
+        src += 2*i_src;
+    }
+    return fc;
+}
+#endif
+
 static inline void XDeint8x8MergeC( uint8_t *dst,  int i_dst,
                                     uint8_t *src1, int i_src1,
                                     uint8_t *src2, int i_src2 )
@@ -93,6 +174,59 @@ static inline void XDeint8x8MergeC( uint8_t *dst,  int i_dst,
         src2 += i_src2;
     }
 }
+
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static inline void XDeint8x8MergeSSE2( uint8_t *dst,  int i_dst,
+                                         uint8_t *src1, int i_src1,
+                                         uint8_t *src2, int i_src2 )
+{
+    static const uint64_t m_4 = INT64_C(0x0004000400040004);
+    int y, x;
+
+    /* Progressive */
+    __asm__ volatile (
+        "pxor %%xmm7, %%xmm7\n"
+        "movq %0, %%xmm6\n"
+        :: "m" (m_4) : "xmm6", "xmm7"
+    );
+    for( y = 0; y < 8; y += 2 )
+    {
+        for( x = 0; x < 8; x +=4 )
+        {
+            __asm__ volatile (
+                "movd %2, %%xmm0\n"
+                "movd %%xmm0, %0\n"
+
+                "movd %3, %%xmm1\n"
+                "movd %4, %%xmm2\n"
+
+                "punpcklbw %%xmm7, %%xmm0\n"
+                "punpcklbw %%xmm7, %%xmm1\n"
+                "punpcklbw %%xmm7, %%xmm2\n"
+                "paddw %%xmm1, %%xmm1\n"
+                "movq %%xmm1, %%xmm3\n"
+                "paddw %%xmm3, %%xmm3\n"
+                "paddw %%xmm2, %%xmm0\n"
+                "paddw %%xmm3, %%xmm1\n"
+                "paddw %%xmm6, %%xmm1\n"
+                "paddw %%xmm1, %%xmm0\n"
+                "psraw $3, %%xmm0\n"
+                "packuswb %%xmm7, %%xmm0\n"
+                "movd %%xmm0, %1\n"
+
+                : "=m" (dst[x]), "=m" (dst[i_dst+x])
+                : "m" (src1[x]), "m" (src2[x]), "m" (src1[i_src1+x])
+                : "xmm0", "xmm1", "xmm2", "xmm3",
+                  "memory"
+            );
+        }
+        dst += 2*i_dst;
+        src1 += i_src1;
+        src2 += i_src2;
+    }
+}
+#endif
 
 /* XDeint8x8FieldE: Stupid deinterlacing (1,0,1) for block that miss a
  * neighbour
@@ -116,6 +250,38 @@ static inline void XDeint8x8FieldEC( uint8_t *dst, int i_dst,
         src += 2*i_src;
     }
 }
+
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static inline void XDeint8x8FieldESSE2( uint8_t *dst, int i_dst,
+                                          uint8_t *src, int i_src )
+{
+    int y;
+
+    /* Interlaced */
+    for( y = 0; y < 8; y += 2 )
+    {
+        __asm__ volatile (
+            "movq %1, %%xmm0\n"
+            "movq %%xmm0, %0\n"
+            : "=m" (dst[0]) : "m" (src[0])
+            : "xmm0", "memory"
+        );
+        dst += i_dst;
+
+        __asm__ volatile (
+            "movq %1, %%xmm1\n"
+            "pavgb %%xmm1, %%xmm0\n"
+            "movq %%xmm0, %0\n"
+            : "=m" (dst[0]) : "m" (src[2*i_src])
+            : "xmm0", "xmm1", "memory"
+        );
+
+        dst += 1*i_dst;
+        src += 2*i_src;
+    }
+}
+#endif
 
 /* XDeint8x8Field: Edge oriented interpolation
  * (Need -4 and +5 pixels H, +1 line)
@@ -163,6 +329,57 @@ static inline void XDeint8x8FieldC( uint8_t *dst, int i_dst,
         src += 2*i_src;
     }
 }
+
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static inline void XDeint8x8FieldSSE2( uint8_t *dst, int i_dst,
+                                         uint8_t *src, int i_src )
+{
+    int y, x;
+
+    /* Interlaced */
+    for( y = 0; y < 8; y += 2 )
+    {
+        memcpy( dst, src, 8 );
+        dst += i_dst;
+
+        for( x = 0; x < 8; x++ )
+        {
+            uint8_t *src2 = &src[2*i_src];
+            int32_t c0, c1, c2;
+
+            __asm__ volatile (
+                "movq %3, %%xmm0\n"
+                "movq %4, %%xmm1\n"
+                "movq %5, %%xmm2\n"
+                "movq %6, %%xmm3\n"
+                "movq %7, %%xmm4\n"
+                "movq %8, %%xmm5\n"
+                "psadbw %%xmm3, %%xmm0\n"
+                "psadbw %%xmm4, %%xmm1\n"
+                "psadbw %%xmm5, %%xmm2\n"
+                "movd %%xmm0, %2\n"
+                "movd %%xmm1, %1\n"
+                "movd %%xmm2, %0\n"
+                : "=m" (c0), "=m" (c1), "=m" (c2)
+                : "m" (src[x-2]), "m" (src[x-3]), "m" (src[x-4]),
+                  "m" (src2[x-4]), "m" (src2[x-3]), "m" (src2[x-2])
+                : "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "memory"
+            );
+
+            if( c0 < c1 && c1 <= c2 )
+                dst[x] = (src[x-1] + src2[x+1]) >> 1;
+            else if( c2 < c1 && c1 <= c0 )
+                dst[x] = (src[x+1] + src2[x-1]) >> 1;
+            else
+                dst[x] = (src[x+0] + src2[x+0]) >> 1;
+        }
+
+        dst += 1*i_dst;
+        src += 2*i_src;
+    }
+}
+#endif
 
 /* NxN arbitray size (and then only use pixel in the NxN block)
  */
@@ -291,6 +508,41 @@ static inline void XDeintBand8x8C( uint8_t *dst, int i_dst,
         XDeintNxN( dst, i_dst, src, i_src, i_modx, 8 );
 }
 
+#ifdef CAN_COMPILE_SSE2
+VLC_SSE
+static inline void XDeintBand8x8SSE2( uint8_t *dst, int i_dst,
+                                        uint8_t *src, int i_src,
+                                        const int i_mbx, int i_modx )
+{
+    int x;
+
+    /* Reset current line */
+    for( x = 0; x < i_mbx; x++ )
+    {
+        int s;
+        if( ( s = XDeint8x8DetectSSE2( src, i_src ) ) )
+        {
+            if( x == 0 || x == i_mbx - 1 )
+                XDeint8x8FieldESSE2( dst, i_dst, src, i_src );
+            else
+                XDeint8x8FieldSSE2( dst, i_dst, src, i_src );
+        }
+        else
+        {
+            XDeint8x8MergeSSE2( dst, i_dst,
+                                  &src[0*i_src], 2*i_src,
+                                  &src[1*i_src], 2*i_src );
+        }
+
+        dst += 8;
+        src += 8;
+    }
+
+    if( i_modx )
+        XDeintNxN( dst, i_dst, src, i_src, i_modx, 8 );
+}
+#endif
+
 /*****************************************************************************
  * Public functions
  *****************************************************************************/
@@ -299,6 +551,9 @@ int RenderX( filter_t *p_filter, picture_t *p_outpic, picture_t *p_pic )
 {
     VLC_UNUSED(p_filter);
     int i_plane;
+#if defined (CAN_COMPILE_SSE2)
+    const bool sse = vlc_CPU_SSE2();
+#endif
 
     /* Copy image and skip lines */
     for( i_plane = 0 ; i_plane < p_pic->i_planes ; i_plane++ )
@@ -319,7 +574,12 @@ int RenderX( filter_t *p_filter, picture_t *p_outpic, picture_t *p_pic )
             uint8_t *dst = &p_outpic->p[i_plane].p_pixels[8*y*i_dst];
             uint8_t *src = &p_pic->p[i_plane].p_pixels[8*y*i_src];
 
-            XDeintBand8x8C( dst, i_dst, src, i_src, i_mbx, i_modx );
+#ifdef CAN_COMPILE_SSE2
+            if( sse )
+                XDeintBand8x8SSE2( dst, i_dst, src, i_src, i_mbx, i_modx );
+            else
+#endif
+                XDeintBand8x8C( dst, i_dst, src, i_src, i_mbx, i_modx );
         }
 
         /* Last line (C only)*/
