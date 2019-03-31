@@ -92,6 +92,7 @@ vlc_module_begin ()
               VLC_BANDS_LONGTEXT )
     add_float( "equalizer-preamp", 12.0f, PREAMP_TEXT,
                PREAMP_LONGTEXT )
+        change_float_range( -20.0f, 20.0f )
     set_callback( Open )
     add_shortcut( "equalizer" )
 vlc_module_end ()
@@ -518,14 +519,8 @@ static int PreampCallback( vlc_object_t *p_this, char const *psz_cmd,
 {
     VLC_UNUSED(p_this); VLC_UNUSED(psz_cmd); VLC_UNUSED(oldval);
     filter_sys_t *p_sys = p_data;
-    float preamp;
 
-    if( newval.f_float < -20.f )
-        preamp = .1f;
-    else if( newval.f_float < 20.f )
-        preamp = powf( 10.f, newval.f_float / 20.f );
-    else
-        preamp = 10.f;
+    float preamp = powf( 10.f, newval.f_float / 20.f );
 
     vlc_mutex_lock( &p_sys->lock );
     p_sys->f_gamp = preamp;
