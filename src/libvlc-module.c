@@ -606,17 +606,17 @@ static const char *const ppsz_clock_descriptions[] =
 #define INPUT_VIDEOTRACK_TEXT N_("Video track")
 #define INPUT_VIDEOTRACK_LONGTEXT N_( \
     "Stream number of the video track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_AUDIOTRACK_TEXT N_("Audio track")
 #define INPUT_AUDIOTRACK_LONGTEXT N_( \
     "Stream number of the audio track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_SUBTRACK_TEXT N_("Subtitle track")
 #define INPUT_SUBTRACK_LONGTEXT N_( \
     "Stream number of the subtitle track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_AUDIOTRACK_LANG_TEXT N_("Audio language")
 #define INPUT_AUDIOTRACK_LANG_LONGTEXT N_( \
@@ -1797,12 +1797,15 @@ vlc_module_begin ()
         change_safe ()
     add_integer( "video-track", -1,
                  INPUT_VIDEOTRACK_TEXT, INPUT_VIDEOTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "audio-track", -1,
                  INPUT_AUDIOTRACK_TEXT, INPUT_AUDIOTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "sub-track", -1,
                  INPUT_SUBTRACK_TEXT, INPUT_SUBTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_string( "audio-language", "",
                  INPUT_AUDIOTRACK_LANG_TEXT, INPUT_AUDIOTRACK_LANG_LONGTEXT )
