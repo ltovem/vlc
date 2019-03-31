@@ -30,6 +30,7 @@
 #endif
 
 #include <assert.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -62,10 +63,13 @@ vlc_module_begin()
     set_subcategory(SUBCAT_VIDEO_VOUT)
 
     add_integer("vmem-width", 320, T_WIDTH, LT_WIDTH)
+        change_integer_range( 0, INT_MAX )
         change_private()
     add_integer("vmem-height", 200, T_HEIGHT, LT_HEIGHT)
+        change_integer_range( 0, INT_MAX )
         change_private()
     add_integer("vmem-pitch", 640, T_PITCH, LT_PITCH)
+        change_integer_range( 0, INT_MAX )
         change_private()
     add_string("vmem-chroma", "RV16", T_CHROMA, LT_CHROMA)
         change_private()
