@@ -52,6 +52,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <dvdread/dvd_reader.h>
 #include <dvdread/ifo_types.h>
@@ -80,6 +81,7 @@ vlc_module_begin ()
     set_subcategory( SUBCAT_INPUT_ACCESS )
     add_integer( "dvdread-angle", 1, ANGLE_TEXT,
         ANGLE_LONGTEXT )
+        change_integer_range( 1, INT_MAX )
     set_capability( "access", 0 )
     add_shortcut( "dvd", "dvdread", "dvdsimple" )
     set_callbacks( Open, Close )
@@ -267,7 +269,6 @@ static int Open( vlc_object_t *p_this )
     p_sys->i_mux_rate = 0;
 
     p_sys->i_angle = var_CreateGetInteger( p_demux, "dvdread-angle" );
-    if( p_sys->i_angle <= 0 ) p_sys->i_angle = 1;
 
     DemuxTitles( p_demux, &p_sys->i_angle );
     if( DvdReadSetArea( p_demux, 0, 0, p_sys->i_angle ) != VLC_SUCCESS )
