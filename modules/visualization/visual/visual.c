@@ -105,7 +105,7 @@
 
 #define COLOR1_TEXT N_( "V-plane color" )
 #define COLOR1_LONGTEXT N_( \
-        "YUV-Color cube shifting across the V-plane ( 0 - 127 )." )
+        "YUV-Color cube shifting across the V-plane." )
 
 /* Default vout size */
 #define VOUT_WIDTH  800
@@ -144,7 +144,7 @@ vlc_module_begin ()
              RADIUS_TEXT, RADIUS_LONGTEXT )
     add_integer_with_range("spect-sections", 3, 1, INT_MAX,
              SSECT_TEXT, SSECT_LONGTEXT )
-    add_integer("spect-color", 80,
+    add_integer_with_range("spect-color", 80, 0, 127,
              COLOR1_TEXT, COLOR1_LONGTEXT )
     add_bool("spect-show-bands", true,
              BANDS_TEXT, NULL );
