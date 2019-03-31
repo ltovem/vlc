@@ -35,6 +35,7 @@
 # include "config.h"
 #endif
 
+#include <limits.h>
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_access.h>
@@ -231,7 +232,7 @@ static void Close( vlc_object_t *p_this )
     net_Close( sys->fd );
 }
 
-#define TIMEOUT_TEXT N_("UDP Source timeout (sec)")
+#define TIMEOUT_TEXT N_("UDP Source timeout (secs). (-1 means infinite).")
 
 vlc_module_begin()
     set_shortname(N_("UDP"))
@@ -240,6 +241,7 @@ vlc_module_begin()
 
     add_obsolete_integer("udp-buffer") /* since 3.0.0 */
     add_integer("udp-timeout", -1, TIMEOUT_TEXT, NULL)
+        change_integer_range( -1, INT_MAX )
 
     set_capability("access", 0)
     add_shortcut("udp", "udpstream", "udp4", "udp6")
