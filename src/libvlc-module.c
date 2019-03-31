@@ -2051,6 +2051,7 @@ vlc_module_begin ()
     add_module("access_output", "sout access", NULL,
                ACCESS_OUTPUT_TEXT, ACCESS_OUTPUT_LONGTEXT)
     add_integer( "ttl", -1, TTL_TEXT, TTL_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_string( "miface", NULL, MIFACE_TEXT, MIFACE_LONGTEXT )
     add_integer( "dscp", 0, DSCP_TEXT, DSCP_LONGTEXT )
 
