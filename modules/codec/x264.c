@@ -315,7 +315,7 @@ static void x264_log( void *, int i_level, const char *psz, va_list );
     "quality")
 #define SUBME_LONGTEXT N_( "This parameter controls quality versus speed " \
     "tradeoffs involved in the motion estimation decision process " \
-    "(lower = quicker and higher = better quality). Range 1 to 9." )
+    "(lower = quicker and higher = better quality)." )
 
 #define B_RDO_LONGTEXT N_( "RD based mode decision for B-frames. This " \
     "requires subme 6 (or higher).")
@@ -630,6 +630,7 @@ vlc_module_begin ()
 
     add_integer( SOUT_CFG_PREFIX "subme", 7, SUBME_TEXT,
                  SUBME_LONGTEXT )
+        change_integer_range( 1, 9 )
 
     add_bool( SOUT_CFG_PREFIX "mixed-refs", true, MIXED_REFS_TEXT,
               MIXED_REFS_LONGTEXT )
