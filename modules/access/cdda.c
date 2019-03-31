@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_demux.h>
@@ -1039,12 +1040,15 @@ vlc_module_begin ()
     add_loadfile("cd-audio", CD_DEVICE, CDAUDIO_DEV_TEXT, CDAUDIO_DEV_LONGTEXT)
 
     add_integer( "cdda-track", 0, TRACK_TEXT, NULL )
+        change_integer_range( 0, INT_MAX )
         change_volatile ()
     add_integer( "cdda-first-sector", INVALID_SECTOR,
             FIRST_SECTOR_TEXT, FIRST_SECTOR_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_volatile ()
     add_integer( "cdda-last-sector", INVALID_SECTOR,
             LAST_SECTOR_TEXT, LAST_SECTOR_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_volatile ()
 
     add_string( "musicbrainz-server", MUSICBRAINZ_DEFAULT_SERVER,
