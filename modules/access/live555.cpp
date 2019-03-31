@@ -32,6 +32,7 @@
 #endif
 
 #include <inttypes.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -135,6 +136,7 @@ vlc_module_begin ()
         add_password("rtsp-pwd", NULL, PASS_TEXT, PASS_LONGTEXT)
         add_integer( "rtsp-frame-buffer-size", DEFAULT_FRAME_BUFFER_SIZE,
                      FRAME_BUFFER_SIZE_TEXT, FRAME_BUFFER_SIZE_LONGTEXT )
+            change_integer_range( 0, INT_MAX )
 vlc_module_end ()
 
 
