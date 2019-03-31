@@ -32,6 +32,7 @@
 #include <poll.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <float.h>
 
 #include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
@@ -483,6 +484,7 @@ vlc_module_begin ()
      * same name. So all default values and ranges must be the same as for XCB
      * for the time being. */
     add_float ("screen-fps", 2.0, FPS_TEXT, FPS_LONGTEXT)
+        change_float_range( 0.0, FLT_MAX )
     add_integer ("screen-left", 0, LEFT_TEXT, LEFT_LONGTEXT)
         change_integer_range (-32768, 32767)
         change_safe ()
