@@ -29,6 +29,7 @@
 # include "config.h"
 #endif
 #include <assert.h>
+#include <limits.h>
 
 #include "common.h"
 
@@ -86,6 +87,7 @@ vlc_module_begin ()
     /* default to 1000 ms per image, continuously cycle through them */
     add_integer( CFG_PREFIX "delay", 1000, DELAY_TEXT, DELAY_LONGTEXT )
     add_integer( CFG_PREFIX "repeat", -1, REPEAT_TEXT, REPEAT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_integer_with_range( CFG_PREFIX "opacity", 255, 0, 255,
         OPACITY_TEXT, OPACITY_LONGTEXT )
     add_integer( CFG_PREFIX "position", -1, POS_TEXT, POS_LONGTEXT )
