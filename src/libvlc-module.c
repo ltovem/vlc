@@ -1677,13 +1677,17 @@ vlc_module_begin ()
               SNAP_SEQUENTIAL_LONGTEXT )
     add_integer( "snapshot-width", -1, SNAP_WIDTH_TEXT,
                  SNAP_WIDTH_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_integer( "snapshot-height", -1, SNAP_HEIGHT_TEXT,
                  SNAP_HEIGHT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
 
     set_section( N_("Window properties" ), NULL )
     add_integer( "width", -1, WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "height", -1, HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
 #if defined(__APPLE__) || defined(_WIN32)
     add_integer( "video-x", 0, VIDEOX_TEXT, VIDEOX_LONGTEXT )
