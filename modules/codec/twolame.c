@@ -60,8 +60,7 @@ static block_t *Encode   ( encoder_t *, block_t * );
 #define ENC_VBR_LONGTEXT N_( \
   "Use Variable BitRate. Default is to use Constant BitRate (CBR)." )
 #define ENC_PSY_TEXT N_("Psycho-acoustic model")
-#define ENC_PSY_LONGTEXT N_( \
-  "Integer from -1 (no model) to 4." )
+#define ENC_PSY_LONGTEXT N_("Use -1 for none.")
 
 static const int pi_stereo_values[] = { 0, 1, 2 };
 static const char *const ppsz_stereo_descriptions[] =
@@ -85,6 +84,7 @@ vlc_module_begin ()
               ENC_VBR_LONGTEXT )
     add_integer( ENC_CFG_PREFIX "psy", 3, ENC_PSY_TEXT,
                  ENC_PSY_LONGTEXT )
+        change_integer_range( -1, 4 )
 vlc_module_end ()
 
 static const char *const ppsz_enc_options[] = {
