@@ -746,7 +746,8 @@ static const char* const ppsz_restore_playback_desc[] = {
 #define INPUT_TIMESHIFT_GRANULARITY_TEXT N_("Timeshift granularity")
 #define INPUT_TIMESHIFT_GRANULARITY_LONGTEXT N_( \
     "This is the maximum size in bytes of the temporary files " \
-    "that will be used to store the timeshifted streams." )
+    "that will be used to store the timeshifted streams. " \
+    "(-1 for auto)." )
 
 #define INPUT_TITLE_FORMAT_TEXT N_( "Change title according to current media" )
 #define INPUT_TITLE_FORMAT_LONGTEXT N_( "This option allows you to set the title according to what's being played<br>"  \
@@ -1989,6 +1990,7 @@ vlc_module_begin ()
                   INPUT_TIMESHIFT_PATH_TEXT, INPUT_TIMESHIFT_PATH_LONGTEXT)
     add_integer( "input-timeshift-granularity", -1, INPUT_TIMESHIFT_GRANULARITY_TEXT,
                  INPUT_TIMESHIFT_GRANULARITY_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
 
     add_string( "input-title-format", "$Z", INPUT_TITLE_FORMAT_TEXT, INPUT_TITLE_FORMAT_LONGTEXT );
 
