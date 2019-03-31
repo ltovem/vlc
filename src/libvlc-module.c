@@ -2146,6 +2146,7 @@ vlc_module_begin ()
 
     add_integer( "preparse-timeout", 5000, PREPARSE_TIMEOUT_TEXT,
                  PREPARSE_TIMEOUT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_integer( "preparse-threads", 1, PREPARSE_THREADS_TEXT,
                  PREPARSE_THREADS_LONGTEXT )
