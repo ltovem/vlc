@@ -37,6 +37,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -79,6 +80,7 @@ vlc_module_begin ()
     set_subcategory( SUBCAT_AUDIO_AFILTER )
     add_shortcut( "volnorm" )
     add_integer( "norm-buff-size", 20  ,BUFF_TEXT, BUFF_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_float( "norm-max-level", 2.0, LEVEL_TEXT,
                LEVEL_LONGTEXT )
         change_float_range( 0.01, FLT_MAX )
