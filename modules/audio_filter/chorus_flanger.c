@@ -26,6 +26,7 @@
 #endif
 
 #include <math.h>
+#include <float.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -77,14 +78,17 @@ vlc_module_begin ()
     set_help( N_("Add a delay effect to the sound") )
     set_subcategory( SUBCAT_AUDIO_AFILTER )
     add_shortcut( "delay" )
-    add_float( "delay-time", 20, N_("Delay time"),
+    add_float( "delay-time", 20.0, N_("Delay time"),
         N_("Time in milliseconds of the average delay. Note average") )
-    add_float( "sweep-depth", 6, N_("Sweep Depth"),
+        change_float_range( 0.0, FLT_MAX )
+    add_float( "sweep-depth", 6.0, N_("Sweep Depth"),
         N_("Time in milliseconds of the maximum sweep depth. Thus, the sweep "
             "range will be delay-time +/- sweep-depth.") )
-    add_float( "sweep-rate", 6, N_("Sweep Rate"),
+        change_float_range( 0.0, FLT_MAX )
+    add_float( "sweep-rate", 6.0, N_("Sweep Rate"),
         N_("Rate of change of sweep depth in milliseconds shift per second "
            "of play") )
+        change_float_range( 0.0, FLT_MAX )
     add_float_with_range( "feedback-gain", 0.5, -0.9, 0.9,
         N_("Feedback gain"), N_("Gain on Feedback loop") )
     add_float_with_range( "wet-mix", 0.4, -0.999, 0.999,
@@ -130,23 +134,9 @@ static int Open( vlc_object_t *p_this )
     var_AddCallback( p_this, "dry-mix", paramCallback, p_sys );
     var_AddCallback( p_this, "wet-mix", paramCallback, p_sys );
 
-    if( p_sys->f_delayTime < 0.f )
-    {
-        msg_Err( p_filter, "Delay Time is invalid" );
-        free(p_sys);
-        return VLC_EGENERIC;
-    }
-
-    if( p_sys->f_sweepDepth > p_sys->f_delayTime || p_sys->f_sweepDepth < 0.f )
+    if( p_sys->f_sweepDepth > p_sys->f_delayTime )
     {
         msg_Err( p_filter, "Sweep Depth is invalid" );
-        free( p_sys );
-        return VLC_EGENERIC;
-    }
-
-    if( p_sys->f_sweepRate < 0.f )
-    {
-        msg_Err( p_filter, "Sweep Rate is invalid" );
         free( p_sys );
         return VLC_EGENERIC;
     }
