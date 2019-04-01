@@ -117,6 +117,7 @@ vlc_module_begin ()
     add_shortcut( "theora" )
 #   define DEC_CFG_PREFIX "theora-"
     add_integer( DEC_CFG_PREFIX "postproc", -1, ENC_POSTPROCESS_TEXT, NULL )
+        change_integer_range( -1, INT_MAX )
 
     add_submodule ()
     set_description( N_("Theora video packetizer") )
