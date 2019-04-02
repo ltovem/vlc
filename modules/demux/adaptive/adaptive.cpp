@@ -27,6 +27,7 @@
 #endif
 
 #include <stdint.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -132,8 +133,10 @@ vlc_module_begin ()
             change_string_list( ppsz_logics_values, ppsz_logics )
         add_integer( "adaptive-maxwidth",  0,
                      ADAPT_WIDTH_TEXT,  nullptr )
+            change_integer_range( 0, INT_MAX )
         add_integer( "adaptive-maxheight", 0,
                      ADAPT_HEIGHT_TEXT, nullptr )
+            change_integer_range( 0, INT_MAX )
         add_integer( "adaptive-bw",     250, ADAPT_BW_TEXT,     ADAPT_BW_LONGTEXT )
         add_bool   ( "adaptive-use-access", false, ADAPT_ACCESS_TEXT, ADAPT_ACCESS_LONGTEXT );
         add_integer( "adaptive-livedelay",
