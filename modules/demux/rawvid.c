@@ -29,6 +29,8 @@
 # include "config.h"
 #endif
 
+#include <limits.h>
+
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_demux.h>
@@ -45,11 +47,11 @@ static void Close( vlc_object_t * );
 
 #define WIDTH_TEXT N_("Width")
 #define WIDTH_LONGTEXT N_("This specifies the width in pixels of the raw " \
-    "video stream.")
+    "video stream. (0 means use preset).")
 
 #define HEIGHT_TEXT N_("Height")
 #define HEIGHT_LONGTEXT N_("This specifies the height in pixels of the raw " \
-    "video stream.")
+    "video stream. (0 means use preset).")
 
 #define CHROMA_TEXT N_("Force chroma (Use carefully)")
 #define CHROMA_LONGTEXT N_("Force chroma. This is a four character string.")
@@ -67,7 +69,9 @@ vlc_module_begin ()
     add_shortcut( "rawvideo" )
     add_string( "rawvid-fps", NULL, FPS_TEXT, FPS_LONGTEXT )
     add_integer( "rawvid-width", 0, WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "rawvid-height", 0, HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_string( "rawvid-chroma", NULL, CHROMA_TEXT, CHROMA_LONGTEXT )
     add_string( "rawvid-aspect-ratio", NULL,
                 ASPECT_RATIO_TEXT, ASPECT_RATIO_LONGTEXT )
