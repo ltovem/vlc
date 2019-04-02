@@ -138,6 +138,7 @@ vlc_module_begin ()
                      ADAPT_HEIGHT_TEXT, nullptr )
             change_integer_range( 0, INT_MAX )
         add_integer( "adaptive-bw",     250, ADAPT_BW_TEXT,     ADAPT_BW_LONGTEXT )
+            change_integer_range( 0, INT_MAX )
         add_bool   ( "adaptive-use-access", false, ADAPT_ACCESS_TEXT, ADAPT_ACCESS_LONGTEXT );
         add_integer( "adaptive-livedelay",
                      MS_FROM_VLC_TICK(AbstractBufferingLogic::DEFAULT_LIVE_BUFFERING),
