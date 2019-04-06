@@ -37,6 +37,8 @@
 # include <sys/uio.h>
 #endif
 
+#include <limits.h>
+
 #include <vlc_common.h>
 #include <vlc_fs.h>
 #include <vlc_network.h>
@@ -67,7 +69,9 @@ vlc_module_begin ()
     set_subcategory( SUBCAT_VIDEO_VOUT )
     add_string( "flaschen-display", NULL, T_FLDISPLAY, LT_FLDISPLAY )
     add_integer("flaschen-width", 25, T_WIDTH, LT_WIDTH)
+        change_integer_range( 0, INT_MAX )
     add_integer("flaschen-height", 20, T_HEIGHT, LT_HEIGHT)
+        change_integer_range( 0, INT_MAX )
 vlc_module_end ()
 
 
