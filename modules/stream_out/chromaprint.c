@@ -32,6 +32,7 @@
 #include <vlc_sout.h>
 
 #include <assert.h>
+#include <limits.h>
 
 #ifdef _WIN32
 # define CHROMAPRINT_NODLL
@@ -62,6 +63,7 @@ vlc_module_begin ()
     add_shortcut( "chromaprint" )
     set_subcategory( SUBCAT_SOUT_STREAM )
     add_integer( "duration", 90, DURATION_TEXT, DURATION_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     set_callbacks( Open, Close )
 vlc_module_end ()
 
