@@ -50,6 +50,7 @@
 #define add_renderer_opts(prefix) \
     add_integer(RENDERER_CFG_PREFIX "show-perf-warning", 1, \
             PERF_TEXT, PERF_LONGTEXT ) \
+        change_integer_range( 0, 1 ) \
         change_private() \
     add_bool(prefix "audio-passthrough", false, \
             AUDIO_PASSTHROUGH_TEXT, AUDIO_PASSTHROUGH_LONGTEXT ) \
