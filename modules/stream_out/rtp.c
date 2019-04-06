@@ -70,6 +70,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -211,6 +212,7 @@ vlc_module_begin ()
 
     add_integer( SOUT_CFG_PREFIX "ttl", -1, TTL_TEXT,
                  TTL_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_bool( SOUT_CFG_PREFIX "rtcp-mux", false,
               RTCP_MUX_TEXT, RTCP_MUX_LONGTEXT )
     add_integer( SOUT_CFG_PREFIX "caching", MS_FROM_VLC_TICK(DEFAULT_PTS_DELAY),
