@@ -26,6 +26,8 @@
  * Preamble
  *****************************************************************************/
 
+#include <limits.h>
+
 #include "sdiout.hpp"
 
 #include "DBMSDIOutput.hpp"
@@ -172,6 +174,7 @@ vlc_module_begin ()
     set_section(N_("DeckLink General Options"), NULL)
     add_integer(CFG_PREFIX "card-index", 0,
                 CARD_INDEX_TEXT, CARD_INDEX_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
 
     set_section(N_("DeckLink Video Options"), NULL)
     add_string(CFG_PREFIX "video-connection", "sdi",
