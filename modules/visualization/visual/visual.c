@@ -111,6 +111,10 @@
 #define VOUT_WIDTH  800
 #define VOUT_HEIGHT 500
 
+/* Min vout size - no resolution under 400x532 */
+#define VOUT_MIN_WIDTH  532
+#define VOUT_MIN_HEIGHT 400
+
 static int  Open         ( vlc_object_t * );
 static void Close        ( filter_t * );
 
@@ -123,8 +127,10 @@ vlc_module_begin ()
             ELIST_TEXT, ELIST_LONGTEXT )
     add_integer("effect-width",VOUT_WIDTH,
              WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( VOUT_MIN_WIDTH, INT_MAX )
     add_integer("effect-height" , VOUT_HEIGHT ,
              HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( VOUT_MIN_HEIGHT, INT_MAX )
     add_string("effect-fft-window", "none",
             FFT_WINDOW_TEXT, FFT_WINDOW_LONGTEXT )
         change_string_list( window_list, window_list_text )
@@ -205,12 +211,8 @@ static int Open( vlc_object_t *p_this )
 
     int width = var_InheritInteger( p_filter , "effect-width");
     int height = var_InheritInteger( p_filter , "effect-height");
-    /* No resolution under 400x532 and no odd dimension */
-    if( width < 532 )
-        width  = 532;
+    /* No odd dimension */
     width &= ~1;
-    if( height < 400 )
-        height = 400;
     height &= ~1;
 
     p_sys->i_effect = 0;
