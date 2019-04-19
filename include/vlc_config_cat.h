@@ -53,7 +53,7 @@
 #define VIDEO_TOOLTIP   N_( "Video Settings" )
 #define SUBPIC_TOOLTIP  N_( "Subtitle & On Screen Display Settings" )
 #define INPUT_TOOLTIP   N_( "Input & Codec Settings" )
-#define HOTKEYS_TOOLTIP N_( "Hotkeys Settings" )
+#define HOTKEYS_TOOLTIP N_( "Hotkey Settings" )
 #define ML_TOOLTIP      N_( "Media Library Settings" )
 
 /*  - Help text -
@@ -61,10 +61,10 @@
  */
 
 /* Interface */
-#define INTF_GENERAL_HELP N_( "Main interfaces settings" )
+#define INTF_GENERAL_HELP N_( "Main interface settings" )
 #define INTF_MAIN_HELP N_( "Settings for the main interface" )
 #define INTF_CONTROL_HELP N_( "Settings for VLC's control interfaces" )
-#define INTF_HOTKEYS_HELP N_( "Hotkeys settings" )
+#define INTF_HOTKEYS_HELP N_( "Hotkey settings" )
 
 /* Audio */
 #define AUDIO_GENERAL_HELP N_("General audio settings")
@@ -172,13 +172,13 @@ static const struct config_subcategory_t subcategories_array[] =
 
     { SUBCAT_INTERFACE_GENERAL,    CAT_INTERFACE,  INTF_TITLE,                INTF_GENERAL_HELP  },
     { SUBCAT_INTERFACE_CONTROL,    CAT_INTERFACE,  N_("Control interfaces"),  INTF_CONTROL_HELP  },
-    { SUBCAT_INTERFACE_HOTKEYS,    CAT_INTERFACE,  N_("Hotkeys settings"),    INTF_HOTKEYS_HELP  },
+    { SUBCAT_INTERFACE_HOTKEYS,    CAT_INTERFACE,  N_("Hotkey settings"),     INTF_HOTKEYS_HELP  },
     { SUBCAT_INTERFACE_MAIN,       CAT_INTERFACE,  N_("Main interfaces"),     INTF_MAIN_HELP     },
 
     { SUBCAT_AUDIO_GENERAL,        CAT_AUDIO,      AUDIO_TITLE,               AUDIO_GENERAL_HELP },
-    { SUBCAT_AUDIO_RESAMPLER,      CAT_AUDIO,      N_("Audio resampler"),     AFILTER_HELP       },
     { SUBCAT_AUDIO_AFILTER,        CAT_AUDIO,      N_("Filters"),             AFILTER_HELP       },
     { SUBCAT_AUDIO_AOUT,           CAT_AUDIO,      N_("Output modules"),      AOUT_HELP          },
+    { SUBCAT_AUDIO_RESAMPLER,      CAT_AUDIO,      N_("Resampler"),           AFILTER_HELP       },
     { SUBCAT_AUDIO_VISUAL,         CAT_AUDIO,      N_("Visualizations"),      AVISUAL_HELP       },
 
     { SUBCAT_VIDEO_GENERAL,        CAT_VIDEO,      VIDEO_TITLE,               VIDEO_GENERAL_HELP },
