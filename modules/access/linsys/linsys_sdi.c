@@ -94,8 +94,8 @@ vlc_module_begin()
     set_shortname( N_("SDI") )
     set_subcategory( SUBCAT_INPUT_ACCESS )
 
-    add_integer( "linsys-sdi-link", 0,
-        LINK_TEXT, LINK_LONGTEXT )
+    add_integer( "linsys-sdi-link", 0, LINK_TEXT, LINK_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_integer( "linsys-sdi-id-video", 0, VIDEO_TEXT, VIDEO_LONGTEXT )
     add_string( "linsys-sdi-aspect-ratio", "", VIDEO_ASPECT_TEXT,
