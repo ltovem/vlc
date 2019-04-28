@@ -326,4 +326,16 @@ static inline bool vlc_config_subcat_IsGeneral( enum vlc_config_subcat subcat )
     return (subcat == vlc_config_cat_GetGeneralSubcat( cat ));
 }
 
+/** Check if the given subcategory should not be shown in GUI prefs.
+ *
+ * Certain subcategories are only for use in help output.
+ */
+VLC_USED
+static inline bool vlc_config_subcat_IsGUIHidden( enum vlc_config_subcat subcat )
+{
+    return ( subcat == SUBCAT_HIDDEN ||
+             subcat == SUBCAT_MISC_GENERAL ||
+             subcat == SUBCAT_PLAYLIST_BOOKMARKS );
+}
+
 #endif /* VLC_CONFIG_CAT_H */

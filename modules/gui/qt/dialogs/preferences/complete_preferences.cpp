@@ -83,7 +83,7 @@ PrefsTree::PrefsTree( qt_intf_t *_p_intf, QWidget *_parent,
         subcat = (enum vlc_config_subcat) p_item->value.i;
         cat = vlc_config_cat_FromSubcat(subcat);
 
-        if( cat == CAT_UNKNOWN || cat == CAT_HIDDEN )
+        if( cat == CAT_UNKNOWN || vlc_config_subcat_IsGUIHidden(subcat) )
             continue;
 
         /* Create parent cat node? */
@@ -140,7 +140,7 @@ PrefsTree::PrefsTree( qt_intf_t *_p_intf, QWidget *_parent,
         module_config_free (p_config);
 
         /* No options, or definitely no place to place it in the tree - ignore */
-        if( !has_options || cat == CAT_UNKNOWN || cat == CAT_HIDDEN )
+        if( !has_options || cat == CAT_UNKNOWN || vlc_config_subcat_IsGUIHidden(subcat) )
             continue;
 
         /* Locate the category item */
@@ -183,7 +183,7 @@ PrefsTree::PrefsTree( qt_intf_t *_p_intf, QWidget *_parent,
 QTreeWidgetItem *PrefsTree::createCatNode( enum vlc_config_cat cat )
 {
     enum vlc_config_subcat general_subcat = vlc_config_cat_GetGeneralSubcat( cat );
-    assert(general_subcat != SUBCAT_UNKNOWN && general_subcat != SUBCAT_HIDDEN);
+    assert(general_subcat != SUBCAT_UNKNOWN && !vlc_config_subcat_IsGUIHidden(general_subcat));
 
     PrefsTreeItem *item = new PrefsTreeItem( PrefsTreeItem::CATEGORY_NODE );
 
