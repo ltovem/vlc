@@ -2156,7 +2156,7 @@ vlc_module_begin ()
         change_short('S')
 
     /* Not displayed in GUI, listed in help output though */
-    set_subcategory( SUBCAT_HIDDEN )
+    set_subcategory( SUBCAT_PLAYLIST_BOOKMARKS )
     set_section(N_("Bookmarks"), NULL)
     add_string( "bookmark1", NULL,
              BOOKMARK1_TEXT, BOOKMARK_LONGTEXT )
@@ -2750,7 +2750,7 @@ vlc_module_begin ()
 
 /* Miscellaneous */
     /* Not displayed in GUI, listed in help output though */
-    set_subcategory( SUBCAT_HIDDEN )
+    set_subcategory( SUBCAT_MISC_GENERAL )
     add_category_hint(N_("Miscellaneous"), NULL)
 
 #define HELP_TEXT \
