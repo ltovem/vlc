@@ -2157,7 +2157,6 @@ vlc_module_begin ()
 
     /* Not displayed in GUI, listed in help output though */
     set_subcategory( SUBCAT_PLAYLIST_BOOKMARKS )
-    set_section(N_("Bookmarks"), NULL)
     add_string( "bookmark1", NULL,
              BOOKMARK1_TEXT, BOOKMARK_LONGTEXT )
     add_string( "bookmark2", NULL,
