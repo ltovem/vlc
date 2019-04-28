@@ -160,6 +160,7 @@ enum vlc_config_cat
     CAT_SOUT      = 5,
     CAT_ADVANCED  = 6,
     CAT_PLAYLIST  = 7,
+    CAT_MISC      = 8,
 };
 
 /* Config subcategory */
@@ -211,6 +212,9 @@ enum vlc_config_subcat
     SUBCAT_PLAYLIST_GENERAL    = 701,
     SUBCAT_PLAYLIST_SD         = 702,
     SUBCAT_PLAYLIST_EXPORT     = 703,
+    SUBCAT_PLAYLIST_BOOKMARKS  = 704,
+
+    SUBCAT_MISC_GENERAL        = 801,
 };
 
 /**
