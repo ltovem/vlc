@@ -525,9 +525,6 @@ bool PrefsTreeItem::contains( const QString &text, Qt::CaseSensitivity cs )
             continue;
         }
 
-        /* cat-hint items are not relevant, they are an alternate set of headings for help output */
-        if( p_item->i_type == CONFIG_HINT_CATEGORY ) continue;
-
         if ( p_item->psz_text && qfut( p_item->psz_text ).contains( text, cs ) )
         {
             ret = true;

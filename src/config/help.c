@@ -354,9 +354,6 @@ static void print_item(const module_t *m, const struct vlc_param *param,
         case 0: // hint class
             switch (item->i_type)
             {
-                case CONFIG_HINT_CATEGORY:
-                    break;
-
                 case CONFIG_SUBCATEGORY:
                     *subcat_item = (is_core) ? item : NULL;
                     *section_item = NULL;

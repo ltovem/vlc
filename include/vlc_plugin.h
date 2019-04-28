@@ -108,8 +108,6 @@ enum vlc_module_properties
 };
 
 /* Configuration hint types */
-#define CONFIG_HINT_CATEGORY                0x02  /* Start of new category */
-
 #define CONFIG_SUBCATEGORY                  0x07 /* Set subcategory */
 #define CONFIG_SECTION                      0x08 /* Start of new section */
 
@@ -400,11 +398,6 @@ VLC_METADATA_EXPORTS
 
 #define set_section( text, longtext ) \
     add_typedesc_inner( CONFIG_SECTION, text, longtext )
-
-#ifndef __PLUGIN__
-#define add_category_hint(text, longtext) \
-    add_typedesc_inner( CONFIG_HINT_CATEGORY, text, longtext )
-#endif
 
 #define add_string( name, value, text, longtext ) \
     add_string_inner(CONFIG_ITEM_STRING, name, text, longtext, value)
