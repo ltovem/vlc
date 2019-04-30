@@ -45,7 +45,7 @@ struct vlc_aout_stream
     aout_filters_t *filters;
     aout_filters_cfg_t filters_cfg;
 
-    atomic_bool drained;
+    atomic_uint drained;
     _Atomic vlc_tick_t drain_deadline;
 
     struct
@@ -121,7 +121,7 @@ static void stream_Reset(vlc_aout_stream *stream)
         }
     }
 
-    atomic_store_explicit(&stream->drained, false, memory_order_relaxed);
+    atomic_store_explicit(&stream->drained, 0, memory_order_relaxed);
     atomic_store_explicit(&stream->drain_deadline, VLC_TICK_INVALID,
                           memory_order_relaxed);
 
@@ -190,7 +190,7 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
     atomic_init (&stream->buffers_played, 0);
     atomic_store_explicit(&owner->vp.update, true, memory_order_relaxed);
 
-    atomic_init(&stream->drained, false);
+    atomic_init(&stream->drained, 0);
     atomic_init(&stream->drain_deadline, VLC_TICK_INVALID);
 
     stream->filters = NULL;
@@ -667,7 +667,7 @@ void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain)
 
 void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream)
 {
-    atomic_store_explicit(&stream->drained, true, memory_order_relaxed);
+    atomic_store_explicit(&stream->drained, 1, memory_order_relaxed);
 }
 
 bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
@@ -678,7 +678,7 @@ bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
     if (drain_deadline != VLC_TICK_INVALID)
         return vlc_tick_now() >= drain_deadline;
     else
-        return atomic_load_explicit(&stream->drained, memory_order_relaxed);
+        return atomic_load_explicit(&stream->drained, memory_order_relaxed) == 1;
 }
 
 void vlc_aout_stream_Drain(vlc_aout_stream *stream)
@@ -697,7 +697,7 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
 
     if (aout->drain)
     {
-        assert(!atomic_load_explicit(&stream->drained, memory_order_relaxed));
+        assert(atomic_load_explicit(&stream->drained, memory_order_relaxed) == 0);
 
         aout->drain(aout);
     }
