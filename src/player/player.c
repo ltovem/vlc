@@ -37,6 +37,8 @@
 #include "input/resource.h"
 #include "audio_output/aout_internal.h"
 
+#define OPEN_NEXT_DELAY AOUT_MAX_ADVANCE_TIME
+
 static_assert(VLC_PLAYER_CAP_SEEK == VLC_INPUT_CAPABILITIES_SEEKABLE &&
               VLC_PLAYER_CAP_PAUSE == VLC_INPUT_CAPABILITIES_PAUSEABLE &&
               VLC_PLAYER_CAP_CHANGE_RATE == VLC_INPUT_CAPABILITIES_CHANGE_RATE &&
@@ -67,7 +69,7 @@ vlc_player_PrepareNextMedia(vlc_player_t *player)
 }
 
 int
-vlc_player_OpenNextMedia(vlc_player_t *player)
+vlc_player_SwitchNextMedia(vlc_player_t *player)
 {
     assert(player->input == NULL);
 
@@ -98,8 +100,16 @@ vlc_player_OpenNextMedia(vlc_player_t *player)
         input_item_Release(player->media);
     player->media = player->next_media;
     player->next_media = NULL;
+    player->gapless_failed = false;
 
-    player->input = vlc_player_input_New(player, player->media);
+    if (player->next_input)
+    {
+        player->input = player->next_input;
+        player->next_input = NULL;
+    }
+    else
+        player->input = vlc_player_input_New(player, player->media, false);
+
     if (!player->input)
     {
         input_item_Release(player->media);
@@ -112,6 +122,7 @@ vlc_player_OpenNextMedia(vlc_player_t *player)
         vlc_player_SendEvent(player, on_playback_restore_queried);
         player->input->ml.delay_restore = false;
     }
+
     return ret;
 }
 
@@ -1000,6 +1011,11 @@ static void
 vlc_player_ReleaseNextMedia(vlc_player_t *player)
 {
     vlc_player_assert_locked(player);
+    if (player->next_input)
+    {
+        vlc_player_destructor_AddInput(player, player->next_input);
+        player->next_input = NULL;
+    }
     if (player->next_media)
     {
         input_item_Release(player->next_media);
@@ -1048,7 +1064,7 @@ vlc_player_SetCurrentMedia(vlc_player_t *player, input_item_t *media)
     }
 
     /* We can switch to the next media directly */
-    return vlc_player_OpenNextMedia(player);
+    return vlc_player_SwitchNextMedia(player);
 }
 
 input_item_t *
@@ -1134,7 +1150,17 @@ vlc_player_GetAssociatedSubsFPS(vlc_player_t *player)
 void
 vlc_player_InvalidateNextMedia(vlc_player_t *player)
 {
+    bool gapless_next = player->next_input != NULL || player->gapless_failed;
+
     vlc_player_ReleaseNextMedia(player);
+
+    vlc_player_PrepareNextMedia(player);
+
+    player->gapless_failed = false;
+
+    if (gapless_next && player->next_media)
+        player->next_input =
+            vlc_player_input_New(player, player->next_media, true);
 }
 
 int
@@ -1164,7 +1190,7 @@ vlc_player_Start(vlc_player_t *player)
     if (!player->input)
     {
         /* Possible if the player was stopped by the user */
-        player->input = vlc_player_input_New(player, player->media);
+        player->input = vlc_player_input_New(player, player->media, false);
 
         if (!player->input)
             return VLC_ENOMEM;
@@ -1181,6 +1207,7 @@ vlc_player_Start(vlc_player_t *player)
     if (ret == VLC_SUCCESS)
     {
         player->started = true;
+        vlc_player_PrepareNextMedia(player);
         vlc_player_osd_Icon(player, OSD_PLAY_ICON);
     }
     return ret;
@@ -1213,6 +1240,26 @@ vlc_player_SetMediaStoppedAction(vlc_player_t *player,
     var_SetBool(player, "play-and-pause",
                 action == VLC_PLAYER_MEDIA_STOPPED_PAUSE);
     vlc_player_SendEvent(player, on_media_stopped_action_changed, action);
+}
+
+void
+vlc_player_CancelGapless(vlc_player_t *player)
+{
+    if (player->next_input)
+    {
+        vlc_player_destructor_AddInput(player, player->next_input);
+        player->next_input = NULL;
+    }
+}
+
+void
+vlc_player_SetGaplessEnabled(vlc_player_t *player, bool enabled)
+{
+    vlc_player_assert_locked(player);
+    player->gapless_enabled = enabled;
+
+    if (!enabled)
+        vlc_player_CancelGapless(player);
 }
 
 void
@@ -1456,6 +1503,9 @@ vlc_player_SetRenderer(vlc_player_t *player, vlc_renderer_item_t *renderer)
     if (player->renderer)
         vlc_renderer_item_release(player->renderer);
     player->renderer = renderer ? vlc_renderer_item_hold(renderer) : NULL;
+
+    if (player->renderer)
+        vlc_player_CancelGapless(player);
 
     vlc_player_foreach_inputs(input)
     {
@@ -1885,6 +1935,9 @@ vlc_player_Delete(vlc_player_t *player)
         player->input = NULL;
     }
 
+    if (player->next_input)
+        vlc_player_destructor_AddInput(player, player->next_input);
+
     player->deleting = true;
     vlc_cond_signal(&player->destructor.wait);
 
@@ -1950,13 +2003,15 @@ vlc_player_New(vlc_object_t *parent, enum vlc_player_lock_type lock_type,
     player->start_paused = false;
     player->pause_on_cork = false;
     player->corked = false;
+    player->gapless_enabled = false;
     player->renderer = NULL;
     player->media_provider = media_provider;
     player->media_provider_data = media_provider_data;
     player->media = NULL;
-    player->input = NULL;
+    player->input = player->next_input = NULL;
     player->global_state = VLC_PLAYER_STATE_STOPPED;
     player->started = false;
+    player->gapless_failed = false;
 
     player->last_eos = VLC_TICK_INVALID;
     player->eos_burst_count = 0;

@@ -62,6 +62,7 @@ struct vlc_player_input
 
     /* Monitor the OPENING_S -> PLAYING_S transition. */
     bool playing;
+    input_item_node_t *subitems; /* subitems saved during gapless transition */
 
     enum vlc_player_state state;
     enum vlc_player_error error;
@@ -245,6 +246,8 @@ struct vlc_player_t
 
     bool pause_on_cork;
     bool corked;
+    bool gapless_enabled;
+    bool gapless_failed;
 
     struct vlc_list listeners;
     struct vlc_list metadata_listeners;
@@ -256,6 +259,7 @@ struct vlc_player_t
 
     input_item_t *media;
     struct vlc_player_input *input;
+    struct vlc_player_input *next_input;
 
     bool releasing_media;
     bool next_media_requested;
@@ -344,10 +348,13 @@ vlc_object_t *
 vlc_player_GetObject(vlc_player_t *player);
 
 int
-vlc_player_OpenNextMedia(vlc_player_t *player);
+vlc_player_SwitchNextMedia(vlc_player_t *player);
 
 void
 vlc_player_PrepareNextMedia(vlc_player_t *player);
+
+void
+vlc_player_CancelGapless(vlc_player_t *player);
 
 void
 vlc_player_destructor_AddStoppingInput(vlc_player_t *player,
@@ -423,7 +430,7 @@ vlc_player_input_FindTrackById(struct vlc_player_input *input, vlc_es_id_t *id,
                                size_t *idx);
 
 struct vlc_player_input *
-vlc_player_input_New(vlc_player_t *player, input_item_t *item);
+vlc_player_input_New(vlc_player_t *player, input_item_t *item, bool gapless);
 
 void
 vlc_player_input_Delete(struct vlc_player_input *input);
