@@ -252,6 +252,26 @@ VLC_API void config_ResetAll(void);
 VLC_API module_config_t *config_FindConfig(const char *name) VLC_USED;
 
 /**
+ * Check item's modified state.
+ *
+ * This function checks whether or not an item's saved state is considered to
+ * be default or modified. Currently we consider state to be modified only if
+ * the value is different from it's default value.
+ *
+ * \warning The check is performed without locking. Callers are responsibile for
+ * ensuring thread safety. Note that whilst most item attributes remain constant
+ * throughout the lifetime of the core config database, the `value` attribute
+ * stands out as mutable and therefore is a thread safety concern. Safe use of
+ * this function thus requires either holding the config lock (applicable within
+ * the core only), or otherwise having suitably exclusive access to the item's
+ * value.
+ *
+ * \param item Configuration item
+ * \retval true if modified, false if unmodified (default).
+ */
+VLC_API bool vlc_config_ItemIsModified(const module_config_t *item);
+
+/**
  * System directory identifiers
  */
 typedef enum vlc_system_dir
