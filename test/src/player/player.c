@@ -1039,6 +1039,7 @@ test_end(struct ctx *ctx)
 
     player_set_rate(ctx, 1.0f);
     vlc_player_SetStartPaused(player, false);
+    vlc_player_SetGaplessEnabled(player, false);
 
     ctx_reset(ctx);
 }
@@ -1863,17 +1864,37 @@ test_seeks(struct ctx *ctx)
     free(media_name); \
 } while(0)
 
+#define TEST_NEXT_MEDIA_GAPLESS 0x1
+#define TEST_NEXT_MEDIA_WITH_ERRORS 0x2
+
 static void
-test_next_media(struct ctx *ctx)
+test_next_media(struct ctx *ctx, int flag)
 {
-    test_log("next_media\n");
-    const char *media_names[] = { "media1", "media2", "media3" };
-    const size_t media_count = ARRAY_SIZE(media_names);
+    const bool gapless = flag & TEST_NEXT_MEDIA_GAPLESS;
+    const bool with_errors = flag & TEST_NEXT_MEDIA_WITH_ERRORS;
+
+    test_log("next_media%s%s\n", gapless ? " with gapless" : "",
+             with_errors ? " with errors" : "");
+
+    static const char *media_names_errors[] =
+        { "media1", "error", "media2", "error", "media3" };
+    static const char *media_names_no_errors[] =
+        { "media1", "media2", "media3" };
+
+    const char *const *media_names = with_errors ? media_names_errors :
+        media_names_no_errors;
+    const size_t media_count = with_errors ? ARRAY_SIZE(media_names_errors) :
+        ARRAY_SIZE(media_names_no_errors);
 
     struct media_params params = DEFAULT_MEDIA_PARAMS(VLC_TICK_FROM_MS(100));
 
+    vlc_player_SetGaplessEnabled(ctx->player, gapless);
+
     for (size_t i = 0; i < media_count; ++i)
+    {
+        params.error = strcmp(media_names[i], "error") == 0;
         player_set_next_mock_media(ctx, media_names[i], &params);
+    }
     player_set_rate(ctx, 4.f);
     player_start(ctx);
 
@@ -2910,7 +2931,10 @@ main(void)
 
     test_same_media(&ctx);
     test_set_current_media(&ctx);
-    test_next_media(&ctx);
+    test_next_media(&ctx, 0);
+    test_next_media(&ctx, TEST_NEXT_MEDIA_GAPLESS);
+    test_next_media(&ctx, TEST_NEXT_MEDIA_WITH_ERRORS);
+    test_next_media(&ctx, TEST_NEXT_MEDIA_GAPLESS|TEST_NEXT_MEDIA_WITH_ERRORS);
     test_seeks(&ctx);
     test_pause(&ctx);
     test_capabilities_pause(&ctx);
