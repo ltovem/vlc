@@ -163,6 +163,7 @@ OnParserSubtreeAdded(input_item_t *item, input_item_node_t *subtree,
 
     if (task->cbs && task->cbs->on_subtree_added)
         task->cbs->on_subtree_added(task->item, subtree, task->userdata);
+    input_item_node_Delete(subtree);
 }
 
 static void
