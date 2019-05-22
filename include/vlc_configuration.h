@@ -185,6 +185,9 @@ VLC_API char *config_GetPsz(const char *name) VLC_USED VLC_MALLOC;
  * This function changes the current value of a configuration item of
  * string type (e.g. \ref CONFIG_ITEM_STRING).
  *
+ * A copy will be made of the provided string (`strdup()`). The existing
+ * string will be deallocated.
+ *
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of a string type.
  *
