@@ -122,9 +122,6 @@ VLC_API int64_t config_GetInt(const char *name) VLC_USED;
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of integer or boolean type.
  *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
- *
  * \param name Configuration item name
  * \param val New value
  */
@@ -154,9 +151,6 @@ VLC_API float config_GetFloat(const char *name) VLC_USED;
  *
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of floating point type.
- *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
  *
  * \param name Configuration item name
  * \param val New value
@@ -193,9 +187,6 @@ VLC_API char *config_GetPsz(const char *name) VLC_USED VLC_MALLOC;
  *
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of a string type.
- *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
  *
  * \param name Configuration item name
  * \param val New value (will be copied)
