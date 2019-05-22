@@ -173,7 +173,7 @@ VLC_API void config_PutFloat(const char *name, float val);
  *
  * \param name Configuration item name
  * \return Normally, a heap-allocated copy of the configuration item value.
- * If the value is the empty string, if the configuration does not exist,
+ * If the value is the empty string,
  * or if an error occurs, NULL is returned.
  * \bug The empty string value cannot be distinguished from an error.
  */
