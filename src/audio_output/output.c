@@ -35,6 +35,14 @@
 #include "libvlc.h"
 #include "aout_internal.h"
 
+#define aout_owner_Notify(owner, event_name, ...) \
+    if (owner->events.cbs != NULL && owner->events.cbs->event_name != NULL) \
+    { \
+        owner->events.cbs->event_name( \
+            &container_of(owner, aout_instance_t, owner)->output, \
+            __VA_ARGS__, owner->events.opaque); \
+    }
+
 typedef struct aout_dev
 {
     struct vlc_list node;
@@ -114,7 +122,9 @@ static void aout_HotplugNotify (audio_output_t *aout,
         }
     }
 
-    if (name != NULL)
+    bool is_plugged = name != NULL;
+
+    if (is_plugged)
     {
         if (dev == NULL) /* Added device */
         {
@@ -124,9 +134,15 @@ static void aout_HotplugNotify (audio_output_t *aout,
             strcpy (dev->id, id);
             vlc_list_append(&dev->node, &owner->dev.list);
             owner->dev.count++;
+            msg_Dbg(aout, "new audio device available: %s", name);
+            aout_owner_Notify(owner, on_device_hotplug, dev->id, name, true);
         }
         else /* Modified device */
+        {
+            // TODO: handle rename ?
+            msg_Dbg(aout, "signaling audio device renaming is currently not supported");
             free (dev->name);
+        }
         dev->name = strdup (name);
     }
     else
@@ -135,6 +151,8 @@ static void aout_HotplugNotify (audio_output_t *aout,
         {
             owner->dev.count--;
             vlc_list_remove(&dev->node);
+            msg_Dbg(aout, "the audio device %s has been unplugged", dev->name);
+            aout_owner_Notify(owner, on_device_hotplug, dev->id, name, false);
             free (dev->name);
             free (dev);
         }
@@ -256,6 +274,7 @@ audio_output_t *aout_New (vlc_object_t *parent, void *opaque,
     var_Create (aout, "device", VLC_VAR_STRING);
     var_AddCallback (aout, "device", var_CopyDevice, parent);
 
+    /* Signal to the aout that we want notification for its events. */
     aout->events = &aout_events;
 
     /* Audio output module initialization */
