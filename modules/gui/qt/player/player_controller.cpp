@@ -865,6 +865,16 @@ static void on_player_corks_changed(vlc_player_t *, unsigned, void *data)
     msg_Dbg( that->p_intf, "on_player_corks_changed");
 }
 
+static void on_player_device_hotplugged(audio_output_t *, const char *device_id,
+                                        const char *device_name, bool plugged,
+                                        void *data)
+{
+    PlayerControllerPrivate* that = static_cast<PlayerControllerPrivate*>(data);
+    msg_Err( that->p_intf, "on_player_device_hotplugged: %s has been %s",
+             device_name, plugged ? "plugged" : "unplugged" );
+}
+
+
 static void on_player_playback_restore_queried(vlc_player_t *, void *data)
 {
     PlayerControllerPrivate* that = static_cast<PlayerControllerPrivate*>(data);
@@ -999,6 +1009,7 @@ static const vlc_player_aout_cbs player_aout_cbs = []{
     struct vlc_player_aout_cbs cbs{};
     cbs.on_volume_changed = on_player_aout_volume_changed;
     cbs.on_mute_changed = on_player_aout_mute_changed;
+    cbs.on_device_hotplugged = on_player_device_hotplugged;
     return cbs;
 }();
 
