@@ -1999,7 +1999,7 @@ vlc_player_New(vlc_object_t *parent, enum vlc_player_lock_type lock_type,
     }
 #undef VAR_CREATE
 
-    player->resource = input_resource_New(VLC_OBJECT(player));
+    player->resource = input_resource_New(VLC_OBJECT(player), NULL, NULL);
 
     if (!player->resource)
         goto error;

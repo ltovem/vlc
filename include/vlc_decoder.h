@@ -53,7 +53,10 @@ VLC_API int  vlc_input_decoder_SetSpuHighlight( vlc_input_decoder_t *, const vlc
  * The given object MUST stay alive as long as the input_resource_t is
  * not deleted.
  */
-VLC_API input_resource_t * input_resource_New( vlc_object_t * ) VLC_USED;
+struct vlc_audio_output_callbacks;
+VLC_API input_resource_t * input_resource_New( vlc_object_t *,
+        void *audio_opaque, const struct vlc_audio_output_callbacks *audio_cbs)
+    VLC_USED;
 
 /**
  * It releases an input resource.

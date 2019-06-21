@@ -83,6 +83,11 @@ struct input_resource_t
 
     bool            b_aout_busy;
     audio_output_t *p_aout;
+
+    struct {
+        void *opaque;
+        const struct vlc_audio_output_callbacks *cbs;
+    } audio;
 };
 
 #define resource_GetFirstVoutRsc(resource) \
@@ -217,7 +222,8 @@ audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
         msg_Dbg( p_resource->p_parent, "creating audio output" );
         vlc_mutex_unlock( &p_resource->lock_hold );
 
-        p_aout = aout_New( p_resource->p_parent, NULL, NULL );
+        p_aout = aout_New( p_resource->p_parent, p_resource->audio.opaque,
+                           p_resource->audio.cbs );
         if( p_aout == NULL )
             return NULL; /* failed */
 
@@ -288,7 +294,8 @@ void input_resource_ResetAout( input_resource_t *p_resource )
 }
 
 /* Common */
-input_resource_t *input_resource_New( vlc_object_t *p_parent )
+input_resource_t *input_resource_New( vlc_object_t *p_parent,
+        void *audio_opaque, const struct vlc_audio_output_callbacks *audio_cbs )
 {
     input_resource_t *p_resource = calloc( 1, sizeof(*p_resource) );
     if( !p_resource )
@@ -305,6 +312,8 @@ input_resource_t *input_resource_New( vlc_object_t *p_parent )
 
     vlc_atomic_rc_init( &p_resource->rc );
     p_resource->p_parent = p_parent;
+    p_resource->audio.opaque = audio_opaque;
+    p_resource->audio.cbs = audio_cbs;
     vlc_mutex_init( &p_resource->lock );
     vlc_mutex_init( &p_resource->lock_hold );
     return p_resource;
