@@ -119,6 +119,14 @@ vlc_player_AoutCallback(vlc_object_t *this, const char *var,
     (void) this;
 }
 
+static void vlc_player_aout_OnDeviceHotplug(audio_output_t *aout,
+    const char *device_id, const char *device_name, bool plugged, void *opaque)
+{
+    vlc_player_t *player = opaque;
+    vlc_player_aout_SendEvent(player, on_device_hotplugged,
+                              aout, device_id, device_name, plugged);
+}
+
 float
 vlc_player_aout_GetVolume(vlc_player_t *player)
 {
@@ -248,3 +256,7 @@ vlc_player_aout_Reset(vlc_player_t *player)
     vlc_player_aout_Init(player);
 }
 
+const struct vlc_audio_output_callbacks vlc_player_audio_cbs =
+{
+    .on_device_hotplug = vlc_player_aout_OnDeviceHotplug,
+};
