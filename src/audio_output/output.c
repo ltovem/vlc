@@ -223,7 +223,8 @@ static int ViewpointCallback (vlc_object_t *obj, const char *var,
 /**
  * Creates an audio output object and initializes an output module.
  */
-audio_output_t *aout_New (vlc_object_t *parent)
+audio_output_t *aout_New (vlc_object_t *parent, void *opaque,
+                          const struct vlc_audio_output_callbacks *cbs)
 {
     vlc_value_t val;
 
@@ -233,6 +234,10 @@ audio_output_t *aout_New (vlc_object_t *parent)
         return NULL;
 
     aout_owner_t *owner = aout_owner (aout);
+
+    /* Those are signalling the aout state change to the interfaces. */
+    owner->events.opaque = opaque;
+    owner->events.cbs = cbs;
 
     vlc_mutex_init (&owner->lock);
     vlc_mutex_init (&owner->dev.lock);

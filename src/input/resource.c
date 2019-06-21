@@ -217,7 +217,7 @@ audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
         msg_Dbg( p_resource->p_parent, "creating audio output" );
         vlc_mutex_unlock( &p_resource->lock_hold );
 
-        p_aout = aout_New( p_resource->p_parent );
+        p_aout = aout_New( p_resource->p_parent, NULL, NULL );
         if( p_aout == NULL )
             return NULL; /* failed */
 
