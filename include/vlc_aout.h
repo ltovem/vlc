@@ -131,6 +131,11 @@ struct vlc_audio_output_events {
     int (*gain_request)(audio_output_t *, float);
 };
 
+struct vlc_audio_output_callbacks {
+    void (*on_device_hotplug)(audio_output_t *, const char *dev_id,
+            const char *dev_name, bool plugged, void *opaque);
+};
+
 /** Audio output object
  *
  * The audio output object is the abstraction for rendering decoded
