@@ -108,6 +108,7 @@ struct sout_stream_sys_t
         , venc_opt_idx ( -1 )
         , out_streams_added( 0 )
         , out_spu_stream( NULL )
+        , m_first_spu_data ( NULL )
     {
         assert(p_intf != NULL);
         vlc_mutex_init(&lock);
@@ -132,6 +133,8 @@ struct sout_stream_sys_t
     bool startSoutSpuChain(sout_stream_t* p_stream,
                            sout_stream_id_sys_t *stream, const std::string &sout);
     void stopSoutSpuChain(sout_stream_t* p_stream);
+
+    void fixBlockTS(block_t* p_buffer, bool relative = false);
 
     httpd_host_t      *httpd_host;
     httpd_host_t      *httpd_host_vtt;
@@ -165,6 +168,7 @@ struct sout_stream_sys_t
     unsigned int                       out_streams_added;
     unsigned int                       spu_streams_count;
     sout_stream_id_sys_t              *out_spu_stream;
+    block_t                           *m_first_spu_data;
 
 private:
     std::string GetAcodecOption( sout_stream_t *, vlc_fourcc_t *, const audio_format_t *, int );
@@ -302,12 +306,6 @@ static int ProxySend(sout_stream_t *p_stream, void *_id, block_t *p_buffer)
                 return VLC_SUCCESS;
             }
         }
-
-        vlc_tick_t pause_delay = p_sys->p_intf->getPauseDelay();
-        if( p_buffer->i_pts != VLC_TICK_INVALID )
-            p_buffer->i_pts -= pause_delay;
-        if( p_buffer->i_dts != VLC_TICK_INVALID )
-            p_buffer->i_dts -= pause_delay;
 
         int ret = sout_StreamIdSend(p_stream->p_next, id, p_buffer);
         if (ret == VLC_SUCCESS && !p_sys->cc_has_input)
@@ -932,6 +930,8 @@ bool sout_stream_sys_t::startSoutChain(sout_stream_t *p_stream,
 {
     stopSoutChain( p_stream );
 
+    p_intf->resetPauseDelay();
+
     msg_Dbg( p_stream, "Creating chain %s", sout.c_str() );
     cc_has_input = false;
     first_video_keyframe_pts = -1;
@@ -1278,6 +1278,23 @@ bool sout_stream_sys_t::isFlushing( sout_stream_t *p_stream )
 
     return false;
 }
+void sout_stream_sys_t::fixBlockTS(block_t* p_buffer, bool relative)
+{
+    vlc_tick_t delay = 0;
+    vlc_tick_t pause_delay = p_intf->getPauseDelay();
+
+    if (pause_delay != VLC_TICK_INVALID)
+        delay = pause_delay;
+
+    if (relative && first_video_keyframe_pts > 0)
+        delay += first_video_keyframe_pts;
+
+    if( p_buffer->i_pts != VLC_TICK_INVALID )
+        p_buffer->i_pts -= delay;
+    if( p_buffer->i_dts != VLC_TICK_INVALID )
+        p_buffer->i_dts -= delay;
+
+}
 
 static int Send(sout_stream_t *p_stream, void *_id, block_t *p_buffer)
 {
@@ -1297,18 +1314,36 @@ static int Send(sout_stream_t *p_stream, void *_id, block_t *p_buffer)
         block_ChainRelease( p_buffer );
         return VLC_EGENERIC;
     }
+    if (p_sys->m_first_spu_data && p_sys->first_video_keyframe_pts != -1) {
+
+        block_t* p_curr = p_sys->m_first_spu_data;
+        while (p_curr){
+            p_sys->fixBlockTS(p_curr, true);
+
+            block_t* p_next = p_curr->p_next;
+            p_curr->p_next = NULL;
+
+            sout_StreamIdSend(p_sys->out_spu_stream->p_out,
+                    p_sys->out_spu_stream->p_sub_id,
+                    p_curr);
+
+            p_curr = p_next;
+        }
+
+        p_sys->m_first_spu_data = NULL;
+    }
+
     if( p_sys->out_spu_stream && next_id == p_sys->out_spu_stream->p_sub_id )
     {
         if( p_sys->first_video_keyframe_pts == -1 )
         {
-            block_ChainRelease( p_buffer );
+            block_ChainAppend(&p_sys->m_first_spu_data, p_buffer);
             return VLC_SUCCESS;
         }
-        vlc_tick_t pause_delay = p_sys->p_intf->getPauseDelay();
-        if( p_buffer->i_pts != VLC_TICK_INVALID )
-            p_buffer->i_pts -= (p_sys->first_video_keyframe_pts+pause_delay);
-        if( p_buffer->i_dts != VLC_TICK_INVALID )
-            p_buffer->i_dts -= (p_sys->first_video_keyframe_pts+pause_delay);
+        p_sys->fixBlockTS(p_buffer, true);
+    } else {
+        p_sys->fixBlockTS(p_buffer);
+
     }
 
     int ret = sout_StreamIdSend(id->p_out, next_id, p_buffer);
