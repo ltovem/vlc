@@ -423,7 +423,7 @@ out:
  * 1 if more would-be blocking recv is needed,
  * 2 if more would-be blocking send is required.
  */
-static int st_Handshake (vlc_tls_t *session,
+static int st_Handshake (struct vlc_tls_client *crt, vlc_tls_t *session,
                          const char *host, const char *service,
                          char **restrict alp) {
 
@@ -476,6 +476,9 @@ static int st_Handshake (vlc_tls_t *session,
     switch (retValue) {
         case noErr:
             if (sys->b_server_mode == false && st_validateServerCertificate(session, host) != 0) {
+                if (crt != NULL && crt->insecure) {
+                    msg_Dbg(sys->obj, "ignoring invalid certificate");
+                }
                 return -1;
             }
             msg_Dbg(sys->obj, "handshake completed successfully");
@@ -484,7 +487,7 @@ static int st_Handshake (vlc_tls_t *session,
 
         case errSSLServerAuthCompleted:
             msg_Dbg(sys->obj, "SSLHandshake returned errSSLServerAuthCompleted, continuing handshake");
-            return st_Handshake(session, host, service, alp);
+            return st_Handshake(crt, session, host, service, alp);
 
         case errSSLConnectionRefused:
             msg_Err(sys->obj, "connection was refused");
@@ -873,7 +876,7 @@ error:
 
 static int st_ServerHandshake (vlc_tls_t *session, char **restrict alp) {
 
-    return st_Handshake(session, NULL, NULL, alp);
+    return st_Handshake(NULL, session, NULL, NULL, alp);
 }
 
 static void st_ServerDestroy (vlc_tls_server_t *crd) {
