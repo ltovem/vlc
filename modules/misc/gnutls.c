@@ -763,7 +763,7 @@ vlc_module_begin ()
              SYSTEM_TRUST_LONGTEXT)
     add_string("gnutls-dir-trust", NULL, DIR_TRUST_TEXT,
                DIR_TRUST_LONGTEXT)
-    add_string ("gnutls-priorities", "NORMAL", PRIORITIES_TEXT,
+    add_string ("gnutls-priorities", "@SYSTEM", PRIORITIES_TEXT,
                 PRIORITIES_LONGTEXT)
         change_string_list (priorities_values, priorities_text)
 #ifdef ENABLE_SOUT
