@@ -1,0 +1,20 @@
+<script type="text/x-template" id="video-item-list-template">
+    <div class="row align-items-center list-table-item">
+      <div class="d-flex justify-content-between col-2">
+        <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
+          <play-button class="item-primary-action item-action m-auto" :item="item"></play-button>
+        </div>
+      </div>
+      <div class="col-6">
+        <span>{{ item.title }}</span>
+      </div>
+      <div class="col-2 text-center">{{ item.duration | formatDuration }}</div>
+      <div class="text-muted col-2">
+        <div class="d-flex justify-content-between">
+          <div class="item-action">
+            <svg-icon name="more-horizontal"></svg-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+</script>

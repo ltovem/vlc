@@ -1,9 +1,25 @@
 // components.scss
 
+@import '../components/albums/albums.component.scss';
+@import '../components/albums/album-item/album-item.component.scss';
+@import '../components/artists/artist-item/artist-item-grid.component.scss';
+@import '../components/artists/detail/artists-detail.component.scss';
+@import '../components/library/library.component.scss';
+@import '../components/library/library-item/library-item.component.scss';
+@import '../components/media-player/media-player.component.scss';
+@import '../components/enqueue-button/enqueue-button.component.scss';
+@import '../components/play-button/play-button-secondary.component.scss';
+@import '../components/play-button/play-button.component.scss';
 @import '../components/playlist/playlist.component.scss';
+@import '../components/playlist/playlist-video-item.component.scss';
+@import '../components/playlist/playlist-audio-item.component.scss';
+@import '../components/playlist/buttons.playlist.component.scss';
+@import '../components/playlists/playlists-item/playlists-item.component.scss';
 @import '../components/vlm/vlm.component.scss';
 @import '../components/svg-icon/svg-icon.component.scss';
 
+@import '../routes/browse/browse-view.component.scss';
+@import '../routes/discover/services/discover-services-view.component.scss';
 @import './collapse.scss';
 @import './grid-item.scss';
 @import './list-item.scss';

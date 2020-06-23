@@ -1,75 +1,172 @@
-import { plyrInit } from '../components/player/plyr.methods.js';
-import { notifyBus } from './bus.service.js';
+import BrowseViewComponent from '../routes/browse/browse-view.component.js';
+import VideoViewComponent from '../routes/video/video-view.component.js';
+import WatchViewComponent from '../routes/watch/watch-view.component.js';
 
-export const VIDEO_TYPES = [
-    'asf', 'avi', 'bik', 'bin', 'divx', 'drc', 'dv', 'f4v', 'flv', 'gxf', 'iso',
-    'm1v', 'm2v', 'm2t', 'm2ts', 'm4v', 'mkv', 'mov',
-    'mp2', 'mp4', 'mpeg', 'mpeg1',
-    'mpeg2', 'mpeg4', 'mpg', 'mts', 'mtv', 'mxf', 'mxg', 'nuv',
-    'ogg', 'ogm', 'ogv', 'ogx', 'ps',
-    'rec', 'rm', 'rmvb', 'rpl', 'thp', 'ts', 'txd', 'vob', 'wmv', 'xesc'
+import store from '../store/index.js';
+import MusicViewComponent from '../routes/music/music-view.component.js';
+import DiscoverViewComponent from '../routes/discover/discover-view.component.js';
+import DiscoverHomeViewComponent from '../routes/discover/home/discover-home-view.component.js';
+import DiscoverServicesViewComponent from '../routes/discover/services/discover-services-view.component.js';
+import DiscoverServicesTvViewComponent from '../routes/discover/services/tv/discover-services-tv-view.component.js';
+import DiscoverUrlViewComponent from '../routes/discover/url/discover-url-view.component.js';
+
+import MusicAlbumsViewComponent from '../routes/music/albums/music-albums-view.component.js';
+import MusicArtistsViewComponent from '../routes/music/artists/music-artists-view.component.js';
+import MusicArtistsDetailViewComponent from '../routes/music/artists/detail/music-artists-detail-view.component.js';
+import MusicGenresViewComponent from '../routes/music/genres/music-genres-view.component.js';
+import MusicTracksViewComponent from '../routes/music/tracks/music-tracks-view.component.js';
+
+import NetworkViewComponent from '../routes/network/network-view.component.js';
+import VideoMoviesComponent from '../routes/video/movies/video-movies-view.component.js';
+import VideoTvshowsComponent from '../routes/video/tvshows/video-tvshows-view.component.js';
+import VideoAllComponent from '../routes/video/all/video-all-view.component.js';
+import MusicPlaylistsViewComponent from '../routes/music/playlists/music-playlists-view.component.js';
+import VideoPlaylistsComponent from '../routes/video/playlists/video-playlists-view.component.js';
+
+const routes = [
+
+    {
+        path: '/',
+        component: BrowseViewComponent,
+        redirect: '/video',
+        children: [
+            {
+                path: 'music',
+                component: MusicViewComponent,
+                redirect: 'music/albums',
+                children: [
+                    {
+                        path: 'albums',
+                        component: MusicAlbumsViewComponent
+                    },
+                    {
+                        path: 'artists',
+                        component: MusicArtistsViewComponent,
+                    },
+                    {
+                        path: 'artists/:id',
+                        component: MusicArtistsDetailViewComponent
+                    },
+                    {
+                        path: 'genres',
+                        component: MusicGenresViewComponent
+                    },
+                    {
+                        path: 'tracks',
+                        component: MusicTracksViewComponent
+                    },
+                    {
+                        path: 'playlists',
+                        component: MusicPlaylistsViewComponent
+                    }
+                ]
+            },
+            {
+                path: 'video',
+                component: VideoViewComponent,
+                redirect: 'video/all',
+                children: [
+                    {
+                        path: 'all',
+                        component: VideoAllComponent
+                    },
+                    {
+                        path: 'movies',
+                        component: VideoMoviesComponent
+                    },
+                    {
+                        path: 'tvshows',
+                        component: VideoTvshowsComponent
+                    },
+                    {
+                        path: 'playlists',
+                        component: VideoPlaylistsComponent
+                    }
+                ]
+            },
+            {
+                path: 'network',
+                component: NetworkViewComponent
+            },
+            {
+                path: 'discover',
+                component: DiscoverViewComponent,
+                redirect: 'discover/home',
+                children: [
+                    {
+                        path: 'home',
+                        component: DiscoverHomeViewComponent
+                    },
+                    {
+                        path: 'services',
+                        component: DiscoverServicesViewComponent
+                    },
+                    {
+                        path: 'services/tv',
+                        component: DiscoverServicesTvViewComponent
+                    },
+                    {
+                        path: 'url',
+                        component: DiscoverUrlViewComponent
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        path: '/watch',
+        component: WatchViewComponent
+    }
 ];
 
-export const AUDIO_TYPES = [
-    '3ga', 'a52', 'aac', 'ac3', 'ape', 'awb', 'dts', 'flac', 'it',
-    'm4a', 'm4p', 'mka', 'mlp', 'mod', 'mp1', 'mp2', 'mp3',
-    'oga', 'ogg', 'oma', 's3m', 'spx', 'thd', 'tta',
-    'wav', 'wma', 'wv', 'xm'
-];
-
-export const PLAYLIST_TYPES = [
-    'asx', 'b4s', 'cue', 'ifo', 'm3u', 'm3u8', 'pls', 'ram', 'rar',
-    'sdp', 'vlc', 'xspf', 'zip', 'conf'
-];
+const router = new VueRouter({
+    routes
+})
 
 function vueInit() {
     return new Vue({
+        router,
         el: '#app',
         data: {
             playlistItems: []
-        }
+        },
+        store,
+        mounted() { }
     });
 }
 
 $(() => {
-    plyrInit();
     vueInit();
+    let didScroll;
+    let lastScrollTop = 0;
+    const delta = 5;
+    const navbarHeight = $('.fixed-top.secondary-navbar').outerHeight();
 
-    $('#openNavButton').on('click', () => {
-        if ($(window).width() <= 480 && $('#playlistNav').css('width') === '60%') {
-            notifyBus('closePlaylist');
-            notifyBus('openNav');
-        } else {
-            notifyBus('openNav');
+    $(window).scroll(() => {
+        didScroll = true;
+    });
+
+    setInterval(() => {
+        if (didScroll) {
+            hasScrolled();
+            didScroll = false;
         }
-    });
+    }, 250);
 
-    $('#closeNavButton').on('click', () => {
-        notifyBus('closeNav');
-    });
-
-    $('#vlmButton').on('click', () => {
-        notifyBus('executeVLM');
-    });
-
-    $('#repeatButton').on('click', () => {
-        notifyBus('toggleRepeat');
-    });
-
-    $('#playButton').on('click', () => {
-        notifyBus('startPlaylist');
-    });
-
-    $('#randomButton').on('click', () => {
-        notifyBus('toggleRandom');
-    });
-
-    $('#mobilePlaylistNavButton').on('click', () => {
-        if ($(window).width() <= 480 && $('#sideNav').width() === '60%') {
-            notifyBus('closeNav');
-            notifyBus('openPlaylist');
-        } else {
-            notifyBus('openPlaylist');
+    function hasScrolled() {
+        const sValue = $(this).scrollTop();
+        const secondaryNavbar = $('.fixed-top.secondary-navbar');
+        if (Math.abs(lastScrollTop - sValue) <= delta) {
+            return;
         }
-    });
+
+        if (sValue > lastScrollTop && sValue > navbarHeight) {
+            secondaryNavbar.removeClass('nav-down').addClass('nav-up');
+        } else {
+            if (sValue + $(window).height() < $(document).height()) {
+                secondaryNavbar.removeClass('nav-up').addClass('nav-down');
+            }
+        }
+        lastScrollTop = sValue;
+    }
 });

@@ -1,0 +1,10 @@
+<script type="text/x-template" id="genres-template">
+    <div class="genres-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+        <div class="row" v-if="layout.itemLayout === 'grid'">
+            <genre-item-grid v-for="(item, index) in music.genres" :item="item" :key="index"></genre-item-grid>
+        </div>
+    </div>
+</script>

@@ -1,0 +1,60 @@
+.artits-detail-view {
+    .artists-sidebar {
+        height: 100%;
+        background-color: var(--sidenav-bg-color);
+        overflow-y: auto;
+        box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+        position: fixed;
+    }
+    .artist-list-item a {
+        $spacing: 15px;
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        font-size: 12px;
+        text-decoration: none;
+        margin-left: -$spacing;
+        margin-right: -$spacing;
+        padding-left: $spacing;
+        padding-right: $spacing;
+        color: var(--primary-text-color);
+        &.active {
+            background-color: var(--playlist-active-bg-color);
+            .artist-img {
+                border: 1px solid var(--highlight-color);
+            }
+        }
+    }
+    img.artist-img,
+    .artist-img > svg {
+        width: 24px;
+        height: 24px;
+        margin-top: 0;
+        margin-right: 10px;
+        border-radius: 50%;
+        border: 1px solid rgb(151, 151, 151);
+    }
+    .artist-img > svg {
+        padding-top: 3px;
+    }
+}
+
+.artits-detail-view {
+    .col-10 {
+        margin-left: 16.6666666667%;
+    }
+}
+.collapse {
+    .artits-detail-view {
+        .col-10 {
+            margin-left: 16.6666666667%;
+        }
+    }
+    &.show {
+        .artits-detail-view {
+            .col-10 {
+                margin-left: 20%;
+            }
+        }
+    }
+}

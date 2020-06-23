@@ -1,0 +1,33 @@
+.create-item {
+    .svg-icon {
+        color: var(--highlight-color) !important;
+    }
+}
+.tv-service {
+    background-color: #7b5398;
+}
+.radio-service {
+    background-color: #fb610b;
+}
+.podcast-service {
+    background-color: #c1428d;
+}
+.audiobook-service {
+    background-color: #c1428d;
+}
+.youtube-service {
+    background-color: #fb0001;
+}
+.twitch-service {
+    background-color: #9146ff;
+}
+.discover-service-item {
+    .svg-icon {
+        width: 2.8rem;
+        height: 2.8rem;
+        color: #fff;
+        &:hover, &:focus {
+            color: #fff;
+        }
+    }
+}

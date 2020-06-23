@@ -1,0 +1,25 @@
+<script type="text/x-template" id="tracks-template">
+    <div class="tracks-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+        <div class="row" v-if="displayMode === 'table'">
+            <table class="table table-hover table-item">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Artist</th>
+                    <th scope="col">Album</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Track</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <track-item-table v-for="(item, index) in music.tracks" :item="item" :key="index" :index="index"></track-item-table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>

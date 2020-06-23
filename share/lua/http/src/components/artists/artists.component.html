@@ -1,0 +1,10 @@
+<script type="text/x-template" id="artists-template">
+    <div class="artits-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+        <div class="row" v-if="layout.itemLayout === 'grid'">
+            <artist-item-grid v-for="(item, index) in music.artists" :item="item" :key="index"></artist-item-grid>
+        </div>
+    </div>
+</script>

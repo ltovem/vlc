@@ -1,0 +1,10 @@
+<script type="text/x-template" id="discover-services-tv-view-template">
+    <div class="discover-services-tv-view container-fluid">
+        <div v-if="displayMode === 'list'" class="row">
+            <grid-list v-for="(item, index) in items" :item="item" :key="index"></grid-list>
+        </div>
+        <div class="row" v-if="displayMode === 'grid'">
+            <grid-item v-for="(item, index) in items" :item="item" :key="index"></grid-item>
+        </div>
+    </div>
+</script>

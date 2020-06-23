@@ -1,0 +1,14 @@
+<script type="text/x-template" id="grid-item-template">
+    <div class="grid-item discover-services-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+        <div :class="item.additionalClass" class="item-img embed-responsive embed-responsive-1by1 img-contain">
+            <img v-if="item.src" class="embed-responsive-item p-4" :src="item.src">
+            <div v-else="item.icon" class="embed-responsive-item" :class="item.additionalItemClass">
+                <svg-icon :name="item.icon"></svg-icon>
+            </div>
+        </div>
+        <div class="item-body">
+            <router-link :to="item.titleRoute || '/album'" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link v-if="item.subtitle" :to="item.subtitleRoute || '/artist'" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
+        </div>
+    </div>
+</script>

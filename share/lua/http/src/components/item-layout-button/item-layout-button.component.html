@@ -1,0 +1,6 @@
+<script type="text/x-template" id="item-layout-button-template">
+    <button v-on:click="toggleItemLayout()" class="btn btn-circle active">
+        <svg-icon v-if="layout && layout.itemLayout === 'list'" name="format_list_bulleted"></svg-icon>
+        <svg-icon v-if="layout && layout.itemLayout === 'grid'" name="grid_view"></svg-icon>
+    </button>
+</script>

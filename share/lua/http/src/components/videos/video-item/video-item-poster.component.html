@@ -1,0 +1,27 @@
+<script type="text/x-template" id="video-item-poster-template">
+    <div class="video-item grid-item poster-item video-item-poster-template">
+        <div class="item-img embed-responsive embed-responsive-4by6">
+            <img class="embed-responsive-item" :src="item.src">
+            <div class="overlay">
+                <play-button class="item-primary-action" :item="item"></play-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+            <div v-if="item.progress" class="item-progress-bar-container">
+                <div class="item-progress-bar" :style="{width: item.progress}"></div>
+            </div>
+        </div>
+        <div class="item-body px-2">
+            <span class="d-flex align-items-center justify-content-between">
+                <router-link to="/album" class="item-title text-truncate">
+                    <span>{{ item.title }}</span>
+                </router-link>
+                <span class="item-subtitle">{{ item.duration | formatDuration }}</span>
+            </span>
+            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+        </div>
+    </div>
+</script>

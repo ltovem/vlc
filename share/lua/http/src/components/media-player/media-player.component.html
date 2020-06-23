@@ -1,0 +1,66 @@
+<script type="text/x-template" id="media-player-template">
+    <div id="media-player" class="media-player">
+        <audio class="d-none" controls="false" ref="player" :src="src"></audio>
+        <div class="seek-bar">
+            <div class="seek-bar-track">
+                <div ref="progressBar" class="seek-bar-progress slider-fill"></div>
+                <div ref="bufferBar" class="seek-bar-buffer slider-fill"></div>
+            </div>
+            <input ref="scrubber" class="seek-bar-scrubber" type="range" min="0" max="1000" value="0"></input>
+        </div>
+        <div class="d-flex align-items-center justify-content-center media-player-container">
+            <div class="metadata d-flex flex-1">
+                <!-- Image + info -->
+                <img class="img" v-if="imageSrc" :src="imageSrc">
+                <svg-icon v-if="!imageSrc" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+                <span class="ml-2 d-flex flex-column justify-content-center">
+                    <span class="title font-weight-bold">{{ status.information && status.information.category && status.information.category.meta ? status.information.category.meta.filename : '' }} </span>
+                    <span class="subtitle muted-opacity"></span>
+                    <span class="subtitle2 muted-opacity">{{ formattedCurrentTime }} / {{ formattedDuration }}</span>
+                </span>
+            </div>
+            <div class="primary-actions d-flex flex-1 justify-content-center">
+                <!-- Primary actions -->
+                <button v-on:click="toggleRandom()" class="btn btn-link p-0 media-action" :class="{ active: status.random }">
+                    <svg-icon name="shuffle"></svg-icon>
+                </button>
+                <button class="btn btn-link p-0 media-action" v-on:click="previous()">
+                    <svg-icon name="skip_previous"></svg-icon>
+                </button>
+                <button class="btn btn-link p-0 media-action play-action" v-on:click="playing ? pause() : play()">
+                    <svg-icon v-if="status.state === 'playing'" name="pause"></svg-icon>
+                    <svg-icon v-else name="play_arrow"></svg-icon>
+                </button>
+                <button class="btn btn-link p-0 media-action" v-on:click="next()">
+                    <svg-icon name="skip_next"></svg-icon>
+                </button>
+                <button v-on:click="toggleRepeat()" class="btn btn-link p-0 media-action" :class="{ active: status.repeat }">
+                    <svg-icon name="repeat"></svg-icon>
+                </button>
+            </div>
+            <div class="secondary-actions d-flex flex-1 justify-content-end">
+                <!-- Secondary actions -->
+                <div class="media-action volume-container">
+                    <button class="btn btn-link p-0 media-action" v-on:click="toggleMute()">
+                        <svg-icon v-if="volumeIconState === 'mute'" name="volume_off"></svg-icon>
+                        <svg-icon v-if="volumeIconState === 'up'" name="volume_up"></svg-icon>
+                        <svg-icon v-if="volumeIconState === 'down'" name="volume_down"></svg-icon>
+                    </button>
+                    <div class="volume-panel">
+                        <div class="volume-slider">
+                            <div class="volume-slider-track-default"></div>
+                            <div ref="volumeBar" class="volume-slider-track-active"></div>
+                            <input ref="volume" class="volume-slider-input" type="range">
+                        </div>
+                    </div>
+                </div>
+                <button v-on:click="toggleFullscreen()" class="btn btn-link p-0 media-action" :class="{ active: status.fullscreen }">
+                    <svg-icon name="Icon-Fullscreen"></svg-icon>
+                </button>
+                <div class="media-action">
+                    <svg-icon name="more-vertical"></svg-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>

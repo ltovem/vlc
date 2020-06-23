@@ -1,0 +1,25 @@
+<!-- Playlist item Template -->
+<script type="text/x-template" id="playlist-video-item-template">
+    <button v-on:dblclick="play(item.uri, item.id)" class="btn btn-link pl-2 playlist-video-item list-item d-flex justify-content-between align-items-start position-relative"
+        :class="{ current: item.current === 'current', active: item.active }">
+        <div class="d-flex align-items-start w-100 mr-n3">
+            <div class="item-img" v-on:click="setActiveItem(item)">
+                <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
+                <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+                <div class="overlay">
+                    <play-button :item="item" class="item-primary-action item-action"></play-button>
+                </div>
+            </div>
+            <span class="item-duration">{{ item.duration | formatDuration }}</span>
+            <!-- <span class="item-nb">{{ index + 1 }}</span> -->
+            <div class="item-body d-flex flex-column mx-2 pt-1">
+                <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
+                <router-link to="" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
+            </div>
+        </div>
+        <div class="d-flex item-action pt-1">
+            <svg-icon name="more_vert"></svg-icon>
+        </div>
+        <div class="item-progress-bar" :style="{width: item.progress}"></div>
+    </button>
+</script>

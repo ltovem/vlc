@@ -53,7 +53,7 @@
             overflow: hidden;
             transition: opacity 0.2s ease, visibility 0.2s, transform 0.2s;
         }
-        .placeholder-album-icon {
+        .placeholder-album-icon > svg {
             width: $img-size;
             height: $img-size;
         }

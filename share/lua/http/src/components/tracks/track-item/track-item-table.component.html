@@ -1,0 +1,28 @@
+<script type="text/x-template" id="track-item-table-template">
+  <tr>
+    <th scope="row" class="d-flex justify-content-between">
+      <div class="item-img">
+        <img v-if="item.src" :src="item.src">
+        <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+        <play-button class="item-primary-action item-action" :item="item"></play-button>
+      </div>
+    </th>
+    <td>
+      <router-link to="">
+        <span>{{ item.title }}</span>
+        <span></span>
+      </router-link>
+    </td>
+    <td><router-link to="">{{ item.artist }}</router-link></td>
+    <td><router-link to="">{{ item.album }}</router-link></td>
+    <td class="text-muted">{{ item.duration | formatDuration }}</td>
+    <td class="text-muted">{{ index + 1 }}</td>
+    <td class="text-muted">
+      <div class="d-flex justify-content-between">
+        <div class="item-action">
+          <svg-icon name="more-horizontal"></svg-icon>
+        </div>
+      </div>
+    </td>
+  </tr>
+</script>

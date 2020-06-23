@@ -1,0 +1,51 @@
+<script type="text/x-template" id="browse-view-template">
+    <div class="browse-view h-100" :class="{ 'media-player-opened': audioPlayerOpened }">
+        <div class="container-fluid fixed-top primary-navbar d-flex align-content-center align-items-center text-center justify-content-center">
+            <div class="d-flex align-items-center flex-1 justify-content-start">
+                <img width="23" height="26" src="http://images.videolan.org/images/VLC-IconSmall.png">
+                <span class="ml-2">VLC</span>
+            </div>
+            <ul class="nav d-flex align-items-center justify-content-center">
+                <li class="nav-item">
+                    <router-link title="Video" active-class="active" to="/video" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="local_movies_outline"></svg-icon>
+                        <span>Video</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Music" active-class="active" to="/music" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="audiotrack_outline"></svg-icon>
+                        <span>Music</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Network" active-class="active" to="/network" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="wifi"></svg-icon>
+                        <span>Browse</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Discover" active-class="active" to="/discover" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="explore"></svg-icon>
+                        <span>Discover</span>
+                    </router-link>
+                </li>
+            </ul>
+            <div class="d-flex flex-1 justify-content-end h-100">
+                <button v-on:click="" class="btn-circle mr-2"><svg-icon name="search"></svg-icon></button>
+                <button v-on:click="" class="btn-circle"><svg-icon name="more-horizontal"></svg-icon></button>
+            </div>
+        </div>
+        <transition name="fade" mode="out-in">
+            <router-view></router-view>
+        </transition>
+        <transition name="slide-fade">
+            <media-player
+                v-if="audioPlayerOpened"
+                canPlay="canPlay"
+                ended="ended"
+                src="">
+            </media-player>
+        </transition>
+    </div>
+</script>

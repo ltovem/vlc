@@ -1,27 +1,23 @@
 <!-- Templates -->
 <!-- Playlist Template -->
 <script type="text/x-template" id="playlist-template">
-    <div>
-        <div id="playlistNav" class="playlistNav">
-            <div class="container">
-                <playlist-buttons></playlist-buttons>
-                <div>
-                    <h1 class="playlistHeader">Playlist</h1>
-                </div>
-                <div id="playlist">
-                    <ol type="1">
-                        <li v-for="item in this.$parent.playlistItems">
-                            <button v-on:click="play(item.src, item.id)" class="playlistItem">{{ item.title }}</button>
-                            <button v-on:click="removeItem(item.id)" type="button" class="btn-circle col-xs">
-                                <svg-icon name="delete"></svg-icon>
-                            </button>
-                        </li>
-                    </ol>
-                </div>
-                <div class="playlistNavMobile" id="mobilePlaylistNavButton">
-                    <center><svg-icon name="format-list-bulleted"></svg-icon></center>
-                </div>
+    <div id="playlistNav" class="playlistNav h-100">
+        <h6 class="playlist-header">Playlist &bull; <span class="text-muted">{{ ' ' + items.length }}{{ items.length ? ' elements' : ''}}</span></h6>
+        <div class="dropdown-divider"></div>
+        <div id="playlist">
+            <div v-for="(item, index) in items" :key="index">
+                <playlist-video-item
+                    v-if="item.type === 'leaf' || item.type === 'video'"
+                    :item="item"
+                    :index="index">
+                </playlist-video-item>
+                <playlist-audio-item
+                    v-if="item.type === 'audio'"
+                    :item="item"
+                    :index="index">
+                </playlist-audio-item>
             </div>
         </div>
+        <playlist-buttons></playlist-buttons>
     </div>
 </script>

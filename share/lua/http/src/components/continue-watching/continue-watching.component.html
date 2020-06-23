@@ -1,0 +1,11 @@
+<script type="text/x-template" id="continue-watching-template">
+    <div class="continue-watching-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <album-item-list v-for="(item, index) in items" :item="item" :key="index"></album-item-list>
+        </div> -->
+        <h5 class="separator-title">Continue watching</h5>
+        <div class="row" v-if="displayMode === 'grid'">
+            <video-item-grid class="col-12 col-sm-6 col-md-4 col-lg-4" v-for="(item, index) in items" :item="item" :key="index"></video-item-grid>
+        </div>
+    </div>
+</script>
