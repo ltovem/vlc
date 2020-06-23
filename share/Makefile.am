@@ -3,11 +3,11 @@ CLEANFILES = skins2/default.vlt
 MOSTLYCLEANFILES =
 EXTRA_DIST =
 
-JS_TARGETS = --js $(srcdir)/lua/http/src/services/command.service.js \
---js $(srcdir)/lua/http/src/services/bus.service.js \
---js $(srcdir)/lua/http/src/services/initialize.service.js \
---js $(srcdir)/lua/http/src/components/player/plyr.methods.js \
---js $(srcdir)/lua/http/src/components/controls/sidenav.component.js \
+JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
+--js $(srcdir)/lua/http/src/utils/lang/index.js \
+--js $(srcdir)/lua/http/src/utils/media/types.js \
+--js $(srcdir)/lua/http/src/utils/time/index.js \
+--js $(srcdir)/lua/http/src/utils/filters/duration.js \
 --js $(srcdir)/lua/http/src/components/playlist/playlist.component.js \
 --js $(srcdir)/lua/http/src/components/playlist/buttons.playlist.component.js \
 --js $(srcdir)/lua/http/src/components/controls/filebrowser.component.js \
