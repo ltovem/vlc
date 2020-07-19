@@ -4,8 +4,9 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
+# Amir Aharoni <amir.aharoni@mail.huji.ac.il>, 2016
 # Michał Trzebiatowski <michtrz@gmail.com>, 2018
-# Yaron Shahrabani <sh.yaron@gmail.com>, 2020
+# Yaron Shahrabani <sh.yaron@gmail.com>, 2014-2020
 # 
 #, fuzzy
 msgid ""
