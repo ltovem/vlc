@@ -390,18 +390,13 @@ std::string ChromecastCommunication::GetMedia( const std::string& mime,
 }
 
 unsigned ChromecastCommunication::msgPlayerLoad( const std::string& destinationId,
-                                             const std::string& mime, const vlc_meta_t *p_meta,
-                                             bool subtitles_enabled )
+                                             const std::string& mime, const vlc_meta_t *p_meta )
 {
     unsigned id = getNextRequestId();
-    const std::string text_tracks = subtitles_enabled ?
-       "\"enableTextTracks\":\"true\",\"activeTrackIds\":[1]," :
-       "\"enableTextTracks\":\"false\",\"activeTrackIds\":[],";
-
     std::stringstream ss;
     ss << "{\"type\":\"LOAD\","
        <<  "\"media\":{" << GetMedia( mime, p_meta ) << "},"
-       <<  text_tracks
+       << "\"enableTextTracks\":\"true\",\"activeTrackIds\":[1],"
        <<  "\"autoplay\":\"false\","
        <<  "\"requestId\":" << id
        << "}";

@@ -139,7 +139,7 @@ public:
     unsigned msgReceiverClose(const std::string& destinationId);
     unsigned msgAuth();
     unsigned msgPlayerLoad( const std::string& destinationId,
-                            const std::string& mime, const vlc_meta_t *p_meta, bool meta );
+                            const std::string& mime, const vlc_meta_t *p_meta );
     unsigned msgPlayerPlay( const std::string& destinationId, int64_t mediaSessionId );
     unsigned msgPlayerStop( const std::string& destinationId, int64_t mediaSessionId );
     unsigned msgPlayerPause( const std::string& destinationId, int64_t mediaSessionId );

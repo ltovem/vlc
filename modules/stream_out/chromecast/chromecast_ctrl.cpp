@@ -373,8 +373,7 @@ void intf_sys_t::tryLoad()
     // Reset the mediaSessionID to allow the new session to become the current one.
     // we cannot start a new load when the last one is still processing
     m_last_request_id =
-        m_communication->msgPlayerLoad( m_appTransportId, m_mime, m_meta,
-                                        m_subtitles_enabled );
+        m_communication->msgPlayerLoad( m_appTransportId, m_mime, m_meta );
     if( m_last_request_id != ChromecastCommunication::kInvalidId )
         m_state = Loading;
 }
