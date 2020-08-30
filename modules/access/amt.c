@@ -41,6 +41,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <assert.h>
+#include <limits.h>
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
 #endif
@@ -256,6 +257,7 @@ vlc_module_begin ()
     set_subcategory( SUBCAT_INPUT_ACCESS )
 
     add_integer( "amt-native-timeout", 5, TIMEOUT_TEXT, NULL )
+        change_integer_range( 0, INT_MAX )
     add_string( "amt-relay", AMT_DEFAULT_RELAY, AMT_RELAY_ADDRESS, AMT_RELAY_ADDR_LONG )
 
     set_capability( "access", 0 )
