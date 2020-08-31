@@ -24,6 +24,8 @@
 # include "config.h"
 #endif
 
+#include <limits.h>
+
 #include <vlc_common.h>
 #include <vlc_interrupt.h>
 #include <vlc_plugin.h>
@@ -321,6 +323,7 @@ vlc_module_begin ()
             DST_PORT_TEXT, DST_PORT_LONGTEXT )
     add_integer( RIST_CFG_PREFIX RIST_CFG_MAX_PACKET_SIZE, RIST_MAX_PACKET_SIZE,
             RIST_PACKET_SIZE_TEXT, NULL )
+        change_integer_range( 0, INT_MAX )
     add_string( RIST_CFG_PREFIX RIST_CFG_URL2, NULL, RIST_URL2_TEXT, NULL )
     add_string( RIST_CFG_PREFIX RIST_CFG_URL3, NULL, RIST_URL3_TEXT, NULL )
     add_string( RIST_CFG_PREFIX RIST_CFG_URL4, NULL, RIST_URL4_TEXT, NULL )
