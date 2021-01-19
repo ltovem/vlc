@@ -289,17 +289,7 @@ VLC_API bool vlc_stream_Eof(const stream_t *) VLC_USED;
 VLC_API int vlc_stream_Seek(stream_t *, uint64_t offset) VLC_USED;
 
 VLC_API int vlc_stream_vaControl(stream_t *s, int query, va_list args);
-
-static inline int vlc_stream_Control(stream_t *s, int query, ...)
-{
-    va_list ap;
-    int ret;
-
-    va_start(ap, query);
-    ret = vlc_stream_vaControl(s, query, ap);
-    va_end(ap);
-    return ret;
-}
+VLC_API int vlc_stream_Control(stream_t *s, int query, ...);
 
 VLC_API block_t *vlc_stream_Block(stream_t *s, size_t);
 VLC_API char *vlc_stream_ReadLine(stream_t *);

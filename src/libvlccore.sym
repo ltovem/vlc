@@ -379,6 +379,7 @@ vlc_stream_Tell
 vlc_stream_NewMRL
 vlc_stream_NewURL
 vlc_stream_vaControl
+vlc_stream_Control
 vlc_stream_ReadDir
 vlc_stream_fifo_New
 vlc_stream_fifo_Queue
