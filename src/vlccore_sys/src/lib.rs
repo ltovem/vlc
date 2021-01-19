@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 pub mod block;
+pub mod callbacks;
 pub mod es_format;
 pub mod es_out;
 pub mod fourcc;
