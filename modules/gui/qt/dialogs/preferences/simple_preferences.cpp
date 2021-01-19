@@ -591,6 +591,35 @@ SPrefsPanel::SPrefsPanel( intf_thread_t *_p_intf, QWidget *_parent,
                 ui.lastfm_zone->hide();
             }
 
+            /* Listenbrainz */
+            if( module_exists( "listenbrainz" ) )
+            {
+                CONFIG_GENERIC( "listenbrainz-url", String,
+                        ui.listenbrainz_url_label,
+                        listenbrainz_url_edit );
+                CONFIG_GENERIC( "listenbrainz-token", String,
+                        ui.listenbrainz_token_label,
+                        listenbrainz_token_edit );
+
+                if( config_ExistIntf( "listenbrainz" ) )
+                    ui.listenbrainz->setChecked( true );
+                else
+                    ui.listenbrainz->setChecked( false );
+
+                ui.listenbrainz_zone
+                    ->setVisible( ui.listenbrainz->isChecked() );
+
+                CONNECT( ui.listenbrainz, toggled( bool ),
+                         ui.listenbrainz_zone, setVisible( bool ) );
+                CONNECT( ui.listenbrainz, stateChanged( int ),
+                         this, listenbrainz_Changed( int ) );
+            }
+            else
+            {
+                ui.listenbrainz->hide();
+                ui.listenbrainz_zone->hide();
+            }
+
             /* Normalizer */
             CONNECT( ui.volNormBox, toggled( bool ), ui.volNormSpin,
                      setEnabled( bool ) );

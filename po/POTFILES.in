@@ -1094,6 +1094,7 @@ modules/misc/addons/vorepository.c
 modules/misc/audioscrobbler.c
 modules/misc/fingerprinter.c
 modules/misc/gnutls.c
+modules/misc/listenbrainz_rust/listenbrainz.c
 modules/misc/inhibit/dbus.c
 modules/misc/inhibit/iokit-inhibit.c
 modules/misc/inhibit/wl-idle-inhibit.c

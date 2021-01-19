@@ -1,0 +1,17 @@
+[package]
+name = "listenbrainz_rust"
+version = "0.1.0"
+authors = ["Johan \"enulp\" Pardo <contact@enulp.eu>"]
+edition = "2018"
+license = "LGPL-2.1-or-later"
+
+[dependencies]
+vlccore_sys = {path = "../../../src/vlccore_sys"}
+libc = "0.2.0"
+listenbrainz = { git = "https://gitlab.com/enulp/listenbrainz/", rev="b915243d"}
+
+[build-dependencies.bindgen]
+version = "0.55.1"
+
+[lib]
+name = "listenbrainz_rust"

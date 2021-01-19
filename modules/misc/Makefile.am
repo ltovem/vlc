@@ -4,6 +4,31 @@ libstats_plugin_la_SOURCES = misc/stats.c
 
 misc_LTLIBRARIES = libstats_plugin.la
 
+if BUILD_RUST
+
+liblistenbrainz_rust_plugin_la = \
+	misc/listenbrainz_rust/src/lib.rs \
+	misc/listenbrainz_rust/cbindgen.toml \
+	misc/listenbrainz_rust/listenbrainz.c
+
+@abs_top_builddir@/modules/misc/listenbrainz_rust/listenbrainz.h: $(liblistenbrainz_rust_plugin_la)
+	mkdir -p misc/listenbrainz_rust && cd misc/listenbrainz_rust && \
+	$(CARGO_C) --library-type=staticlib --destdir=. --includedir=.. --libdir=. \
+	--manifest-path=$(abs_src_dir)/misc/listenbrainz_rust/Cargo.toml
+
+BUILT_SOURCES += @abs_top_builddir@/modules/misc/listenbrainz_rust/listenbrainz.h
+liblistenbrainz_plugin_la_SOURCES = misc/listenbrainz_rust/listenbrainz.c \
+								@abs_top_builddir@/modules/misc/listenbrainz_rust/listenbrainz.h
+liblistenbrainz_plugin_la_CFLAGS = $(AM_CFLAGS) \
+									 -I@abs_top_builddir@/modules/misc/listenbrainz_rust
+liblistenbrainz_plugin_la_LIBADD = \
+							   @abs_top_builddir@/modules/misc/listenbrainz_rust/liblistenbrainz_rust.a \
+							   $(SOCKET_LIBS) \
+							   $(LIBDL) -lm
+misc_LTLIBRARIES += liblistenbrainz_plugin.la
+
+endif
+
 libaudioscrobbler_plugin_la_SOURCES = misc/audioscrobbler.c
 libaudioscrobbler_plugin_la_LIBADD = $(SOCKET_LIBS)
 misc_LTLIBRARIES += libaudioscrobbler_plugin.la
