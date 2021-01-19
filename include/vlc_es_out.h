@@ -144,38 +144,22 @@ struct es_out_t
     const struct es_out_callbacks *cbs;
 };
 
+VLC_API
 VLC_USED
-static inline es_out_id_t * es_out_Add( es_out_t *out, const es_format_t *fmt )
-{
-    return out->cbs->add( out, NULL, fmt );
-}
+es_out_id_t * es_out_Add( es_out_t *out, const es_format_t *fmt );
 
-static inline void es_out_Del( es_out_t *out, es_out_id_t *id )
-{
-    out->cbs->del( out, id );
-}
+VLC_API
+void es_out_Del( es_out_t *out, es_out_id_t *id );
 
-static inline int es_out_Send( es_out_t *out, es_out_id_t *id,
-                               block_t *p_block )
-{
-    return out->cbs->send( out, id, p_block );
-}
+VLC_API int es_out_Send( es_out_t *out, es_out_id_t *id,
+                               block_t *p_block );
 
 static inline int es_out_vaControl( es_out_t *out, int i_query, va_list args )
 {
     return out->cbs->control( out, NULL, i_query, args );
 }
 
-static inline int es_out_Control( es_out_t *out, int i_query, ... )
-{
-    va_list args;
-    int     i_result;
-
-    va_start( args, i_query );
-    i_result = es_out_vaControl( out, i_query, args );
-    va_end( args );
-    return i_result;
-}
+VLC_API int es_out_Control( es_out_t *out, int i_query, ... );
 
 static inline void es_out_Delete( es_out_t *p_out )
 {
