@@ -1,0 +1,11 @@
+header = "// SPDX-License-Identifier: LGPL-2.1-or-later"
+sys_includes = ["vlc_playlist.h", "vlc_player.h", "vlc_common.h"]
+include_guard = "VLCCORE_SYS_H"
+tab_width = 4
+language = "C"
+documentation_style = "C"
+style = "type"
+cpp_compat = true
+
+[export]
+item_types = ["functions"]

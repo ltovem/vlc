@@ -555,6 +555,44 @@ endif
 libvlc_win32_rc.$(OBJEXT): libvlc_win32_rc.rc $(top_srcdir)/extras/package/win32/libvlc.dll.manifest
 	$(WINDRES) --include-dir $(top_srcdir)/share --include-dir $(top_srcdir)/extras/package/win32 -i $< -o $@
 
+if BUILD_RUST
+
+libvlccore_la_SOURCES += \
+	$(pluginsinclude_HEADERS) \
+	vlccore_sys/Cargo.toml \
+	vlccore_sys/src/block.rs \
+	vlccore_sys/src/es_format.rs \
+	vlccore_sys/src/es_out.rs \
+	vlccore_sys/src/fourcc.rs \
+	vlccore_sys/src/input_item.rs \
+	vlccore_sys/src/lib.rs \
+	vlccore_sys/src/message.rs \
+	vlccore_sys/src/module.rs \
+	vlccore_sys/src/module/demux.rs \
+	vlccore_sys/src/module/stream_filter.rs \
+	vlccore_sys/src/stream.rs \
+	vlccore_sys/src/tick.rs \
+	vlccore_sys/src/url.rs \
+	vlccore_sys/build.rs \
+	vlccore_sys/vlccore_helper.c \
+	vlccore_sys/vlccore_helper.h
+
+CARGO_C = cargo capi install --release
+
+abs_src_dir = $(shell readlink -f $(srcdir))
+
+@abs_top_builddir@/vlccore_sys.h:
+	mkdir -p vlccore_sys && cd vlccore_sys && \
+	$(CARGO_C) --library-type=staticlib --destdir=. --includedir=.. --libdir=. \
+	--manifest-path=$(abs_src_dir)/vlccore_sys/Cargo.toml
+
+BUILT_SOURCES += @abs_top_builddir@/vlccore_sys.h
+libvlccore_la_LIBADD += @abs_top_builddir@/src/vlccore_sys/vlccore_sys.h
+libvlccore_la_LDFLAGS +=  $(RUST_RUNTIME_LIST) \
+						  @abs_top_builddir@/src/vlccore_sys/libvlccore_sys.a
+
+endif
+
 # FourCC tables
 BUILT_SOURCES += fourcc_tables.h
 EXTRA_DIST += misc/fourcc_gen.c

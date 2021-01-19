@@ -1,0 +1,12 @@
+[package]
+name = "vlccore_sys"
+version = "0.1.0"
+authors = ["Kartik Ohri <kartikohri13@gmail.com>", "Johan \"Enulp\" Pardo <contact@enulp.eu>"]
+edition = "2018"
+license = "LGPL-2.1-or-later"
+
+[dependencies]
+libc = "0.2"
+
+[build-dependencies.bindgen]
+version = "0.55.1"

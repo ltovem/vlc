@@ -1,0 +1,3 @@
+src/vlc_core.rs
+src/vlc_core_sys.rs
+src/vlccore_helper.rs
