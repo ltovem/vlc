@@ -20,6 +20,11 @@ TESTS =
 dist_noinst_SCRIPTS = module.rc.in
 EXTRA_LTLIBRARIES =
 
+if BUILD_RUST
+CARGO_C = cargo capi install --release
+abs_src_dir = $(shell readlink -f $(srcdir))
+endif
+
 include common.am
 include access/Makefile.am
 include access/http/Makefile.am

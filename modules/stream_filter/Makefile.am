@@ -15,10 +15,31 @@ stream_filter_LTLIBRARIES += libdecomp_plugin.la
 endif
 endif
 
+if BUILD_RUST
+libinflate_rust_plugin_la = \
+	stream_filter/inflate_rust/src/capi.rs \
+	stream_filter/inflate_rust/src/inflate.rs \
+	stream_filter/inflate_rust/src/lib.rs \
+	stream_filter/inflate_rust/inflate_rust.c
+
+@abs_top_builddir@/modules/stream_filter/inflate_rust/inflate_rust.h: $(libinflate_rust_plugin_la)
+	mkdir -p stream_filter/inflate_rust && cd stream_filter/inflate_rust && \
+	$(CARGO_C) --library-type=staticlib --destdir=. --includedir=.. --libdir=. \
+	--manifest-path=$(abs_src_dir)/stream_filter/inflate_rust/Cargo.toml
+
+BUILT_SOURCES += @abs_top_builddir@/modules/stream_filter/inflate_rust/inflate_rust.h
+libinflate_rust_plugin_la_SOURCES = stream_filter/inflate_rust/inflate_rust.c \
+									@abs_top_builddir@/modules/stream_filter/inflate_rust/inflate_rust.h
+libinflate_rust_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBDL) -I@abs_top_builddir@/modules/stream_filter
+libinflate_rust_plugin_la_LIBADD = $(RUST_RUNTIME_LIBS) \
+								   @abs_top_builddir@/modules/stream_filter/inflate_rust/libinflate_rust.a
+stream_filter_LTLIBRARIES += libinflate_rust_plugin.la
+else
 libinflate_plugin_la_SOURCES = stream_filter/inflate.c
 libinflate_plugin_la_LIBADD = -lz
 if HAVE_ZLIB
 stream_filter_LTLIBRARIES += libinflate_plugin.la
+endif
 endif
 
 libprefetch_plugin_la_SOURCES = stream_filter/prefetch.c
