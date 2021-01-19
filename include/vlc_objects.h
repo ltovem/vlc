@@ -20,6 +20,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
+#ifndef VLC_OBJECTS_H
+#define VLC_OBJECTS_H 1
+
 /**
  * \defgroup vlc_object VLC objects
  * \ingroup vlc
@@ -296,3 +299,5 @@ VLC_API void vlc_obj_free(vlc_object_t *obj, void *ptr);
 
 /** @} */
 /** @} */
+
+#endif
