@@ -987,3 +987,7 @@ vlc_executor_WaitIdle
 vlc_input_attachment_Release
 vlc_input_attachment_New
 vlc_input_attachment_Hold
+es_out_Add
+es_out_Del
+es_out_Send
+es_out_Control

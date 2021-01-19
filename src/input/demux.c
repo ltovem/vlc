@@ -367,6 +367,23 @@ int demux_vaControlHelper( stream_t *s,
     return VLC_SUCCESS;
 }
 
+VLC_API int demux_ControlHelper( demux_t *demux,
+        int64_t i_start, int64_t i_end,
+        int64_t i_bitrate, int i_align,
+        int i_query, ... ){
+
+    va_list ap;
+    int ret;
+
+    va_start(ap, i_query);
+    ret = demux_vaControlHelper(demux->s,
+                    i_start, i_end,
+                    i_bitrate, i_align,
+                    i_query, ap);
+    va_end(ap);
+    return ret;
+}
+
 /****************************************************************************
  * Utility functions
  ****************************************************************************/
