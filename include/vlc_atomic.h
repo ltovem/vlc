@@ -68,7 +68,7 @@ static inline bool vlc_atomic_rc_dec(vlc_atomic_rc_t *rc)
 /** Returns the current reference count.
  *  This is not safe to use for logic and must only be used for debugging or
  *  assertion purposes */
-static inline uintptr_t vlc_atomic_rc_get(const vlc_atomic_rc_t* rc)
+static inline uintptr_t vlc_atomic_rc_get(vlc_atomic_rc_t* rc)
 {
     return atomic_load_explicit(&rc->refs, memory_order_relaxed);
 }
