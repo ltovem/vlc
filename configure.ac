@@ -1897,6 +1897,19 @@ AS_IF([test "${enable_sout}" != "no"], [
 ])
 AM_CONDITIONAL([ENABLE_SOUT], [test "${enable_sout}" != "no"])
 
+dnl Rust Modules
+AC_ARG_ENABLE([rust],
+    AS_HELP_STRING([--enable-rust], [enable building Rust modules (default disabled)]))
+AS_IF([test "${enable_rust}" = "yes"],
+      [AC_DEFINE(ENABLE_RUST, 1, [Define to 1 for building rust modules.])])
+AM_CONDITIONAL([BUILD_RUST], [test "${enable_rust}" = "yes"])
+if test "${enable_rust}" = "yes"
+then
+    AC_CHECK_PROG(CARGO, [cargo], [yes], [no])
+    AS_IF([test "x$CARGO" = "xno"],
+          AC_MSG_ERROR([cargo not found. cargo is required to build rust modules]))
+fi
+
 dnl Lua modules
 AC_ARG_ENABLE([lua],
   AS_HELP_STRING([--disable-lua],
