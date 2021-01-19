@@ -1,0 +1,15 @@
+[package]
+name = "flv_rust"
+version = "0.1.0"
+authors = ["Geoffroy Couprie <geo.couprie@gmail.com>", "Guillaume Gomez <guillaume1.gomez@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "flv_rust"
+
+[dependencies]
+vlccore_sys = { path = "../../../src/vlccore_sys" }
+libc = "^0.2.0"
+nom  = "5.0.0"
+va_list-rs = { git = "https://github.com/GuillaumeGomez/va_list-rs" }
+flavors = { git = "https://github.com/Geal/flavors", rev = "b6aa335" }

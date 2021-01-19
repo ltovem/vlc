@@ -1,3 +1,4 @@
+
 demuxdir = $(pluginsdir)/demux
 demux_LTLIBRARIES =
 
@@ -252,6 +253,31 @@ libplaylist_plugin_la_SOURCES = \
 	demux/playlist/xspf.c \
 	demux/playlist/playlist.c demux/playlist/playlist.h
 demux_LTLIBRARIES += libplaylist_plugin.la
+
+if BUILD_RUST
+
+libflv_rust_plugin_la = \
+	demux/flv_rust/src/capi.rs \
+	demux/flv_rust/src/lib.rs \
+	demux/flv_rust/src/flv.rs \
+	demux/flv_rust/flv_rust.c
+
+@abs_top_builddir@/modules/demux/flv_rust/flv_rust.h: $(libflv_rust_plugin_la)
+	mkdir -p demux/flv_rust && cd demux/flv_rust && \
+	$(CARGO_C) --library-type=staticlib --destdir=. --includedir=.. --libdir=. \
+	--manifest-path=$(abs_src_dir)/demux/flv_rust/Cargo.toml
+
+BUILT_SOURCES += @abs_top_builddir@/modules/demux/flv_rust/flv_rust.h
+libflv_rust_plugin_la_SOURCES = demux/flv_rust/flv_rust.c \
+								@abs_top_builddir@/modules/demux/flv_rust/flv_rust.h
+libflv_rust_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBDL) \
+							   -I@abs_top_builddir@/modules/demux
+libflv_rust_plugin_la_LIBADD = @abs_top_builddir@/modules/demux/flv_rust/flv_rust.h \
+							   @abs_top_builddir@/modules/demux/flv_rust/libflv_rust.a \
+							   @abs_top_builddir@/src/vlccore_sys/.libs/vlccore_helper.o
+demux_LTLIBRARIES += libflv_rust_plugin.la
+
+endif
 
 libts_plugin_la_SOURCES = demux/mpeg/ts.c demux/mpeg/ts.h \
         demux/mpeg/ts_pid.h demux/mpeg/ts_pid_fwd.h demux/mpeg/ts_pid.c \
