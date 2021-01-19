@@ -522,3 +522,14 @@ bool demux_FilterDisable( demux_t *p_demux_chain, const char* psz_demux )
 {
     return demux_filter_enable_disable( p_demux_chain, psz_demux, false );
 }
+
+VLC_API int demux_Control( demux_t *p_demux, int i_query, ... )
+{
+    va_list args;
+    int     i_result;
+
+    va_start( args, i_query );
+    i_result = demux_vaControl( p_demux, i_query, args );
+    va_end( args );
+    return i_result;
+}

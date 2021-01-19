@@ -95,6 +95,8 @@ demux_New
 demux_Demux
 demux_vaControl
 demux_vaControlHelper
+demux_ControlHelper
+demux_Control
 vlc_demux_chained_New
 vlc_demux_chained_Send
 vlc_demux_chained_ControlVa

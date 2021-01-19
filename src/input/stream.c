@@ -717,6 +717,17 @@ int vlc_stream_vaControl(stream_t *s, int cmd, va_list args)
     return s->pf_control(s, cmd, args);
 }
 
+int vlc_stream_Control(stream_t *s, int query, ...)
+{
+    va_list ap;
+    int ret;
+
+    va_start(ap, query);
+    ret = vlc_stream_vaControl(s, query, ap);
+    va_end(ap);
+    return ret;
+}
+
 /**
  * Read data into a block.
  *

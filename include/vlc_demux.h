@@ -297,16 +297,7 @@ VLC_API int demux_vaControlHelper( stream_t *, int64_t i_start, int64_t i_end,
 VLC_API int demux_Demux( demux_t *p_demux ) VLC_USED;
 VLC_API int demux_vaControl( demux_t *p_demux, int i_query, va_list args );
 
-static inline int demux_Control( demux_t *p_demux, int i_query, ... )
-{
-    va_list args;
-    int     i_result;
-
-    va_start( args, i_query );
-    i_result = demux_vaControl( p_demux, i_query, args );
-    va_end( args );
-    return i_result;
-}
+VLC_API int demux_Control( demux_t *p_demux, int i_query, ... );
 
 /*************************************************************************
  * Miscellaneous helpers for demuxers
