@@ -6,6 +6,7 @@ pub mod fourcc;
 pub mod input_item;
 pub mod interface;
 pub mod message;
+pub mod modules;
 pub mod object;
 pub mod player;
 pub mod playlist;
