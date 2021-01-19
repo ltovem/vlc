@@ -47,10 +47,13 @@ vlc_install_dir/*
 plugins.dat
 patches/*
 
+**/Cargo.lock
 include/vlc/libvlc_version.h
 
 # Ignore build dirs
 build*
+!build.rs
 contrib-*
 install-*
+target*
 
