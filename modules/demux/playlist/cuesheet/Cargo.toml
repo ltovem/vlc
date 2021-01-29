@@ -1,0 +1,12 @@
+[package]
+name = "cuesheet"
+version = "0.1.0"
+authors = ["Kartik Ohri <kartikohri13@gmail.com>"]
+edition = "2018"
+license = "LGPL-2.1-or-later"
+
+[dependencies]
+vlccore_sys = {path = "../../../../src/vlccore_sys"}
+
+[lib]
+name = "cuesheet"

@@ -256,6 +256,32 @@ demux_LTLIBRARIES += libplaylist_plugin.la
 
 if BUILD_RUST
 
+libcuesheet_rust_plugin_la = \
+	demux/playlist/cuesheet/src/capi.rs \
+	demux/playlist/cuesheet/src/cuesheet.rs \
+	demux/playlist/cuesheet/src/lib.rs \
+	demux/playlist/cuesheet/src/parse.rs \
+	demux/playlist/cuesheet/cuesheet.c
+
+@abs_top_builddir@/modules/demux/playlist/cuesheet/cuesheet.h: $(libcuesheet_rust_plugin_la)
+	mkdir -p demux/playlist/cuesheet && cd demux/playlist/cuesheet && \
+	$(CARGO_C) --library-type=staticlib --destdir=. --includedir=.. --libdir=. \
+	--manifest-path=$(abs_src_dir)/demux/playlist/cuesheet/Cargo.toml
+
+BUILT_SOURCES += @abs_top_builddir@/modules/demux/playlist/cuesheet/cuesheet.h
+libcuesheet_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBDL) \
+							   -I@abs_top_builddir@/modules/demux/playlist
+libcuesheet_plugin_la_SOURCES = demux/playlist/cuesheet/cuesheet.c \
+								@abs_top_builddir@/modules/demux/playlist/cuesheet/cuesheet.h
+libcuesheet_plugin_la_LIBADD = $(RUST_RUNTIME_LIBS) \
+							   @abs_top_builddir@/modules/demux/playlist/cuesheet/libcuesheet.a
+
+demux_LTLIBRARIES += libcuesheet_plugin.la
+
+endif
+
+if BUILD_RUST
+
 libflv_rust_plugin_la = \
 	demux/flv_rust/src/capi.rs \
 	demux/flv_rust/src/lib.rs \
