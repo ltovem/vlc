@@ -127,11 +127,126 @@ impl CInputItem {
         }
     }
 
+    /// # Warning: not tested TODO
+    /// This function allows adding a slave to an existing input item
+    pub fn add_slave(&mut self, slave: Box<input_item_slave>) -> i32 {
+        unsafe { input_item_AddSlave(self, Box::into_raw(slave)) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn has_error_when_reading(&mut self) -> bool {
+        unsafe { input_item_HasErrorWhenReading(self) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn meta_match(&mut self, meta_type: vlc_meta_type_t, val: &str) -> bool {
+        let c_val = CString::new(val).expect("CString: new failed");
+        unsafe {
+            let pointer = c_val.as_ptr();
+            input_item_MetaMatch(self, meta_type, pointer)
+        }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_meta_locked(&mut self, meta_type: vlc_meta_type_t) -> String {
+        let c_buf = unsafe { input_item_GetMetaLocked(self, meta_type) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_name(&mut self) -> String {
+        let c_buf = unsafe { input_item_GetName(self) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_title_fb_name(&mut self) -> String {
+        let c_buf = unsafe { input_item_GetTitleFbName(self) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_uri(&mut self) -> String {
+        let c_buf = unsafe { input_item_GetURI(self) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_now_playing_fb(&mut self) -> String {
+        let c_buf = unsafe { input_item_GetNowPlayingFb(self) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
     pub fn get_duration(&mut self) -> vlc_tick_t {
         unsafe { input_item_GetDuration(self) }
     }
 
+    /// # Warning: not tested TODO
+    pub fn set_duration(&mut self, duration: vlc_tick_t) {
+        unsafe { input_item_SetDuration(self, duration) }
+    }
+
     pub fn is_preparsed(&mut self) -> bool {
         unsafe { input_item_IsPreparsed(self) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn is_art_fetched(&mut self) -> bool {
+        unsafe { input_item_IsArtFetched(self) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn get_info(&mut self, cat: &str, name: &str) -> String {
+        let c_cat = CString::new(cat).expect("CString: new failed").as_ptr();
+        let c_name = CString::new(name).expect("CString: new failed").as_ptr();
+        let c_buf = unsafe { input_item_GetInfo(self, c_cat, c_name) };
+        if c_buf as *mut libc::c_void == null_mut() {
+            return String::new();
+        }
+        let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
+        let str_slice: &str = c_str.to_str().unwrap();
+        str_slice.to_owned()
+    }
+
+    /// # Warning: not tested TODO
+    pub fn del_info(&mut self, cat: &str, name: &str) -> i32 {
+        let c_cat = CString::new(cat).expect("CString: new failed").as_ptr();
+        let c_name = CString::new(name).expect("CString: new failed").as_ptr();
+        unsafe { input_item_DelInfo(self, c_cat, c_name) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn replace_infos(&mut self, info: &mut info_category_t) {
+        unsafe { input_item_ReplaceInfos(self, info) }
+    }
+
+    /// # Warning: not tested TODO
+    pub fn merge_infos(&mut self, info: &mut info_category_t) {
+        unsafe { input_item_MergeInfos(self, info) }
     }
 }

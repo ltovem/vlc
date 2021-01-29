@@ -6,6 +6,7 @@ use crate::vlc_core::{ssize_t, VLC_DEMUXER_EGENERIC, VLC_DEMUXER_EOF, VLC_DEMUXE
 use libc::*;
 use std::mem::ManuallyDrop;
 use std::ptr;
+use std::ptr::*;
 
 pub type CDemux = demux_t;
 impl VLCObject for CDemux {}
@@ -36,6 +37,55 @@ pub extern "C" fn vlcrs_demux_get_bitrate(sys: *mut c_void) -> c_long {
 pub extern "C" fn vlcrs_demux_get_align(sys: *mut c_void) -> c_int {
     let demux_module = unsafe { demux_module_from_raw(sys) };
     demux_module.align()
+}
+
+/// # Warning: not tested TODO
+#[no_mangle]
+#[must_use]
+pub extern "C" fn vlcrs_demux_read(
+    demux: *mut demux_t,
+    buf_out: *mut u8,
+    buflen: usize,
+) -> ssize_t {
+    let demux = unsafe { &mut *demux };
+    let mut demux_module = unsafe { demux_module_from_raw(demux.p_sys) };
+    let slice_buf_out: *mut [u8] = slice_from_raw_parts_mut(buf_out, buflen);
+    let rust_buf_out: &mut [u8] = unsafe { &mut *slice_buf_out };
+    match demux_module.read(rust_buf_out) {
+        Some(value) => value,
+        None => VLC_EGENERIC as ssize_t,
+    }
+}
+
+/// # Warning: not tested TODO
+#[no_mangle]
+#[must_use]
+pub extern "C" fn vlcrs_demux_filter_block(demux: *mut demux_t, eof: *mut bool) -> *mut block_t {
+    let demux = unsafe { &mut *demux };
+    let mut demux_filter_module = unsafe { demux_module_from_raw(demux.p_sys) };
+    match demux_filter_module.block() {
+        Some((block, eof_ret)) => {
+            unsafe { *eof = eof_ret };
+            Box::into_raw(block)
+        }
+        None => null_mut() as *mut block_t,
+    }
+}
+
+/// # Warning: not tested TODO
+#[no_mangle]
+#[must_use]
+pub extern "C" fn vlcrs_demux_filter_readdir(
+    demux: *mut demux_t,
+    input_item_node: *mut input_item_node_t,
+) -> c_int {
+    let demux = unsafe { &mut *demux };
+    let mut demux_filter_module = unsafe { demux_module_from_raw(demux.p_sys) };
+    let input_item_node = unsafe { &mut *input_item_node };
+    match demux_filter_module.readdir(input_item_node) {
+        Some(value) => value,
+        None => VLC_EGENERIC as c_int,
+    }
 }
 
 #[no_mangle]
@@ -163,6 +213,42 @@ pub enum RetDemux {
 }
 
 pub trait DemuxModule {
+    /// Read data
+    ///
+    /// Read data from the demux: into a caller-supplied buffer.
+    ///
+    /// This may be NULL if the demux is actually a directory rather than a
+    /// byte demux, or if block is not set.
+    ///
+    /// # Return value of isize
+    /// -1: no data available yet
+    /// 0: end of demux (incl. fatal error)
+    /// isize > 0: number of bytes read (no more than len)
+    /// # Warning: not tested TODO
+    fn read(&mut self, _buf_out: &mut [u8]) -> Option<i64> {
+        None
+    }
+
+    /// Read data block
+    ///
+    /// Read a block of data. The data is read into a block of memory allocated
+    /// by the demux. For some demuxs, data can be read more efficiently in
+    /// block of certain size, and/or using a custom allocator for buffers.
+    /// In such case, this callback should be provided instead of read;
+    /// Otherwise, this should be NULL
+    /// # Warning: not tested TODO
+    fn block(&mut self) -> Option<(Box<block_t>, bool)> {
+        None
+    }
+
+    /// Read directory
+    ///
+    /// Fill the item node from a directory
+    /// (see doc/browsing.txt) for details
+    /// # Warning: not tested TODO
+    fn readdir(&mut self, _input_item_node: &mut input_item_node_t) -> Option<i32> {
+        None
+    }
     fn demux(&mut self, _demux: &mut CDemux, _es_out: &mut CEsOut) -> RetDemux;
     fn close(&mut self, _demux: &mut CDemux) {}
 

@@ -25,6 +25,26 @@ impl Read for CStream {
 }
 
 impl<'a> CStream {
+    /// Reads a data block from a byte stream.
+    /// This function dequeues the next block of data from the byte stream. The
+    /// byte stream back-end decides on the size of the block; the caller cannot
+    /// make any assumption about it.
+    /// The function might also return NULL spuriously - this does not necessarily
+    /// imply that the stream is ended nor that it has encountered a nonrecoverable
+    /// error.
+    /// This function should be used instead of vlc_stream_Read() or
+    /// vlc_stream_Peek() when the caller can handle reads of any size.
+    /// return data block
+    /// # Warning: not tested TODO
+    pub fn read_block(&mut self) -> Box<CBlock> {
+        let block: *mut CBlock = unsafe { vlc_stream_ReadBlock(self) };
+        if block == null_mut() {
+            panic!("CStream: block: allocation failed");
+        } else {
+            unsafe { Box::from_raw(block) }
+        }
+    }
+
     pub fn block(&mut self, size: u64) -> Box<CBlock> {
         let block: *mut CBlock = unsafe { vlc_stream_Block(self, size) };
         if block == null_mut() {
@@ -33,6 +53,18 @@ impl<'a> CStream {
             unsafe { Box::from_raw(block) }
         }
     }
+    /// Peeks at data from a byte stream.
+    /// This function buffers for the requested number of bytes, waiting if
+    /// necessary. Then it stores a pointer to the buffer. Unlike vlc_stream_Read()
+    /// or vlc_stream_Block(), this function does not modify the stream read offset.
+    /// # note
+    /// The buffer remains valid until the next read/peek or seek operation on the
+    /// same stream. In case of error, the buffer address is undefined.
+    /// param bufp storage space for the buffer address [OUT]
+    /// param len number of bytes to peek
+    /// return the number of bytes actually available (shorter than requested if
+    /// the end-of-stream is reached), or a negative value on error.
+    /// # Warning: not tested TODO
     pub fn peek(&mut self, size: u64) -> Result<&'a [u8]> {
         let mut buf = 0 as *const u8;
         let bytes_read = unsafe { vlc_stream_Peek(self, &mut buf, size) };
@@ -124,6 +156,38 @@ impl<'a> CStream {
                 .ok()
         }
     }
+
+    /// Checks for end of stream.
+    /// Checks if the last attempt to reads data from the stream encountered the
+    /// end of stream before the attempt could be fully satisfied.
+    /// The value is initially false, and is reset to false by vlc_stream_Seek().
+    /// # Note
+    /// The function can return false even though the current stream position
+    /// is equal to the stream size. It will return true after the following attempt
+    /// to read more than zero bytes.
+    /// # Note
+    /// It might be possible to read after the end of the stream.
+    /// It implies the size of the stream increased asynchronously in the mean time.
+    /// Streams of most types cannot trigger such a case,
+    /// but regular local files notably can.
+    /// #note
+    /// In principles, the stream size should match the stream offset when
+    /// the end-of-stream is reached. But that rule is not enforced; it is entirely
+    /// dependent on the underlying implementation of the stream.
+    /// # Warning: not tested TODO
+    pub fn is_eof(&mut self) -> bool {
+        unsafe { vlc_stream_Eof(self) }
+    }
+
+    /// Sets the current stream position.
+    /// This function changes the read offset within a stream, if the stream
+    /// supports seeking. In case of error, the read offset is not changed.
+    ///# note
+    /// It is possible (but not useful) to seek past the end of a stream.
+    /// # param
+    /// offset byte offset from the beginning of the stream
+    /// # return
+    /// zero on success, a negative value on error
 
     pub fn s(&self) -> &mut Self {
         unsafe { &mut *self.s }

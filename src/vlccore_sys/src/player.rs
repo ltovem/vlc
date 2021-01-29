@@ -24,6 +24,7 @@ impl CPlayer {
     ///
     /// @param player locked player instance
     /// @return a valid media or NULL (if no media is set)
+    /// # Warning: not tested TODO
     pub fn get_current_media(&mut self) -> Option<&'static mut CInputItem> {
         let ptr = unsafe { vlc_player_GetCurrentMedia(self) };
         if ptr == null_mut() {
@@ -32,6 +33,16 @@ impl CPlayer {
             Some(unsafe { &mut *ptr })
         }
     }
+    // Other methods
+    // Get the current played media
+    /*
+    pub fn get_current_media(&mut self) -> Option<CInputItem> {
+        let ret = unsafe { vlc_player_GetCurrentMedia(self) };
+        if ret == null_mut() as *mut CInputItem { None }
+        else { unsafe { *ret.clone() } }
+    }
+    */
+
     /// Remove a listener callback
     ///
     /// @param player locked player instance
@@ -62,5 +73,48 @@ impl CPlayer {
         } else {
             unsafe { Some(Box::from_raw(ptr)) }
         }
+    }
+
+    /// Lock the player
+    ///
+    /// All player functions (except vlc_player_Delete()) need to be called
+    /// while the player lock is held
+    /// # Warning: not tested TODO
+    pub fn lock(&mut self) {
+        unsafe { vlc_player_Lock(self) }
+    }
+
+    /// Unlock the player
+    /// # Warning: not tested TODO
+    pub fn unlock(&mut self) {
+        unsafe { vlc_player_Unlock(self) }
+    }
+
+    /// Wait on a conditional variable
+    ///
+    /// This call allow users to use their own condition with the player mutex.
+    /// # Warning: not tested TODO
+    pub fn cond_wait(&mut self, cond: &mut vlc_cond_t) {
+        unsafe { vlc_player_CondWait(self, cond) }
+    }
+
+    /// Set the current media
+    ///
+    /// This function replaces the current and next medias
+    ///
+    /// # Note
+    /// A successfull call will always result of
+    /// vlc_player_cbs.on_current_media_changed being called. This function is
+    /// not block. If a media is currently being played, this media will be
+    /// stopped and the requested will be set after.
+    ///
+    /// # Warning
+    /// This function is either synchronous (if the player state is STOPPED) or
+    /// asynchronous. In the later case, get_current_media() will return the old
+    /// media, even after this call, and until the
+    /// vlc_player_cbs.on_current_media changed is called
+    /// # Warning: not tested TODO
+    pub fn set_current_media(&mut self, media: &mut input_item_t) -> i32 {
+        unsafe { vlc_player_SetCurrentMedia(self, media) }
     }
 }
