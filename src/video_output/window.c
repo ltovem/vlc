@@ -356,6 +356,19 @@ static void vout_display_window_OutputEvent(vout_window_t *window,
         msg_Dbg(window, "fullscreen output %s removed", name);
 }
 
+static void vout_display_window_VisibilityChanged(
+        vout_window_t *window, bool is_visible)
+{
+    vout_display_window_t *state = window->owner.sys;
+    vout_thread_t *vout = state->vout;
+
+    if (is_visible)
+        msg_Dbg(window, "enable rendering");
+    else
+        msg_Dbg(window, "disabling rendering");
+    vout_ChangeDisplayRenderingEnabled(vout, is_visible);
+}
+
 static const struct vout_window_callbacks vout_display_window_cbs = {
     .resized = vout_display_window_ResizeNotify,
     .closed = vout_display_window_CloseNotify,
@@ -365,6 +378,7 @@ static const struct vout_window_callbacks vout_display_window_cbs = {
     .mouse_event = vout_display_window_MouseEvent,
     .keyboard_event = vout_display_window_KeyboardEvent,
     .output_event = vout_display_window_OutputEvent,
+    .visibility_changed = vout_display_window_VisibilityChanged,
 };
 
 /**
