@@ -310,6 +310,20 @@ struct vout_window_callbacks {
      */
     void (*output_event)(struct vout_window_t *,
                          const char *id, const char *desc);
+
+    /**
+     * Callback for window visibility signalling.
+     *
+     * This callback function (if non-NULL) signals that the window is not
+     * visible anymore and should not be used for rendering after the end of
+     * this function until it is visible again. Typicaly use case of this event
+     * is when the application has been moved to the background and should not
+     * draw anything, or when the frames being sent to the display won't be
+     * used to display anyhting.
+     *
+     * \param is_visible whether the window is visible or not
+     */
+    void (*visibility_changed)(struct vout_window_t *, bool is_visible);
 };
 
 /**
@@ -711,6 +725,13 @@ static inline void vout_window_ReportOutputDevice(vout_window_t *window,
 {
     if (window->owner.cbs->output_event != NULL)
         window->owner.cbs->output_event(window, id, name);
+}
+
+static inline void
+vout_window_ReportVisibilityChanged(vout_window_t *window, bool is_visible)
+{
+    if (window->owner.cbs->visibility_changed != NULL)
+        window->owner.cbs->visibility_changed(window, is_visible);
 }
 
 /** @} */
