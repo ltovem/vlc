@@ -56,6 +56,10 @@ typedef int (*ptr_ASurfaceTexture_updateTexImage)(ASurfaceTexture* st);
 typedef int (*ptr_ASurfaceTexture_detachFromGLContext)(ASurfaceTexture *st);
 typedef void (*ptr_ASurfaceTexture_release)(ASurfaceTexture *st);
 
+struct vlc_asurfacetexture_listener {
+    void (*on_frame_available)(struct vlc_asurfacetexture_listener *listener);
+};
+
 /*
  * Android SurfaceTexture handle
  */
@@ -107,6 +111,7 @@ struct vlc_android_jfields
           jmethodID getTransformMatrix;
           jmethodID detachFromGLContext;
           jmethodID attachToGLContext;
+          jmethodID setOnFrameAvailableListener;
     } SurfaceTexture;
     struct {
         jclass clazz;
@@ -116,6 +121,10 @@ struct vlc_android_jfields
         jobject instance;
         jmethodID findClass;
     } ClassLoader;
+    struct {
+        jclass clazz;
+        jmethodID init;
+    } SurfaceTextureListener;
 };
 
 struct AWindowHandler
@@ -603,6 +612,37 @@ const JNINativeMethod jni_callbacks[] = {
         (void *)AndroidNativeWindow_onWindowSize },
 };
 
+static void SurfaceTextureListener_nativeNew(
+        JNIEnv *env, jobject thiz, jlong listener)
+{
+    jclass clazz = (*env)->GetObjectClass(env, thiz);
+    jfieldID mListener = (*env)->GetFieldID(env, clazz, "mListener", "J");
+    (*env)->SetLongField(env, thiz, mListener, listener);
+}
+
+static void SurfaceTextureListener_onFrameAvailable(
+        JNIEnv *env, jobject thiz, jobject surfaceTexture)
+{
+    jclass clazz = (*env)->GetObjectClass(env, thiz);
+    jclass gclazz = (*env)->NewGlobalRef(env, clazz);
+    (*env)->DeleteLocalRef(env, clazz);
+
+    jfieldID mListener = (*env)->GetFieldID(env, gclazz, "mListener", "J");
+    jlong listener_ptr = (*env)->GetLongField(env, thiz, mListener);
+
+    struct vlc_asurfacetexture_listener * listener = (void *)(intptr_t)listener_ptr;
+
+    listener->on_frame_available(listener);
+
+    (*env)->DeleteGlobalRef(env, gclazz);
+}
+
+const JNINativeMethod SurfaceTextureListener_jni_callbacks[] = {
+    { "nativeNew", "(J)V",
+        (void *)SurfaceTextureListener_nativeNew },
+    { "nativeOnFrameAvailable", "(Landroid/graphics/SurfaceTexture;)V",
+        (void *) SurfaceTextureListener_onFrameAvailable },
+};
 static int
 InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *awh)
 {
@@ -691,6 +731,10 @@ InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *a
     GET_METHOD(SurfaceTexture, detachFromGLContext,
                "detachFromGLContext", "()V", true);
 
+    GET_METHOD(SurfaceTexture, setOnFrameAvailableListener,
+              "setOnFrameAvailableListener",
+              "(Landroid/graphics/SurfaceTexture$OnFrameAvailableListener;Landroid/os/Handler;)V",
+              true);
 
     /* We cannot create any SurfaceTexture if we cannot load the SurfaceTexture
      * methods. */
@@ -710,6 +754,38 @@ InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *a
     GET_METHOD(Surface, init_st, "<init>",
                "(Landroid/graphics/SurfaceTexture;)V", true);
 
+    /* Beware! Java ClassLoader requires a binary name, like org.example.me and
+     * not org/example/me like the JNI ClassLoader interface. */
+    const char *classname = "org.videolan.libvlc.util.SurfaceTextureListener";
+    jstring jclass_name = (*env)->NewStringUTF(env, classname);
+    CHECK_EXCEPTION("org/videolan/libvlc/util/SurfaceTextureListener string allocation", false);
+
+    clazz = (*env)->CallObjectMethod(env,
+            awh->jfields.ClassLoader.instance,
+            awh->jfields.ClassLoader.findClass,
+            jclass_name);
+    (*env)->DeleteLocalRef(env, jclass_name);
+    CHECK_EXCEPTION("org/videolan/libvlc/util/SurfaceTextureListener class", false);
+
+    if (clazz != NULL)
+    {
+        awh->jfields.SurfaceTextureListener.clazz = (*env)->NewGlobalRef(env, clazz);
+        (*env)->DeleteLocalRef(env, clazz);
+    }
+    if (awh->jfields.SurfaceTextureListener.clazz != NULL)
+    {
+        GET_METHOD(SurfaceTextureListener, init, "<init>", "(J)V", true);
+        ret = (*env)->RegisterNatives(env, awh->jfields.SurfaceTextureListener.clazz,
+                SurfaceTextureListener_jni_callbacks,
+                ARRAY_SIZE(SurfaceTextureListener_jni_callbacks));
+
+        if (ret < 0)
+        {
+            msg_Err(p_obj, "RegisterNatives for SurfaceTextureListener failed");
+            goto error;
+        }
+    }
+
 #undef GET_METHOD
 #undef CHECK_EXCEPTION
 
@@ -723,6 +799,8 @@ end:
 
 error:
     i_init_state = 0;
+    if (awh->jfields.SurfaceTextureListener.clazz)
+        (*env)->DeleteGlobalRef(env, awh->jfields.SurfaceTextureListener.clazz);
     if (awh->jfields.SurfaceTexture.clazz)
         (*env)->DeleteGlobalRef(env, awh->jfields.SurfaceTexture.clazz);
     awh->jfields.SurfaceTexture.clazz = NULL;
@@ -880,6 +958,9 @@ AWindowHandler_destroy(AWindowHandler *p_awh)
 
     if (p_env)
     {
+        if (p_awh->jfields.SurfaceTextureListener.clazz)
+            (*p_env)->DeleteGlobalRef(p_env, p_awh->jfields.SurfaceTextureListener.clazz);
+
         if (p_awh->jfields.SurfaceTexture.clazz)
             (*p_env)->DeleteGlobalRef(p_env, p_awh->jfields.SurfaceTexture.clazz);
 
