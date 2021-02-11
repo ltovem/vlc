@@ -72,6 +72,11 @@ struct vlc_asurfacetexture_priv {
 
     /* Android API are loaded into an AWindowHandler instance. */
     struct AWindowHandler *awh;
+
+    /* Semaphore resyncing updateTexImage on OnFrameAvailableListener. */
+    vlc_sem_t sem_frame;
+    jobject jlistener;
+    struct vlc_asurfacetexture_listener listener;
 };
 
 struct ASurfaceTextureAPI
@@ -388,6 +393,10 @@ NDKSurfaceTexture_updateTexImage(
     struct vlc_asurfacetexture_priv *handle =
         container_of(surface, struct vlc_asurfacetexture_priv, surface);
 
+    /* Sync SurfaceTexture. */
+    if (handle->listener.on_frame_available && handle->jlistener)
+        vlc_sem_wait(&handle->sem_frame);
+
     /* ASurfaceTexture_updateTexImage can fail, for example if calling it
      * before having produced a new image. */
     if (handle->awh->ndk_ast_api.pf_updateTexImage(handle->texture))
@@ -417,6 +426,9 @@ static void NDKSurfaceTexture_destroy(
 
     handle->awh->ndk_ast_api.pf_releaseAst(handle->texture);
     (*p_env)->DeleteGlobalRef(p_env, handle->jtexture);
+
+    if (handle->jlistener)
+        (*p_env)->DeleteGlobalRef(p_env, handle->jlistener);
 
     free(handle);
 }
@@ -484,6 +496,10 @@ JNISurfaceTexture_updateTexImage(
     struct vlc_asurfacetexture_priv *handle =
         container_of(surface, struct vlc_asurfacetexture_priv, surface);
 
+    /* Sync SurfaceTexture. */
+    if (handle->listener.on_frame_available && handle->jlistener)
+        vlc_sem_wait(&handle->sem_frame);
+
     AWindowHandler *p_awh = handle->awh;
     JNIEnv *p_env = android_getEnvCommon(NULL, p_awh->p_jvm, "SurfaceTexture");
     if (!p_env)
@@ -536,6 +552,9 @@ static void JNISurfaceTexture_destroy(
         handle->awh->pf_winRelease(handle->surface.window);
     if (handle->surface.jsurface)
         (*p_env)->DeleteGlobalRef(p_env, handle->surface.jsurface);
+
+    if (handle->jlistener)
+        (*p_env)->DeleteGlobalRef(p_env, handle->jlistener);
 
     free(handle);
 }
@@ -1337,6 +1356,14 @@ error:
     return NULL;
 }
 
+static void OnFrameAvailable(struct vlc_asurfacetexture_listener *listener)
+{
+    struct vlc_asurfacetexture_priv *priv =
+        container_of(listener, struct vlc_asurfacetexture_priv, listener);
+
+    vlc_sem_post(&priv->sem_frame);
+}
+
 struct vlc_asurfacetexture *
 vlc_asurfacetexture_New(AWindowHandler *p_awh, bool single_buffer)
 {
@@ -1345,6 +1372,33 @@ vlc_asurfacetexture_New(AWindowHandler *p_awh, bool single_buffer)
         CreateSurfaceTexture(p_awh, p_env, single_buffer);
     if (surfacetexture == NULL)
         return NULL;
+
+    surfacetexture->listener.on_frame_available = NULL;
+    surfacetexture->jlistener = NULL;
+    vlc_sem_init(&surfacetexture->sem_frame, 0);
+
+#ifdef __ANDROID_API__ < 21
+    if (android_get_device_api_level() < 21)
+        goto end;
+#endif
+    if (p_awh->jfields.SurfaceTextureListener.clazz && !single_buffer)
+    {
+        surfacetexture->listener.on_frame_available = OnFrameAvailable;
+
+        jobject listener = (*p_env)->NewObject(p_env, p_awh->jfields.SurfaceTextureListener.clazz,
+                                               p_awh->jfields.SurfaceTextureListener.init,
+                                               (jlong)(intptr_t)&surfacetexture->listener);
+        surfacetexture->jlistener = (*p_env)->NewGlobalRef(p_env, listener);
+        (*p_env)->DeleteLocalRef(p_env, listener);
+
+        assert(surfacetexture->jlistener != NULL && surfacetexture->jtexture != NULL);
+
+        (*p_env)->CallVoidMethod(p_env, surfacetexture->jtexture,
+                                 p_awh->jfields.SurfaceTexture.setOnFrameAvailableListener,
+                                 surfacetexture->jlistener, p_awh->handler.handler);
+    }
+
+end:
     return &surfacetexture->surface;
 }
 
