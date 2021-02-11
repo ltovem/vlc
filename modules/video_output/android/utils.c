@@ -125,6 +125,25 @@ struct vlc_android_jfields
         jclass clazz;
         jmethodID init;
     } SurfaceTextureListener;
+    struct {
+        jclass clazz;
+        jmethodID init;
+    } Handler;
+    struct {
+        jclass clazz;
+        jmethodID prepare;
+        jmethodID quit;
+        jmethodID loop;
+        jmethodID myLooper;
+    } Looper;
+};
+
+struct vlc_android_handler_thread {
+    struct AWindowHandler *awh;
+    vlc_sem_t sem_ready;
+    jobject handler;
+    jobject looper;
+    vlc_thread_t thread;
 };
 
 struct AWindowHandler
@@ -158,6 +177,8 @@ struct AWindowHandler
         jfloatArray jtransform_mtx_array;
         jfloat *jtransform_mtx;
     } stex;
+
+    struct vlc_android_handler_thread handler;
 };
 
 #define JNI_CALL(what, obj, method, ...) \
@@ -643,6 +664,78 @@ const JNINativeMethod SurfaceTextureListener_jni_callbacks[] = {
     { "nativeOnFrameAvailable", "(Landroid/graphics/SurfaceTexture;)V",
         (void *) SurfaceTextureListener_onFrameAvailable },
 };
+
+static void *HandlerThread(void *data)
+{
+    struct vlc_android_handler_thread *handler = data;
+    JNIEnv *env = android_getEnvCommon(NULL, handler->awh->p_jvm, "AWH looper");
+    if (env == NULL)
+        return NULL;
+
+    (*env)->CallStaticVoidMethod(env,
+            handler->awh->jfields.Looper.clazz,
+            handler->awh->jfields.Looper.prepare);
+
+    jobject jlooper = (*env)->CallStaticObjectMethod(env,
+            handler->awh->jfields.Looper.clazz,
+            handler->awh->jfields.Looper.myLooper);
+    handler->looper = (*env)->NewGlobalRef(env, jlooper);
+    (*env)->DeleteLocalRef(env, jlooper);
+
+    jobject jhandler = (*env)->NewObject(env, handler->awh->jfields.Handler.clazz,
+            handler->awh->jfields.Handler.init, handler->looper);
+    handler->handler = (*env)->NewGlobalRef(env, jhandler);
+    (*env)->DeleteLocalRef(env, jhandler);
+
+    vlc_sem_post(&handler->sem_ready);
+
+    (*env)->CallStaticVoidMethod(env,
+            handler->awh->jfields.Looper.clazz,
+            handler->awh->jfields.Looper.loop);
+
+    return NULL;
+}
+
+static int CreateAndStartHandlerThread(
+        JNIEnv *env, AWindowHandler *awh,
+        struct vlc_android_handler_thread *handler)
+{
+    /* Preinit for error handling */
+    handler->looper = handler->handler = NULL;
+    handler->awh = awh;
+    vlc_sem_init(&handler->sem_ready, 0);
+
+    /* The looper is created in the target thread */
+    int ret = vlc_clone(&handler->thread, HandlerThread, handler, VLC_THREAD_PRIORITY_LOW);
+    if (ret != VLC_SUCCESS)
+        goto error;
+
+    /* Wait for handler and looper to be created or an error to happen. */
+    vlc_sem_wait(&handler->sem_ready);
+
+    if (handler->handler == NULL || handler->looper == NULL)
+        goto error;
+
+    return VLC_SUCCESS;
+
+error:
+    if (handler->handler != NULL)
+        (*env)->DeleteGlobalRef(env, handler->handler);
+    return VLC_EGENERIC;
+}
+
+static void StopAndJoinHandlerThread(
+        JNIEnv *env, AWindowHandler *awh,
+        struct vlc_android_handler_thread *handler)
+{
+    (*env)->CallVoidMethod(env, handler->looper, awh->jfields.Looper.quit);
+    // TODO check exception;
+    vlc_join(handler->thread, NULL);
+
+    (*env)->DeleteGlobalRef(env, handler->handler);
+    (*env)->DeleteGlobalRef(env, handler->looper);
+}
+
 static int
 InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *awh)
 {
@@ -669,6 +762,11 @@ InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *a
 } while( 0 )
 #define GET_METHOD(id_clazz, id, str, args, critical) do { \
     awh->jfields.id_clazz.id = (*env)->GetMethodID(\
+            env, awh->jfields.id_clazz.clazz, (str), (args)); \
+    CHECK_EXCEPTION("GetMethodID("str")", critical); \
+} while( 0 )
+#define GET_STATIC_METHOD(id_clazz, id, str, args, critical) do { \
+    awh->jfields.id_clazz.id = (*env)->GetStaticMethodID(\
             env, awh->jfields.id_clazz.clazz, (str), (args)); \
     CHECK_EXCEPTION("GetMethodID("str")", critical); \
 } while( 0 )
@@ -784,6 +882,21 @@ InitJNIFields(JNIEnv *env, vlc_object_t *p_obj, jobject *jobj, AWindowHandler *a
             msg_Err(p_obj, "RegisterNatives for SurfaceTextureListener failed");
             goto error;
         }
+
+        clazz = (*env)->FindClass(env, "android/os/Looper");
+        CHECK_EXCEPTION("android/os/Looper class", true);
+        awh->jfields.Looper.clazz = (*env)->NewGlobalRef(env, clazz);
+        (*env)->DeleteLocalRef(env, clazz);
+        GET_STATIC_METHOD(Looper, prepare, "prepare", "()V", true);
+        GET_STATIC_METHOD(Looper, myLooper, "myLooper", "()Landroid/os/Looper;", true);
+        GET_STATIC_METHOD(Looper, loop, "loop", "()V", true);
+        GET_METHOD(Looper, quit, "quit", "()V", true);
+
+        clazz = (*env)->FindClass(env, "android/os/Handler");
+        CHECK_EXCEPTION("android/os/Handler class", true);
+        awh->jfields.Handler.clazz = (*env)->NewGlobalRef(env, clazz);
+        (*env)->DeleteLocalRef(env, clazz);
+        GET_METHOD(Handler, init, "<init>", "(Landroid/os/Looper;)V", true);
     }
 
 #undef GET_METHOD
@@ -799,6 +912,10 @@ end:
 
 error:
     i_init_state = 0;
+    if (awh->jfields.Handler.clazz)
+        (*env)->DeleteGlobalRef(env, awh->jfields.Handler.clazz);
+    if (awh->jfields.Looper.clazz)
+        (*env)->DeleteGlobalRef(env, awh->jfields.Looper.clazz);
     if (awh->jfields.SurfaceTextureListener.clazz)
         (*env)->DeleteGlobalRef(env, awh->jfields.SurfaceTextureListener.clazz);
     if (awh->jfields.SurfaceTexture.clazz)
@@ -929,6 +1046,13 @@ AWindowHandler_new(vlc_object_t *obj, vlc_window_t *wnd, awh_events_t *p_events)
         free(vout_modules);
     }
 
+#ifdef __ANDROID_API__ < 21
+    if (android_get_device_api_level() >= 21)
+#endif
+    {
+        CreateAndStartHandlerThread(p_env, p_awh, &p_awh->handler);
+    }
+
     return p_awh;
 }
 
@@ -956,8 +1080,21 @@ AWindowHandler_destroy(AWindowHandler *p_awh)
 {
     JNIEnv *p_env = AWindowHandler_getEnv(p_awh);
 
+#ifdef __ANDROID_API__ < 21
+    if (android_get_device_api_level() >= 21)
+#endif
+    {
+        StopAndJoinHandlerThread(p_env, p_awh, &p_awh->handler);
+    }
+
     if (p_env)
     {
+        if (p_awh->jfields.Handler.clazz)
+            (*p_env)->DeleteGlobalRef(p_env, p_awh->jfields.Handler.clazz);
+
+        if (p_awh->jfields.Looper.clazz)
+            (*p_env)->DeleteGlobalRef(p_env, p_awh->jfields.Looper.clazz);
+
         if (p_awh->jfields.SurfaceTextureListener.clazz)
             (*p_env)->DeleteGlobalRef(p_env, p_awh->jfields.SurfaceTextureListener.clazz);
 
