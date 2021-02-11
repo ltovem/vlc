@@ -112,12 +112,17 @@ struct vlc_android_jfields
         jclass clazz;
         jmethodID init_st;
     } Surface;
+    struct {
+        jobject instance;
+        jmethodID findClass;
+    } ClassLoader;
 };
 
 struct AWindowHandler
 {
     JavaVM *p_jvm;
     jobject jobj;
+    jobject classloader;
     vlc_window_t *wnd;
 
     struct vlc_android_jfields jfields;
@@ -770,6 +775,25 @@ AWindowHandler_new(vlc_object_t *obj, vlc_window_t *wnd, awh_events_t *p_events)
 
     /* Zero the jfields structure before usage. */
     p_awh->jfields = (struct vlc_android_jfields) { .AWindow.clazz = NULL };
+
+    p_awh->jfields.ClassLoader.instance = var_InheritAddress(obj, "android-classloader");
+    if (p_awh->jfields.ClassLoader.instance)
+    {
+        jclass ClassLoader_clazz = (*p_env)->GetObjectClass(p_env,
+                p_awh->jfields.ClassLoader.instance);
+        p_awh->jfields.ClassLoader.findClass = (*p_env)->GetMethodID(p_env,
+                ClassLoader_clazz, "findClass",
+                "(Ljava/lang/String;)Ljava/lang/Class;");
+        (*p_env)->DeleteLocalRef(p_env, ClassLoader_clazz);
+        if ((*p_env)->ExceptionCheck(p_env))
+        {
+            msg_Err(obj, "ClassLoader didn't have a findClass method");
+            if (p_awh->jobj)
+                (*p_env)->DeleteGlobalRef(p_env, p_awh->jobj);
+            free(p_awh);
+            return NULL;
+        }
+    }
 
     p_awh->wnd = wnd;
     if (p_events)
