@@ -88,7 +88,7 @@
 }
 
 - (id)initWithWindow:(vout_window_t *)wnd;
-- (BOOL)fetchViewContainer;
+- (UIView *)fetchViewContainer;
 - (void)detachFromParent;
 - (void)tapRecognized:(UITapGestureRecognizer *)tapRecognizer;
 - (void)enable;
@@ -106,7 +106,11 @@
     _wnd = wnd;
     _enabled = NO;
 
-    self = [super initWithFrame:CGRectMake(0., 0., 320., 240.)];
+    UIView *superview = [self fetchViewContainer];
+    if (superview == nil)
+        return nil;
+
+    self = [super initWithFrame:[superview frame]];
     if (!self)
         return nil;
 
@@ -117,8 +121,6 @@
      * sizing mechanisms. */
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-    if (![self fetchViewContainer])
-        return nil;
 
     /* add tap gesture recognizer for DVD menus and stuff */
     _tapRecognizer = [[UITapGestureRecognizer alloc]
@@ -133,7 +135,9 @@
                                              selector:@selector(applicationStateChanged:)
                                                  name:UIApplicationDidEnterBackgroundNotification
                                                object:nil];
-    CGSize size = _viewContainer.bounds.size;
+    _viewContainer = superview;
+    CGSize size = superview.bounds.size;
+
     [self reportEvent:^{
         vout_window_ReportSize(_wnd, size.width, size.height);
     }];
@@ -141,32 +145,30 @@
     return self;
 }
 
-- (BOOL)fetchViewContainer
+- (UIView *)fetchViewContainer
 {
     @try {
         /* get the object we will draw into */
         UIView *viewContainer = (__bridge UIView*)var_InheritAddress (_wnd, "drawable-nsobject");
         if (unlikely(viewContainer == nil)) {
             msg_Err(_wnd, "provided view container is nil");
-            return NO;
+            return nil;
         }
 
         if (unlikely(![viewContainer respondsToSelector:@selector(isKindOfClass:)])) {
             msg_Err(_wnd, "void pointer not an ObjC object");
-            return NO;
+            return nil;
         }
 
         if (![viewContainer isKindOfClass:[UIView class]]) {
             msg_Err(_wnd, "passed ObjC object not of class UIView");
-            return NO;
+            return nil;
         }
 
-        _viewContainer = viewContainer;
-
-        return YES;
+        return viewContainer;
     } @catch (NSException *exception) {
         msg_Err(_wnd, "Handling the view container failed due to an Obj-C exception (%s, %s", [exception.name UTF8String], [exception.reason UTF8String]);
-        return NO;
+        return nil;
     }
 }
 
