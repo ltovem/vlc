@@ -1,4 +1,5 @@
 /*****************************************************************************
+ *
  * interrupt.c:
  *****************************************************************************
  * Copyright (C) 2015 Rémi Denis-Courmont
@@ -284,9 +285,11 @@ static void vlc_poll_i11e_wake(void *opaque)
     uint64_t value = 1;
     int *fd = opaque;
     int canc;
+    ssize_t top;
 
     canc = vlc_savecancel();
-    write(fd[1], &value, sizeof (value));
+    top = write(fd[1], &value, sizeof (value));
+    assert(top == sizeof(value));
     vlc_restorecancel(canc);
 }
 
@@ -308,6 +311,7 @@ static int vlc_poll_i11e_inner(struct pollfd *restrict fds, unsigned nfds,
     int fd[2];
     int ret = -1;
     int canc;
+    ssize_t tor;
 
     /* TODO: cache this */
 # if defined (HAVE_EVENTFD) && defined (EFD_CLOEXEC)
@@ -341,11 +345,11 @@ static int vlc_poll_i11e_inner(struct pollfd *restrict fds, unsigned nfds,
     for (unsigned i = 0; i < nfds; i++)
         fds[i].revents = ufd[i].revents;
 
-    if (ret > 0 && ufd[nfds].revents)
+    if (tor != -1 && ret > 0 && ufd[nfds].revents)
     {
         uint64_t dummy;
 
-        read(fd[0], &dummy, sizeof (dummy));
+        tor = read(fd[0], &dummy, sizeof (dummy));
         ret--;
     }
     vlc_cleanup_pop();
