@@ -24,6 +24,12 @@
 #ifndef _INPUT_ART_H
 #define _INPUT_ART_H 1
 
+enum artType
+{
+    ARTTYPE_ALBUM,
+    ARTTYPE_SONG,
+};
+
 int input_FindArtInCache( input_item_t * );
 int input_FindArtInCacheUsingItemUID( input_item_t * );
 
