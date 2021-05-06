@@ -157,6 +157,10 @@ typedef enum input_event_type_e
 
     /* Thumbnail generation */
     INPUT_EVENT_THUMBNAIL_READY,
+
+    /* 'gapless_next' has changed, if true, a next input can be loaded in
+     * gapless mode */
+    INPUT_EVENT_GAPLESS_NEXT,
 } input_event_type_e;
 
 #define VLC_INPUT_CAPABILITIES_SEEKABLE (1<<0)
@@ -315,6 +319,8 @@ struct vlc_input_event
         float subs_fps;
         /* INPUT_EVENT_THUMBNAIL_READY */
         picture_t *thumbnail;
+        /* INPUT_EVENT_GAPLESS_NEXT */
+        bool gapless_next;
     };
 };
 
