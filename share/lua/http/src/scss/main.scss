@@ -281,7 +281,7 @@ $sidenav-width: 350px;
 
 .media-player-opened {
     .container-view {
-        margin-bottom: 100px;
+        padding-bottom: 100px;
     }
     #playlist {
         height: calc(100% - 248px);
@@ -338,4 +338,15 @@ button.active {
 .table thead th,
 .table th, .table td {
     border-color: var(--divider-color);
+}
+
+.disabled {
+    opacity: 0.3;
+}
+.btn.disabled, .btn:disabled {
+    opacity: 0.3 !important;
+}
+
+.embed-responsive-item.item-img {
+    object-fit: cover;
 }

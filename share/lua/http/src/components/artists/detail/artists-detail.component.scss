@@ -20,7 +20,7 @@
         color: var(--primary-text-color);
         &.active {
             background-color: var(--playlist-active-bg-color);
-            .artist-img {
+            .artist-img > svg {
                 border: 1px solid var(--highlight-color);
             }
         }

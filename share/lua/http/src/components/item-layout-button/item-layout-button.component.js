@@ -1,5 +1,6 @@
 Vue.component('item-layout-button', {
     template: '#item-layout-button-template',
+    props: ['disabled'],
     computed: {
         ...Vuex.mapState({
             layout: state => state.layout
@@ -10,6 +11,9 @@ Vue.component('item-layout-button', {
     },
     methods: {
         toggleItemLayout() {
+            if (this.disabled) {
+                return true;
+            }
             this.$store.dispatch('layout/toggleItemLayout');
         }
     }

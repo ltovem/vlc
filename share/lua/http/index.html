@@ -101,7 +101,7 @@
                 <router-link to="" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
             </div>
         </div>
-        <div class="d-flex item-action pt-1">
+        <div class="disabled d-flex item-action pt-1">
             <svg-icon name="more_vert"></svg-icon>
         </div>
         <div class="item-progress-bar" :style="{width: item.progress}"></div>
@@ -128,7 +128,7 @@
                 </span> -->
             </div>
         </div>
-        <div class="d-flex item-action pt-1">
+        <div class="disabled d-flex item-action pt-1">
             <svg-icon name="more_vert"></svg-icon>
         </div>
         <!-- <div class="item-progress-bar" :style="{width: item.progress}"></div> -->
@@ -329,7 +329,7 @@
     <td class="text-muted">{{ index + 1 }}</td>
     <td class="text-muted">
       <div class="d-flex justify-content-between">
-        <div class="item-action">
+        <div class="disabled item-action">
           <svg-icon name="more-horizontal"></svg-icon>
         </div>
       </div>
@@ -500,7 +500,7 @@
       <div class="col-2 text-center">{{ item.duration | formatDuration }}</div>
       <div class="text-muted col-2">
         <div class="d-flex justify-content-between">
-          <div class="item-action">
+          <div class="disabled item-action">
             <svg-icon name="more-horizontal"></svg-icon>
           </div>
         </div>
@@ -704,7 +704,7 @@
                             <img v-if="item.src" width="171" height="171" class="embed-responsive-item item-img" :src="item.src">
                             <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon item-img"></svg-icon>
                             <div class="mt-2 d-flex">
-                                <play-button-secondary></play-button-secondary>
+                                <play-button-secondary :item="item"></play-button-secondary>
                                 <enqueue-button class="ml-2" :item="item"></enqueue-button>
                             </div>
                         </div>
@@ -725,15 +725,18 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="(track, index) in music.albumTracks[item.id]">
-                                        <td>
-                                            {{ index + 1 }}
-                                        </td>
+                                        <th scope="row" class="d-flex justify-content-between">
+                                            <div class="item-img">
+                                                <span>{{ index + 1 }}</span>
+                                                <play-button class="item-primary-action item-action" :item="item"></play-button>
+                                            </div>
+                                          </th>
                                         <td>
                                             {{ track.title }}
                                         </td>
                                         <td class="text-muted">
                                           <div class="d-flex justify-content-between">
-                                            <div class="item-action">
+                                            <div class="disabled item-action">
                                               <svg-icon name="more-horizontal"></svg-icon>
                                             </div>
                                           </div>
@@ -784,14 +787,14 @@
             <router-link to="/artist" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
             <div class="item-secondary-action">
                 <div v-on:click="toggleLiked()">
-                    <div v-if="!liked" class="icon-wrapper item-action">
+                    <div v-if="!liked" class="disabled icon-wrapper item-action">
                         <svg-icon name="favorite_outline"></svg-icon>
                     </div>
-                    <div v-if="liked" class="icon-wrapper item-action active">
+                    <div v-if="liked" class="disabled icon-wrapper item-action active">
                         <svg-icon name="favorite"></svg-icon>
                     </div>
                 </div>
-                <div class="icon-wrapper item-action">
+                <div class="icon-wrapper disabled item-action">
                     <svg-icon name="more-horizontal"></svg-icon>
                 </div>
             </div>
@@ -803,15 +806,15 @@
         <div class="fixed-top secondary-navbar">
             <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
                 <div class="d-flex align-items-center flex-1 justify-content-start">
-                    <item-layout-button></item-layout-button>
-                    <button v-on:click="" class="btn btn-circle ml-2"><svg-icon name="sort"></svg-icon></button>
+                    <item-layout-button class="disabled"></item-layout-button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-center">
                     <router-link to="/music/albums" exact-active-class="active" class="btn btn-link">Albums</router-link>
                     <router-link to="/music/artists" active-class="active" class="btn btn-link">Artists</router-link>
                     <router-link to="/music/genres" exact-active-class="active" class="btn btn-link">Genres</router-link>
                     <router-link to="/music/tracks" exact-active-class="active" class="btn btn-link">Tracks</router-link>
-                    <router-link to="/music/playlists" exact-active-class="active" class="btn btn-link">Playlists</router-link>
+                    <router-link to="/music/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
                 </div>
                 <div class="d-flex flex-1 justify-content-end h-100">
                     <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
@@ -885,13 +888,13 @@
             <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
                 <div class="d-flex align-items-center flex-1 justify-content-start">
                     <item-layout-button></item-layout-button>
-                    <button v-on:click="" class="btn btn-circle ml-2"><svg-icon name="sort"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-center">
                     <router-link to="/video/all" exact-active-class="active" class="btn btn-link">All</router-link>
-                    <router-link to="/video/movies" exact-active-class="active" class="btn btn-link">Movies</router-link>
-                    <router-link to="/video/tvshows" exact-active-class="active" class="btn btn-link">Tv Shows</router-link>
-                    <router-link to="/video/playlists" exact-active-class="active" class="btn btn-link">Playlists</router-link>
+                    <router-link to="/video/movies" exact-active-class="active" class="btn btn-link disabled">Movies</router-link>
+                    <router-link to="/video/tvshows" exact-active-class="active" class="btn btn-link disabled">Tv Shows</router-link>
+                    <router-link to="/video/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
                 </div>
                 <div class="d-flex flex-1 justify-content-end h-100">
                     <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
@@ -930,7 +933,7 @@
             <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
                 <div class="d-flex align-items-center flex-1 justify-content-start">
                     <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
-                    <button v-on:click="" class="btn btn-circle ml-2"><svg-icon name="sort"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-center">
                     <router-link to="/discover/home" active-class="active" class="btn btn-link">Home</router-link>
@@ -996,7 +999,7 @@
             <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
                 <div class="d-flex align-items-center flex-1 justify-content-start">
                     <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
-                    <button v-on:click="" class="btn btn-circle ml-2"><svg-icon name="sort"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
                 </div>
                 <div class="d-flex align-items-center justify-content-center"></div>
                 <div class="d-flex flex-1 justify-content-end h-100">
@@ -1078,21 +1081,21 @@
                     </router-link>
                 </li>
                 <li class="nav-item">
-                    <router-link title="Network" active-class="active" to="/network" class="btn btn-icon btn-link d-flex flex-column">
+                    <router-link title="Network" active-class="active" to="/network" class="disabled btn btn-icon btn-link d-flex flex-column">
                         <svg-icon name="wifi"></svg-icon>
                         <span>Browse</span>
                     </router-link>
                 </li>
                 <li class="nav-item">
-                    <router-link title="Discover" active-class="active" to="/discover" class="btn btn-icon btn-link d-flex flex-column">
+                    <router-link title="Discover" active-class="active" to="/discover" class="disabled btn btn-icon btn-link d-flex flex-column">
                         <svg-icon name="explore"></svg-icon>
                         <span>Discover</span>
                     </router-link>
                 </li>
             </ul>
             <div class="d-flex flex-1 justify-content-end h-100">
-                <button v-on:click="" class="btn-circle mr-2"><svg-icon name="search"></svg-icon></button>
-                <button v-on:click="" class="btn-circle"><svg-icon name="more-horizontal"></svg-icon></button>
+                <button v-on:click="" class="disabled btn-circle mr-2"><svg-icon name="search"></svg-icon></button>
+                <button v-on:click="" class="disabled btn-circle"><svg-icon name="more-horizontal"></svg-icon></button>
             </div>
         </div>
         <transition name="fade" mode="out-in">

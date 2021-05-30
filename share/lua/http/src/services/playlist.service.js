@@ -36,6 +36,9 @@ export default {
         return this.sendPlaylistStatus(`command=in_enqueue&input=${src}`);
     },
     removeItem(id) {
-        return this.sendPlaylistStatus(`command=pl_delete&id=${id}`);
+        if (id) {
+            return this.sendPlaylistStatus(`command=pl_delete&id=${id}`);
+        }
+        return this.sendPlaylistStatus(`command=pl_empty`);
     }
 };

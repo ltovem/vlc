@@ -11,14 +11,14 @@
             <router-link to="/artist" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
             <div class="item-secondary-action">
                 <div v-on:click="toggleLiked()">
-                    <div v-if="!liked" class="icon-wrapper item-action">
+                    <div v-if="!liked" class="disabled icon-wrapper item-action">
                         <svg-icon name="favorite_outline"></svg-icon>
                     </div>
-                    <div v-if="liked" class="icon-wrapper item-action active">
+                    <div v-if="liked" class="disabled icon-wrapper item-action active">
                         <svg-icon name="favorite"></svg-icon>
                     </div>
                 </div>
-                <div class="icon-wrapper item-action">
+                <div class="icon-wrapper disabled item-action">
                     <svg-icon name="more-horizontal"></svg-icon>
                 </div>
             </div>
