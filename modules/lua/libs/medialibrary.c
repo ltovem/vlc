@@ -42,7 +42,7 @@ static void vlclua_ml_push_media( lua_State *L, const vlc_ml_media_t *media )
     lua_setfield( L, -2, "type" );
     lua_pushinteger( L, media->i_duration );
     lua_setfield( L, -2, "duration" );
-    lua_pushboolean( L, media->thumbnails[VLC_ML_THUMBNAIL_SMALL].b_generated );
+    lua_pushboolean( L, media->thumbnails[VLC_ML_THUMBNAIL_SMALL].i_status == VLC_ML_THUMBNAIL_STATUS_AVAILABLE  );
     lua_setfield( L, -2, "hasThumbnail" );
     switch ( media->i_subtype )
     {
@@ -157,7 +157,7 @@ static void vlclua_ml_push_album( lua_State* L, const vlc_ml_album_t *album )
     lua_setfield( L, -2, "id" );
     lua_pushstring( L, album->psz_title );
     lua_setfield( L, -2, "title" );
-    lua_pushboolean( L, album->thumbnails[VLC_ML_THUMBNAIL_SMALL].b_generated );
+    lua_pushboolean( L, album->thumbnails[VLC_ML_THUMBNAIL_SMALL].i_status == VLC_ML_THUMBNAIL_STATUS_AVAILABLE  );
     lua_setfield( L, -2, "hasThumbnail" );
     lua_pushinteger( L, album->i_artist_id );
     lua_setfield( L, -2, "artistId" );
@@ -178,7 +178,7 @@ static void vlclua_ml_push_artist( lua_State* L, const vlc_ml_artist_t* artist )
     lua_setfield( L, -2, "id" );
     lua_pushstring( L, artist->psz_name);
     lua_setfield( L, -2, "name" );
-    lua_pushboolean( L, artist->thumbnails[VLC_ML_THUMBNAIL_SMALL].b_generated );
+    lua_pushboolean( L, artist->thumbnails[VLC_ML_THUMBNAIL_SMALL].i_status == VLC_ML_THUMBNAIL_STATUS_AVAILABLE  );
     lua_setfield( L, -2, "hasThumbnail" );
     lua_pushinteger( L, artist->i_nb_tracks );
     lua_setfield( L, -2, "nbTracks" );
