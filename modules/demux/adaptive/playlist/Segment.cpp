@@ -203,7 +203,11 @@ Segment::Segment(ICanonicalUrl *parent) :
 SegmentChunk* Segment::createChunk(AbstractChunkSource *source, BaseRepresentation *rep)
 {
      /* act as factory */
-    return new (std::nothrow) SegmentChunk(source, rep);
+    try {
+        return new SegmentChunk(source, rep);
+    } catch(...) {
+        return nullptr;
+    }
 }
 
 void Segment::addSubSegment(SubSegment *subsegment)

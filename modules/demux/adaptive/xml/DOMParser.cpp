@@ -103,9 +103,9 @@ Node* DOMParser::processNode(bool b_strict)
             case XML_READER_STARTELEM:
             {
                 bool empty = xml_ReaderIsEmptyElement(vlc_reader);
-                Node *node = new (std::nothrow) Node();
-                if(node)
+                try
                 {
+                    Node *node = new Node();
                     if(!lifo.empty())
                         lifo.top()->addSubNode(node);
                     lifo.push(node);
@@ -113,6 +113,7 @@ Node* DOMParser::processNode(bool b_strict)
                     node->setName(std::string(data));
                     addAttributesToNode(node);
                 }
+                catch(...) {}
 
                 if(empty && lifo.size() > 1)
                     lifo.pop();

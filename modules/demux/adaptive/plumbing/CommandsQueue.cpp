@@ -197,32 +197,44 @@ void EsOutMilestoneCommand::Execute()
 
 EsOutSendCommand * CommandsFactory::createEsOutSendCommand( AbstractFakeESOutID *id, block_t *p_block ) const
 {
-    return new (std::nothrow) EsOutSendCommand( id, p_block );
+    try {
+        return new EsOutSendCommand( id, p_block );
+    } catch(...) { return nullptr; }
 }
 
 EsOutDelCommand * CommandsFactory::createEsOutDelCommand( AbstractFakeESOutID *id ) const
 {
-    return new (std::nothrow) EsOutDelCommand( id );
+    try {
+        return new EsOutDelCommand( id );
+    } catch(...) { return nullptr; }
 }
 
 EsOutAddCommand * CommandsFactory::createEsOutAddCommand( AbstractFakeESOutID *id ) const
 {
-    return new (std::nothrow) EsOutAddCommand( id );
+    try {
+        return new EsOutAddCommand( id );
+    } catch(...) { return nullptr; }
 }
 
 EsOutControlPCRCommand * CommandsFactory::createEsOutControlPCRCommand( int group, vlc_tick_t pcr ) const
 {
-    return new (std::nothrow) EsOutControlPCRCommand( group, pcr );
+    try {
+        return new EsOutControlPCRCommand( group, pcr );
+    } catch(...) { return nullptr; }
 }
 
 EsOutDestroyCommand * CommandsFactory::createEsOutDestroyCommand() const
 {
-    return new (std::nothrow) EsOutDestroyCommand();
+    try {
+        return new EsOutDestroyCommand();
+    } catch(...) { return nullptr; }
 }
 
 EsOutControlResetPCRCommand * CommandsFactory::creatEsOutControlResetPCRCommand() const
 {
-    return new (std::nothrow) EsOutControlResetPCRCommand();
+    try {
+        return new EsOutControlResetPCRCommand();
+    } catch(...) { return nullptr; }
 }
 
 EsOutMetaCommand * CommandsFactory::createEsOutMetaCommand( AbstractFakeEsOut *out, int group,
@@ -232,14 +244,20 @@ EsOutMetaCommand * CommandsFactory::createEsOutMetaCommand( AbstractFakeEsOut *o
     if( p_dup )
     {
         vlc_meta_Merge( p_dup, p_meta );
-        return new (std::nothrow) EsOutMetaCommand( out, group, p_dup );
+        try {
+            return new EsOutMetaCommand( out, group, p_dup );
+        } catch(std::bad_alloc &) {
+            vlc_meta_Delete( p_dup );
+        }
     }
     return nullptr;
 }
 
 EsOutMilestoneCommand * CommandsFactory::createEsOutMilestoneCommand( AbstractFakeEsOut *out ) const
 {
-    return new (std::nothrow) EsOutMilestoneCommand( out );
+    try {
+        return new EsOutMilestoneCommand( out );
+    } catch(...) { return nullptr; }
 }
 
 /*

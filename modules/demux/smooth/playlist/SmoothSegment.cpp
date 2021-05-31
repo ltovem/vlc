@@ -78,6 +78,10 @@ SmoothSegmentTemplateSegment::~SmoothSegmentTemplateSegment()
 SegmentChunk* SmoothSegmentTemplateSegment::createChunk(AbstractChunkSource *source, BaseRepresentation *rep)
 {
      /* act as factory */
-    return new (std::nothrow) SmoothSegmentChunk(source, rep);
+    try {
+        return new SmoothSegmentChunk(source, rep);
+    } catch(std::bad_alloc &) {
+        return nullptr;
+    }
 }
 

@@ -69,8 +69,15 @@ AbstractDemuxer *DASHStream::newDemux(vlc_object_t *p_obj, const StreamFormat &f
 AbstractStream * DASHStreamFactory::create(demux_t *realdemux, const StreamFormat &format,
                                    SegmentTracker *tracker, AbstractConnectionManager *manager) const
 {
-    AbstractStream *stream = new (std::nothrow) DASHStream(realdemux);
-    if(stream && !stream->init(format, tracker, manager))
+    AbstractStream *stream;
+    try
+    {
+        stream = new DASHStream(realdemux);
+    } catch(std::bad_alloc &) {
+        return nullptr;
+    }
+
+    if(!stream->init(format, tracker, manager))
     {
         delete stream;
         return nullptr;

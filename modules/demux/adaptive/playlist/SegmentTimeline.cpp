@@ -50,9 +50,9 @@ SegmentTimeline::~SegmentTimeline()
 
 void SegmentTimeline::addElement(uint64_t number, stime_t d, uint64_t r, stime_t t)
 {
-    Element *element = new (std::nothrow) Element(number, d, r, t);
-    if(element)
+    try
     {
+        Element *element = new Element(number, d, r, t);
         if(!elements.empty() && !t)
         {
             const Element *el = elements.back();
@@ -61,6 +61,7 @@ void SegmentTimeline::addElement(uint64_t number, stime_t d, uint64_t r, stime_t
         elements.push_back(element);
         totalLength += (d * (r + 1));
     }
+    catch(...) {}
 }
 
 stime_t SegmentTimeline::getMinAheadScaledTime(uint64_t number) const

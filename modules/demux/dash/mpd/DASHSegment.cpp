@@ -70,5 +70,5 @@ DashIndexSegment::~DashIndexSegment()
 SegmentChunk* DashIndexSegment::createChunk(AbstractChunkSource *source, BaseRepresentation *rep)
 {
      /* act as factory */
-    return new (std::nothrow) DashIndexChunk(source, rep);
+    return new DashIndexChunk(source, rep);
 }

@@ -72,7 +72,7 @@ HTTPConnectionManager::HTTPConnectionManager    (vlc_object_t *p_object_)
       localAllowed(false)
 {
     vlc_mutex_init(&lock);
-    downloader = new (std::nothrow) Downloader();
+    downloader = new Downloader();
     downloader->start();
 }
 

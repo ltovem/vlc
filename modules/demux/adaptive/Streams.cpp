@@ -66,40 +66,67 @@ bool AbstractStream::init(const StreamFormat &format_, SegmentTracker *tracker, 
     if(format_ == StreamFormat::Type::Unsupported || demuxersource)
         return false;
 
-    demuxersource = new (std::nothrow) BufferedChunksSourceStream( VLC_OBJECT(p_realdemux), this );
-    if(demuxersource)
+    AbstractSourceStream *tempsource;
+    CommandsFactory *factory;
+    AbstractCommandsQueue *commandsqueue;
+
+    try
     {
-        CommandsFactory *factory = new (std::nothrow) CommandsFactory();
-        AbstractCommandsQueue *commandsqueue = new (std::nothrow) CommandsQueue();
-        if(factory && commandsqueue)
-        {
-            fakeesout = new (std::nothrow) FakeESOut(p_realdemux->out,
-                                                     commandsqueue, factory);
-            if(fakeesout)
-            {
-                /* All successfull */
-                fakeesout->setExtraInfoProvider( this );
-                const Role & streamRole = tracker->getStreamRole();
-                if(streamRole.isDefault() && streamRole.autoSelectable())
-                    fakeesout->setPriority(ES_PRIORITY_MIN + 10);
-                else if(!streamRole.autoSelectable())
-                    fakeesout->setPriority(ES_PRIORITY_NOT_DEFAULTABLE);
-                format = format_;
-                segmentTracker = tracker;
-                segmentTracker->registerListener(this);
-                segmentTracker->notifyBufferingState(true);
-                connManager = conn;
-                fakeesout->setExpectedTimestamp(segmentTracker->getPlaybackTime());
-                declaredCodecs();
-                return true;
-            }
-        }
-        delete factory;
-        delete commandsqueue;
-        delete demuxersource;
+        tempsource = new BufferedChunksSourceStream( VLC_OBJECT(p_realdemux), this );
+    }
+    catch(std::bad_alloc &)
+    {
+        return false;
     }
 
-    return false;
+    try
+    {
+        factory = new CommandsFactory();
+        try
+        {
+            commandsqueue = new CommandsQueue();
+        }
+        catch(std::bad_alloc &e)
+        {
+            delete factory;
+            std::rethrow_exception(std::make_exception_ptr(e));
+        }
+    }
+    catch(std::bad_alloc &)
+    {
+        delete tempsource;
+        return false;
+    }
+
+
+    try
+    {
+        fakeesout = new FakeESOut(p_realdemux->out, commandsqueue, factory);
+    }
+    catch(std::bad_alloc &)
+    {
+        delete tempsource;
+        delete commandsqueue;
+        delete factory;
+        return false;
+    }
+
+    /* All successfull */
+    demuxersource = tempsource;
+    fakeesout->setExtraInfoProvider( this );
+    const Role & streamRole = tracker->getStreamRole();
+    if(streamRole.isDefault() && streamRole.autoSelectable())
+        fakeesout->setPriority(ES_PRIORITY_MIN + 10);
+    else if(!streamRole.autoSelectable())
+        fakeesout->setPriority(ES_PRIORITY_NOT_DEFAULTABLE);
+    format = format_;
+    segmentTracker = tracker;
+    segmentTracker->registerListener(this);
+    segmentTracker->notifyBufferingState(true);
+    connManager = conn;
+    fakeesout->setExpectedTimestamp(segmentTracker->getPlaybackTime());
+    declaredCodecs();
+    return true;
 }
 
 AbstractStream::~AbstractStream()

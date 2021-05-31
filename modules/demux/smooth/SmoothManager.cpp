@@ -76,15 +76,17 @@ Manifest * SmoothManager::fetchManifest()
         return nullptr;
     }
 
-    Manifest *manifest = nullptr;
-
-    ManifestParser *manifestParser = new (std::nothrow) ManifestParser(parser.getRootNode(), VLC_OBJECT(p_demux),
-                                                                       memorystream, playlisturl);
-    if(manifestParser)
+    ManifestParser *manifestParser = nullptr;
+    try
     {
+        manifestParser = new ManifestParser(parser.getRootNode(), VLC_OBJECT(p_demux),
+                                            memorystream, playlisturl);
+    } catch(std::bad_alloc &) {}
+
+    Manifest *manifest = nullptr;
+    if(manifestParser)
         manifest = manifestParser->parse();
-        delete manifestParser;
-    }
+    delete manifestParser;
 
     vlc_stream_Delete(memorystream);
     block_Release(p_block);
