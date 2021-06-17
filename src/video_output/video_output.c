@@ -161,7 +161,9 @@ typedef struct vout_thread_sys_t
     picture_fifo_t  *decoder_fifo;
     struct {
         vout_chrono_t static_filter;
-        vout_chrono_t render;         /**< picture render time estimator */
+        vout_chrono_t interactive_filter;
+        vout_chrono_t prerender;
+        vout_chrono_t prepare;
     } chrono;
 
     vlc_atomic_rc_t rc;
@@ -956,7 +958,9 @@ static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
 {
     vout_thread_sys_t *sys = vout;
 
-    const vlc_tick_t prepare_decoded_duration = vout_chrono_GetHigh(&sys->chrono.render) +
+    const vlc_tick_t prepare_decoded_duration = vout_chrono_GetHigh(&sys->chrono.interactive_filter) +
+                                                vout_chrono_GetHigh(&sys->chrono.prerender) +
+                                                vout_chrono_GetHigh(&sys->chrono.prepare) +
                                                 vout_chrono_GetHigh(&sys->chrono.static_filter);
     vlc_tick_t late = system_now + prepare_decoded_duration - system_pts;
 
@@ -1115,9 +1119,13 @@ static picture_t *FilterPictureInteractive(vout_thread_sys_t *sys)
     // hold it as the filter chain will release it or return it and we release it
     picture_Hold(sys->displayed.current);
 
+    vout_chrono_Start(&sys->chrono.interactive_filter);
+
     vlc_mutex_lock(&sys->filter.lock);
     picture_t *filtered = filter_chain_VideoFilter(sys->filter.chain_interactive, sys->displayed.current);
     vlc_mutex_unlock(&sys->filter.lock);
+
+    vout_chrono_Stop(&sys->chrono.interactive_filter);
 
     if (filtered && filtered->date != sys->displayed.current->date)
         msg_Warn(&sys->obj, "Unsupported timestamp modifications done by chain_interactive");
@@ -1130,6 +1138,8 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
                             subpicture_t **out_subpic)
 {
     vout_display_t *vd = sys->display;
+
+    vout_chrono_Start(&sys->chrono.prerender);
 
     /*
      * Get the rendering date for the current subpicture to be displayed.
@@ -1288,6 +1298,8 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
         subpic = NULL;
     }
 
+    vout_chrono_Stop(&sys->chrono.prerender);
+
     *out_pic = todisplay;
     *out_subpic = subpic;
     return VLC_SUCCESS;
@@ -1296,8 +1308,6 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
 static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
 {
     vout_display_t *vd = sys->display;
-
-    vout_chrono_Start(&sys->chrono.render);
 
     picture_t *filtered = FilterPictureInteractive(sys);
     if (!filtered)
@@ -1330,10 +1340,10 @@ static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
     const unsigned frame_rate = todisplay->format.i_frame_rate;
     const unsigned frame_rate_base = todisplay->format.i_frame_rate_base;
 
+    vout_chrono_Start(&sys->chrono.prepare);
     if (vd->ops->prepare != NULL)
         vd->ops->prepare(vd, todisplay, subpic, system_pts);
-
-    vout_chrono_Stop(&sys->chrono.render);
+    vout_chrono_Stop(&sys->chrono.prepare);
 
     system_now = vlc_tick_now();
     if (!render_now)
@@ -1444,7 +1454,11 @@ static int DisplayPicture(vout_thread_sys_t *vout, vlc_tick_t *deadline)
 
     bool render_now = true;
     const vlc_tick_t system_now = vlc_tick_now();
-    const vlc_tick_t render_delay = vout_chrono_GetHigh(&sys->chrono.render) + VOUT_MWAIT_TOLERANCE;
+    const vlc_tick_t render_delay = vout_chrono_GetHigh(&sys->chrono.interactive_filter) +
+                                    vout_chrono_GetHigh(&sys->chrono.prerender) +
+                                    vout_chrono_GetHigh(&sys->chrono.prepare) +
+                                    VOUT_MWAIT_TOLERANCE;
+
     const bool first = !sys->displayed.current;
 
     bool dropped_current_frame = false;
@@ -2083,7 +2097,9 @@ vout_thread_t *vout_Create(vlc_object_t *object)
     vlc_mutex_init(&sys->window_lock);
 
     /* Arbitrary initial time */
-    vout_chrono_Init(&sys->chrono.render, 5, VLC_TICK_FROM_MS(10));
+    vout_chrono_Init(&sys->chrono.interactive_filter, 5, VLC_TICK_FROM_MS(2));
+    vout_chrono_Init(&sys->chrono.prerender, 5, VLC_TICK_FROM_MS(6));
+    vout_chrono_Init(&sys->chrono.prepare, 5, VLC_TICK_FROM_MS(2));
     vout_chrono_Init(&sys->chrono.static_filter, 4, VLC_TICK_FROM_MS(0));
 
     if (var_InheritBool(vout, "video-wallpaper"))
