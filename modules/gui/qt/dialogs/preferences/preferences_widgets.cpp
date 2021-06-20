@@ -564,7 +564,7 @@ void setfillVLCConfigCombo( const char *configname, QComboBox *combo )
     if( p_config == NULL )
         return;
 
-    if( (p_config->i_type & 0xF0) == CONFIG_ITEM_STRING )
+    if( CONFIG_CLASS(p_config->i_type) == CONFIG_ITEM_STRING )
     {
         char **values, **texts;
         ssize_t count = config_GetPszChoices(configname, &values, &texts);
