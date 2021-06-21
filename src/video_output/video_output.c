@@ -1141,6 +1141,10 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
 
     vout_chrono_Start(&sys->chrono.prerender);
 
+    vout_display_cfg_t vd_cfg = *vd->cfg;
+    video_format_t vd_source = *vd->source;
+    video_format_t vd_fmt = *vd->fmt;
+
     /*
      * Get the rendering date for the current subpicture to be displayed.
      */
@@ -1179,18 +1183,18 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
     //because there is currently no way to transform subpictures to match
     //the source format.
     const bool do_early_spu = !do_dr_spu &&
-                               vd->source->orientation == ORIENT_NORMAL;
+                               vd_source.orientation == ORIENT_NORMAL;
 
     const vlc_fourcc_t *subpicture_chromas;
     video_format_t fmt_spu;
     if (do_dr_spu) {
         vout_display_place_t place;
-        vout_display_PlacePicture(&place, vd->source, vd->cfg);
+        vout_display_PlacePicture(&place, &vd_source, &vd_cfg);
 
-        fmt_spu = *vd->source;
+        fmt_spu = vd_source;
         if (fmt_spu.i_width * fmt_spu.i_height < place.width * place.height) {
-            fmt_spu.i_sar_num = vd->cfg->display.sar.num;
-            fmt_spu.i_sar_den = vd->cfg->display.sar.den;
+            fmt_spu.i_sar_num = vd_cfg.display.sar.num;
+            fmt_spu.i_sar_den = vd_cfg.display.sar.den;
             fmt_spu.i_width          =
             fmt_spu.i_visible_width  = place.width;
             fmt_spu.i_height         =
@@ -1199,11 +1203,11 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
         subpicture_chromas = vd->info.subpicture_chromas;
     } else {
         if (do_early_spu) {
-            fmt_spu = *vd->source;
+            fmt_spu = vd_source;
         } else {
-            fmt_spu = *vd->fmt;
-            fmt_spu.i_sar_num = vd->cfg->display.sar.num;
-            fmt_spu.i_sar_den = vd->cfg->display.sar.den;
+            fmt_spu = vd_fmt;
+            fmt_spu.i_sar_num = vd_cfg.display.sar.num;
+            fmt_spu.i_sar_den = vd_cfg.display.sar.den;
         }
         subpicture_chromas = NULL;
 
@@ -1227,7 +1231,7 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
     subpicture_t *subpic = !sys->spu ? NULL :
                            spu_Render(sys->spu,
                                       subpicture_chromas, &fmt_spu_rot,
-                                      vd->source, system_now,
+                                      &vd_source, system_now,
                                       render_subtitle_date,
                                       do_snapshot, vd->info.can_scale_spu);
     /*
@@ -1273,7 +1277,7 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
     if (do_snapshot)
     {
         assert(snap_pic);
-        vout_snapshot_Set(sys->snapshot, vd->source, snap_pic);
+        vout_snapshot_Set(sys->snapshot, &vd_source, snap_pic);
         if (snap_pic != todisplay)
             picture_Release(snap_pic);
     }
