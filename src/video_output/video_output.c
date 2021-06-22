@@ -1341,6 +1341,42 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
     const unsigned frame_rate = todisplay->format.i_frame_rate;
     const unsigned frame_rate_base = todisplay->format.i_frame_rate_base;
 
+    vlc_tick_t max_deadline = system_now + VOUT_REDISPLAY_DELAY;
+
+    if (!render_now && vd->ops->display != NULL)
+    {
+        vout_chrono_t *chrono = &sys->chrono.prepare;
+        /* Use a large estimation to minimize the risk to be late. Add a small
+         * constant in case the mean absolute deviation is very small. */
+        vlc_tick_t prepare_estim =
+            chrono->avg + 3 * chrono->mad + MS_FROM_VLC_TICK(1);
+
+        vlc_clock_Lock(sys->clock);
+
+        bool timed_out = false;
+        while (!timed_out) {
+            vlc_tick_t deadline;
+            if (vlc_clock_IsPaused(sys->clock))
+                deadline = max_deadline;
+            else
+            {
+                deadline = vlc_clock_ConvertToSystemLocked(sys->clock,
+                                            vlc_tick_now(), pts, sys->rate);
+                if (deadline > max_deadline)
+                    deadline = max_deadline;
+            }
+
+            system_pts = deadline;
+
+            /* Substract the estimated prepare() duration */
+            deadline -= prepare_estim;
+
+            timed_out = vlc_clock_Wait(sys->clock, deadline);
+        }
+
+        vlc_clock_Unlock(sys->clock);
+    }
+
     vout_chrono_Start(&sys->chrono.prepare);
     if (vd->ops->prepare != NULL)
         vd->ops->prepare(vd, todisplay, subpic, system_pts);
@@ -1361,28 +1397,24 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
         }
         else if (vd->ops->display != NULL)
         {
-            vlc_tick_t max_deadline = system_now + VOUT_REDISPLAY_DELAY;
-
-            /* Wait to reach system_pts if the plugin doesn't handle
-             * asynchronous display */
+            /* Short wait until the picture date */
             vlc_clock_Lock(sys->clock);
 
             bool timed_out = false;
             while (!timed_out) {
-                vlc_tick_t deadline;
                 if (vlc_clock_IsPaused(sys->clock))
+                    /* Immediately display the prepared picture */
+                    break;
+
+                vlc_tick_t deadline =
+                    vlc_clock_ConvertToSystemLocked(sys->clock, vlc_tick_now(),
+                                                    pts, sys->rate);
+                if (deadline > max_deadline)
                     deadline = max_deadline;
-                else
-                {
-                    deadline = vlc_clock_ConvertToSystemLocked(sys->clock,
-                                                vlc_tick_now(), pts, sys->rate);
-                    if (deadline > max_deadline)
-                        deadline = max_deadline;
-                }
 
                 system_pts = deadline;
                 timed_out = vlc_clock_Wait(sys->clock, deadline);
-            };
+            }
 
             vlc_clock_Unlock(sys->clock);
         }
@@ -1394,11 +1426,12 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
         /* Tell the clock that the pts was forced */
         system_pts = VLC_TICK_MAX;
     }
+
     vlc_clock_UpdateVideo(sys->clock, system_pts, pts, sys->rate,
                           frame_rate, frame_rate_base);
 
-    /* Display the direct buffer returned by vout_RenderPicture */
     vout_display_Display(vd, todisplay);
+
     vlc_mutex_unlock(&sys->display_lock);
 
     picture_Release(todisplay);
