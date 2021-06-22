@@ -77,6 +77,8 @@ typedef struct vout_thread_sys_t
     float           rate;
     vlc_tick_t      delay;
 
+    bool            invalidated; /* protected by clock lock */
+
     video_format_t  original;   /* Original format ie coming from the decoder */
 
     /* */
@@ -214,6 +216,33 @@ static bool VideoFormatIsCropArEqual(video_format_t *dst,
            dst->i_y_offset       == src->i_y_offset &&
            dst->i_visible_width  == src->i_visible_width &&
            dst->i_visible_height == src->i_visible_height;
+}
+
+static inline void InvalidateRender(vout_thread_sys_t *sys)
+{
+    /* Must always be called with display_lock so that the vout thread never
+     * displays an invalidated picture. */
+    vlc_mutex_assert(&sys->display_lock);
+
+    vlc_clock_Lock(sys->clock);
+    sys->invalidated = true;
+    vlc_clock_Wake(sys->clock);
+    vlc_clock_Unlock(sys->clock);
+}
+
+static inline void ResetInvalidateRender(vout_thread_sys_t *sys)
+{
+    vlc_clock_Lock(sys->clock);
+    sys->invalidated = false;
+    vlc_clock_Unlock(sys->clock);
+}
+
+static inline bool InvalidatedRender(vout_thread_sys_t *sys)
+{
+    vlc_clock_Lock(sys->clock);
+    bool ret = sys->invalidated;
+    vlc_clock_Unlock(sys->clock);
+    return ret;
 }
 
 static void vout_display_SizeWindow(unsigned *restrict width,
@@ -565,6 +594,8 @@ void vout_ChangeDisplaySize(vout_thread_t *vout,
 
     if (cb != NULL)
         cb(opaque);
+
+    InvalidateRender(sys);
     vlc_mutex_unlock(&sys->display_lock);
 }
 
@@ -582,6 +613,8 @@ void vout_ChangeDisplayFilled(vout_thread_t *vout, bool is_filled)
 
     if (sys->display != NULL)
         vout_SetDisplayFilled(sys->display, is_filled);
+
+    InvalidateRender(sys);
     vlc_mutex_unlock(&sys->display_lock);
 }
 
@@ -616,6 +649,8 @@ void vout_ChangeZoom(vout_thread_t *vout, unsigned num, unsigned den)
 
     if (sys->display != NULL)
         vout_SetDisplayZoom(sys->display, num, den);
+
+    InvalidateRender(sys);
     vlc_mutex_unlock(&sys->display_lock);
 }
 
@@ -642,6 +677,8 @@ void vout_ChangeDisplayAspectRatio(vout_thread_t *vout,
 
     if (sys->display != NULL)
         vout_SetDisplayAspect(sys->display, dar_num, dar_den);
+
+    InvalidateRender(sys);
     vlc_mutex_unlock(&sys->display_lock);
 }
 
@@ -660,6 +697,8 @@ void vout_ChangeCrop(vout_thread_t *vout,
 
     if (sys->display != NULL)
         vout_SetDisplayCrop(sys->display, crop);
+
+    InvalidateRender(sys);
     vlc_mutex_unlock(&sys->display_lock);
 }
 
@@ -1141,9 +1180,15 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
 
     vout_chrono_Start(&sys->chrono.prerender);
 
+    /* Copy vout display state with lock held */
+    vlc_mutex_lock(&sys->display_lock);
+
     vout_display_cfg_t vd_cfg = *vd->cfg;
     video_format_t vd_source = *vd->source;
     video_format_t vd_fmt = *vd->fmt;
+
+    ResetInvalidateRender(sys);
+    vlc_mutex_unlock(&sys->display_lock);
 
     /*
      * Get the rendering date for the current subpicture to be displayed.
@@ -1282,6 +1327,17 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
             picture_Release(snap_pic);
     }
 
+    vlc_mutex_lock(&sys->display_lock);
+    if (InvalidatedRender(sys))
+    {
+        vlc_mutex_unlock(&sys->display_lock);
+
+        picture_Release(todisplay);
+        if (subpic)
+            subpicture_Delete(subpic);
+        return VLC_EINTR;
+    }
+
     /* Render the direct buffer */
     vout_UpdateDisplaySourceProperties(vd, &todisplay->format, &sys->source.dar);
 
@@ -1291,6 +1347,8 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
             subpicture_Delete(subpic);
         return VLC_EGENERIC;
     }
+
+    vlc_mutex_unlock(&sys->display_lock);
 
     if (!do_dr_spu && subpic)
     {
@@ -1314,15 +1372,18 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
 {
     vout_display_t *vd = sys->display;
 
-    vlc_mutex_lock(&sys->display_lock);
-
     picture_t *todisplay;
     subpicture_t *subpic;
     int ret = PrerenderPicture(sys, filtered, &render_now, &todisplay, &subpic);
     if (ret != VLC_SUCCESS)
-    {
-        vlc_mutex_unlock(&sys->display_lock);
         return ret;
+
+    if (InvalidatedRender(sys)) {
+        picture_Release(todisplay);
+        if (subpic)
+            subpicture_Delete(subpic);
+
+        return VLC_EINTR;
     }
 
     vlc_tick_t system_now = vlc_tick_now();
@@ -1354,7 +1415,7 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
         vlc_clock_Lock(sys->clock);
 
         bool timed_out = false;
-        while (!timed_out) {
+        while (!sys->invalidated && !timed_out) {
             vlc_tick_t deadline;
             if (vlc_clock_IsPaused(sys->clock))
                 deadline = max_deadline;
@@ -1375,6 +1436,21 @@ static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
         }
 
         vlc_clock_Unlock(sys->clock);
+    }
+
+    vlc_mutex_lock(&sys->display_lock);
+
+    /* Check invalidated flag with display_lock to avoid a race
+     * condition causing to display an invalidated picture */
+    if (InvalidatedRender(sys))
+    {
+        vlc_mutex_unlock(&sys->display_lock);
+
+        picture_Release(todisplay);
+        if (subpic)
+            subpicture_Delete(subpic);
+
+        return VLC_EINTR;
     }
 
     vout_chrono_Start(&sys->chrono.prepare);
@@ -1450,7 +1526,20 @@ static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
     if (!filtered)
         return VLC_EGENERIC;
 
-    return RenderFilteredPicture(sys, filtered, render_now);
+    int ret;
+    do
+    {
+        /* The picture is consumed by every RenderFilteredPicture() call,
+         * reference it to be able to call it again. */
+        picture_Hold(filtered);
+
+        ret = RenderFilteredPicture(sys, filtered, render_now);
+    } while (ret == VLC_EINTR);
+
+    /* Release our own reference */
+    picture_Release(filtered);
+
+    return ret;
 }
 
 static void UpdateDeinterlaceFilter(vout_thread_sys_t *sys)
@@ -2123,6 +2212,8 @@ vout_thread_t *vout_Create(vlc_object_t *object)
     /* Display */
     sys->display = NULL;
     vlc_mutex_init(&sys->display_lock);
+
+    sys->invalidated = false;
 
     /* Window */
     sys->window_width = sys->window_height = 0;
