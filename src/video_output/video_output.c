@@ -1305,13 +1305,10 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
     return VLC_SUCCESS;
 }
 
-static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
+static int RenderFilteredPicture(vout_thread_sys_t *sys, picture_t *filtered,
+                                 bool render_now)
 {
     vout_display_t *vd = sys->display;
-
-    picture_t *filtered = FilterPictureInteractive(sys);
-    if (!filtered)
-        return VLC_EGENERIC;
 
     vlc_mutex_lock(&sys->display_lock);
 
@@ -1408,6 +1405,15 @@ static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
     vout_statistic_AddDisplayed(&sys->statistic, 1);
 
     return VLC_SUCCESS;
+}
+
+static int RenderPicture(vout_thread_sys_t *sys, bool render_now)
+{
+    picture_t *filtered = FilterPictureInteractive(sys);
+    if (!filtered)
+        return VLC_EGENERIC;
+
+    return RenderFilteredPicture(sys, filtered, render_now);
 }
 
 static void UpdateDeinterlaceFilter(vout_thread_sys_t *sys)
