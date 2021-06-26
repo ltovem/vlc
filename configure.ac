@@ -514,6 +514,37 @@ case "${build_os}" in
 esac
 AC_SUBST([BUILDEXEEXT])
 
+AC_ARG_WITH(android-jar,
+  AS_HELP_STRING([--with-android-jar=/path/to/android.jar],
+    [specify the path to android.jar, to build android java code]))
+
+ANDROID_SDK_PATH=""
+AS_IF([test "${SYS}" = "android"],[
+
+    AS_IF([test "$ANDROID_API" -lt "26"],[
+      dnl Android SDK before 26 have the header but it's not
+      dnl implemented.
+      ac_cv_header_sys_shm_h=no
+    ])
+    AS_IF([test "$ANDROID_API" -lt "21"],[
+      dnl Android SDK before 2& have a stub locale implementation
+      dnl but compared to vlc_fixup, it requires android_support
+      dnl library linking.
+      ac_cv_func_uselocale=no
+    ])
+
+    AC_CHECK_TOOL(JAVAC, javac, :)
+    AC_CHECK_TOOL(ANDROID_DX, dx, :)
+
+    dnl ANDROID_SDK/platforms/android-$ANDROID_API/android.jar"
+
+    AS_IF([test ! -z "$with_android_jar" -a -f "$with_android_jar" -a $JAVAC != ":" -a "$ANDROID_DX" != ":"],[
+        ANDROID_SDK_PATH="$with_android_jar"
+        AC_SUBST([ANDROID_SDK_PATH])
+    ])
+])
+AM_CONDITIONAL([HAVE_ANDROID_JAR], [test "${ANDROID_SDK_PATH}" != ""])
+
 dnl
 dnl  Check for the contrib directory
 dnl
