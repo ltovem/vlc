@@ -514,6 +514,7 @@ case "${build_os}" in
 esac
 AC_SUBST([BUILDEXEEXT])
 
+ANDROID_API=29
 AC_ARG_WITH(android-jar,
   AS_HELP_STRING([--with-android-jar=/path/to/android.jar],
     [specify the path to android.jar, to build android java code]))
