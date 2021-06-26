@@ -722,6 +722,38 @@ stamp-revision:
 	fi
 #2>&1
 
+####
+# Android support library
+###
+
+# TODOLIST:
+# - configure.ac: find android path
+# - configure.ac: find javac
+# - configure.ac: find dx/dex, compatibility between both?
+# - Makefile.am: classpath for android?
+# - Makefile.am: path where to generate
+# - Makefile.am: install?
+# - Malefile.am: sources directories for java package handling
+
+if HAVE_ANDROID_JAR
+vlc_android_support_jar_JAVASOURCES = \
+	android/java/org/videolan/vlccore/SurfaceTextureListener.java
+
+vlc_android_support.jar: $(vlc_android_support_jar_JAVASOURCES)
+	$(AM_V_at)rm -rf $(builddir)/android/java
+	$(AM_V_at)mkdir -p $(builddir)/android/java
+	$(AM_V_at)$(JAVAC) -source 1.7 -target 1.7 \
+		-d $(builddir)/android/java/ \
+		-sourcepath $(srcdir)/android/java \
+		-cp $(ANDROID_SDK_PATH)/ \
+		$^
+	$(AM_V_at)$(ANDROID_DX) --output=$@ --dex $(builddir)/android/java
+	$(AM_V_GEN)zip -r $@ $(builddir)/android/java/*
+
+androidsupportdir = $(libdir)
+androidsupport_DATA = vlc_android_support.jar
+endif
+
 ###############################################################################
 # Unit/regression test
 ###############################################################################
