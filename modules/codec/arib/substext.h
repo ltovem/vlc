@@ -46,29 +46,22 @@ typedef struct
 } arib_spu_updater_sys_t;
 
 static int SubpictureTextValidate(subpicture_t *subpic,
-                                  bool has_src_changed, const video_format_t *fmt_src,
-                                  bool has_dst_changed, const video_format_t *fmt_dst,
-                                  vlc_tick_t ts)
+                                  const vlc_subpicture_updater_params_t *params)
 {
-    arib_spu_updater_sys_t *sys = subpic->updater.p_sys;
-    VLC_UNUSED(fmt_src); VLC_UNUSED(fmt_dst); VLC_UNUSED(ts);
-    VLC_UNUSED(sys);
+    VLC_UNUSED(subpic);
 
-    if (!has_src_changed && !has_dst_changed)
-    {
-        return VLC_SUCCESS;
-    }
-    return VLC_EGENERIC;
+    if( (params->flags & (VLC_SPU_UPDATER_FLAG_DEST_CHANGED|
+                          VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED)) )
+        return VLC_EGENERIC;
+
+    return VLC_SUCCESS;
 }
 static void SubpictureTextUpdate(subpicture_t *subpic,
-                                 const video_format_t *fmt_src,
-                                 const video_format_t *fmt_dst,
-                                 vlc_tick_t ts)
+                                 const vlc_subpicture_updater_params_t *params)
 {
     arib_spu_updater_sys_t *sys = subpic->updater.p_sys;
-    VLC_UNUSED(fmt_src); VLC_UNUSED(ts);
 
-    if (fmt_dst->i_sar_num <= 0 || fmt_dst->i_sar_den <= 0)
+    if (params->p_fmt_dst->i_sar_num <= 0 || params->p_fmt_dst->i_sar_den <= 0)
     {
         return;
     }

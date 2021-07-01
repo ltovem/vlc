@@ -238,7 +238,12 @@ int transcode_spu_process( sout_stream_t *p_stream,
             fmt.video.i_visible_height =
             fmt.video.i_height = h;
 
-            subpicture_Update( p_subpic, &fmt.video, &fmt.video, p_subpic->i_start );
+            vlc_subpicture_updater_params_t params;
+            params.p_fmt_src = &fmt.video;
+            params.p_fmt_dst = &fmt.video;
+            params.ts = p_subpic->i_start;
+            params.flags = 0;
+            subpicture_Update( p_subpic, &params );
             es_format_Clean( &fmt );
 
             p_block = transcode_encoder_encode( id->encoder, p_subpic );

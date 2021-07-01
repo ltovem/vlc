@@ -96,15 +96,12 @@ static inline void SubpictureUpdaterSysRegionAdd(substext_updater_region_t *p_pr
 }
 
 static int SubpictureTextValidate(subpicture_t *subpic,
-                                  bool has_src_changed, const video_format_t *fmt_src,
-                                  bool has_dst_changed, const video_format_t *fmt_dst,
-                                  vlc_tick_t ts)
+                                  const vlc_subpicture_updater_params_t *params)
 {
     subtext_updater_sys_t *sys = subpic->updater.p_sys;
-    VLC_UNUSED(fmt_src); VLC_UNUSED(fmt_dst);
 
-    if (!has_src_changed && !has_dst_changed &&
-        (sys->i_next_update == VLC_TICK_INVALID || sys->i_next_update > ts))
+    if ( !(params->flags & (VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED|VLC_SPU_UPDATER_FLAG_DEST_CHANGED)) &&
+        (sys->i_next_update == VLC_TICK_INVALID || sys->i_next_update > params->ts))
         return VLC_SUCCESS;
 
     substext_updater_region_t *p_updtregion = &sys->region;
@@ -127,12 +124,11 @@ static int SubpictureTextValidate(subpicture_t *subpic,
 }
 
 static void SubpictureTextUpdate(subpicture_t *subpic,
-                                 const video_format_t *fmt_src,
-                                 const video_format_t *fmt_dst,
-                                 vlc_tick_t ts)
+                                 const vlc_subpicture_updater_params_t *params)
 {
     subtext_updater_sys_t *sys = subpic->updater.p_sys;
-    VLC_UNUSED(fmt_src);
+    const video_format_t *fmt_src = params->p_fmt_src;
+    const video_format_t *fmt_dst = params->p_fmt_dst;
 
     if (fmt_dst->i_sar_num <= 0 || fmt_dst->i_sar_den <= 0)
         return;
@@ -266,9 +262,9 @@ static void SubpictureTextUpdate(subpicture_t *subpic,
     }
 
     if( b_schedule_blink_update &&
-        (sys->i_next_update == VLC_TICK_INVALID || sys->i_next_update < ts) )
+        (sys->i_next_update == VLC_TICK_INVALID || sys->i_next_update < params->ts) )
     {
-        sys->i_next_update = ts + VLC_TICK_FROM_SEC(1);
+        sys->i_next_update = params->ts + VLC_TICK_FROM_SEC(1);
         sys->b_blink_even = !sys->b_blink_even;
     }
 }

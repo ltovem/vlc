@@ -74,24 +74,17 @@ static void TTML_ImageSpuAppendRegion(ttml_image_updater_sys_t *p_sys,
 }
 
 static int TTML_ImageSpuValidate(subpicture_t *p_spu,
-                                 bool b_src_changed, const video_format_t *p_fmt_src,
-                                 bool b_dst_changed, const video_format_t *p_fmt_dst,
-                                 vlc_tick_t ts)
+                                 const vlc_subpicture_updater_params_t *params)
 {
     VLC_UNUSED(p_spu);
-    VLC_UNUSED(b_src_changed); VLC_UNUSED(p_fmt_src);
-    VLC_UNUSED(p_fmt_dst);
-    VLC_UNUSED(ts);
-    return b_dst_changed ? VLC_EGENERIC: VLC_SUCCESS;
+    return (params->flags & VLC_SPU_UPDATER_FLAG_DEST_CHANGED) ? VLC_EGENERIC
+                                                               : VLC_SUCCESS;
 }
 
 static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
-                                const video_format_t *p_fmt_src,
-                                const video_format_t *p_fmt_dst,
-                                vlc_tick_t i_ts)
+                                const vlc_subpicture_updater_params_t *params)
 {
-    VLC_UNUSED(p_fmt_src); VLC_UNUSED(p_fmt_dst);
-    VLC_UNUSED(i_ts);
+    VLC_UNUSED(params);
     ttml_image_updater_sys_t *p_sys = p_spu->updater.p_sys;
     subpicture_region_t **pp_last_region = &p_spu->p_region;
 
@@ -115,12 +108,12 @@ static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
         r->i_align = SUBPICTURE_ALIGN_LEFT|SUBPICTURE_ALIGN_TOP;
 
         if( p_updtregion->i_flags & ORIGIN_X_IS_RATIO )
-            r->i_x = p_updtregion->origin.x * p_fmt_dst->i_visible_width;
+            r->i_x = p_updtregion->origin.x * params->p_fmt_dst->i_visible_width;
         else
             r->i_x = p_updtregion->origin.x;
 
         if( p_updtregion->i_flags & ORIGIN_Y_IS_RATIO )
-            r->i_y = p_updtregion->origin.y * p_fmt_dst->i_visible_height;
+            r->i_y = p_updtregion->origin.y * params->p_fmt_dst->i_visible_height;
         else
             r->i_y = p_updtregion->origin.y;
 

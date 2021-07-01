@@ -213,11 +213,9 @@ static bool SubsdelayIsTextEmpty( const text_segment_t* p_segment );
  * Subpicture functions
  *****************************************************************************/
 
-static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, const video_format_t *p_fmt_src,
-                                  bool has_dst_changed, const video_format_t *p_fmt_dst, vlc_tick_t i_ts );
+static int SubpicValidateWrapper( subpicture_t *p_subpic, const vlc_subpicture_updater_params_t * );
 
-static void SubpicUpdateWrapper( subpicture_t *p_subpic, const video_format_t *p_fmt_src,
-                                  const video_format_t *p_fmt_dst, vlc_tick_t i_ts );
+static void SubpicUpdateWrapper( subpicture_t *p_subpic, const vlc_subpicture_updater_params_t * );
 
 static void SubpicDestroyWrapper( subpicture_t *p_subpic );
 
@@ -913,8 +911,7 @@ static void SubsdelayRecalculateDelays( filter_t *p_filter )
 /*****************************************************************************
  * SubpicValidateWrapper: Subpicture validate callback wrapper
  *****************************************************************************/
-static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, const video_format_t *p_fmt_src,
-                                  bool has_dst_changed, const video_format_t *p_fmt_dst, vlc_tick_t i_ts )
+static int SubpicValidateWrapper( subpicture_t *p_subpic, const vlc_subpicture_updater_params_t *params )
 {
     subsdelay_heap_entry_t *p_entry;
     vlc_tick_t i_new_ts;
@@ -930,11 +927,12 @@ static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, 
     if( p_entry->p_source->updater.pf_validate )
     {
         i_new_ts = p_entry->p_source->i_start +
-                   ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
+                   ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( params->ts - p_entry->p_source->i_start ) ) /
                    ( p_entry->i_new_stop - p_entry->p_source->i_start );
 
-        i_result = p_entry->p_source->updater.pf_validate( p_entry->p_source, has_src_changed, p_fmt_src,
-                                                        has_dst_changed, p_fmt_dst, i_new_ts );
+        vlc_subpicture_updater_params_t cpy = *params;
+        cpy.ts = i_new_ts;
+        i_result = p_entry->p_source->updater.pf_validate( p_entry->p_source, &cpy );
     }
 
 
@@ -953,7 +951,7 @@ static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, 
     if( !i_result )
     {
         /* subpic update isn't necessary, so local update should be called here */
-        SubpicLocalUpdate( p_subpic, i_ts );
+        SubpicLocalUpdate( p_subpic, params->ts );
     }
 
     return i_result;
@@ -962,8 +960,7 @@ static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, 
 /*****************************************************************************
  * SubpicUpdateWrapper: Subpicture update callback wrapper
  *****************************************************************************/
-static void SubpicUpdateWrapper( subpicture_t *p_subpic, const video_format_t *p_fmt_src,
-                                  const video_format_t *p_fmt_dst, vlc_tick_t i_ts )
+static void SubpicUpdateWrapper( subpicture_t *p_subpic, const vlc_subpicture_updater_params_t *params )
 {
     subsdelay_heap_entry_t *p_entry;
     vlc_tick_t i_new_ts;
@@ -978,17 +975,20 @@ static void SubpicUpdateWrapper( subpicture_t *p_subpic, const video_format_t *p
     if( p_entry->p_source->updater.pf_update )
     {
         i_new_ts = p_entry->p_source->i_start +
-                   ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
+                   ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( params->ts - p_entry->p_source->i_start ) ) /
                    ( p_entry->i_new_stop - p_entry->p_source->i_start );
+
+        vlc_subpicture_updater_params_t cpy = *params;
+        cpy.ts = i_new_ts;
 
         p_entry->p_source->p_region = p_entry->p_subpic->p_region;
 
-        p_entry->p_source->updater.pf_update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
+        p_entry->p_source->updater.pf_update( p_entry->p_source, &cpy );
 
         p_entry->p_subpic->p_region = p_entry->p_source->p_region;
     }
 
-    SubpicLocalUpdate( p_subpic, i_ts );
+    SubpicLocalUpdate( p_subpic, params->ts );
 }
 
 /*****************************************************************************

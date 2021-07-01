@@ -794,22 +794,18 @@ static void PostprocessTigerImage( plane_t *p_plane, unsigned int i_width )
 }
 
 static int TigerValidateSubpicture( subpicture_t *p_subpic,
-                                    bool b_fmt_src, const video_format_t *p_fmt_src,
-                                    bool b_fmt_dst, const video_format_t *p_fmt_dst,
-                                    vlc_tick_t ts )
+                                    const vlc_subpicture_updater_params_t *params )
 {
-    VLC_UNUSED(p_fmt_src); VLC_UNUSED(p_fmt_dst);
-
     kate_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 
-    if( b_fmt_src || b_fmt_dst )
+    if( params->flags & (VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED|VLC_SPU_UPDATER_FLAG_DEST_CHANGED) )
         return VLC_EGENERIC;
 
     PROFILE_START( TigerValidateSubpicture );
 
     /* time in seconds from the start of the stream */
-    kate_float t = (p_spusys->i_start + ts - p_subpic->i_start ) / 1000000.0f;
+    kate_float t = (p_spusys->i_start + params->ts - p_subpic->i_start ) / 1000000.0f;
 
     /* it is likely that the current region (if any) can be kept as is; test for this */
     vlc_mutex_lock( &p_sys->lock );
@@ -838,9 +834,7 @@ exit:
    Looks good with white though since it's all luma. Hopefully that will be the
    common case. */
 static void TigerUpdateSubpicture( subpicture_t *p_subpic,
-                                   const video_format_t *p_fmt_src,
-                                   const video_format_t *p_fmt_dst,
-                                   vlc_tick_t ts )
+                                   const vlc_subpicture_updater_params_t *params )
 {
     kate_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
@@ -850,18 +844,18 @@ static void TigerUpdateSubpicture( subpicture_t *p_subpic,
 
 
     /* time in seconds from the start of the stream */
-    t = (p_spusys->i_start + ts - p_subpic->i_start ) / 1000000.0f;
+    t = (p_spusys->i_start + params->ts - p_subpic->i_start ) / 1000000.0f;
 
     PROFILE_START( TigerUpdateSubpicture );
 
     /* create a full frame region - this will also tell Tiger the size of the frame */
-    video_format_t fmt = *p_fmt_dst;
+    video_format_t fmt = *params->p_fmt_dst;
     fmt.i_chroma         = VLC_CODEC_RGBA;
     fmt.i_bits_per_pixel = 0;
     fmt.i_width          =
-    fmt.i_visible_width  = p_fmt_src->i_width;
+    fmt.i_visible_width  = params->p_fmt_src->i_width;
     fmt.i_height         =
-    fmt.i_visible_height = p_fmt_src->i_height;
+    fmt.i_visible_height = params->p_fmt_src->i_height;
     fmt.i_x_offset       = fmt.i_y_offset = 0;
 
     subpicture_region_t *p_r = subpicture_region_New( &fmt );

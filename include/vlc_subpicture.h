@@ -128,6 +128,17 @@ VLC_API void subpicture_region_ChainDelete( subpicture_region_t *p_head );
  */
 VLC_API subpicture_region_t *subpicture_region_Copy( subpicture_region_t *p_region );
 
+#define VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED     (1U<<0)
+#define VLC_SPU_UPDATER_FLAG_DEST_CHANGED       (1U<<1)
+
+typedef struct
+{
+    const video_format_t *p_fmt_src;
+    const video_format_t *p_fmt_dst;
+    vlc_tick_t ts;
+    unsigned flags;
+} vlc_subpicture_updater_params_t;
+
 /**
  *
  */
@@ -136,17 +147,11 @@ typedef struct
     /** Optional pre update callback, usually useful on video format change.
       * Will skip pf_update on VLC_SUCCESS, or will delete every region before
       * the call to pf_update */
-    int  (*pf_validate)( subpicture_t *,
-                         bool has_src_changed, const video_format_t *p_fmt_src,
-                         bool has_dst_changed, const video_format_t *p_fmt_dst,
-                         vlc_tick_t);
+    int  (*pf_validate)( subpicture_t *, const vlc_subpicture_updater_params_t *);
     /** Mandatory callback called after pf_validate and doing
       * the main job of creating the subpicture regions for the
       * current video_format */
-    void (*pf_update)  ( subpicture_t *,
-                         const video_format_t *p_fmt_src,
-                         const video_format_t *p_fmt_dst,
-                         vlc_tick_t );
+    void (*pf_update)  ( subpicture_t *, const vlc_subpicture_updater_params_t *);
     /** Optional callback for subpicture private data cleanup */
     void (*pf_destroy) ( subpicture_t * );
     void *p_sys;
@@ -230,7 +235,7 @@ VLC_API subpicture_t * subpicture_NewFromPicture( vlc_object_t *, picture_t *, v
  * This function will update the content of a subpicture created with
  * a non NULL subpicture_updater_t.
  */
-VLC_API void subpicture_Update( subpicture_t *, const video_format_t *src, const video_format_t *, vlc_tick_t );
+VLC_API void subpicture_Update( subpicture_t *, const vlc_subpicture_updater_params_t * );
 
 /**
  * This function will blend a given subpicture onto a picture.
