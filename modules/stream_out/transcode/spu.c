@@ -239,10 +239,8 @@ int transcode_spu_process( sout_stream_t *p_stream,
             fmt.video.i_height = h;
 
             vlc_subpicture_updater_params_t params;
-            params.p_fmt_src = &fmt.video;
-            params.p_fmt_dst = &fmt.video;
-            params.ts = p_subpic->i_start;
-            params.flags = 0;
+            vlc_subpicture_updater_params_Init( &params, &fmt.video,
+                                                &fmt.video, p_subpic->i_start );
             subpicture_Update( p_subpic, &params );
             es_format_Clean( &fmt );
 

@@ -1495,9 +1495,10 @@ static void spu_PrerenderText(spu_t *spu, subpicture_t *p_subpic,
     }
 
     vlc_subpicture_updater_params_t params;
-    params.p_fmt_src = fmtsrc;
-    params.p_fmt_dst = fmtdst;
-    params.ts = p_subpic->b_subtitle ? p_subpic->i_start : vlc_tick_now();
+    vlc_subpicture_updater_params_Init(&params, fmtsrc, fmtdst,
+                                       p_subpic->b_subtitle ? p_subpic->i_start
+                                                            : vlc_tick_now());
+    params.flags = VLC_SPU_UPDATER_FLAG_PRERENDERING;
     subpicture_Update(p_subpic, &params);
 
     const int i_original_picture_width = p_subpic->i_original_picture_width;
@@ -1978,9 +1979,9 @@ subpicture_t *spu_Render(spu_t *spu,
             continue;
 
         vlc_subpicture_updater_params_t params;
-        params.p_fmt_src = fmt_src;
-        params.p_fmt_dst = fmt_dst;
-        params.ts = subpic->b_subtitle ? render_subtitle_date : system_now;
+        vlc_subpicture_updater_params_Init(&params, fmt_src, fmt_dst,
+                                           subpic->b_subtitle ? render_subtitle_date
+                                                              : system_now);
         subpicture_Update(subpic, &params);
     }
 

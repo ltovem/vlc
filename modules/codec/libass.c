@@ -386,7 +386,6 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
         p_spu->i_stop = __MAX( p_sys->i_max_stop, p_block->i_pts + p_block->i_length );
         p_spu->b_ephemer = true;
         p_spu->b_absolute = true;
-        p_spu->b_subtitle = true;
 
         p_sys->i_max_stop = p_spu->i_stop;
 
@@ -427,10 +426,9 @@ static int SubpictureValidate( subpicture_t *p_subpic,
     fmt.i_bits_per_pixel = 0;
     fmt.i_x_offset       = 0;
     fmt.i_y_offset       = 0;
-    bool b_dim_changed = params->flags & (VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED|
-                                          VLC_SPU_UPDATER_FLAG_DEST_CHANGED);
-
-    if( b_dim_changed )
+    bool b_size_changed = params->flags & (VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED|
+                                           VLC_SPU_UPDATER_FLAG_DEST_CHANGED);
+    if( b_size_changed )
     {
         ass_set_frame_size( p_sys->p_renderer, fmt.i_visible_width, fmt.i_visible_height );
         const double src_ratio = (double)params->p_fmt_src->i_visible_width / params->p_fmt_src->i_visible_height;
@@ -445,7 +443,7 @@ static int SubpictureValidate( subpicture_t *p_subpic,
     ASS_Image *p_img = ass_render_frame( p_sys->p_renderer, p_sys->p_track,
                                          MS_FROM_VLC_TICK( i_stream_date ), &i_changed );
 
-    if( !i_changed && !b_dim_changed &&
+    if( !i_changed && !b_size_changed &&
         (p_img != NULL) == (p_subpic->p_region != NULL) )
     {
         vlc_mutex_unlock( &p_sys->lock );
@@ -453,16 +451,6 @@ static int SubpictureValidate( subpicture_t *p_subpic,
     }
     p_spusys->p_img = p_img;
 
-fprintf(stderr, "changed %p %d %d '%ld' '%ld' '%ld' %4.4s%4.4s %dx%d %dx%d\n",
-        p_subpic,
-        i_changed , params->flags, i_stream_date,
-        MS_FROM_VLC_TICK(p_subpic->i_start), MS_FROM_VLC_TICK(params->ts),
-        &params->p_fmt_src->i_chroma, &params->p_fmt_dst->i_chroma,
-        params->p_fmt_src->i_width,
-        params->p_fmt_src->i_height,
-        params->p_fmt_dst->i_width,
-        params->p_fmt_dst->i_height
-        );
     /* The lock is released by SubpictureUpdate */
     return VLC_EGENERIC;
 }
@@ -470,6 +458,7 @@ fprintf(stderr, "changed %p %d %d '%ld' '%ld' '%ld' %4.4s%4.4s %dx%d %dx%d\n",
 static void SubpictureUpdate( subpicture_t *p_subpic,
                               const vlc_subpicture_updater_params_t *params )
 {
+    VLC_UNUSED(params);
     libass_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 

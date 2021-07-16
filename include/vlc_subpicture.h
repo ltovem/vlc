@@ -128,8 +128,10 @@ VLC_API void subpicture_region_ChainDelete( subpicture_region_t *p_head );
  */
 VLC_API subpicture_region_t *subpicture_region_Copy( subpicture_region_t *p_region );
 
+/* Subpicture updater params flags */
 #define VLC_SPU_UPDATER_FLAG_SOURCE_CHANGED     (1U<<0)
 #define VLC_SPU_UPDATER_FLAG_DEST_CHANGED       (1U<<1)
+#define VLC_SPU_UPDATER_FLAG_PRERENDERING       (1U<<2)
 
 typedef struct
 {
@@ -138,6 +140,18 @@ typedef struct
     vlc_tick_t ts;
     unsigned flags;
 } vlc_subpicture_updater_params_t;
+
+static inline void
+vlc_subpicture_updater_params_Init( vlc_subpicture_updater_params_t *p,
+                                    const video_format_t *p_fmt_src,
+                                    const video_format_t *p_fmt_dst,
+                                    vlc_tick_t ts )
+{
+    p->p_fmt_src = p_fmt_src;
+    p->p_fmt_dst = p_fmt_dst;
+    p->ts = ts;
+    p->flags = 0;
+}
 
 /**
  *
