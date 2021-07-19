@@ -949,19 +949,22 @@ static void ChangeFilters(vout_thread_sys_t *vout)
     sys->filter.changed = false;
 }
 
-static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
-                          vlc_tick_t system_now, vlc_tick_t system_pts)
+static bool IsPictureLateToProcess(vout_thread_sys_t *vout, picture_t *pic,
+                                   const vlc_tick_t processing_duration)
 {
     vout_thread_sys_t *sys = vout;
+    const vlc_tick_t system_now = vlc_tick_now();
 
-    const vlc_tick_t prepare_decoded_duration = vout_chrono_GetHigh(&sys->render) +
-                                                VOUT_MWAIT_TOLERANCE +
-                                                vout_chrono_GetHigh(&sys->static_filter);
-    vlc_tick_t late = system_now + prepare_decoded_duration - system_pts;
+    const vlc_tick_t system_pts =
+        vlc_clock_ConvertToSystem(sys->clock, system_now, pic->date, sys->rate);
+    if (system_pts == VLC_TICK_MAX)
+        return false; // not late in pause
+
+    vlc_tick_t late = system_now + processing_duration - system_pts;
 
     vlc_tick_t late_threshold;
-    if (decoded->format.i_frame_rate && decoded->format.i_frame_rate_base) {
-        late_threshold = vlc_tick_from_samples(decoded->format.i_frame_rate_base, decoded->format.i_frame_rate);
+    if (pic->format.i_frame_rate && pic->format.i_frame_rate_base) {
+        late_threshold = vlc_tick_from_samples(pic->format.i_frame_rate_base, pic->format.i_frame_rate);
     }
     else
         late_threshold = VOUT_DISPLAY_LATE_THRESHOLD;
@@ -970,6 +973,15 @@ static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
         return true;
     }
     return false;
+}
+
+static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded)
+{
+    vout_thread_sys_t *sys = vout;
+    const vlc_tick_t prepare_decoded_duration = vout_chrono_GetHigh(&sys->render) +
+                                                VOUT_MWAIT_TOLERANCE +
+                                                vout_chrono_GetHigh(&sys->static_filter);
+    return IsPictureLateToProcess(vout, decoded, prepare_decoded_duration);
 }
 
 /* */
@@ -995,13 +1007,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
             if (decoded) {
                 if (is_late_dropped && !decoded->b_force)
                 {
-                    const vlc_tick_t system_now = vlc_tick_now();
-                    const vlc_tick_t system_pts =
-                        vlc_clock_ConvertToSystem(sys->clock, system_now,
-                                                  decoded->date, sys->rate);
-
-                    if (system_pts != VLC_TICK_MAX &&
-                        IsPictureLate(vout, decoded, system_now, system_pts))
+                    if (IsPictureLate(vout, decoded))
                     {
                         picture_Release(decoded);
                         vout_statistic_AddLost(&sys->statistic, 1);
