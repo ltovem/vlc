@@ -975,6 +975,14 @@ static bool IsPictureLateToProcess(vout_thread_sys_t *vout, picture_t *pic,
     return false;
 }
 
+static bool IsPictureLateToPrepare(vout_thread_sys_t *vout, picture_t *static_filtered)
+{
+    vout_thread_sys_t *sys = vout;
+    const vlc_tick_t prepare_static_filtered_duration = vout_chrono_GetHigh(&sys->render) +
+                                                VOUT_MWAIT_TOLERANCE;
+    return IsPictureLateToProcess(vout, static_filtered, prepare_static_filtered_duration);
+}
+
 static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded)
 {
     vout_thread_sys_t *sys = vout;
@@ -994,8 +1002,22 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
 
     vlc_mutex_lock(&sys->filter.lock);
 
-    picture_t *picture = filter_chain_VideoFilter(sys->filter.chain_static, NULL);
-    assert(!reuse_decoded || !picture);
+    picture_t *picture = NULL;
+
+    while (!picture) {
+        picture = filter_chain_VideoFilter(sys->filter.chain_static, NULL);
+        assert(!reuse_decoded || !picture);
+
+        if (!picture)
+            break;
+
+        if (is_late_dropped && !picture->b_force && IsPictureLateToPrepare(vout, picture))
+        {
+            picture_Release(picture);
+            picture = NULL;
+            vout_statistic_AddLost(&sys->statistic, 1);
+        }
+    }
 
     while (!picture) {
         picture_t *decoded;
