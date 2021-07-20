@@ -155,3 +155,7 @@ librnnoise_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(audio_filterdir)'
 
 audio_filter_LTLIBRARIES += $(LTLIBrnnoise)
 EXTRA_LTLIBRARIES += librnnoise_plugin.la
+
+libspeech_to_text_plugin_la_SOURCES = audio_filter/speech_to_text.cpp
+audio_filter_LTLIBRARIES += \
+	libspeech_to_text_plugin.la
