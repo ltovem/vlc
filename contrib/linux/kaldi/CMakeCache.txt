@@ -15,7 +15,7 @@
 ########################
 
 //Path to a library.
-BLAS_openblas_LIBRARY:FILEPATH=BLAS_openblas_LIBRARY-NOTFOUND
+BLAS_openblas_LIBRARY:FILEPATH=/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/libopenblas.a
 
 //No help, variable specified on the command line.
 BUILD_SHARED_LIBS:BOOL=OFF
@@ -303,6 +303,9 @@ KALDI_BUILD_TEST:BOOL=ON
 //Use MAJOR.MINOR.PATCH format, otherwise MAJOR.MINOR
 KALDI_USE_PATCH_NUMBER:BOOL=OFF
 
+//Path to a library.
+LAPACK_openblas_LIBRARY:FILEPATH=/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/libopenblas.a
+
 //Command to build the project
 MAKECOMMAND:STRING=/home/davide/Scrivania/GSOC/VlcJB/vlc/extras/tools/build/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}"
 
@@ -346,6 +349,10 @@ kaldi_SOURCE_DIR:STATIC=/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/linux/kald
 
 //ADVANCED property for variable: BLAS_openblas_LIBRARY
 BLAS_openblas_LIBRARY-ADVANCED:INTERNAL=1
+//Have function sgemm_
+BLAS_openblas_WORKS:INTERNAL=
+//Have function sgemm_
+BLAS_openblas_threadlibs_WORKS:INTERNAL=1
 //ADVANCED property for variable: BZRCOMMAND
 BZRCOMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_ADDR2LINE
@@ -545,6 +552,8 @@ CVSCOMMAND-ADVANCED:INTERNAL=1
 CVS_UPDATE_OPTIONS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: DART_TESTING_TIMEOUT
 DART_TESTING_TIMEOUT-ADVANCED:INTERNAL=1
+//Details about finding BLAS
+FIND_PACKAGE_MESSAGE_DETAILS_BLAS:INTERNAL=[/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/libopenblas.a;-lpthread][v()]
 //Details about finding PythonInterp
 FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/usr/bin/python][v2.7.18()]
 //Details about finding Threads
@@ -553,6 +562,10 @@ FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 GITCOMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: HGCOMMAND
 HGCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LAPACK_openblas_LIBRARY
+LAPACK_openblas_LIBRARY-ADVANCED:INTERNAL=1
+//Have function cheev_
+LAPACK_openblas_WORKS:INTERNAL=
 //ADVANCED property for variable: MAKECOMMAND
 MAKECOMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: MEMORYCHECK_COMMAND
