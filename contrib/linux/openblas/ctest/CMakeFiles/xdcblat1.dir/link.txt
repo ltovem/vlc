@@ -1,0 +1,1 @@
+/usr/bin/f95  -L/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib   -fPIC -O2 -g -DNDEBUG CMakeFiles/xdcblat1.dir/c_dblat1.f.o CMakeFiles/xdcblat1.dir/c_dblas1.c.o  -o xdcblat1  ../lib/libopenblas.a -lpthread 
