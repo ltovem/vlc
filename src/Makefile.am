@@ -556,7 +556,7 @@ if HAVE_DARWIN
 $(libvlccore_la_OBJECTS): libvlc_darwin.la libvlccore_objc.la
 libvlccore_objc_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc
 libvlccore_objc_la_LDFLAGS = -static
-libvlccore_la_LIBADD += libvlccore_objc.la
+libvlccore_la_LIBADD += libvlccore_objc.la libvlc_darwin.la
 libvlccore_la_LDFLAGS +=  -Wl,-framework,Foundation -Xlinker -install_name -Xlinker @rpath/libvlccore.dylib
 endif
 
