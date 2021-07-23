@@ -1271,8 +1271,6 @@ static int PrerenderPicture(vout_thread_sys_t *sys, picture_t *filtered,
 
     todisplay = vout_ConvertForDisplay(vd, todisplay);
     if (todisplay == NULL) {
-        vlc_mutex_unlock(&sys->display_lock);
-
         if (subpic != NULL)
             subpicture_Delete(subpic);
         return VLC_EGENERIC;
