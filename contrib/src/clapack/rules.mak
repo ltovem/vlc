@@ -17,6 +17,11 @@ clapack: clapack-$(CLAPACK_VERSION).tar.gz .sum-clapack
 	$(MOVE)
 
 .clapack: clapack toolchain.cmake
-	cd $< && $(HOSTVARS_PIC) $(CMAKE) -DENABLE_WIN32_IO=OFF
+	mkdir -p clapack/BUILD
+	cd $< && $(HOSTVARS_PIC) $(CMAKE) 
 	cd $< && $(CMAKEBUILD) . --target install
 	touch $@
+
+
+#	cd $< && $(CMAKEBUILD) . --target install
+#	cd $< && make -j 2
