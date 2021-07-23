@@ -19,7 +19,7 @@ clapack: clapack-$(CLAPACK_VERSION).tar.gz .sum-clapack
 .clapack: clapack toolchain.cmake
 	mkdir -p clapack/BUILD
 	cd $< && $(HOSTVARS_PIC) $(CMAKE) 
-	cd $< && $(CMAKEBUILD) . --target install
+	cd $< && $(MAKE)
 	touch $@
 
 

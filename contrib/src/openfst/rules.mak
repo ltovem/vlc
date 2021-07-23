@@ -26,8 +26,9 @@ OPENFSTCONF := $(HOSTCONF) \
 	--enable-lookahead-fsts \
 	--with-pic \
 	--disable-bin \
-	--host=${CROSS_TRIPLE} \
+#	--host=${CROSS_TRIPLE} \
 	--build=x86-linux-gnu
+#De-comment if it doesn't work
 
 OPENFST_CFLAGS := $(CFLAGS) 
 
@@ -39,3 +40,5 @@ DEPS_openfst = ogg $(DEPS_ogg)
 	cd $< && $(MAKE)
 	cd $< && $(MAKE) install
 	touch $@
+
+#Store in "fst" directory
