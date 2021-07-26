@@ -31,6 +31,7 @@
 
 //#include "speech_to_text_vosk.h"
 //#include <vosk_api.h>
+#include <iostream> //Temporaneo
 
 #include <queue>
 
@@ -79,6 +80,7 @@ static int Open( vlc_object_t *p_this )
     p_filter->fmt_in.audio.i_format = VLC_CODEC_S16L; //To Signed 16 bit
     p_filter->fmt_in.audio.i_rate = 48000; //To 48000 Hz
     p_filter->fmt_in.audio.i_channels = 1; //To mono
+    p_filter->fmt_in.audio.i_physical_channels = 1; //To mono
 
     aout_FormatPrepare(&p_filter->fmt_in.audio);
     p_filter->fmt_out.audio = p_filter->fmt_in.audio;
@@ -91,6 +93,7 @@ static int Open( vlc_object_t *p_this )
     p_filter->ops = &filter_ops;
 
     msg_Dbg( p_filter, "SpeechToText successfully initialized" );
+    std::cout << "OPEN" << std::endl << std::endl;
     return VLC_SUCCESS; //No error. 
 }
 
@@ -105,6 +108,7 @@ static int Open( vlc_object_t *p_this )
 static block_t *DoWork( filter_t *p_filter, block_t *p_block )
 {
     msg_Dbg( p_filter, "SpeechToText successfully processed" );
+    (void) p_filter;
     return p_block;
 }
 
