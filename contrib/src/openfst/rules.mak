@@ -41,4 +41,4 @@ DEPS_openfst = ogg $(DEPS_ogg)
 	cd $< && $(MAKE) install
 	touch $@
 
-#Store in "fst" directory
+#Store in "/contrib/x86_64-linux-gnu/include/fst" directory

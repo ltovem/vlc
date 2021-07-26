@@ -23,5 +23,4 @@ clapack: clapack-$(CLAPACK_VERSION).tar.gz .sum-clapack
 	touch $@
 
 
-#	cd $< && $(CMAKEBUILD) . --target install
-#	cd $< && make -j 2
+#Store in "contrib/linux/clapack" directory 

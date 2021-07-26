@@ -17,15 +17,19 @@ kaldi: kaldi-$(KALDI_VERSION).tar.gz .sum-kaldi
 	$(MOVE)
 
 
-KALDICONF := $(HOSTCONF) \
-	--mathlib=OPENBLAS_CLAPACK \
-	--shared \
-	--use-cuda=no
-
 #Delete --prefix
+TEMP_PREFIX := --prefix="$(PREFIX)"
+HOSTCONF_NOPREFIX := $(filter-out $(TEMP_PREFIX) , $(HOSTCONF) )
 
+KALDICONF := --mathlib=OPENBLAS_CLAPACK \
+	--shared \
+	--use-cuda=no \
+	--fst-root="$(PREFIX)" \
+	--openblas-root="$(PREFIX)" \
+	--clapack-root="$(PREFIX)" \
+#	--fst-version=STR \
+#	$(HOSTCONF_NOPREFIX) 
 	
-
 
 
 KALDI_CFLAGS := $(CFLAGS)
@@ -34,6 +38,10 @@ KALDI_CFLAGS := $(CFLAGS)
 .kaldi: kaldi toolchain.cmake
 #	cd $< && $(HOSTVARS_PIC) $(CMAKE) -DENABLE_WIN32_IO=OFF  
 #	cd $< && $(CMAKEBUILD) . --target install
-	cd $< && cd src && $(HOSTVARS) ./configure $(KALDICONF)
+#	@echo "Prefix is $(TEMP_PREFIX)"
+#	@echo "Path is $(HOSTCONF_NOPREFIX)"
+#	@echo "Second Path is $(HOSTCONF)"
+#	@echo "FIND $(filter-out $(TEMP_PREFIX), $(HOSTCONF) )"
+	cd $< && cd src && ./configure $(KALDICONF)
 	cd $< && cd src && $(MAKE) online2 lm rnnlm
 	touch $@
