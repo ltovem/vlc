@@ -36,6 +36,8 @@ KALDI_CFLAGS := $(CFLAGS)
 
 .kaldi: kaldi toolchain.cmake
 	cd $< && cd tools && extras/install_openblas_clapack.sh
-	cd $< && cd src && ./configure $(KALDICONF)
+	cd $< && cd src && $(HOSTVARS) CFLAGS="$(KALDI_CFLAGS)" ./configure $(KALDICONF)
 	cd $< && cd src && $(MAKE) online2 lm rnnlm
+#	cd $< && $(HOSTVARS_PIC) $(CMAKE) src/online2 src/lm src/rnnlm -DENABLE_WIN32_IO=OFF
+#	cd $< && $(CMAKEBUILD) . --target install
 	touch $@
