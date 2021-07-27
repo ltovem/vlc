@@ -218,17 +218,6 @@ static void PictureRender (vout_display_t *vd, picture_t *pic, subpicture_t *sub
     if (vlc_gl_MakeCurrent (sys->gl) == VLC_SUCCESS)
     {
         vout_display_opengl_Prepare (sys->vgl, pic, subpicture);
-        vlc_gl_ReleaseCurrent (sys->gl);
-    }
-}
-
-static void PictureDisplay (vout_display_t *vd, picture_t *pic)
-{
-    vout_display_sys_t *sys = vd->sys;
-    VLC_UNUSED(pic);
-
-    if (vlc_gl_MakeCurrent (sys->gl) == VLC_SUCCESS)
-    {
         if (sys->place_changed)
         {
             vout_display_opengl_SetOutputSize(sys->vgl, sys->place.width,
@@ -238,8 +227,18 @@ static void PictureDisplay (vout_display_t *vd, picture_t *pic)
             sys->place_changed = false;
         }
         vout_display_opengl_Display(sys->vgl);
-        vlc_gl_Swap(sys->glà;
+        sys->vt.Flush();
     }
+}
+
+static void PictureDisplay (vout_display_t *vd, picture_t *pic)
+{
+    vout_display_sys_t *sys = vd->sys;
+    VLC_UNUSED(pic);
+
+    /* Present on screen */
+    vlc_gl_Swap(sys->gl);
+    vlc_gl_ReleaseCurrent (sys->gl);
 }
 
 static int Control (vout_display_t *vd, int query)
