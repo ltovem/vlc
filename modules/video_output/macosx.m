@@ -334,6 +334,7 @@ static void PictureDisplay (vout_display_t *vd, picture_t *pic)
         vout_display_opengl_Display(sys->vgl);
         vlc_gl_ReleaseCurrent(sys->gl);
     }
+    vlc_gl_Swap(sys->gl);
     [sys->glView setVoutFlushing:NO];
     sys->has_first_frame = true;
 }
@@ -608,6 +609,7 @@ static void OpenglSwap (vlc_gl_t *gl)
         vout_display_opengl_Display(sys->vgl);
     else
         glClear (GL_COLOR_BUFFER_BIT);
+    vlc_gl_Swap(sys->gl); // TODO
 }
 
 /**

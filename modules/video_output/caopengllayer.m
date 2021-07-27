@@ -468,6 +468,7 @@ static void *OurGetProcAddress (vlc_gl_t *gl, const char *name)
 
     // flush is also done by this method, no need to call super
     vout_display_opengl_Display(sys->vgl);
+    vlc_gl_Swap(sys->gl);
     sys->b_frame_available = NO;
 }
 
