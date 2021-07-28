@@ -31,7 +31,7 @@
 
 //#include "speech_to_text_vosk.h"
 //#include <vosk_api.h>
-#include <iostream> //Temporaneo
+#include <iostream> //Temporary
 
 #include <queue>
 
@@ -93,7 +93,6 @@ static int Open( vlc_object_t *p_this )
     p_filter->ops = &filter_ops;
 
     msg_Dbg( p_filter, "SpeechToText successfully initialized" );
-    std::cout << "OPEN" << std::endl << std::endl;
     return VLC_SUCCESS; //No error. 
 }
 
@@ -106,12 +105,20 @@ static int Open( vlc_object_t *p_this )
     @param p_block A block_t.
 */
 static block_t *DoWork( filter_t *p_filter, block_t *p_block )
-{
+{   
+    int nread=  p_block->i_buffer; //size of the buffer
+    unsigned char* buf = p_block->p_buffer; //actual data in the buffer
+
+    //std::cout << "SIZE:" << nread << std::endl; //Around 1900-2800
+
     msg_Dbg( p_filter, "SpeechToText successfully processed" );
     (void) p_filter;
     return p_block;
 }
 
+//?? Possible solution:
+//1 - Read all the audio file, store it and than process it using transcribe_vlc.
+//2 - Declare *model and *recognizer  and pass it to DoWork as input argoment.
 
 /**
     //?? Necessary only your filter allocates 
