@@ -1,3 +1,0 @@
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/share/libmysofa/default.sofa
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/libmysofa.a
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/include/mysofa.h

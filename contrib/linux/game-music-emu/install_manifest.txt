@@ -1,3 +1,0 @@
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/libgme.a
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/include/gme/gme.h
-/home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu/lib/pkgconfig/libgme.pc

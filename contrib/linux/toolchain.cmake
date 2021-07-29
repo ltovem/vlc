@@ -1,7 +1,0 @@
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-set(CMAKE_SYSTEM_PROCESSOR x86_64)
-set(CMAKE_AR ar CACHE FILEPATH "Archiver")
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_FIND_ROOT_PATH /home/davide/Scrivania/GSOC/VlcJB/vlc/contrib/x86_64-linux-gnu)
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

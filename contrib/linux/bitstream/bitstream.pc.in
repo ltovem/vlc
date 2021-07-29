@@ -1,7 +1,0 @@
-prefix=@PREFIX@
-includedir=@INCLUDEDIR@
-
-Name: bitstream
-Description: Binary structures for MPEG, DVB, IETF, SMPTE, IEEE, SCTE, etc.
-Version: @VERSION@
-Cflags: -I${includedir}
