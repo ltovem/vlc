@@ -48,7 +48,7 @@ plugins.dat
 patches/*
 
 include/vlc/libvlc_version.h
-contrib/src
+contrib/linux
 
 # Ignore build dirs
 build*/
