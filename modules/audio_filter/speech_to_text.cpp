@@ -119,6 +119,7 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_block )
 //?? Possible solution:
 //1 - Read all the audio file, store it and than process it using transcribe_vlc.
 //2 - Declare *model and *recognizer  and pass it to DoWork as input argoment.
+//3 - If performance are lower than before use a Queue to store data and read with chosen buf size.
 
 /**
     //?? Necessary only your filter allocates 
