@@ -17,6 +17,6 @@ openblas: OpenBLAS-$(OPENBLAS_VERSION).tar.gz .sum-openblas
 	$(MOVE)
 
 .openblas: openblas toolchain.cmake
-	cd $< && $(HOSTVARS_PIC) $(CMAKE) -DENABLE_WIN32_IO=OFF
+	cd $< && FC="gfortran" $(HOSTVARS_PIC) $(CMAKE) -DENABLE_WIN32_IO=OFF
 	cd $< && $(CMAKEBUILD) . --target install
 	touch $@

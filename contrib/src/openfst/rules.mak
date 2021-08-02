@@ -1,7 +1,7 @@
 # openfst
 
-OPENFST_VERSION := master
-OPENFST_URL := https://github.com/alphacep/openfst/archive/$(OPENFST_VERSION).tar.gz
+OPENFST_VERSION := 1.8.1
+OPENFST_URL := http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-$(OPENFST_VERSION).tar.gz
 
 PKGS += openfst
 ifeq ($(call need_pkg,"openfst"),)
