@@ -196,6 +196,10 @@ AM_CPPFLAGS += -DHAVE_DBUS
 AM_CFLAGS += $(DBUS_CFLAGS)
 endif
 
+libvlc_darwin_la_SOURCES = darwin/runloop.c darwin/runloop.h
+libvlc_darwin_la_CFLAGS =
+libvlc_darwin_la_CPPFLAGS =
+
 libvlccore_la_SOURCES = \
 	libvlc.c \
 	libvlc.h \
@@ -453,7 +457,7 @@ libvlccore_la_SOURCES += \
 libvlccore_objc_la_SOURCES = \
 	darwin/dirs.m \
 	darwin/netconf.m
-noinst_LTLIBRARIES = libvlccore_objc.la
+noinst_LTLIBRARIES = libvlccore_objc.la libvlc_darwin.la
 endif
 
 if HAVE_FREEBSD
@@ -549,7 +553,7 @@ if HAVE_DBUS
 libvlccore_la_LIBADD += $(DBUS_LIBS)
 endif
 if HAVE_DARWIN
-$(libvlccore_la_OBJECTS): libvlccore_objc.la
+$(libvlccore_la_OBJECTS): libvlc_darwin.la libvlccore_objc.la
 libvlccore_objc_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc
 libvlccore_objc_la_LDFLAGS = -static
 libvlccore_la_LIBADD += libvlccore_objc.la
