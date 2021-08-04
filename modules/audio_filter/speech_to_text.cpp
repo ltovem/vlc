@@ -64,6 +64,26 @@ vlc_module_begin ()
     set_callback( Open )
 vlc_module_end ()
 
+/**
+    @brief filter_sys_t: Local prototypes
+
+    @param model Vosk model.
+    @param recognizer Vosk recognizer.
+    @param text To store the text.
+    @param temp Support std::string for text.
+    @param time Boolean.
+    @param verbose Integer. 
+*/
+typedef struct
+{
+    //VoskModel *model;
+    //VoskRecognizer *recognizer;
+    std::string* text; 
+    std::string* temp;
+    bool time;
+    int verbose;
+
+} filter_sys_t;
 
 /**
     @brief Open: initialize filter
@@ -77,6 +97,13 @@ static int Open( vlc_object_t *p_this )
 {
     filter_t *p_filter = (filter_t *)p_this;
 
+    filter_sys_t *p_sys = static_cast<filter_sys_t *>( malloc( sizeof(filter_sys_t) ) );
+    p_filter->p_sys = p_sys;
+
+    if( unlikely(!p_sys) )
+        return VLC_ENOMEM;
+
+    //p_filter setup
     p_filter->fmt_in.audio.i_format = VLC_CODEC_S16L; //To Signed 16 bit
     p_filter->fmt_in.audio.i_rate = 48000; //To 48000 Hz
     p_filter->fmt_in.audio.i_channels = 1; //To mono
@@ -84,6 +111,12 @@ static int Open( vlc_object_t *p_this )
 
     aout_FormatPrepare(&p_filter->fmt_in.audio);
     p_filter->fmt_out.audio = p_filter->fmt_in.audio;
+
+    //p_sys setup
+    p_sys->text = new std::string("c");
+    p_sys->temp = new std::string("");
+    p_sys->time = false;
+    p_sys->verbose = -1;
 
     //VLC Core will call DoWork function, when it need to filter_audio.
     static const struct vlc_filter_operations filter_ops =
@@ -111,6 +144,12 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_block )
 
     //std::cout << "SIZE:" << nread << std::endl; //Around 1900-2800
 
+    filter_sys_t *p_sys = static_cast<filter_sys_t *> (p_filter->p_sys);
+    *p_sys->text += "C";
+    std::cout << "TEXT=" << *p_sys->text << std::endl;
+    std::cout << p_sys->time << std::endl;
+    std::cout << p_sys->verbose << std::endl;
+
     msg_Dbg( p_filter, "SpeechToText successfully processed" );
     (void) p_filter;
     return p_block;
@@ -133,6 +172,12 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_block )
 */
 static void Close( filter_t *p_filter )
 {
+    filter_sys_t *p_sys = static_cast<filter_sys_t *> (p_filter->p_sys);
+    //free( p_sys->model );
+    //free( p_sys->recognizer );
+    free( p_sys->text );
+    free( p_sys->temp );
+    free( p_sys );
     msg_Dbg( p_filter, "SpeechToText successfully closed" );
 }
 
