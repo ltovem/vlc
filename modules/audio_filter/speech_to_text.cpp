@@ -65,7 +65,7 @@ vlc_module_begin ()
 vlc_module_end ()
 
 /**
-    @brief filter_sys_t: Local prototypes
+    @brief filter_sys_t: Filter descriptor
 
     @param model Vosk model.
     @param recognizer Vosk recognizer.
@@ -84,6 +84,33 @@ typedef struct
     int verbose;
 
 } filter_sys_t;
+
+//Temporary struct, will be imported
+//from speech_to_text_vosk.h
+/**
+    @brief Struct that implements spu_node. 
+    Useful for spu_stt module.
+*/
+struct spu_node {
+    int id;
+    double starting_time;
+    double ending_time;
+    char* text;
+    //True if the word marks the end of a sentence.
+    bool end_sentence;
+
+    /**
+        @brief Default constructor
+    */
+    spu_node(){
+        id = 0;
+        starting_time = 0;
+        ending_time = 0;
+        text = NULL;
+        end_sentence = false;
+    }
+
+};
 
 /**
     @brief Open: initialize filter
