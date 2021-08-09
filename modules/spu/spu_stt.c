@@ -90,7 +90,7 @@ typedef struct{
 typedef struct
 {
     vlc_mutex_t lock;
-    spu_node node;
+    std::vector<spu_node>* vector_node; //Maybe 
     int i_pos; 
     int i_pos_x, i_pos_y; 
     char *format;
