@@ -82,10 +82,10 @@ std::ostream & operator << (std::ostream &out, srt_node& srt) {
 
 
 /**
-    @brief Struct that implements spu_node. 
-    Useful for spu_stt module.
+    @brief Struct that implements sub_node. 
+    Useful for sub_stt module.
 */
-struct spu_node {
+struct sub_node {
     int id;
     double starting_time;
     double ending_time;
@@ -96,7 +96,7 @@ struct spu_node {
     /**
         @brief Default constructor
     */
-    spu_node(){
+    sub_node(){
         id = 0;
         starting_time = 0;
         ending_time = 0;
@@ -112,9 +112,9 @@ struct spu_node {
     It allows printing via std::ostream.
 
 	@param out std::ostream
-	@param srt spu_node
+	@param srt sub_node
 */
-std::ostream & operator << (std::ostream &out, spu_node& srt) {
+std::ostream & operator << (std::ostream &out, sub_node& srt) {
 
 	out << "{ \"id\" : ";
     out << srt.id;
@@ -403,15 +403,15 @@ std::vector<srt_node> json_to_srt_node(const std::string json){
 } 
 
 /**
-    @brief Transform json string into vector<spu_node>.
+    @brief Transform json string into vector<sub_node>.
     @param json A json string. Should be the output of transcribe_vosk.
-    @return  A vector<spu_node>.
+    @return  A vector<sub_node>.
 */
-std::vector<spu_node> json_to_spu_node(const std::string json){
+std::vector<sub_node> json_to_sub_node(const std::string json){
     char pattern [] = "\"word\"";
     size_t n_word = number_of_occurrence(json, pattern);
-    std::vector<spu_node> spu_vector;
-    std::vector<spu_node>::iterator it;
+    std::vector<sub_node> sub_vector;
+    std::vector<sub_node>::iterator it;
     size_t index_end, index_start, index_word;
     size_t index_sep;
     size_t counter, gap;
@@ -422,12 +422,12 @@ std::vector<spu_node> json_to_spu_node(const std::string json){
     std::string temp_starting_time;
     
 
-    it = spu_vector.begin();
+    it = sub_vector.begin();
 
-    spu_node temp_spu_node;
+    sub_node temp_sub_node;
 
     for(counter = 0; counter < n_word; counter++){
-        temp_spu_node.id = counter+1;
+        temp_sub_node.id = counter+1;
 
         index_end = str.find("\"end\"");
         index_sep = str.find(",", index_end);
@@ -437,7 +437,7 @@ std::vector<spu_node> json_to_spu_node(const std::string json){
         gap = index_sep - index_end;
         temp_ending_time = str.substr(index_end, gap);
         temp_ending_time = temp_ending_time.substr(8, gap);
-        temp_spu_node.ending_time = std::stod(temp_ending_time); //Convert the string to time
+        temp_sub_node.ending_time = std::stod(temp_ending_time); //Convert the string to time
         
 
         index_sep = str.find(",", index_start);
@@ -446,7 +446,7 @@ std::vector<spu_node> json_to_spu_node(const std::string json){
         gap = index_sep - index_start;
         temp_starting_time = str.substr(index_start, gap);
         temp_starting_time = temp_starting_time.substr(10, gap);
-        temp_spu_node.starting_time = std::stod(temp_starting_time); //Convert the string to time
+        temp_sub_node.starting_time = std::stod(temp_starting_time); //Convert the string to time
 
 
         index_sep = str.find("}", index_word);
@@ -454,21 +454,21 @@ std::vector<spu_node> json_to_spu_node(const std::string json){
         gap = index_sep - index_word - 3;
         temp_text = str.substr(index_word, gap);
         temp_text = temp_text.substr(9, gap-11);
-        temp_spu_node.text = (char*) malloc ( sizeof(char) * (temp_text.length()+1) );
-        strcpy(temp_spu_node.text, temp_text.c_str()); //Remember to free them
+        temp_sub_node.text = (char*) malloc ( sizeof(char) * (temp_text.length()+1) );
+        strcpy(temp_sub_node.text, temp_text.c_str()); //Remember to free them
 
         //end_sentence
-        temp_spu_node.end_sentence = ( temp_text.find(".") != std::string::npos );
+        temp_sub_node.end_sentence = ( temp_text.find(".") != std::string::npos );
 
-        //std::cout << temp_spu_node << std::endl;
+        //std::cout << temp_sub_node << std::endl;
 
-        spu_vector.insert( spu_vector.end() , spu_node(temp_spu_node) );
+        sub_vector.insert( sub_vector.end() , sub_node(temp_sub_node) );
 
         //cut string
         str = str.substr(index_sep, str.length());
     }
 
-    return spu_vector;
+    return sub_vector;
 
 } 
 

@@ -88,10 +88,10 @@ typedef struct
 //Temporary struct, will be imported
 //from speech_to_text_vosk.h
 /**
-    @brief Struct that implements spu_node. 
-    Useful for spu_stt module.
+    @brief Struct that implements sub_node. 
+    Useful for sub_stt module.
 */
-struct spu_node {
+struct sub_node {
     int id;
     double starting_time;
     double ending_time;
@@ -102,7 +102,7 @@ struct spu_node {
     /**
         @brief Default constructor
     */
-    spu_node(){
+    sub_node(){
         id = 0;
         starting_time = 0;
         ending_time = 0;
