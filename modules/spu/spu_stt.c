@@ -27,6 +27,7 @@
 #endif
 
 #include <errno.h>
+#include <string.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -58,51 +59,42 @@ static const char *const ppsz_color_descriptions[] = {
                N_("Teal"), N_("Lime"), N_("Purple"), N_("Navy"), N_("Blue"),
                N_("Aqua") };
 
-static const char s_init_title[] = "";
-
 /*****************************************************************************
  * filter_sys_t: spu_stt filter descriptor
  *****************************************************************************/
 
 /**
-    @brief Struct that implements spu_node. 
+    @brief Struct that implements spu_node.     
+    @param start Starting time for the subtitle.
+    @param end Ending time for the subtitle.
+    @param text To store the text. Actual subtitle.
     Useful for spu_stt module.
+    
 */
 typedef struct{
     vlc_tick_t start;
     vlc_tick_t end; 
     char* text;
-
-    /**
-        @brief Default constructor
-    */
-    spu_node(){
-        starting_time = 0;
-        ending_time = 0;
-        text = NULL;
-    }
-
 } spu_node ;
 
 
 /**
     @brief filter_sys_t: Filter descriptor
-
-    @param start Starting time for the subtitle.
-    @param end Ending time for the subtitle.
-    @param subtitle To store the text. Actual subtitle.
+    @param node a spu_node.
+    @param i_pos permit relative positioning (top, bottom, left, right, center).
+    @param i_pos_x offsets for the display string in the video window.
+    @param i_pos_y offsets for the display string in the video window.
+    @param format text format.
+    @param p_style font control.
 */
 typedef struct
 {
     vlc_mutex_t lock;
-
     spu_node node;
-
-    int i_pos; /* permit relative positioning (top, bottom, left, right, center) */
-    int i_pos_x, i_pos_y; /* offsets for the display string in the video window */
-    
-    char *format; /* text format */
-    text_style_t *p_style; /* font control */
+    int i_pos; 
+    int i_pos_x, i_pos_y; 
+    char *format;
+    text_style_t *p_style; 
 
 } filter_sys_t;
 
@@ -150,7 +142,7 @@ static const char *const ppsz_pos_descriptions[] =
 
 #define CFG_PREFIX "spu_stt-"
 
-#define SPU_STT_HELP N_("Display text above the video")
+#define SPU_STT_HELP N_("Display auto generate subtitles in the video")
 
 /*****************************************************************************
  * Module descriptor
@@ -180,30 +172,16 @@ vlc_module_begin ()
     add_integer( CFG_PREFIX "size", 0, SIZE_TEXT, SIZE_LONGTEXT,
                  false )
         change_integer_range( 0, 4096)
-
-    set_section( N_("Misc"), NULL )
-    add_integer( CFG_PREFIX "timeout", 0, TIMEOUT_TEXT, TIMEOUT_LONGTEXT,
-                 false )
-    add_integer( CFG_PREFIX "refresh", 1000, REFRESH_TEXT,
-                 REFRESH_LONGTEXT, false )
-
-    add_shortcut( "time" )
+    //?? Misc(?)
 vlc_module_end ()
 
+//??
+/*
 static const char *const ppsz_filter_options[] = {
     "urls", "x", "y", "position", "opacity", "color", "size", "speed", "length",
     "ttl", "images", "title", NULL
 };
-
-static void InitCurrentContext(filter_sys_t *p_sys)
-{
-    p_sys->i_cur_feed = 0;
-    p_sys->i_cur_item = p_sys->i_title == scroll_title ? -1 : 0;
-    /* Set current char to -1 such that it is increased to 0 in the first run
-     * for displaying text */
-    p_sys->i_cur_char = -1;
-}
-
+*/
 
 static const struct vlc_filter_operations filter_ops = {
     .source_sub = Filter, .close = DestroyFilter,
@@ -223,9 +201,21 @@ struct sub_node {
 
 sub_node describe each word.
 We want spu_node to descrive a phrase!
-
-
+N.B.
+For now we return a simple version because we have to understand how to better treat the data!
 */
+spu_node* sub_node_to_spu_node(sub_node* sub){
+
+    spu_node* spu = (spu_node*)malloc(sizeof(spu_node));
+    
+    spu->start = sub->starting_time;
+    spu->end = sub->ending_time;
+    spu->text = (char*) malloc ( strlen(sub->text)+1 );
+    strcpy( spu->text, sub->text );
+
+    //free(sub) //??
+    return spu;
+}
 
 
 
@@ -241,7 +231,8 @@ static int CreateFilter( filter_t *p_filter )
  *****************************************************************************/
 static void DestroyFilter( filter_t *p_filter )
 {
-    
+    /* Delete the spu_stt variables */
+    //Free
 }
 
 /****************************************************************************
@@ -251,6 +242,7 @@ static void DestroyFilter( filter_t *p_filter )
  ****************************************************************************/
 static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 {
+    //?? Do I need subpicture_t or else?
     filter_sys_t *p_sys = p_filter->p_sys;
     subpicture_t *p_spu = NULL;
 
