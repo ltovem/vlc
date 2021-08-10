@@ -49,6 +49,10 @@ static int  CreateFilter ( filter_t * );
 static void DestroyFilter( filter_t * );
 static subpicture_t *Filter( filter_t *, vlc_tick_t );
 
+static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
+                            vlc_value_t oldval, vlc_value_t newval,
+                            void *p_data );
+
 static const int pi_color_values[] = {
                0xf0000000, 0x00000000, 0x00808080, 0x00C0C0C0,
                0x00FFFFFF, 0x00800000, 0x00FF0000, 0x00FF00FF, 0x00FFFF00,
@@ -94,8 +98,8 @@ typedef struct{
     @brief filter_sys_t: Filter descriptor
     @param node a spu_node.
     @param i_pos permit relative positioning (top, bottom, left, right, center).
-    @param i_pos_x offsets for the display string in the video window.
-    @param i_pos_y offsets for the display string in the video window.
+    @param i_xoff offsets for the display string in the video window.
+    @param i_yoff offsets for the display string in the video window.
     @param format text format.
     @param p_style font control.
 */
@@ -104,7 +108,7 @@ typedef struct
     vlc_mutex_t lock;
     std::vector<spu_node>* vector_node; //?? Maybe 
     int i_pos; 
-    int i_pos_x, i_pos_y; 
+    int i_xoff, i_yoff;
     char *format;
     text_style_t *p_style; 
 
@@ -188,12 +192,10 @@ vlc_module_begin ()
 vlc_module_end ()
 
 //??
-/*
 static const char *const ppsz_filter_options[] = {
-    "urls", "x", "y", "position", "opacity", "color", "size", "speed", "length",
-    "ttl", "images", "title", NULL
+    "SPU_STT", "x", "y", "position", "color", "size",
+    "opacity","file", NULL
 };
-*/
 
 static const struct vlc_filter_operations filter_ops = {
     .source_sub = Filter, .close = DestroyFilter,
@@ -227,6 +229,7 @@ spu_node* sub_node_to_spu_node(sub_node* sub){
     strcpy( spu->text, sub->text );
 
     //free(sub) //??
+    //Maybe better a costructor(?)
     return spu;
 }
 
@@ -245,14 +248,38 @@ static int CreateFilter( filter_t *p_filter )
 
     p_filter->ops = &filter_ops;
 
+    p_sys->p_style = text_style_Create( STYLE_NO_DEFAULTS );
+    if(unlikely(!p_sys->p_style))
+    {
+        free(p_sys);
+        return VLC_ENOMEM;
+    }
+
     vlc_mutex_init( &p_sys->lock );
     vlc_mutex_lock( &p_sys->lock );
 
     p_sys->vector_node = new std::vector<spu_node> ();
 
-    p_sys->i_offsets_length = 0;
-    p_sys->pi_x_offsets = NULL;
-    p_sys->pi_y_offsets = NULL;
+#define CREATE_VAR( stor, type, var ) \
+    p_sys->stor = var_CreateGet##type##Command( p_filter, var ); \
+    var_AddCallback( p_filter, var, SttSpuCallback, p_sys );
+
+    CREATE_VAR( i_pos, Integer, "spu_stt-position" ); //i_pos
+    CREATE_VAR( i_xoff, Integer, "spu_stt-x" ); //i_xoff
+    CREATE_VAR( i_yoff, Integer, "spu_stt-y" ); //i_yoff
+    CREATE_VAR( format, String, "spu_stt-SPU_STT" ); //format
+
+    p_sys->p_style->i_font_alpha = var_CreateGetIntegerCommand( p_filter,
+                                                            "spu_stt-opacity" );
+    var_AddCallback( p_filter, "spu_stt-opacity", SttSpuCallback, p_sys );
+    p_sys->p_style->i_features |= STYLE_HAS_FONT_ALPHA;
+    CREATE_VAR( p_style->i_font_color, Integer, "spu_stt-color" );
+    p_sys->p_style->i_features |= STYLE_HAS_FONT_COLOR;
+    CREATE_VAR( p_style->i_font_size, Integer, "spu_stt-size" );
+
+    //?? std::vector<spu_node>* vector_node;
+
+    p_filter->ops = &filter_ops;
 
     vlc_mutex_unlock( &p_sys->lock );
     return VLC_SUCCESS;
@@ -263,7 +290,24 @@ static int CreateFilter( filter_t *p_filter )
 static void DestroyFilter( filter_t *p_filter )
 {
     /* Delete the spu_stt variables */
-    //Free
+        filter_sys_t *p_sys = p_filter->p_sys;
+
+#define DEL_VAR(var) \
+    var_DelCallback( p_filter, var, SttSpuCallback, p_sys ); \
+    var_Destroy( p_filter, var );
+    DEL_VAR( "spu_stt-x" );
+    DEL_VAR( "spu_stt-y" );
+    DEL_VAR( "spu_stt-position" );
+    DEL_VAR( "spu_stt-SPU_STT" );
+    DEL_VAR( "spu_stt-opacity" );
+    DEL_VAR( "spu_stt-color" );
+    DEL_VAR( "spu_stt-size" );
+
+    text_style_Delete( p_sys->p_style );
+    free( p_sys->format );
+    //?? free vector_node;
+    free( p_sys );
+}
 }
 
 /****************************************************************************
@@ -275,10 +319,80 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 {
     //?? Do I need subpicture_t or else?
     filter_sys_t *p_sys = p_filter->p_sys;
-    subpicture_t *p_spu = NULL;
+    sub_node* p_sub_node;
 
+    /* Allocate the subpicture internal data. */
+    subpicture_t *p_spu = filter_NewSubpicture( p_filter );
+    if( !p_spu )
+        return NULL;
+
+    vlc_mutex_lock( &p_sys->lock );
+    vlc_global_lock( VLC_STT_SPU_MUTEX );
+
+    p_sub_node = GetSubNode( p_filter );
+    if ( p_sub_node == NULL )
+    {
+        vlc_global_unlock( VLC_STT_SPU_MUTEX );
+        vlc_mutex_unlock( &p_sys->lock );
+        return p_spu;
+    }
+
+    vlc_global_unlock( VLC_STT_SPU_MUTEX );
+    vlc_mutex_unlock( &p_sys->lock );
     
     return p_spu;
+}
+
+/**********************************************************************
+ * Callback to update params on the fly
+ **********************************************************************/
+static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
+                            vlc_value_t oldval, vlc_value_t newval,
+                            void *p_data )
+{
+    filter_sys_t *p_sys = (filter_sys_t *) p_data;
+
+    VLC_UNUSED(oldval);
+    VLC_UNUSED(p_this);
+
+    vlc_mutex_lock( &p_sys->lock );
+    if( !strcmp( psz_var, "spu_stt-SPU_STT" ) )
+    {
+        free( p_sys->format );
+        p_sys->format = strdup( newval.psz_string );
+    }
+    else if ( !strcmp( psz_var, "spu_stt-x" ) )
+    {
+        p_sys->i_xoff = newval.i_int;
+    }
+    else if ( !strcmp( psz_var, "spu_stt-y" ) )
+    {
+        p_sys->i_yoff = newval.i_int;
+    }
+    else if ( !strcmp( psz_var, "spu_stt-color" ) )
+    {
+        p_sys->p_style->i_font_color = newval.i_int;
+    }
+    else if ( !strcmp( psz_var, "spu_stt-opacity" ) )
+    {
+        p_sys->p_style->i_font_alpha = newval.i_int;
+    }
+    else if ( !strcmp( psz_var, "spu_stt-size" ) )
+    {
+        p_sys->p_style->i_font_size = newval.i_int;
+    }
+    }
+    else if ( !strcmp( psz_var, "spu_stt-position" ) )
+    /* willing to accept a match against spu_stt-pos */
+    {
+        p_sys->i_pos = newval.i_int;
+    }
+
+    free( p_sys->message );
+    p_sys->message = NULL; /* force update */
+
+    vlc_mutex_unlock( &p_sys->lock );
+    return VLC_SUCCESS;
 }
 
 
