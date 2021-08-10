@@ -39,6 +39,18 @@ typedef struct sub_node {
     double ending_time;
     char* text;
     bool end_sentence;
+
+    /**
+        @brief Default constructor
+    */
+    sub_node(){
+        id = 0;
+        starting_time = "";
+        ending_time = "";
+        text = nullptr;
+        end_sentence = false;
+    }
+
 } sub_node;
 
 

@@ -77,6 +77,16 @@ typedef struct{
     vlc_tick_t start;
     vlc_tick_t end; 
     char* text;
+
+    /**
+        @brief Default constructor
+    */
+    spu_node(){
+        start = 0;
+        end = 0;
+        text = nullptr;
+    }
+
 } spu_node ;
 
 
@@ -92,7 +102,7 @@ typedef struct{
 typedef struct
 {
     vlc_mutex_t lock;
-    std::vector<spu_node>* vector_node; //Maybe 
+    std::vector<spu_node>* vector_node; //?? Maybe 
     int i_pos; 
     int i_pos_x, i_pos_y; 
     char *format;
@@ -209,6 +219,7 @@ For now we return a simple version because we have to understand how to better t
 spu_node* sub_node_to_spu_node(sub_node* sub){
 
     spu_node* spu = (spu_node*)malloc(sizeof(spu_node));
+    //spu_node* spu  = static_cast<spu_node *>( malloc( sizeof(spu_node) ) );
     
     spu->start = sub->starting_time;
     spu->end = sub->ending_time;
@@ -225,7 +236,25 @@ spu_node* sub_node_to_spu_node(sub_node* sub){
  * CreateFilter: allocates spu_stt video filter
  *****************************************************************************/
 static int CreateFilter( filter_t *p_filter )
-{
+{   
+    /* Allocate structure */
+    filter_sys_t *p_sys = static_cast<filter_sys_t *>( malloc( sizeof(filter_sys_t) ) );
+    p_filter->p_sys = p_sys;
+    if( unlikely(!p_sys) )
+        return VLC_ENOMEM;
+
+    p_filter->ops = &filter_ops;
+
+    vlc_mutex_init( &p_sys->lock );
+    vlc_mutex_lock( &p_sys->lock );
+
+    p_sys->vector_node = new std::vector<spu_node> ();
+
+    p_sys->i_offsets_length = 0;
+    p_sys->pi_x_offsets = NULL;
+    p_sys->pi_y_offsets = NULL;
+
+    vlc_mutex_unlock( &p_sys->lock );
     return VLC_SUCCESS;
 }
 /*****************************************************************************

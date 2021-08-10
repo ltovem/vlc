@@ -34,7 +34,7 @@
 #include "speech_to_text.h"
 #include <iostream> //Temporary
 
-#include <queue>
+#include <queue> //Temporary
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -116,8 +116,8 @@ static int Open( vlc_object_t *p_this )
     p_filter->fmt_out.audio = p_filter->fmt_in.audio;
 
     //p_sys setup
-    p_sys->text = new std::string("c");
-    p_sys->temp = new std::string("");
+    p_sys->text = new std::string("c"); //Temporary
+    p_sys->temp = new std::string(""); //Temporary
     p_sys->time = false;
     p_sys->verbose = -1;
 
