@@ -38,6 +38,8 @@
 #include <vlc_fs.h>
 #include <vlc_strings.h> 
 
+#include "../audio_filter/speech_to_text.h"
+
 
 
 /*****************************************************************************

@@ -31,6 +31,7 @@
 
 //#include "speech_to_text_vosk.h"
 //#include <vosk_api.h>
+#include "speech_to_text.h"
 #include <iostream> //Temporary
 
 #include <queue>
@@ -85,32 +86,7 @@ typedef struct
 
 } filter_sys_t;
 
-//Temporary struct, will be imported
-//from speech_to_text_vosk.h
-/**
-    @brief Struct that implements sub_node. 
-    Useful for sub_stt module.
-*/
-struct sub_node {
-    int id;
-    double starting_time;
-    double ending_time;
-    char* text;
-    //True if the word marks the end of a sentence.
-    bool end_sentence;
 
-    /**
-        @brief Default constructor
-    */
-    sub_node(){
-        id = 0;
-        starting_time = 0;
-        ending_time = 0;
-        text = NULL;
-        end_sentence = false;
-    }
-
-};
 
 /**
     @brief Open: initialize filter

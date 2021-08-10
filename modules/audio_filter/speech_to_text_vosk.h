@@ -2,6 +2,7 @@
 #define SPEECH_TO_TEXT_VOSK_H
 
 #include <vosk_api.h>
+#include "speech_to_text.h"
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
@@ -22,13 +23,18 @@
 /**
     @brief Struct that implements srt_node. 
     Useful for .srt files.
+
+    @param id Positive number, ID.
+    @param staring_time Starting time for the subtitle.
+    @param ending_time Ending time for the subtitle.
+    @param text To store the text. 
+    @param end_sentence True if the word marks the end of a sentence.
 */
 struct srt_node {
     int id;
     std::string starting_time;
     std::string ending_time;
     std::string text;
-    //True if the word marks the end of a sentence.
     bool end_sentence;
 
     /**
@@ -78,63 +84,6 @@ std::ostream & operator << (std::ostream &out, srt_node& srt) {
 
 	return out;
 }
-
-
-
-/**
-    @brief Struct that implements sub_node. 
-    Useful for sub_stt module.
-*/
-struct sub_node {
-    int id;
-    double starting_time;
-    double ending_time;
-    char* text;
-    //True if the word marks the end of a sentence.
-    bool end_sentence;
-
-    /**
-        @brief Default constructor
-    */
-    sub_node(){
-        id = 0;
-        starting_time = 0;
-        ending_time = 0;
-        text = NULL;
-        end_sentence = false;
-    }
-
-};
-
-/**
-    @brief Overload operator <<.
-
-    It allows printing via std::ostream.
-
-	@param out std::ostream
-	@param srt sub_node
-*/
-std::ostream & operator << (std::ostream &out, sub_node& srt) {
-
-	out << "{ \"id\" : ";
-    out << srt.id;
-    out << "\n";
-    out << " \"starting_time\" : ";
-    out << srt.starting_time;
-    out << "\n";
-    out << " \"ending_time\" : ",
-    out << srt.ending_time;
-    out << "\n";
-    out << " \"text\" : ";
-    out << srt.text;
-    out << "\n";
-    out << " \"end_sentence\" : ";
-    out << srt.end_sentence;
-    out << "}\n";
-
-	return out;
-}
-
 
 
 /**
