@@ -45,8 +45,8 @@ typedef struct sub_node {
     */
     sub_node(){
         id = 0;
-        starting_time = "";
-        ending_time = "";
+        starting_time = 0;
+        ending_time = 0;
         text = nullptr;
         end_sentence = false;
     }
@@ -91,7 +91,7 @@ std::ostream & operator << (std::ostream &out, sub_node& srt) {
 */
 static sub_node *GetSubNode( vlc_object_t *p_object )
 {
-    return var_GetAddress(VLC_OBJECT(vlc_object_instance(p_object)),
-                          "stt-struct");
+    return static_cast<sub_node *>( var_GetAddress(VLC_OBJECT(vlc_object_instance(p_object)),
+                          "stt-struct") );
 }
-#define GetSubNode(a) GetSubNode( VLC_OBJECT(a) )
+#define GetSubNode(a) static_cast<sub_node *>( GetSubNode( VLC_OBJECT(a) ) )
