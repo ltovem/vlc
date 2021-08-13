@@ -48,7 +48,7 @@ static subpicture_t *Filter( filter_t *, vlc_tick_t );
 static int STTCallback( vlc_object_t *p_this, char const *psz_var,
                             vlc_value_t oldval, vlc_value_t newval,
                             void *p_data );
-static const int pi_color_values[] = {
+static const unsigned int pi_color_values[] = {
                0xf0000000, 0x00000000, 0x00808080, 0x00C0C0C0,
                0x00FFFFFF, 0x00800000, 0x00FF0000, 0x00FF00FF, 0x00FFFF00,
                0x00808000, 0x00008000, 0x00008080, 0x0000FF00, 0x00800080,
@@ -136,7 +136,7 @@ vlc_module_begin ()
     set_callback_sub_source( CreateFilter, 0 )
     set_category( CAT_VIDEO )
     set_subcategory( SUBCAT_VIDEO_SUBPIC )
-    add_string( CFG_PREFIX "STT", "VLC", MSG_TEXT, MSG_LONGTEXT,
+    add_string( CFG_PREFIX "STT", "Subtitle VLC", MSG_TEXT, MSG_LONGTEXT,
                 false )
 
     set_section( N_("Position"), NULL )
@@ -179,10 +179,11 @@ static const struct vlc_filter_operations filter_ops = {
  *****************************************************************************/
 static int CreateFilter( filter_t *p_filter )
 {
-    filter_sys_t *p_sys;
+
 
     /* Allocate structure */
-    p_sys = p_filter->p_sys = malloc( sizeof( filter_sys_t ) );
+    filter_sys_t *p_sys = (filter_sys_t *) malloc( sizeof(filter_sys_t) );
+    p_filter->p_sys = p_sys;
     if( p_sys == NULL )
         return VLC_ENOMEM;
 
@@ -232,7 +233,7 @@ static int CreateFilter( filter_t *p_filter )
  *****************************************************************************/
 static void DestroyFilter( filter_t *p_filter )
 {
-    filter_sys_t *p_sys = p_filter->p_sys;
+    filter_sys_t *p_sys = (filter_sys_t*) p_filter->p_sys;
 
     /* Delete the STT variables */
 #define DEL_VAR(var) \
@@ -261,14 +262,15 @@ static void DestroyFilter( filter_t *p_filter )
  ****************************************************************************/
 static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 {
-    filter_sys_t *p_sys = p_filter->p_sys;
+    filter_sys_t *p_sys = (filter_sys_t*) p_filter->p_sys;
     subpicture_t *p_spu = NULL;
+    char *msg;
 
     vlc_mutex_lock( &p_sys->lock );
     if( p_sys->last_time + p_sys->i_refresh > date )
         goto out;
 
-    char *msg = vlc_strftime( p_sys->format ? p_sys->format : "" );
+    msg = vlc_strftime( p_sys->format ? p_sys->format : "" );
     if( unlikely( msg == NULL ) )
         goto out;
     if( p_sys->message != NULL && !strcmp( msg, p_sys->message ) )

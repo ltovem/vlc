@@ -12,7 +12,7 @@ libmarq_plugin_la_SOURCES = spu/marq.c
 libmosaic_plugin_la_SOURCES = spu/mosaic.c spu/mosaic.h
 libmosaic_plugin_la_LIBADD = $(LIBM)
 librss_plugin_la_SOURCES = spu/rss.c
-libstt_plugin_la_SOURCES = spu/stt.c
+libauto_sub_plugin_la_SOURCES = spu/auto_sub.cpp
 
 spu_LTLIBRARIES += \
 	libaudiobargraph_v_plugin.la \
@@ -20,7 +20,7 @@ spu_LTLIBRARIES += \
 	libmarq_plugin.la \
 	libmosaic_plugin.la \
 	librss_plugin.la \
-	libstt_plugin.la
+	libauto_sub_plugin.la 
 
 libdynamicoverlay_plugin_la_SOURCES = \
 	spu/dynamicoverlay/dynamicoverlay_buffer.c \

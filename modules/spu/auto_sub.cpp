@@ -1,5 +1,5 @@
 /*****************************************************************************
- * spu_stt.c : spu module to use speech_to_text (stt) audio filter.
+ * auto_sub.cpp : spu module to use speech_to_text (stt) audio filter.
  *****************************************************************************
  * Copyright © 2021 Davide Pietrasanta
  *
@@ -27,21 +27,16 @@
 #endif
 
 #include <errno.h>
-#include <string.h>
-#include <vector>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_filter.h>
-#include <vlc_subpicture.h>
-
 #include <vlc_block.h>
 #include <vlc_fs.h>
-#include <vlc_strings.h> 
+#include <vlc_strings.h>
+#include <vlc_subpicture.h>
 
 #include "../audio_filter/speech_to_text.h"
-
-
 
 /*****************************************************************************
  * Local prototypes
@@ -50,7 +45,7 @@ static int  CreateFilter ( filter_t * );
 static void DestroyFilter( filter_t * );
 static subpicture_t *Filter( filter_t *, vlc_tick_t );
 
-static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
+static int AutoSubCallback( vlc_object_t *p_this, char const *psz_var,
                             vlc_value_t oldval, vlc_value_t newval,
                             void *p_data );
 static const unsigned int pi_color_values[] = {
@@ -66,64 +61,28 @@ static const char *const ppsz_color_descriptions[] = {
                N_("Aqua") };
 
 /*****************************************************************************
- * filter_sys_t: spu_stt filter descriptor
+ * filter_sys_t: auto_sub filter descriptor
  *****************************************************************************/
-
-/**
-    @brief Struct that implements spu_node.     
-    @param start Starting time for the subtitle.
-    @param end Ending time for the subtitle.
-    @param text To store the text. Actual subtitle.
-    Useful for spu_stt module.
-    
-*/
-typedef struct spu_node{
-    vlc_tick_t start;
-    vlc_tick_t end; 
-    char* text;
-
-    /**
-        @brief Default constructor
-    */
-    spu_node(){
-        start = 0;
-        end = 0;
-        text = nullptr;
-    }
-
-} spu_node ;
-
-
-/**
-    @brief filter_sys_t: Filter descriptor
-    @param node a spu_node.
-    @param i_pos permit relative positioning (top, bottom, left, right, center).
-    @param i_xoff offsets for the display string in the video window.
-    @param i_yoff offsets for the display string in the video window.
-    @param format text format.
-    @param p_style font control.
-*/
 typedef struct
 {
     vlc_mutex_t lock;
-    std::vector <spu_node>* vector_node; //?? Maybe 
-    int i_pos; 
-    int i_xoff, i_yoff;
-    char *format;
-    text_style_t *p_style; 
+
+    int i_xoff, i_yoff;  /* offsets for the display string in the video window */
+    int i_pos; /* permit relative positioning (top, bottom, left, right, center) */
+    vlc_tick_t i_timeout;
+
+    char *format; /**< auto_sub text format */
+    char *message; /**< auto_sub plain text */
+
+    text_style_t *p_style; /* font control */
 
     vlc_tick_t last_time;
     vlc_tick_t i_refresh;
-    char *message; /**?? plain text */
-    
-
 } filter_sys_t;
 
-
-// Description
 #define MSG_TEXT N_("Text")
 #define MSG_LONGTEXT N_( \
-    "SPU_STT text to display. " \
+    "auto_sub text to display. " \
     "(Available format strings: " \
     "%Y = year, %m = month, %d = day, %H = hour, " \
     "%M = minute, %S = second, ...)" )
@@ -131,12 +90,10 @@ typedef struct
 #define POSX_LONGTEXT N_("X offset, from the left screen edge." )
 #define POSY_TEXT N_("Y offset")
 #define POSY_LONGTEXT N_("Y offset, down from the top." )
-#define START_TEXT N_("Starting time")
-#define START_LONGTEXT N_("Number of milliseconds the spu_stt filter start to " \
-                            "display the subtitle.")
-#define END_TEXT N_("Ending time")
-#define END_LONGTEXT N_("Number of milliseconds the spu_stt filter end to " \
-                            "display the subtitle.")
+#define TIMEOUT_TEXT N_("Timeout")
+#define TIMEOUT_LONGTEXT N_("Number of milliseconds the auto_sub must remain " \
+                            "displayed. Default value is " \
+                            "0 (remains forever).")
 #define REFRESH_TEXT N_("Refresh period in ms")
 #define REFRESH_LONGTEXT N_("Number of milliseconds between string updates. " \
                             "This is mainly useful when using meta data " \
@@ -154,9 +111,9 @@ typedef struct
     "chars are for red, then green, then blue. #000000 = black, #FF0000 = red,"\
     " #00FF00 = green, #FFFF00 = yellow (red + green), #FFFFFF = white" )
 
-#define POS_TEXT N_("spu_stt position")
+#define POS_TEXT N_("auto_sub position")
 #define POS_LONGTEXT N_( \
-  "You can enforce the spu_stt position on the video " \
+  "You can enforce the auto_sub position on the video " \
   "(0=center, 1=left, 2=right, 4=top, 8=bottom, you can " \
   "also use combinations of these values, eg 6 = top-right).")
 
@@ -165,21 +122,21 @@ static const char *const ppsz_pos_descriptions[] =
      { N_("Center"), N_("Left"), N_("Right"), N_("Top"), N_("Bottom"),
      N_("Top-Left"), N_("Top-Right"), N_("Bottom-Left"), N_("Bottom-Right") };
 
-#define CFG_PREFIX "spu_stt-"
+#define CFG_PREFIX "auto_sub-"
 
-#define SPU_STT_HELP N_("Display auto generate subtitles in the video")
+#define AUTO_SUB_HELP N_("Display text above the video")
 
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
 vlc_module_begin ()
-    set_shortname( N_("SPU_STT" ))
-    set_description( N_("SPU Speech To Text Module") )
-    set_help(SPU_STT_HELP)
+    set_shortname( N_("auto_sub" ))
+    set_description( N_("auto_sub display") )
+    set_help(AUTO_SUB_HELP)
     set_callback_sub_source( CreateFilter, 0 )
     set_category( CAT_VIDEO )
     set_subcategory( SUBCAT_VIDEO_SUBPIC )
-    add_string( CFG_PREFIX "SPU_STT", "VLC", MSG_TEXT, MSG_LONGTEXT,
+    add_string( CFG_PREFIX "sub", "Subtitle VLC", MSG_TEXT, MSG_LONGTEXT,
                 false )
 
     set_section( N_("Position"), NULL )
@@ -197,18 +154,19 @@ vlc_module_begin ()
     add_integer( CFG_PREFIX "size", 0, SIZE_TEXT, SIZE_LONGTEXT,
                  false )
         change_integer_range( 0, 4096)
-    
-        set_section( N_("Misc"), NULL )
+
+    set_section( N_("Misc"), NULL )
+    add_integer( CFG_PREFIX "timeout", 0, TIMEOUT_TEXT, TIMEOUT_LONGTEXT,
+                 false )
     add_integer( CFG_PREFIX "refresh", 1000, REFRESH_TEXT,
                  REFRESH_LONGTEXT, false )
 
     add_shortcut( "time" )
 vlc_module_end ()
 
-//??
 static const char *const ppsz_filter_options[] = {
-    "SPU_STT", "x", "y", "position", "color", "size", 
-    "refresh", "opacity",
+    "sub", "x", "y", "position", "color", "size", "timeout", "refresh",
+    "opacity",
     NULL
 };
 
@@ -216,51 +174,17 @@ static const struct vlc_filter_operations filter_ops = {
     .source_sub = Filter, .close = DestroyFilter,
 };
 
-
-/*
-We have to convert sub_node to spu_node.
-
-struct sub_node {
-    int id; //Ignore it for now
-    double starting_time; //convert double to vlc_tick_t
-    double ending_time; //convert double to vlc_tick_t
-    char* text; 
-    bool end_sentence; 
-}
-
-sub_node describe each word.
-We want spu_node to descrive a phrase!
-N.B.
-For now we return a simple version because we have to understand how to better treat the data!
-*/
-spu_node* sub_node_to_spu_node(sub_node* sub){
-
-    spu_node* spu = (spu_node*)malloc(sizeof(spu_node));
-    //spu_node* spu  = static_cast<spu_node *>( malloc( sizeof(spu_node) ) );
-    
-    spu->start = sub->starting_time;
-    spu->end = sub->ending_time;
-    spu->text = (char*) malloc ( strlen(sub->text)+1 );
-    strcpy( spu->text, sub->text );
-
-    //free(sub) //??
-    //Maybe better a costructor(?)
-    return spu;
-}
-
-
 /*****************************************************************************
- * CreateFilter: allocates spu_stt video filter
+ * CreateFilter: allocates auto_sub video filter
  *****************************************************************************/
 static int CreateFilter( filter_t *p_filter )
-{   
+{
     /* Allocate structure */
     filter_sys_t *p_sys = static_cast<filter_sys_t *>( malloc( sizeof(filter_sys_t) ) );
     p_filter->p_sys = p_sys;
-    if( unlikely(!p_sys) )
+    
+    if( p_sys == NULL )
         return VLC_ENOMEM;
-
-    p_filter->ops = &filter_ops;
 
     p_sys->p_style = text_style_Create( STYLE_NO_DEFAULTS );
     if(unlikely(!p_sys->p_style))
@@ -268,35 +192,34 @@ static int CreateFilter( filter_t *p_filter )
         free(p_sys);
         return VLC_ENOMEM;
     }
-
     vlc_mutex_init( &p_sys->lock );
 
     config_ChainParse( p_filter, CFG_PREFIX, ppsz_filter_options,
                        p_filter->p_cfg );
-    
-    //vlc_mutex_lock( &p_sys->lock );
 
-    p_sys->vector_node = new std::vector<spu_node> ();
 
 #define CREATE_VAR( stor, type, var ) \
     p_sys->stor = var_CreateGet##type##Command( p_filter, var ); \
-    var_AddCallback( p_filter, var, MarqueeCallback, p_sys );
+    var_AddCallback( p_filter, var, AutoSubCallback, p_sys );
 
-    CREATE_VAR( i_xoff, Integer, "spu_stt-x" );
-    CREATE_VAR( i_yoff, Integer, "spu_stt-y" );
+    CREATE_VAR( i_xoff, Integer, "auto_sub-x" );
+    CREATE_VAR( i_yoff, Integer, "auto_sub-y" );
+    p_sys->i_timeout = VLC_TICK_FROM_MS(var_CreateGetIntegerCommand( p_filter,
+                                                              "auto_sub-timeout" ));
+    var_AddCallback( p_filter, "auto_sub-timeout", AutoSubCallback, p_sys );
     p_sys->i_refresh = VLC_TICK_FROM_MS(var_CreateGetIntegerCommand( p_filter,
-                                                              "spu_stt-refresh" ));
-    var_AddCallback( p_filter, "spu_stt-refresh", MarqueeCallback, p_sys );
-    CREATE_VAR( i_pos, Integer, "spu_stt-position" );
-    CREATE_VAR( format, String, "spu_stt-SPU_STT" );
+                                                              "auto_sub-refresh" ));
+    var_AddCallback( p_filter, "auto_sub-refresh", AutoSubCallback, p_sys );
+    CREATE_VAR( i_pos, Integer, "auto_sub-position" );
+    CREATE_VAR( format, String, "auto_sub-sub" );
     p_sys->message = NULL;
     p_sys->p_style->i_font_alpha = var_CreateGetIntegerCommand( p_filter,
-                                                            "spu_stt-opacity" );
-    var_AddCallback( p_filter, "spu_stt-opacity", MarqueeCallback, p_sys );
+                                                            "auto_sub-opacity" );
+    var_AddCallback( p_filter, "auto_sub-opacity", AutoSubCallback, p_sys );
     p_sys->p_style->i_features |= STYLE_HAS_FONT_ALPHA;
-    CREATE_VAR( p_style->i_font_color, Integer, "spu_stt-color" );
+    CREATE_VAR( p_style->i_font_color, Integer, "auto_sub-color" );
     p_sys->p_style->i_features |= STYLE_HAS_FONT_COLOR;
-    CREATE_VAR( p_style->i_font_size, Integer, "spu_stt-size" );
+    CREATE_VAR( p_style->i_font_size, Integer, "auto_sub-size" );
 
     /* Misc init */
     p_filter->ops = &filter_ops;
@@ -305,28 +228,29 @@ static int CreateFilter( filter_t *p_filter )
     return VLC_SUCCESS;
 }
 /*****************************************************************************
- * DestroyFilter: destroy spu_stt video filter
+ * DestroyFilter: destroy auto_sub video filter
  *****************************************************************************/
 static void DestroyFilter( filter_t *p_filter )
 {
-    /* Delete the spu_stt variables */
     filter_sys_t *p_sys = static_cast<filter_sys_t *>( p_filter->p_sys );
 
+    /* Delete the auto_sub variables */
 #define DEL_VAR(var) \
-    var_DelCallback( p_filter, var, SttSpuCallback, p_sys ); \
+    var_DelCallback( p_filter, var, AutoSubCallback, p_sys ); \
     var_Destroy( p_filter, var );
-    DEL_VAR( "spu_stt-x" );
-    DEL_VAR( "spu_stt-y" );
-    DEL_VAR( "marq-refresh" );
-    DEL_VAR( "spu_stt-position" );
-    DEL_VAR( "spu_stt-SPU_STT" );
-    DEL_VAR( "spu_stt-opacity" );
-    DEL_VAR( "spu_stt-color" );
-    DEL_VAR( "spu_stt-size" );
+    DEL_VAR( "auto_sub-x" );
+    DEL_VAR( "auto_sub-y" );
+    DEL_VAR( "auto_sub-timeout" );
+    DEL_VAR( "auto_sub-refresh" );
+    DEL_VAR( "auto_sub-position" );
+    DEL_VAR( "auto_sub-sub" );
+    DEL_VAR( "auto_sub-opacity" );
+    DEL_VAR( "auto_sub-color" );
+    DEL_VAR( "auto_sub-size" );
 
     text_style_Delete( p_sys->p_style );
     free( p_sys->format );
-    //?? free vector_node;
+    free( p_sys->message );
     free( p_sys );
 }
 
@@ -337,18 +261,15 @@ static void DestroyFilter( filter_t *p_filter )
  ****************************************************************************/
 static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 {
-    //?? Do I need subpicture_t or else?
     filter_sys_t *p_sys = static_cast<filter_sys_t *>( p_filter->p_sys );
-    sub_node* p_sub_node;
-
-    /* Allocate the subpicture internal data. */
-    subpicture_t *p_spu = filter_NewSubpicture( p_filter );
-    if( !p_spu )
-        return NULL;
+    subpicture_t *p_spu = NULL;
+    char *msg;
 
     vlc_mutex_lock( &p_sys->lock );
+    if( p_sys->last_time + p_sys->i_refresh > date )
+        goto out;
 
-    char *msg = vlc_strftime( p_sys->format ? p_sys->format : "" );
+    msg = vlc_strftime( p_sys->format ? p_sys->format : "" );
     if( unlikely( msg == NULL ) )
         goto out;
     if( p_sys->message != NULL && !strcmp( msg, p_sys->message ) )
@@ -376,10 +297,29 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 
     p_sys->last_time = date;
 
-    p_spu->p_region->p_text = text_segment_New( msg );
+    p_spu->p_region->p_text = text_segment_New( msg ); //This set the sub
     p_spu->i_start = date;
-    p_spu->i_stop  = 0; //??
+    p_spu->i_stop  = p_sys->i_timeout == 0 ? 0 : date + p_sys->i_timeout;
     p_spu->b_ephemer = true;
+
+    /*
+    //TEST
+    printf("MESSAGE: ");
+    for(size_t i=0; i < strlen(msg); i++){
+        printf("%c", msg[i]);
+    }
+    printf("\n");
+
+    char * new_str ;
+    new_str = malloc(strlen(msg)*2 + 1);
+    new_str[0] = '\0';   // ensures the memory is an empty string
+    strcat(new_str,msg);
+    strcat(new_str,msg);
+
+    //free(msg);
+    msg = new_str;
+    //TEST
+    */
 
     /*  where to locate the string: */
     if( p_sys->i_pos < 0 )
@@ -401,20 +341,12 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 out:
     vlc_mutex_unlock( &p_sys->lock );
     return p_spu;
-
-    /*p_sub_node = GetSubNode( p_filter );
-    if ( p_sub_node == NULL )
-    {
-        vlc_global_unlock( VLC_STT_SPU_MUTEX );
-        vlc_mutex_unlock( &p_sys->lock );
-        return p_spu;
-    }*/
 }
 
 /**********************************************************************
  * Callback to update params on the fly
  **********************************************************************/
-static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
+static int AutoSubCallback( vlc_object_t *p_this, char const *psz_var,
                             vlc_value_t oldval, vlc_value_t newval,
                             void *p_data )
 {
@@ -424,33 +356,41 @@ static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
     VLC_UNUSED(p_this);
 
     vlc_mutex_lock( &p_sys->lock );
-    if( !strcmp( psz_var, "spu_stt-SPU_STT" ) )
+    if( !strcmp( psz_var, "auto_sub-sub" ) )
     {
         free( p_sys->format );
         p_sys->format = strdup( newval.psz_string );
     }
-    else if ( !strcmp( psz_var, "spu_stt-x" ) )
+    else if ( !strcmp( psz_var, "auto_sub-x" ) )
     {
         p_sys->i_xoff = newval.i_int;
     }
-    else if ( !strcmp( psz_var, "spu_stt-y" ) )
+    else if ( !strcmp( psz_var, "auto_sub-y" ) )
     {
         p_sys->i_yoff = newval.i_int;
     }
-    else if ( !strcmp( psz_var, "spu_stt-color" ) )
+    else if ( !strcmp( psz_var, "auto_sub-color" ) )
     {
         p_sys->p_style->i_font_color = newval.i_int;
     }
-    else if ( !strcmp( psz_var, "spu_stt-opacity" ) )
+    else if ( !strcmp( psz_var, "auto_sub-opacity" ) )
     {
         p_sys->p_style->i_font_alpha = newval.i_int;
     }
-    else if ( !strcmp( psz_var, "spu_stt-size" ) )
+    else if ( !strcmp( psz_var, "auto_sub-size" ) )
     {
         p_sys->p_style->i_font_size = newval.i_int;
     }
-    else if ( !strcmp( psz_var, "spu_stt-position" ) )
-    /* willing to accept a match against spu_stt-pos */
+    else if ( !strcmp( psz_var, "auto_sub-timeout" ) )
+    {
+        p_sys->i_timeout = VLC_TICK_FROM_MS(newval.i_int);
+    }
+    else if ( !strcmp( psz_var, "auto_sub-refresh" ) )
+    {
+        p_sys->i_refresh = VLC_TICK_FROM_MS(newval.i_int);
+    }
+    else if ( !strcmp( psz_var, "auto_sub-position" ) )
+    /* willing to accept a match against auto_sub-pos */
     {
         p_sys->i_pos = newval.i_int;
     }
@@ -461,5 +401,3 @@ static int SttSpuCallback( vlc_object_t *p_this, char const *psz_var,
     vlc_mutex_unlock( &p_sys->lock );
     return VLC_SUCCESS;
 }
-
-
