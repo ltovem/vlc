@@ -17,6 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
+#ifndef SPEECH_TO_TEXT_HPP
+#define SPEECH_TO_TEXT_HPP
 
 #include <iostream> // for operator <<
 #include <vlc_common.h> // for GetSubNode()
@@ -124,3 +126,5 @@ static sub_node *GetSubNode( vlc_object_t *p_object )
                           "stt-struct") );
 }
 #define GetSubNode(a) static_cast<sub_node *>( GetSubNode( VLC_OBJECT(a) ) )
+
+#endif //SPEECH_TO_TEXT_HPP

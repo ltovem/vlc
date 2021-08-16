@@ -1,5 +1,5 @@
-#ifndef SPEECH_TO_TEXT_VOSK_H
-#define SPEECH_TO_TEXT_VOSK_H
+#ifndef SPEECH_TO_TEXT_VOSK_HPP
+#define SPEECH_TO_TEXT_VOSK_HPP
 
 #include <vosk_api.h>
 #include "speech_to_text.h"
@@ -541,4 +541,4 @@ std::string transcribe_vosk(const std::string file_name , bool time = false, int
 }
 
 
-#endif //SPEECH_TO_TEXT_VOSK_H
+#endif //SPEECH_TO_TEXT_VOSK_HPP
