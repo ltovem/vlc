@@ -29,9 +29,9 @@
 # include "config.h"
 #endif
 
-//#include "speech_to_text_vosk.h"
+//#include "speech_to_text_vosk.hpp"
 //#include <vosk_api.h>
-#include "speech_to_text.h"
+#include "speech_to_text.hpp"
 #include <iostream> //Temporary
 
 #include <queue> //Temporary
@@ -74,6 +74,7 @@ vlc_module_end ()
     @param temp Support std::string for text.
     @param time Boolean.
     @param verbose Integer. 
+    @param lock Internal filter lock.
 */
 typedef struct
 {
@@ -83,6 +84,8 @@ typedef struct
     std::string* temp;
     bool time;
     int verbose;
+
+    vlc_mutex_t lock;
 
 } filter_sys_t;
 
@@ -147,11 +150,36 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_block )
 
     //std::cout << "SIZE:" << nread << std::endl; //Around 1900-2800
 
+    
     filter_sys_t *p_sys = static_cast<filter_sys_t *> (p_filter->p_sys);
-    *p_sys->text += "C";
-    std::cout << "TEXT=" << *p_sys->text << std::endl;
-    std::cout << p_sys->time << std::endl;
-    std::cout << p_sys->verbose << std::endl;
+    /*
+        *p_sys->text += "C";
+        std::cout << "TEXT=" << *p_sys->text << std::endl;
+        std::cout << p_sys->time << std::endl;
+        std::cout << p_sys->verbose << std::endl;
+    */
+
+    //vlc_mutex_lock( &p_sys->lock );
+    //vlc_global_lock( VLC_MOSAIC_MUTEX );
+
+    sub_node* p_sub_node;
+    p_sub_node = GetSubNode( p_filter );
+    if ( p_sub_node == nullptr || p_sub_node == NULL ){
+        std::cout << "stt null" << std::endl;
+        p_sub_node = new sub_node();
+        char str[] = "stt.cpp";
+        p_sub_node->text = (char*)malloc(sizeof(strlen(str)+1));
+        strncpy(p_sub_node->text, str, strlen(str));
+        p_sub_node->text[strlen(str)] = '\0';
+    }
+    if( p_sub_node->ending_time == 0 )
+    {
+        p_sub_node->ending_time = 1;
+        std::cout << "STT=" <<  p_sub_node << std::endl;
+    }
+
+    //vlc_global_lock( VLC_MOSAIC_MUTEX );
+    //vlc_mutex_unlock( &p_sys->lock );
 
     msg_Dbg( p_filter, "SpeechToText successfully processed" );
     (void) p_filter;

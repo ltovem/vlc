@@ -62,7 +62,7 @@ typedef struct sub_node {
 	@param out std::ostream
 	@param srt sub_node
 */
-std::ostream & operator << (std::ostream &out, sub_node& srt) {
+std::ostream & operator << (std::ostream &out, sub_node &srt) {
 
 	out << "{ \"id\" : ";
     out << srt.id;
@@ -78,6 +78,35 @@ std::ostream & operator << (std::ostream &out, sub_node& srt) {
     out << "\n";
     out << " \"end_sentence\" : ";
     out << srt.end_sentence;
+    out << "}\n";
+
+	return out;
+}
+
+/**
+    @brief Overload operator <<.
+
+    It allows printing via std::ostream.
+
+	@param out std::ostream
+	@param srt sub_node
+*/
+std::ostream & operator << (std::ostream &out, sub_node *srt) {
+
+	out << "{ \"id\" : ";
+    out << srt->id;
+    out << "\n";
+    out << " \"starting_time\" : ";
+    out << srt->starting_time;
+    out << "\n";
+    out << " \"ending_time\" : ",
+    out << srt->ending_time;
+    out << "\n";
+    out << " \"text\" : ";
+    out << srt->text;
+    out << "\n";
+    out << " \"end_sentence\" : ";
+    out << srt->end_sentence;
     out << "}\n";
 
 	return out;

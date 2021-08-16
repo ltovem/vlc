@@ -36,7 +36,7 @@
 #include <vlc_strings.h>
 #include <vlc_subpicture.h>
 
-#include "../audio_filter/speech_to_text.h"
+#include "../audio_filter/speech_to_text.hpp"
 
 /*****************************************************************************
  * Local prototypes
@@ -320,6 +320,24 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
     msg = new_str;
     //TEST
     */
+    
+
+    sub_node* p_sub_node;
+    p_sub_node = GetSubNode( p_filter );
+    if ( p_sub_node == nullptr || p_sub_node == NULL ){
+        std::cout << "auto null" << std::endl;
+        p_sub_node = new sub_node();
+        char str[] = "auto.cpp";
+        p_sub_node->text = (char*)malloc(sizeof(strlen(str)+1));
+        strncpy(p_sub_node->text, str, strlen(str));
+        p_sub_node->text[strlen(str)] = '\0';
+    }
+    if( p_sub_node->starting_time == 0 )
+    {
+        p_sub_node->starting_time = 1;
+        std::cout << "AUTO=" <<  p_sub_node << std::endl;
+    }
+
 
     /*  where to locate the string: */
     if( p_sys->i_pos < 0 )
