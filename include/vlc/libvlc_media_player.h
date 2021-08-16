@@ -716,9 +716,9 @@ typedef enum libvlc_video_engine_t {
 
 
 /** Callback type that can be called to request a render size changes.
- * 
+ *
  * libvlc will provide a callback of this type when calling \ref libvlc_video_output_set_resize_cb.
- * 
+ *
  * \param report_opaque parameter passed to \ref libvlc_video_output_set_resize_cb. [IN]
  * \param width new rendering width requested. [IN]
  * \param height new rendering height requested. [IN]
@@ -1333,9 +1333,23 @@ LIBVLC_API void libvlc_media_player_navigate( libvlc_media_player_t* p_mi,
  * \param p_mi the media player
  * \param position position at which to display the title, or libvlc_position_disable to prevent the title from being displayed
  * \param timeout title display timeout in milliseconds (ignored if libvlc_position_disable)
+ *
+ * \note OSD needs to be enable for the title to appear \see libvlc_media_player_set_video_osd().
+ *
  * \version libVLC 2.1.0 or later
  */
 LIBVLC_API void libvlc_media_player_set_video_title_display( libvlc_media_player_t *p_mi, libvlc_position_t position, unsigned int timeout );
+
+/**
+ * Enable the On Screen Display messages (play/pause/mute & position/volume sliders).
+ * The OSD is disabled by default.
+ *
+ * \param p_mi the media player
+ * \param enable enable or disable the OSD
+ *
+ * \version LibVLC 4.0.0 and later.
+ */
+LIBVLC_API void libvlc_media_player_set_video_osd( libvlc_media_player_t *p_mi, bool enable );
 
 /**
  * Get the track list for one type

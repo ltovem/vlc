@@ -1813,6 +1813,11 @@ void libvlc_media_player_set_video_title_display( libvlc_media_player_t *p_mi, l
     }
 }
 
+void libvlc_media_player_set_video_osd( libvlc_media_player_t *p_mi, bool enable )
+{
+    var_SetBool( p_mi, "osd", enable );
+}
+
 libvlc_media_tracklist_t *
 libvlc_media_player_get_tracklist(libvlc_media_player_t *p_mi,
                                   libvlc_track_type_t type, bool selected)
