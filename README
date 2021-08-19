@@ -1,3 +1,21 @@
+README for work done as a part of Google Summer of Code 2021
+============================================================
+
+This readme has been modified to add information for the GSoC project.
+
+As part of the "Real-time subtitles for movies" for VLC, I did the following:
+- API to interface with Vosk-API, for the speech recognition task (speech_to_text_vosk.hpp).
+- Audio filter to transform audio into a readable and standard format (speech_to_text.cpp).
+- Have VLC compile the following libraries: openblas, openfst and clapack.
+
+
+The following things remain to be done (and will be done):
+- Have VLC compile the following libraries: kaldi and vosk.
+- Arrange and manage the viewing of the subtitles (auto_sub.cpp).
+- Adjustments if needed.
+
+
+
 README for the VLC media player
 ===============================
 

@@ -166,7 +166,18 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_block )
     p_sub_node = GetSubNode( p_filter );
     if ( p_sub_node == nullptr || p_sub_node == NULL ){
         std::cout << "stt null" << std::endl;
+        
+        //libvlc
+        vlc_object_t *p_libvlc = VLC_OBJECT( vlc_object_instance(p_filter) );
+        vlc_value_t val;
+
+        //Create
+        var_Create( p_libvlc, "stt-struct", VLC_VAR_ADDRESS );
         p_sub_node = new sub_node();
+        val.p_address = p_sub_node;
+        var_Set( p_libvlc, "stt-struct", val );
+
+        
         char str[] = "stt.cpp";
         p_sub_node->text = (char*)malloc(sizeof(strlen(str)+1));
         strncpy(p_sub_node->text, str, strlen(str));
@@ -209,6 +220,7 @@ static void Close( filter_t *p_filter )
     free( p_sys->text );
     free( p_sys->temp );
     free( p_sys );
+    //var_Destroy( p_libvlc, "stt-struct" );
     msg_Dbg( p_filter, "SpeechToText successfully closed" );
 }
 
