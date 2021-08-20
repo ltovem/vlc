@@ -66,27 +66,31 @@ bool SmoothIndexReader::parseIndex(block_t *p_block, BaseRepresentation *rep, ui
     if(!uuid_box)
         return false;
 
-    SegmentTimeline *timelineadd = new (std::nothrow) SegmentTimeline(nullptr);
-    if (timelineadd)
+    SegmentTimeline *timelineadd;
+    try
     {
-        const MP4_Box_data_tfrf_t *p_tfrfdata = uuid_box->data.p_tfrf;
-        for ( uint8_t i=0; i<p_tfrfdata->i_fragment_count; i++ )
-        {
-            uint64_t dur = p_tfrfdata->p_tfrf_data_fields[i].i_fragment_duration;
-            uint64_t stime = p_tfrfdata->p_tfrf_data_fields[i].i_fragment_abs_time;
-            timelineadd->addElement(i+1, dur, 0, stime);
-        }
+        timelineadd = new SegmentTimeline(nullptr);
+    } catch(std::bad_alloc &) {
+        return false;
+    }
 
-        rep->inheritSegmentTemplate()->
-             inheritSegmentTimeline()->
-             updateWith(*timelineadd);
-        delete timelineadd;
+    const MP4_Box_data_tfrf_t *p_tfrfdata = uuid_box->data.p_tfrf;
+    for ( uint8_t i=0; i<p_tfrfdata->i_fragment_count; i++ )
+    {
+        uint64_t dur = p_tfrfdata->p_tfrf_data_fields[i].i_fragment_duration;
+        uint64_t stime = p_tfrfdata->p_tfrf_data_fields[i].i_fragment_abs_time;
+        timelineadd->addElement(i+1, dur, 0, stime);
+    }
+
+    rep->inheritSegmentTemplate()->
+            inheritSegmentTimeline()->
+            updateWith(*timelineadd);
+    delete timelineadd;
 
 #ifndef NDEBUG
-        msg_Dbg(rep->getPlaylist()->getVLCObject(), "Updated timeline from tfrf");
-        rep->debug(rep->getPlaylist()->getVLCObject(), 0);
+    msg_Dbg(rep->getPlaylist()->getVLCObject(), "Updated timeline from tfrf");
+    rep->debug(rep->getPlaylist()->getVLCObject(), 0);
 #endif
-    }
 
     return true;
 }

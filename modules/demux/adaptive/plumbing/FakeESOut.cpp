@@ -239,7 +239,10 @@ FakeESOutID * FakeESOut::createNewID( const es_format_t *p_fmt )
     if( extrainfo )
         extrainfo->fillExtraFMTInfo( &fmtcopy );
 
-    FakeESOutID *es_id = new (std::nothrow) FakeESOutID( this, &fmtcopy );
+    FakeESOutID *es_id = nullptr;
+    try {
+        es_id = new FakeESOutID( this, &fmtcopy );
+    } catch(std::bad_alloc &) {}
 
     es_format_Clean( &fmtcopy );
 

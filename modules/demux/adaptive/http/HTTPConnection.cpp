@@ -618,16 +618,26 @@ AbstractConnection * NativeConnectionFactory::createConnection(vlc_object_t *p_o
     }
     else scheme = params.getScheme();
 
+    Transport *socket;
+    HTTPConnection *conn;
     const bool b_secure = (params.getScheme() == "https");
-    Transport *socket = new (std::nothrow) Transport(b_secure);
-    if(!socket)
+    try
+    {
+        socket = new Transport(b_secure);
+        if(!socket)
+            throw std::exception();
+    } catch(...) {
         return nullptr;
+    }
 
     /* disable pipelined tls until we have ticket/resume session support */
-    HTTPConnection *conn = new (std::nothrow)
-            HTTPConnection(p_object, authStorage, socket, proxy, !b_secure);
-    if(!conn)
+    try
     {
+        conn = new
+                HTTPConnection(p_object, authStorage, socket, proxy, !b_secure);
+        if(!conn)
+            throw std::exception();
+    } catch(...) {
         delete socket;
         return nullptr;
     }
@@ -644,5 +654,10 @@ StreamUrlConnectionFactory::StreamUrlConnectionFactory()
 AbstractConnection * StreamUrlConnectionFactory::createConnection(vlc_object_t *p_object,
                                                                   const ConnectionParams &)
 {
-    return new (std::nothrow) StreamUrlConnection(p_object);
+    try
+    {
+        return new StreamUrlConnection(p_object);
+    } catch(...) {
+        return nullptr;
+    }
 }

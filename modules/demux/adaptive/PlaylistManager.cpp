@@ -809,55 +809,59 @@ AbstractAdaptationLogic *PlaylistManager::createLogic(AbstractAdaptationLogic::L
 {
     vlc_object_t *obj = VLC_OBJECT(p_demux);
     AbstractAdaptationLogic *logic = nullptr;
-    switch(type)
+    try
     {
-        case AbstractAdaptationLogic::LogicType::FixedRate:
+        switch(type)
         {
-            size_t bps = var_InheritInteger(p_demux, "adaptive-bw") * 8192;
-            logic = new (std::nothrow) FixedRateAdaptationLogic(obj, bps);
-            break;
-        }
-        case AbstractAdaptationLogic::LogicType::AlwaysLowest:
-            logic = new (std::nothrow) AlwaysLowestAdaptationLogic(obj);
-            break;
-        case AbstractAdaptationLogic::LogicType::AlwaysBest:
-            logic = new (std::nothrow) AlwaysBestAdaptationLogic(obj);
-            break;
-        case AbstractAdaptationLogic::LogicType::RateBased:
-        {
-            RateBasedAdaptationLogic *ratelogic =
-                    new (std::nothrow) RateBasedAdaptationLogic(obj);
-            if(ratelogic)
+            case AbstractAdaptationLogic::LogicType::FixedRate:
+            {
+                size_t bps = var_InheritInteger(p_demux, "adaptive-bw") * 8192;
+                logic = new FixedRateAdaptationLogic(obj, bps);
+                break;
+            }
+            case AbstractAdaptationLogic::LogicType::AlwaysLowest:
+                logic = new AlwaysLowestAdaptationLogic(obj);
+                break;
+            case AbstractAdaptationLogic::LogicType::AlwaysBest:
+                logic = new AlwaysBestAdaptationLogic(obj);
+                break;
+            case AbstractAdaptationLogic::LogicType::RateBased:
+            {
+                RateBasedAdaptationLogic *ratelogic =
+                        new RateBasedAdaptationLogic(obj);
                 conn->setDownloadRateObserver(ratelogic);
-            logic = ratelogic;
-            break;
-        }
-        case AbstractAdaptationLogic::LogicType::Default:
+                logic = ratelogic;
+                break;
+            }
+            case AbstractAdaptationLogic::LogicType::Default:
 #ifdef ADAPTIVE_DEBUGGING_LOGIC
-            logic = new (std::nothrow) RoundRobinLogic(obj);
-            msg_Warn(p_demux, "using RoundRobinLogic every %u", RoundRobinLogic::QUANTUM);
-            break;
+                logic = new RoundRobinLogic(obj);
+                msg_Warn(p_demux, "using RoundRobinLogic every %u", RoundRobinLogic::QUANTUM);
+                break;
 #endif
-        case AbstractAdaptationLogic::LogicType::NearOptimal:
-        {
-            NearOptimalAdaptationLogic *noplogic =
-                    new (std::nothrow) NearOptimalAdaptationLogic(obj);
-            if(noplogic)
+            case AbstractAdaptationLogic::LogicType::NearOptimal:
+            {
+                NearOptimalAdaptationLogic *noplogic =
+                        new NearOptimalAdaptationLogic(obj);
                 conn->setDownloadRateObserver(noplogic);
-            logic = noplogic;
-            break;
-        }
-        case AbstractAdaptationLogic::LogicType::Predictive:
-        {
-            AbstractAdaptationLogic *predictivelogic =
-                    new (std::nothrow) PredictiveAdaptationLogic(obj);
-            if(predictivelogic)
+                logic = noplogic;
+                break;
+            }
+            case AbstractAdaptationLogic::LogicType::Predictive:
+            {
+                AbstractAdaptationLogic *predictivelogic =
+                        new PredictiveAdaptationLogic(obj);
                 conn->setDownloadRateObserver(predictivelogic);
-            logic = predictivelogic;
-        }
+                logic = predictivelogic;
+            }
 
-        default:
-            break;
+            default:
+                break;
+        }
+    }
+    catch(std::bad_alloc &)
+    {
+        return nullptr;
     }
 
     if(logic)

@@ -55,222 +55,237 @@ ManifestParser::~ManifestParser()
 
 static SegmentTimeline *createTimeline(Node *streamIndexNode)
 {
-    SegmentTimeline *timeline = new (std::nothrow) SegmentTimeline(nullptr);
-    if(timeline)
-    {
-        std::vector<Node *> chunks = DOMHelper::getElementByTagName(streamIndexNode, "c", true);
-        std::vector<Node *>::const_iterator it;
+    SegmentTimeline *timeline;
+    try {
+        timeline = new SegmentTimeline(nullptr);
+    } catch(std::bad_alloc &) {
+        return nullptr;
+    }
 
-        struct
-        {
+    std::vector<Node *> chunks = DOMHelper::getElementByTagName(streamIndexNode, "c", true);
+    std::vector<Node *>::const_iterator it;
+
+    struct
+    {
             uint64_t number;
             uint64_t duration;
             uint64_t time;
             uint64_t repeat;
-        } cur = {0,0,0,0}, prev = {0,0,0,0};
+    } cur = {0,0,0,0}, prev = {0,0,0,0};
 
-        for(it = chunks.begin(); it != chunks.end(); ++it)
+    for(it = chunks.begin(); it != chunks.end(); ++it)
+    {
+        const Node *chunk = *it;
+        /* Detect repeats, as r attribute only has been added in late smooth */
+        bool b_cur_is_repeat = true; /* If our current chunk has repeated previous content */
+
+        if(chunk->hasAttribute("n"))
         {
-            const Node *chunk = *it;
-             /* Detect repeats, as r attribute only has been added in late smooth */
-            bool b_cur_is_repeat = true; /* If our current chunk has repeated previous content */
+            cur.number = Integer<uint64_t>(chunk->getAttributeValue("n"));
+            b_cur_is_repeat &= (cur.number == prev.number + 1 + prev.repeat);
+        }
+        else
+        {
+            cur.number = prev.number + prev.repeat + 1;
+        }
 
-            if(chunk->hasAttribute("n"))
+        if(chunk->hasAttribute("d"))
+        {
+            cur.duration = Integer<uint64_t>(chunk->getAttributeValue("d"));
+            b_cur_is_repeat &= (cur.duration == prev.duration);
+        }
+        else
+        {
+            if(it != chunks.end())
             {
-                cur.number = Integer<uint64_t>(chunk->getAttributeValue("n"));
-                b_cur_is_repeat &= (cur.number == prev.number + 1 + prev.repeat);
-            }
-            else
-            {
-                cur.number = prev.number + prev.repeat + 1;
-            }
-
-            if(chunk->hasAttribute("d"))
-            {
-                cur.duration = Integer<uint64_t>(chunk->getAttributeValue("d"));
+                const Node *nextchunk = *(it + 1);
+                cur.duration = Integer<uint64_t>(nextchunk->getAttributeValue("t"))
+                        - Integer<uint64_t>(chunk->getAttributeValue("t"));
                 b_cur_is_repeat &= (cur.duration == prev.duration);
-            }
-            else
-            {
-                if(it != chunks.end())
-                {
-                    const Node *nextchunk = *(it + 1);
-                    cur.duration = Integer<uint64_t>(nextchunk->getAttributeValue("t"))
-                                 - Integer<uint64_t>(chunk->getAttributeValue("t"));
-                    b_cur_is_repeat &= (cur.duration == prev.duration);
-                }
-            }
-
-            if(chunk->hasAttribute("t"))
-            {
-                cur.time = Integer<uint64_t>(chunk->getAttributeValue("t"));
-                b_cur_is_repeat &= (cur.time == prev.time + (prev.duration * (prev.repeat + 1)));
-            }
-            else
-            {
-                cur.time = prev.time + (prev.duration * (prev.repeat + 1));
-            }
-
-            uint64_t explicit_repeat_count = 0;
-            if(chunk->hasAttribute("r"))
-            {
-                explicit_repeat_count = Integer<uint64_t>(chunk->getAttributeValue("r"));
-                /* #segments = repeat count ! as MS has a really broken notion of repetition */
-                if(explicit_repeat_count > 0)
-                    explicit_repeat_count -= 1;
-            }
-
-            if(it == chunks.begin())
-            {
-                prev = cur;
-                prev.repeat = explicit_repeat_count;
-            }
-            else if(b_cur_is_repeat)
-            {
-                prev.repeat += (1 + explicit_repeat_count);
-            }
-            else
-            {
-                timeline->addElement(prev.number, prev.duration, prev.repeat, prev.time);
-                cur.repeat = explicit_repeat_count;
-                prev = cur;
-                cur.repeat = cur.number = 0;
             }
         }
 
-        if(chunks.size() > 0)
+        if(chunk->hasAttribute("t"))
+        {
+            cur.time = Integer<uint64_t>(chunk->getAttributeValue("t"));
+            b_cur_is_repeat &= (cur.time == prev.time + (prev.duration * (prev.repeat + 1)));
+        }
+        else
+        {
+            cur.time = prev.time + (prev.duration * (prev.repeat + 1));
+        }
+
+        uint64_t explicit_repeat_count = 0;
+        if(chunk->hasAttribute("r"))
+        {
+            explicit_repeat_count = Integer<uint64_t>(chunk->getAttributeValue("r"));
+            /* #segments = repeat count ! as MS has a really broken notion of repetition */
+            if(explicit_repeat_count > 0)
+                explicit_repeat_count -= 1;
+        }
+
+        if(it == chunks.begin())
+        {
+            prev = cur;
+            prev.repeat = explicit_repeat_count;
+        }
+        else if(b_cur_is_repeat)
+        {
+            prev.repeat += (1 + explicit_repeat_count);
+        }
+        else
+        {
             timeline->addElement(prev.number, prev.duration, prev.repeat, prev.time);
+            cur.repeat = explicit_repeat_count;
+            prev = cur;
+            cur.repeat = cur.number = 0;
+        }
     }
+
+    if(chunks.size() > 0)
+        timeline->addElement(prev.number, prev.duration, prev.repeat, prev.time);
+
     return timeline;
 }
 
 static void ParseQualityLevel(BaseAdaptationSet *adaptSet, Node *qualNode, const std::string &type,
                               unsigned id, unsigned trackid, const Timescale &timescale)
 {
-    QualityLevel *rep = new (std::nothrow) QualityLevel(adaptSet);
-    if(rep)
+    QualityLevel *rep;
+    try {
+        rep = new QualityLevel(adaptSet);
+    } catch(std::bad_alloc &) {
+        return;
+    }
+
+    rep->setID(ID(id));
+
+    if(qualNode->hasAttribute("Bitrate"))
+        rep->setBandwidth(Integer<uint64_t>(qualNode->getAttributeValue("Bitrate")));
+
+    if(qualNode->hasAttribute("MaxWidth"))
+        rep->setWidth(Integer<uint64_t>(qualNode->getAttributeValue("MaxWidth")));
+    else if(qualNode->hasAttribute("Width"))
+        rep->setWidth(Integer<uint64_t>(qualNode->getAttributeValue("Width")));
+
+    if(qualNode->hasAttribute("MaxHeight"))
+        rep->setHeight(Integer<uint64_t>(qualNode->getAttributeValue("MaxHeight")));
+    else if(qualNode->hasAttribute("Height"))
+        rep->setHeight(Integer<uint64_t>(qualNode->getAttributeValue("Height")));
+
+    if(qualNode->hasAttribute("FourCC"))
+        rep->addCodecs(qualNode->getAttributeValue("FourCC"));
+
+    CodecParameters params;
+
+    if(qualNode->hasAttribute("FourCC"))
+        params.setFourCC(qualNode->getAttributeValue("FourCC"));
+
+    if(qualNode->hasAttribute("PacketSize"))
+        params.setPacketSize(Integer<uint16_t>(qualNode->getAttributeValue("PacketSize")));
+
+    if(qualNode->hasAttribute("Channels"))
+        params.setChannels(Integer<uint16_t>(qualNode->getAttributeValue("Channels")));
+
+    if(qualNode->hasAttribute("SamplingRate"))
+        params.setSamplingRate(Integer<uint32_t>(qualNode->getAttributeValue("SamplingRate")));
+
+    if(qualNode->hasAttribute("BitsPerSample"))
+        params.setBitsPerSample(Integer<uint32_t>(qualNode->getAttributeValue("BitsPerSample")));
+
+    if(qualNode->hasAttribute("CodecPrivateData"))
+        params.setCodecPrivateData(qualNode->getAttributeValue("CodecPrivateData"));
+
+    if(qualNode->hasAttribute("AudioTag"))
+        params.setAudioTag(Integer<uint16_t>(qualNode->getAttributeValue("AudioTag")));
+
+    if(qualNode->hasAttribute("WaveFormatEx"))
+        params.setWaveFormatEx(qualNode->getAttributeValue("WaveFormatEx"));
+
+    rep->setCodecParameters(params);
+
+    adaptSet->addRepresentation(rep);
+
+    ForgedInitSegment *initSegment = nullptr;
+    try
     {
-        rep->setID(ID(id));
+        initSegment = new  ForgedInitSegment(rep, type, timescale,
+                                             adaptSet->getPlaylist()->duration.Get());
+    } catch(...) {}
+    if(initSegment)
+    {
+        initSegment->setTrackID(trackid);
 
-        if(qualNode->hasAttribute("Bitrate"))
-            rep->setBandwidth(Integer<uint64_t>(qualNode->getAttributeValue("Bitrate")));
+        if(!adaptSet->getLang().empty())
+            initSegment->setLanguage(adaptSet->getLang());
 
-        if(qualNode->hasAttribute("MaxWidth"))
-            rep->setWidth(Integer<uint64_t>(qualNode->getAttributeValue("MaxWidth")));
-        else if(qualNode->hasAttribute("Width"))
-            rep->setWidth(Integer<uint64_t>(qualNode->getAttributeValue("Width")));
+        if(rep->getWidth() > 0 && rep->getHeight() > 0)
+            initSegment->setVideoSize(rep->getWidth(), rep->getHeight());
 
-        if(qualNode->hasAttribute("MaxHeight"))
-            rep->setHeight(Integer<uint64_t>(qualNode->getAttributeValue("MaxHeight")));
-        else if(qualNode->hasAttribute("Height"))
-            rep->setHeight(Integer<uint64_t>(qualNode->getAttributeValue("Height")));
+        initSegment->setSourceUrl("forged://");
 
-        if(qualNode->hasAttribute("FourCC"))
-            rep->addCodecs(qualNode->getAttributeValue("FourCC"));
-
-        CodecParameters params;
-
-        if(qualNode->hasAttribute("FourCC"))
-            params.setFourCC(qualNode->getAttributeValue("FourCC"));
-
-        if(qualNode->hasAttribute("PacketSize"))
-            params.setPacketSize(Integer<uint16_t>(qualNode->getAttributeValue("PacketSize")));
-
-        if(qualNode->hasAttribute("Channels"))
-            params.setChannels(Integer<uint16_t>(qualNode->getAttributeValue("Channels")));
-
-        if(qualNode->hasAttribute("SamplingRate"))
-            params.setSamplingRate(Integer<uint32_t>(qualNode->getAttributeValue("SamplingRate")));
-
-        if(qualNode->hasAttribute("BitsPerSample"))
-            params.setBitsPerSample(Integer<uint32_t>(qualNode->getAttributeValue("BitsPerSample")));
-
-        if(qualNode->hasAttribute("CodecPrivateData"))
-            params.setCodecPrivateData(qualNode->getAttributeValue("CodecPrivateData"));
-
-        if(qualNode->hasAttribute("AudioTag"))
-            params.setAudioTag(Integer<uint16_t>(qualNode->getAttributeValue("AudioTag")));
-
-        if(qualNode->hasAttribute("WaveFormatEx"))
-            params.setWaveFormatEx(qualNode->getAttributeValue("WaveFormatEx"));
-
-        rep->setCodecParameters(params);
-
-        adaptSet->addRepresentation(rep);
-
-        ForgedInitSegment *initSegment = new (std::nothrow)
-                ForgedInitSegment(rep, type,
-                                  timescale,
-                                  adaptSet->getPlaylist()->duration.Get());
-        if(initSegment)
-        {
-            initSegment->setTrackID(trackid);
-
-            if(!adaptSet->getLang().empty())
-                initSegment->setLanguage(adaptSet->getLang());
-
-            if(rep->getWidth() > 0 && rep->getHeight() > 0)
-                initSegment->setVideoSize(rep->getWidth(), rep->getHeight());
-
-            initSegment->setSourceUrl("forged://");
-
-            rep->initialisationSegment.Set(initSegment);
-        }
+        rep->initialisationSegment.Set(initSegment);
     }
 }
 
 static void ParseStreamIndex(BasePeriod *period, Node *streamIndexNode, unsigned id)
 {
-    BaseAdaptationSet *adaptSet = new (std::nothrow) BaseAdaptationSet(period);
-    if(adaptSet)
+    BaseAdaptationSet *adaptSet;
+    try
     {
-        adaptSet->setID(ID(id));
-        if(streamIndexNode->hasAttribute("Language"))
-            adaptSet->setLang(streamIndexNode->getAttributeValue("Language"));
-
-        if(streamIndexNode->hasAttribute("Name"))
-            adaptSet->description.Set(streamIndexNode->getAttributeValue("Name"));
-
-        Timescale timescale(10000000);
-        if(streamIndexNode->hasAttribute("TimeScale"))
-        {
-            timescale = Timescale(Integer<uint64_t>(streamIndexNode->getAttributeValue("TimeScale")));
-            adaptSet->addAttribute(new TimescaleAttr(timescale));
-        }
-
-        const std::string url = streamIndexNode->getAttributeValue("Url");
-        if(!url.empty())
-        {
-            /* SmoothSegment is a template holder */
-            SegmentTemplate *templ = new SegmentTemplate(new SmoothSegmentTemplateSegment(), adaptSet);
-            if(templ)
-            {
-                templ->setSourceUrl(url);
-                SegmentTimeline *timeline = createTimeline(streamIndexNode);
-                templ->addAttribute(timeline);
-                adaptSet->setSegmentTemplate(templ);
-            }
-
-            unsigned nextid = 1;
-            const std::string type = streamIndexNode->getAttributeValue("Type");
-            std::vector<Node *> qualLevels = DOMHelper::getElementByTagName(streamIndexNode, "QualityLevel", true);
-            std::vector<Node *>::const_iterator it;
-            for(it = qualLevels.begin(); it != qualLevels.end(); ++it)
-                ParseQualityLevel(adaptSet, *it, type, nextid++, id, timescale);
-        }
-        if(!adaptSet->getRepresentations().empty())
-            period->addAdaptationSet(adaptSet);
-        else
-            delete adaptSet;
+        adaptSet = new BaseAdaptationSet(period);
+    } catch(...) {
+        return;
     }
+
+    adaptSet->setID(ID(id));
+    if(streamIndexNode->hasAttribute("Language"))
+        adaptSet->setLang(streamIndexNode->getAttributeValue("Language"));
+
+    if(streamIndexNode->hasAttribute("Name"))
+        adaptSet->description.Set(streamIndexNode->getAttributeValue("Name"));
+
+    Timescale timescale(10000000);
+    if(streamIndexNode->hasAttribute("TimeScale"))
+    {
+        timescale = Timescale(Integer<uint64_t>(streamIndexNode->getAttributeValue("TimeScale")));
+        adaptSet->addAttribute(new TimescaleAttr(timescale));
+    }
+
+    const std::string url = streamIndexNode->getAttributeValue("Url");
+    if(!url.empty())
+    {
+        /* SmoothSegment is a template holder */
+        SegmentTemplate *templ = new SegmentTemplate(new SmoothSegmentTemplateSegment(), adaptSet);
+        if(templ)
+        {
+            templ->setSourceUrl(url);
+            SegmentTimeline *timeline = createTimeline(streamIndexNode);
+            templ->addAttribute(timeline);
+            adaptSet->setSegmentTemplate(templ);
+        }
+
+        unsigned nextid = 1;
+        const std::string type = streamIndexNode->getAttributeValue("Type");
+        std::vector<Node *> qualLevels = DOMHelper::getElementByTagName(streamIndexNode, "QualityLevel", true);
+        std::vector<Node *>::const_iterator it;
+        for(it = qualLevels.begin(); it != qualLevels.end(); ++it)
+            ParseQualityLevel(adaptSet, *it, type, nextid++, id, timescale);
+    }
+    if(!adaptSet->getRepresentations().empty())
+        period->addAdaptationSet(adaptSet);
+    else
+        delete adaptSet;
 }
 
 Manifest * ManifestParser::parse()
 {
-    Manifest *manifest = new (std::nothrow) Manifest(p_object);
-    if(!manifest)
+    Manifest *manifest;
+    try {
+        manifest = new Manifest(p_object);
+    } catch(...) {
         return nullptr;
-
+    }
     manifest->setPlaylistUrl(Helper::getDirectoryPath(playlisturl).append("/"));
 
     Timescale timescale(10000000);
@@ -297,7 +312,14 @@ Manifest * ManifestParser::parse()
         manifest->b_live = true;
 
     /* Need a default Period */
-    BasePeriod *period = new (std::nothrow) BasePeriod(manifest);
+    BasePeriod *period;
+    try
+    {
+        period = new BasePeriod(manifest);
+    } catch(std::bad_alloc &) {
+        period = nullptr;
+    }
+
     if(period)
     {
         period->duration.Set(manifest->duration.Get());

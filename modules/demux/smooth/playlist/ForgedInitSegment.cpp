@@ -142,17 +142,23 @@ SegmentChunk* ForgedInitSegment::toChunk(SharedResources *, AbstractConnectionMa
         return nullptr;
 
     block_t *moov = buildMoovBox(lvl->getCodecParameters());
-    if(moov)
+    if(!moov)
+        return nullptr;
+
+    MemoryChunkSource *source;
+    try
     {
-        MemoryChunkSource *source = new (std::nothrow) MemoryChunkSource(ChunkType::Init, moov);
-        if( source )
-        {
-            SegmentChunk *chunk = new (std::nothrow) SegmentChunk(source, rep);
-            if( chunk )
-                return chunk;
-            else
-                delete source;
-        }
+        source = new MemoryChunkSource(ChunkType::Init, moov);
+    } catch(std::bad_alloc &) {
+        block_Release(moov);
+        return nullptr;
     }
-    return nullptr;
+
+    try
+    {
+        return new SegmentChunk(source, rep);
+    } catch(std::bad_alloc &) {
+        delete source;
+        return nullptr;
+    }
 }

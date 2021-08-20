@@ -263,9 +263,11 @@ void AttributesTag::parseAttributes(const std::string &field)
 
         if(!attrname.empty())
         {
-            Attribute *attribute = new (std::nothrow) Attribute(attrname, attrvalue);
-            if(attribute)
+            try
+            {
+                Attribute *attribute = new Attribute(attrname, attrvalue);
                 attributes.push_back(attribute);
+            } catch(std::bad_alloc &) {}
         }
     }
 }
@@ -286,19 +288,20 @@ void ValuesListTag::parseAttributes(const std::string &field)
     Attribute *attr;
     if(pos != std::string::npos)
     {
-        attr = new (std::nothrow) Attribute("DURATION", field.substr(0, pos));
-        if(attr)
+        try {
+            attr = new Attribute("DURATION", field.substr(0, pos));
             addAttribute(attr);
-
-        attr = new (std::nothrow) Attribute("TITLE", field.substr(pos));
-        if(attr)
+            attr = new Attribute("TITLE", field.substr(pos));
             addAttribute(attr);
+        } catch(std::bad_alloc &) {}
     }
     else /* broken EXTINF without mandatory comma */
     {
-        attr = new (std::nothrow) Attribute("DURATION", field);
-        if(attr)
+        try
+        {
+            attr = new Attribute("DURATION", field);
             addAttribute(attr);
+        } catch(std::bad_alloc &) {}
     }
 }
 
@@ -329,43 +332,44 @@ Tag * TagFactory::createTagByName(const std::string &name, const std::string &va
         {nullptr,                              0},
     };
 
-
-    for(int i=0; exttagmapping[i].psz; i++)
+    try
     {
-        if(name != exttagmapping[i].psz)
-            continue;
-
-        switch(exttagmapping[i].i)
+        for(int i=0; exttagmapping[i].psz; i++)
         {
-        case Tag::EXTXDISCONTINUITY:
-        case Tag::EXTXENDLIST:
-        case Tag::EXTXIFRAMESONLY:
-            return new (std::nothrow) Tag(exttagmapping[i].i);
+            if(name != exttagmapping[i].psz)
+                continue;
 
-        case SingleValueTag::URI:
-        case SingleValueTag::EXTXVERSION:
-        case SingleValueTag::EXTXBYTERANGE:
-        case SingleValueTag::EXTXPROGRAMDATETIME:
-        case SingleValueTag::EXTXTARGETDURATION:
-        case SingleValueTag::EXTXMEDIASEQUENCE:
-        case SingleValueTag::EXTXDISCONTINUITYSEQUENCE:
-        case SingleValueTag::EXTXPLAYLISTTYPE:
-            return new (std::nothrow) SingleValueTag(exttagmapping[i].i, value);
+            switch(exttagmapping[i].i)
+            {
+                case Tag::EXTXDISCONTINUITY:
+                case Tag::EXTXENDLIST:
+                case Tag::EXTXIFRAMESONLY:
+                    return new Tag(exttagmapping[i].i);
 
-        case ValuesListTag::EXTINF:
-            return new (std::nothrow) ValuesListTag(exttagmapping[i].i, value);
+                case SingleValueTag::URI:
+                case SingleValueTag::EXTXVERSION:
+                case SingleValueTag::EXTXBYTERANGE:
+                case SingleValueTag::EXTXPROGRAMDATETIME:
+                case SingleValueTag::EXTXTARGETDURATION:
+                case SingleValueTag::EXTXMEDIASEQUENCE:
+                case SingleValueTag::EXTXDISCONTINUITYSEQUENCE:
+                case SingleValueTag::EXTXPLAYLISTTYPE:
+                    return new SingleValueTag(exttagmapping[i].i, value);
 
-        case AttributesTag::EXTXKEY:
-        case AttributesTag::EXTXSESSIONKEY:
-        case AttributesTag::EXTXMAP:
-        case AttributesTag::EXTXMEDIA:
-        case AttributesTag::EXTXSTART:
-        case AttributesTag::EXTXSTREAMINF:
-            return new (std::nothrow) AttributesTag(exttagmapping[i].i, value);
+                case ValuesListTag::EXTINF:
+                    return new ValuesListTag(exttagmapping[i].i, value);
+
+                case AttributesTag::EXTXKEY:
+                case AttributesTag::EXTXSESSIONKEY:
+                case AttributesTag::EXTXMAP:
+                case AttributesTag::EXTXMEDIA:
+                case AttributesTag::EXTXSTART:
+                case AttributesTag::EXTXSTREAMINF:
+                    return new AttributesTag(exttagmapping[i].i, value);
+            }
+
         }
-
-    }
-
+    } catch(std::bad_alloc &) {}
 
     return nullptr;
 }
