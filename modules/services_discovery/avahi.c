@@ -132,7 +132,6 @@ static void add_renderer( const char *psz_protocol, const char *psz_name,
                           AvahiStringList *txt, discovery_sys_t *p_sys )
 {
     vlc_renderer_discovery_t *p_rd = ( vlc_renderer_discovery_t* )(p_sys->parent);
-    AvahiStringList *asl = NULL;
     char *friendly_name = NULL;
     char *icon_uri = NULL;
     char *uri = NULL;
@@ -143,25 +142,17 @@ static void add_renderer( const char *psz_protocol, const char *psz_name,
 
     if( !strcmp( "chromecast", psz_protocol ) ) {
         /* Capabilities */
-        asl = avahi_string_list_find( txt, "ca" );
-        if( asl != NULL ) {
-            char *key = NULL;
-            char *value = NULL;
-            if( avahi_string_list_get_pair( asl, &key, &value, NULL ) == 0 &&
-                value != NULL )
-            {
-                int ca = atoi( value );
+        char *str_ca = get_string_list_value( txt, "ca" );
+        if (str_ca)
+        {
+            int ca = atoi( str_ca );
 
-                if( ( ca & 0x01 ) != 0 )
-                    renderer_flags |= VLC_RENDERER_CAN_VIDEO;
-                if( ( ca & 0x04 ) != 0 )
-                    renderer_flags |= VLC_RENDERER_CAN_AUDIO;
-            }
+            if( ( ca & 0x01 ) != 0 )
+                renderer_flags |= VLC_RENDERER_CAN_VIDEO;
+            if( ( ca & 0x04 ) != 0 )
+                renderer_flags |= VLC_RENDERER_CAN_AUDIO;
 
-            if( key != NULL )
-                avahi_free( (void *)key );
-            if( value != NULL )
-                avahi_free( (void *)value );
+            free(str_ca);
         }
 
         /* Friendly name */
