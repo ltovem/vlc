@@ -299,7 +299,7 @@ vlc_rd_parser_AddRenderer(vlc_rd_parser_t *rd_parser, const protocol_info_t *pro
     if (p_module == NULL)
     {
         msg_Err(rd_parser->p_obj, "no suitable renderer discovery module for '%s'",
-                protocol_info->psz_name);
+                protocol_info->psz_protocol);
         return VLC_EACCES;
     }
 

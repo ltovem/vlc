@@ -33,6 +33,7 @@
 #include "../renderer_common.hpp"
 #include "chromecast.h"
 #include <vlc_dialog.h>
+#include <vlc_renderer_discovery.h>
 
 #include <vlc_sout.h>
 #include <vlc_block.h>
@@ -184,6 +185,7 @@ static void Close(vlc_object_t *);
 static int ProxyOpen(vlc_object_t *);
 static int AccessOpen(vlc_object_t *);
 static void AccessClose(vlc_object_t *);
+static int RDParserOpen(vlc_rd_parser_t *, const protocol_info_t *);
 
 static const char *const ppsz_sout_options[] = {
     "ip", "port",  "http-port", "video", NULL
@@ -239,7 +241,115 @@ vlc_module_begin ()
         add_shortcut("chromecast-http")
         set_capability("sout access", 0)
         set_callbacks(AccessOpen, AccessClose)
+    add_submodule()
+        set_capability("renderer_discovery_parser", 100)
+        set_callback(RDParserOpen)
 vlc_module_end ()
+
+static inline int vlc_rd_parser_Parse( vlc_rd_parser_t *rd_parser,
+                                       const protocol_info_t *protocol_info )
+{
+    vlc_rd_parser_owner_t owner = rd_parser->owner;
+    rd_parser_info_t *rdp_info = &rd_parser->parser_info;
+    rdp_info->psz_friendly_name = NULL;
+    rdp_info->psz_icon_uri = NULL;
+    rdp_info->psz_uri = NULL;
+
+    char *str_ca = owner.cbs->get_data( rd_parser, "ca" );
+    if (str_ca)
+    {
+        int ca = atoi( str_ca );
+
+        if( ( ca & 0x01 ) != 0 )
+            rdp_info->i_renderer_flags |= VLC_RENDERER_CAN_VIDEO;
+        if( ( ca & 0x04 ) != 0 )
+            rdp_info->i_renderer_flags |= VLC_RENDERER_CAN_AUDIO;
+
+        free(str_ca);
+    }
+
+    /* Icon */
+    char* icon_raw = owner.cbs->get_data( rd_parser, "ic" );
+    if( icon_raw != NULL ) {
+        if( asprintf( &rdp_info->psz_icon_uri, "http://%s:8008%s", protocol_info->psz_addr, icon_raw) < 0 )
+            rdp_info->psz_icon_uri = NULL;
+        free( icon_raw );
+    }
+
+    if( asprintf( &rdp_info->psz_uri, "%s://%s:%u", protocol_info->psz_protocol,
+                  protocol_info->psz_addr, protocol_info->i_port ) < 0 )
+    {
+        free(rdp_info->psz_icon_uri);
+        return VLC_EGENERIC;
+    }
+
+    rdp_info->psz_extra_uri = rdp_info->i_renderer_flags & VLC_RENDERER_CAN_VIDEO ? NULL : "no-video";
+    rdp_info->psz_demux = "cc_demux";
+
+    /* Friendly name */
+    rdp_info->psz_friendly_name = owner.cbs->get_data( rd_parser, "fn" );
+    char *model = owner.cbs->get_data( rd_parser, "md" );
+
+    if ( rdp_info->psz_friendly_name && model ) {
+        char* combined;
+        if ( asprintf( &combined, "%s (%s)", rdp_info->psz_friendly_name, model ) == -1 )
+            combined = NULL;
+        if ( combined != NULL ) {
+            free(rdp_info->psz_friendly_name);
+            rdp_info->psz_friendly_name = combined;
+        }
+    }
+    free(model);
+    return VLC_SUCCESS;
+}
+
+static void rd_parser_info_FreeStrings( rd_parser_info_t *rdp_info )
+{
+    free(rdp_info->psz_uri);
+    free(rdp_info->psz_icon_uri);
+    free(rdp_info->psz_friendly_name);
+}
+
+static inline int vlc_rd_parser_AddRendererDiscovery( vlc_rd_parser_t *rd_parser,
+                                                      const protocol_info_t *protocol_info )
+{
+    rd_parser_info_t *rdp_info = &rd_parser->parser_info;
+    vlc_renderer_item_t *p_renderer_item =
+        vlc_renderer_item_new( protocol_info->psz_protocol,
+                               rdp_info->psz_friendly_name ? rdp_info->psz_friendly_name : protocol_info->psz_name,
+                               rdp_info->psz_uri, rdp_info->psz_extra_uri, rdp_info->psz_demux,
+                               rdp_info->psz_icon_uri, rdp_info->i_renderer_flags );
+    if ( p_renderer_item == NULL )
+    {
+        return VLC_EGENERIC;
+    }
+
+    if ( rd_parser->owner.cbs->insert_renderer )
+        rd_parser->owner.cbs->insert_renderer( rd_parser, protocol_info->psz_name, p_renderer_item );
+
+    return VLC_SUCCESS;
+}
+
+static int RDParserOpen( vlc_rd_parser_t *rd_parser, const protocol_info_t *protocol_info )
+{
+    if ( strcmp( protocol_info->psz_protocol, "chromecast" ) != 0 )
+    {
+        return VLC_EGENERIC;
+    }
+
+    // parsing stuff
+    if ( vlc_rd_parser_Parse( rd_parser, protocol_info ) != VLC_SUCCESS )
+        return VLC_EGENERIC;
+
+    // Inject the new renderer
+    if ( vlc_rd_parser_AddRendererDiscovery( rd_parser, protocol_info ) != VLC_SUCCESS )
+    {
+        rd_parser_info_FreeStrings( &rd_parser->parser_info );
+        return VLC_EGENERIC;
+    }
+    rd_parser_info_FreeStrings( &rd_parser->parser_info );
+    return VLC_SUCCESS;
+}
 
 static void *ProxyAdd(sout_stream_t *p_stream, const es_format_t *p_fmt)
 {
