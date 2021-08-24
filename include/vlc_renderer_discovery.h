@@ -40,6 +40,74 @@
 #define VLC_RENDERER_CAN_AUDIO 0x0001
 #define VLC_RENDERER_CAN_VIDEO 0x0002
 
+typedef struct vlc_rd_parser_t vlc_rd_parser_t;
+
+typedef struct protocol_info_t
+{
+    const char *psz_protocol;
+    const char *psz_name;
+    const char *psz_addr;
+    uint16_t i_port;
+} protocol_info_t;
+
+typedef struct rd_parser_info_t
+{
+    char *psz_friendly_name;
+    char *psz_icon_uri;
+    char *psz_uri;
+    const char *psz_demux;
+    const char *psz_extra_uri;
+    int i_renderer_flags;
+} rd_parser_info_t;
+
+struct rd_parser_callbacks
+{
+    char * (*get_data)(vlc_rd_parser_t *parser, const char *key); /* to gather protocol specific data
+                                                                     (must return an allocated string) */
+    int (*insert_renderer)(vlc_rd_parser_t *parser, const char *key,  /* call after a renderer item is created */
+                           vlc_renderer_item_t *renderer_item);
+};
+
+typedef struct vlc_rd_parser_owner_t
+{
+  const struct rd_parser_callbacks *cbs;
+  void *p_sys;
+} vlc_rd_parser_owner_t;
+
+typedef struct vlc_rd_parser_t
+{
+    vlc_object_t *p_obj;
+    rd_parser_info_t parser_info;
+
+    vlc_rd_parser_owner_t owner;
+} vlc_rd_parser_t;
+
+
+/**
+ * Initialise a vlc_rd_parser_t struct
+ *
+ * \param rd_parser the vlc_rd_parser_t to initialise
+ * \param p_obj reference object for the rd parser
+ * \param owner callbacks for the vlc_rd_parser_t
+ */
+VLC_API void vlc_rd_parser_Init(vlc_rd_parser_t *rd_parser, vlc_object_t *p_obj,
+                               const vlc_rd_parser_owner_t *restrict owner);
+
+/**
+ * Parse a renderer protocol and create a renderer_item_t with the parsed information
+ *
+ * A parsing submodule of the renderer will be loaded to parse information about this renderer.
+ * Information are gotten through the get_data callback of the vlc_rd_parser_owner_t struct.
+ * The submodule is chosen according to the psz_protocol field of the protocol_info_t struct.
+ *
+ * A renderer_item_t is then created with those information. The insert_renderer callback is called
+ * to allow the user to add the item where he wants.
+ *
+ * \param rd_parser the rendeder discovery parser structure
+ * \param protocol_info information about the protocol used (must be filled)
+ */
+VLC_API int vlc_rd_parser_AddRenderer(vlc_rd_parser_t *rd_parser, const protocol_info_t *protocol_info);
+
 /**
  * Create a new renderer item
  *
