@@ -250,7 +250,6 @@ libvlccore_la_SOURCES = \
 	preparser/fetcher.c \
 	preparser/fetcher.h \
 	preparser/preparser.c \
-	preparser/preparser.h \
 	input/item.c \
 	input/access.c \
 	clock/clock_internal.c \

@@ -40,7 +40,6 @@
 
 #include "modules/modules.h"
 #include "config/configuration.h"
-#include "preparser/preparser.h"
 #include "media_source/media_source.h"
 
 #include <stdio.h>                                              /* sprintf() */
