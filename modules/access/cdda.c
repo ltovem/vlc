@@ -67,6 +67,8 @@
  #include <errno.h>
 #endif
 
+#define INVALID_SECTOR ((unsigned) -1)
+
 static vcddev_t *DiscOpen(vlc_object_t *obj, const char *location,
                          const char *path, unsigned *restrict trackp)
 {
@@ -313,7 +315,7 @@ static int DemuxOpen(vlc_object_t *obj)
     sys->length = var_InheritInteger(obj, "cdda-last-sector") - sys->start;
 
     /* Track number in input item */
-    if (sys->start == (unsigned)-1 || sys->length == (unsigned)-1)
+    if (sys->start == INVALID_SECTOR || sys->length == INVALID_SECTOR)
     {
         vcddev_toc_t *p_toc = ioctl_GetTOC(obj, dev);
         if(p_toc == NULL)
@@ -1020,9 +1022,9 @@ vlc_module_begin ()
     add_usage_hint( N_("[cdda:][device][@[track]]") )
     add_integer( "cdda-track", 0 , NULL, NULL, true )
         change_volatile ()
-    add_integer( "cdda-first-sector", -1, NULL, NULL, true )
+    add_integer( "cdda-first-sector", INVALID_SECTOR, NULL, NULL, true )
         change_volatile ()
-    add_integer( "cdda-last-sector", -1, NULL, NULL, true )
+    add_integer( "cdda-last-sector", INVALID_SECTOR, NULL, NULL, true )
         change_volatile ()
 
     add_string( "musicbrainz-server", MUSICBRAINZ_DEFAULT_SERVER,
