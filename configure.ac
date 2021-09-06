@@ -4215,7 +4215,8 @@ PKG_ENABLE_MODULES_VLC([UDEV], [], [libudev >= 142], [Linux udev services discov
 
 dnl
 dnl MTP devices services discovery
-PKG_ENABLE_MODULES_VLC([MTP], [mtp access_mtp], [libmtp >= 1.0.0], [MTP devices support], [auto])
+PKG_ENABLE_MODULES_VLC([MTP_ACCESS], [access_mtp], [libmtp >= 1.0.0], [MTP access plugin support], [auto])
+PKG_ENABLE_MODULES_VLC([MTP_DISCOVERY], [mtp], [libmtp >= 1.0.0 libusb-1.0 >= 1.0.16], [MTP device discovery support], [auto])
 
 dnl
 dnl UPnP Plugin (Intel SDK)

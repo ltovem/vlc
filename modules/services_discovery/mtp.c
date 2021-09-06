@@ -28,8 +28,15 @@
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_services_discovery.h>
+#include <vlc_interrupt.h>
 
+#include <sys/time.h>
+#include <poll.h>
+#include <errno.h>
+
+#include <stdbool.h>
 #include <libmtp.h>
+#include <libusb.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -52,11 +59,14 @@ vlc_module_begin()
 vlc_module_end()
 
 
+
 /*****************************************************************************
  * Local prototypes
  *****************************************************************************/
 
 static void *Run( void * );
+static void *RunLibUSB( void * );
+int mtp_usbHotplugCallback(struct libusb_context *, struct libusb_device *, libusb_hotplug_event, void *);
 
 static int AddDevice( services_discovery_t *, LIBMTP_raw_device_t * );
 static void AddTrack( services_discovery_t *, LIBMTP_track_t *);
@@ -67,6 +77,10 @@ static int CountTracks( uint64_t const, uint64_t const, void const * const );
  * Local structures
  *****************************************************************************/
 
+#define HOTPLUG_CB_USB_NO_EVENT 0x0
+#define HOTPLUG_CB_USB_DEV_ARRIVED 0x1
+#define HOTPLUG_CB_USB_DEV_LEFT 0x2
+
 typedef struct
 {
     int i_tracks_num;
@@ -76,7 +90,14 @@ typedef struct
     uint32_t i_bus;
     uint8_t i_dev;
     uint16_t i_product_id;
-    vlc_thread_t thread;
+    vlc_thread_t run_thread;
+    vlc_thread_t handle_events_thread;
+    libusb_context* p_libusb_ctx;
+    libusb_hotplug_callback_handle cb_handle;
+    int i_hotplug_cb_status;
+    bool b_hotplug_end;
+    vlc_interrupt_t *interrupt_ctx;
+    vlc_mutex_t mutex;
 } services_discovery_sys_t;
 
 /*****************************************************************************
@@ -97,12 +118,49 @@ static int Open( vlc_object_t *p_this )
 
     vlc_once( &mtp_init_once, LIBMTP_Init );
 
-    if (vlc_clone (&p_sys->thread, Run, p_sd, VLC_THREAD_PRIORITY_LOW))
+#if defined(__APPLE__) || defined(__linux__)
+    if ( libusb_init (&p_sys->p_libusb_ctx) != LIBUSB_SUCCESS )
+        return VLC_EGENERIC;
+    if ( libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG) != 0 )
+    {
+        libusb_exit( p_sys->p_libusb_ctx );
+        return VLC_EGENERIC;
+    }
+    p_sys->interrupt_ctx = vlc_interrupt_create();
+    p_sys->i_hotplug_cb_status = HOTPLUG_CB_USB_DEV_ARRIVED;
+    p_sys->b_hotplug_end = false;
+    vlc_mutex_init(&p_sys->mutex);
+    int rc = libusb_hotplug_register_callback( p_sys->p_libusb_ctx,
+                                               LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
+                                               LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
+                                               0,
+                                               LIBUSB_HOTPLUG_MATCH_ANY,
+                                               LIBUSB_HOTPLUG_MATCH_ANY,
+                                               LIBUSB_HOTPLUG_MATCH_ANY,
+                                               mtp_usbHotplugCallback, p_sys,
+                                               &p_sys->cb_handle );
+    if ( rc != LIBUSB_SUCCESS )
+    {
+        libusb_exit( p_sys->p_libusb_ctx );
+        free( p_sys );
+        return VLC_EGENERIC;
+    }
+    if ( vlc_clone( &p_sys->run_thread, RunLibUSB, p_sd, VLC_THREAD_PRIORITY_LOW ) )
+    {
+        libusb_hotplug_deregister_callback( p_sys->p_libusb_ctx, p_sys->cb_handle );
+        libusb_exit( p_sys->p_libusb_ctx );
+        free( p_sys );
+        return VLC_EGENERIC;
+    }
+    return VLC_SUCCESS;
+#else
+    if (vlc_clone (&p_sys->run_thread, Run, p_sd, VLC_THREAD_PRIORITY_LOW))
     {
         free (p_sys);
         return VLC_EGENERIC;
     }
     return VLC_SUCCESS;
+#endif
 }
 
 /*****************************************************************************
@@ -112,16 +170,104 @@ static void Close( vlc_object_t *p_this )
 {
     services_discovery_t *p_sd = ( services_discovery_t * )p_this;
     services_discovery_sys_t *p_sys = p_sd->p_sys;
-
     free( p_sys->psz_name );
-    vlc_cancel( p_sys->thread );
-    vlc_join( p_sys->thread, NULL );
+#if defined(__APPLE__) || defined(__linux__)
+    if ( libusb_has_capability( LIBUSB_CAP_HAS_HOTPLUG ) != 0 )
+    {
+        vlc_mutex_lock(&p_sys->mutex);
+        p_sys->b_hotplug_end = true;
+        vlc_mutex_unlock(&p_sys->mutex);
+        vlc_interrupt_raise( p_sys->interrupt_ctx );
+        libusb_hotplug_deregister_callback( p_sys->p_libusb_ctx, p_sys->cb_handle );
+    }
+    vlc_join( p_sys->run_thread, NULL );
+    libusb_exit( p_sys->p_libusb_ctx );
+#else
+    vlc_cancel( p_sys->run_thread );
+    vlc_join( p_sys->run_thread, NULL );
+#endif
     free( p_sys );
+}
+
+
+int mtp_usbHotplugCallback( struct libusb_context *p_ctx, struct libusb_device *p_dev, libusb_hotplug_event event, void *p_user_data )
+{
+    (void) p_ctx;
+    (void) p_dev;
+    services_discovery_sys_t *p_sys = ( services_discovery_sys_t * ) p_user_data;
+    switch ( event )
+    {
+    case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
+        p_sys->i_hotplug_cb_status |= HOTPLUG_CB_USB_DEV_ARRIVED;
+        break;
+    case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
+        p_sys->i_hotplug_cb_status |= HOTPLUG_CB_USB_DEV_LEFT;
+        break;
+    }
+    return 0;
 }
 
 /*****************************************************************************
  * Run: main thread
  *****************************************************************************/
+
+#if defined(__APPLE__) || defined(__linux__)
+static void *RunLibUSB ( void *data )
+{
+    LIBMTP_raw_device_t *p_rawdevices;
+    int i_numrawdevices;
+    int i_ret;
+    services_discovery_t *p_sd = data;
+    services_discovery_sys_t *p_sys = p_sd->p_sys;
+    
+    const struct libusb_pollfd ** pollfds = libusb_get_pollfds(p_sys->p_libusb_ctx);
+    if(pollfds == NULL)
+    {
+        return NULL;
+    }
+    int nfds;
+    for(nfds = 0; pollfds[nfds] != NULL; nfds++);
+    struct timeval zero_tv = { .tv_sec = 0, .tv_usec = 0 };
+
+    for(;;)
+    {
+        if ( ( vlc_poll_i11e((struct pollfd *) *pollfds, nfds, -1) == -1 ) )
+            break;
+        vlc_mutex_lock( &p_sys->mutex );
+        bool b_end = p_sys->b_hotplug_end;
+         vlc_mutex_unlock( &p_sys->mutex );
+        if ( b_end )
+            break;
+
+        libusb_handle_events_timeout(p_sys->p_libusb_ctx, &zero_tv);
+
+        if ( p_sys->i_hotplug_cb_status == HOTPLUG_CB_USB_NO_EVENT )
+            continue;
+
+        int i_status = p_sys->i_hotplug_cb_status;
+        p_sys->i_hotplug_cb_status = HOTPLUG_CB_USB_NO_EVENT;
+
+        i_ret = LIBMTP_Detect_Raw_Devices( &p_rawdevices, &i_numrawdevices );
+        if ( ( i_status & HOTPLUG_CB_USB_DEV_LEFT ) &&
+             ( i_ret != 0 || i_numrawdevices == 0 || p_rawdevices == NULL ) )
+        {
+            /* The device is not connected anymore, delete it */
+            msg_Info( p_sd, "Device disconnected" );
+            CloseDevice ( p_sd );
+        }
+        if ( ( i_status & HOTPLUG_CB_USB_DEV_ARRIVED ) &&
+             i_ret == 0 && i_numrawdevices > 0 && p_rawdevices != NULL )
+        {
+            msg_Dbg( p_sd, "New device found" );
+            AddDevice( p_sd, &p_rawdevices[0] );
+        }
+        free ( p_rawdevices );
+    }
+    
+    libusb_free_pollfds(pollfds);
+    return NULL;
+}
+#else
 static void *Run( void *data )
 {
     LIBMTP_raw_device_t *p_rawdevices;
@@ -129,7 +275,6 @@ static void *Run( void *data )
     int i_ret;
     int i_status = 0;
     services_discovery_t *p_sd = data;
-
     for(;;)
     {
         int canc = vlc_savecancel();
@@ -167,6 +312,7 @@ static void *Run( void *data )
     }
     return NULL;
 }
+#endif
 
 /*****************************************************************************
  * Everything else
