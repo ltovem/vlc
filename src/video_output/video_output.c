@@ -903,6 +903,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
 {
     vout_thread_sys_t *sys = vout;
     bool is_late_dropped = sys->is_late_dropped && !frame_by_frame;
+    bool first = !sys->displayed.current;
 
     vlc_mutex_lock(&sys->filter.lock);
 
@@ -917,7 +918,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
             decoded = picture_fifo_Pop(sys->decoder_fifo);
 
             if (decoded) {
-                if (is_late_dropped && !decoded->b_force)
+                if (is_late_dropped && !(first || decoded->b_force))
                 {
                     const vlc_tick_t system_now = vlc_tick_now();
                     const vlc_tick_t system_pts =
