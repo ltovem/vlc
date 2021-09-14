@@ -1096,7 +1096,6 @@ static int ModuleThread_PlayVideo( vlc_input_decoder_t *p_owner, picture_t *p_pi
     {
         msg_Dbg( p_dec, "Received first picture" );
         p_owner->b_first = false;
-        p_picture->b_force = true;
     }
     else
         DecoderWaitUnblock( p_owner );
