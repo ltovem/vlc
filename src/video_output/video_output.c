@@ -1509,7 +1509,6 @@ static int DisplayPicture(vout_thread_sys_t *vout, vlc_tick_t *deadline)
         // next date we need to display again the current picture
         date_refresh = sys->displayed.date + VOUT_REDISPLAY_DELAY - render_delay;
         refresh = date_refresh <= system_now;
-        render_now = refresh;
     }
 
     if (date_refresh != VLC_TICK_INVALID)
