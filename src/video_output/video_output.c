@@ -1406,10 +1406,9 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
         // next frame will still need some waiting before display, we don't need
         // to render now
         // display forced picture immediately
-        bool render_now = first;
 
-        RenderPicture(vout, render_now);
-        if (!render_now)
+        RenderPicture(vout, first);
+        if (!first)
             /* Prepare the next picture immediately without waiting */
             return VLC_TICK_INVALID;
     }
