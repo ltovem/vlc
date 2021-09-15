@@ -1406,7 +1406,7 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
         // next frame will still need some waiting before display, we don't need
         // to render now
         // display forced picture immediately
-        bool render_now = sys->displayed.current->b_force;
+        bool render_now = first | sys->displayed.current->b_force;
 
         RenderPicture(vout, render_now);
         if (!render_now)
