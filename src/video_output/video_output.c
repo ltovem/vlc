@@ -1521,7 +1521,7 @@ static int DisplayPicture(vout_thread_sys_t *vout, vlc_tick_t *deadline)
     }
 
     /* display the picture immediately */
-    render_now |= sys->displayed.current->b_force;
+    render_now |= first | sys->displayed.current->b_force;
 
     int ret = RenderPicture(vout, render_now);
     return render_now ? VLC_EGENERIC : ret;
