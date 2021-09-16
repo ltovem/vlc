@@ -899,10 +899,10 @@ static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
 /* */
 VLC_USED
 static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
-                                 bool frame_by_frame)
+                                 bool allow_dropping)
 {
     vout_thread_sys_t *sys = vout;
-    bool is_late_dropped = sys->is_late_dropped && !frame_by_frame;
+    bool is_late_dropped = sys->is_late_dropped && allow_dropping;
     bool first = !sys->displayed.current;
 
     vlc_mutex_lock(&sys->filter.lock);
@@ -1348,7 +1348,7 @@ static int DisplayNextFrame(vout_thread_sys_t *sys)
 {
     UpdateDeinterlaceFilter(sys);
 
-    picture_t *next = PreparePicture(sys, !sys->displayed.current, true);
+    picture_t *next = PreparePicture(sys, !sys->displayed.current, false);
 
     if (next)
     {
@@ -1379,7 +1379,7 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
     picture_t *next = NULL;
     if (first)
     {
-        next = PreparePicture(vout, true, false);
+        next = PreparePicture(vout, true, true);
     }
     else if (!paused)
     {
@@ -1392,7 +1392,7 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
             if (system_prepare_current <= system_now)
             {
                 // the current frame will be late, look for the next not late one
-                next = PreparePicture(vout, false, false);
+                next = PreparePicture(vout, false, true);
             }
         }
     }
