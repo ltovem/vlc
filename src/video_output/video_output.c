@@ -1505,13 +1505,13 @@ static void vout_FlushUnlocked(vout_thread_sys_t *vout, bool below,
     }
 }
 
-void vout_Flush(vout_thread_t *vout, vlc_tick_t date)
+void vout_Flush(vout_thread_t *vout)
 {
     vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
     assert(!sys->dummy);
 
     vout_control_Hold(&sys->control);
-    vout_FlushUnlocked(sys, false, date);
+    vout_FlushUnlocked(sys, false, VLC_TICK_INVALID);
     vout_control_Release(&sys->control);
 
     struct vlc_tracer *tracer = GetTracer(sys);

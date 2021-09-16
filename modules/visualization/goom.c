@@ -200,7 +200,7 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_in_buf )
 static void Flush( filter_t *p_filter )
 {
     goom_thread_t *p_thread = p_filter->p_sys;
-    vout_FlushAll( p_thread->p_vout );
+    vout_Flush( p_thread->p_vout );
 }
 
 /*****************************************************************************
