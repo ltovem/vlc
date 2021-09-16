@@ -1255,7 +1255,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
         if (i_pts != VLC_TICK_INVALID)
         {
             if(p_frame_info->b_eos)
-                p_pic->b_still = true;
+                p_pic->b_eos = true;
             vlc_mutex_unlock(&p_sys->lock);
             decoder_QueueVideo( p_dec, p_pic );
         }

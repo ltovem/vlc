@@ -94,8 +94,7 @@ void picture_Reset( picture_t *p_picture )
 {
     /* */
     p_picture->date = VLC_TICK_INVALID;
-    p_picture->b_force = false;
-    p_picture->b_still = false;
+    p_picture->b_eos = false;
     p_picture->b_progressive = false;
     p_picture->i_nb_fields = 2;
     p_picture->b_top_field_first = false;
@@ -397,8 +396,7 @@ void plane_CopyPixels( plane_t *p_dst, const plane_t *p_src )
 void picture_CopyProperties( picture_t *p_dst, const picture_t *p_src )
 {
     p_dst->date = p_src->date;
-    p_dst->b_force = p_src->b_force;
-    p_dst->b_still = p_src->b_still;
+    p_dst->b_eos = p_src->b_eos;
 
     p_dst->b_progressive = p_src->b_progressive;
     p_dst->i_nb_fields = p_src->i_nb_fields;

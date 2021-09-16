@@ -2216,8 +2216,7 @@ static void DecoderCallback(void *decompressionOutputRefCon,
         p_info->p_picture = p_pic;
 
         p_pic->date = pts.value;
-        p_pic->b_force = p_info->b_eos;
-        p_pic->b_still = p_info->b_eos;
+        p_pic->b_eos = p_info->b_eos;
         p_pic->b_progressive = p_info->b_progressive;
         if (!p_pic->b_progressive)
         {

@@ -918,7 +918,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
             decoded = picture_fifo_Pop(sys->decoder_fifo);
 
             if (decoded) {
-                if (is_late_dropped && !(first || decoded->b_still || decoded->b_force))
+                if (is_late_dropped && !(first || decoded->b_eos))
                 {
                     const vlc_tick_t system_now = vlc_tick_now();
                     const vlc_tick_t system_pts =
