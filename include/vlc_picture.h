@@ -136,8 +136,8 @@ struct picture_t
      * but should never be written directly */
     /**@{*/
     vlc_tick_t      date;                                  /**< display date */
-    bool            b_force;
-    bool            b_still;
+    bool            b_force;                      /**< displayed for a while */
+    bool            b_still;                              /**< end of stream */
     /**@}*/
 
     /** \name Picture dynamic properties
