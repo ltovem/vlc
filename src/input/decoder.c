@@ -1116,11 +1116,6 @@ static int ModuleThread_PlayVideo( vlc_input_decoder_t *p_owner, picture_t *p_pi
         return VLC_EGENERIC;
     }
 
-    if( p_picture->b_still )
-    {
-        /* Ensure no earlier higher pts breaks still state */
-        vout_Flush( p_vout, p_picture->date );
-    }
     vout_PutPicture( p_vout, p_picture );
 
     return VLC_SUCCESS;
