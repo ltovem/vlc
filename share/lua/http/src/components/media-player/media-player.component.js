@@ -23,7 +23,7 @@ Vue.component('media-player', {
             volumeIconState: 'up',
             formattedDuration: formatTime(0),
             formattedCurrentTime: formatTime(0),
-            imageSrc
+            imageSrc: ""
         }
     },
     methods: {
