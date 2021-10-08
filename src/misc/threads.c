@@ -80,8 +80,12 @@ void vlc_mutex_init_recursive(vlc_mutex_t *mtx)
     vlc_mutex_init_common(mtx, true);
 }
 
+#ifdef HAVE_PTHREAD_H
+# define THREAD_SELF ((const void*)(uintptr_t)pthread_self())
+#else
 static _Thread_local char thread_self[1];
 #define THREAD_SELF ((const void *)thread_self)
+#endif
 
 bool vlc_mutex_held(const vlc_mutex_t *mtx)
 {
