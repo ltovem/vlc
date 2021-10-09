@@ -1,10 +1,7 @@
 /*****************************************************************************
- * preparser.h
+ * vlc_preparser.h : Preparsing API
  *****************************************************************************
- * Copyright (C) 1999-2008 VLC authors and VideoLAN
- *
- * Authors: Samuel Hocevar <sam@zoy.org>
- *          Clément Stenac <zorglub@videolan.org>
+ * Copyright (C) 2021 Videolabs, VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -21,23 +18,36 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef _INPUT_PREPARSER_H
-#define _INPUT_PREPARSER_H 1
+#ifndef VLC_PREPARSER_H
+#define VLC_PREPARSER_H
 
+#include <vlc_common.h>
 #include <vlc_input_item.h>
-/**
- * Preparser opaque structure.
- *
- * The preparser object will retrieve the meta data of any given input item in
- * an asynchronous way.
- * It will also issue art fetching requests.
- */
-typedef struct input_preparser_t input_preparser_t;
 
-/**
- * This function creates the preparser object and thread.
- */
-input_preparser_t *input_preparser_New( vlc_object_t * );
+struct vlc_preparser_task
+{
+    input_item_t* item;
+    input_item_meta_request_option_t options;
+    const input_preparser_callbacks_t* cbs;
+    void* data;
+    int timeout;
+    void* id;
+};
+
+struct vlc_preparser
+{
+    struct vlc_object_t obj;
+
+    module_t *module;
+    void* sys;
+
+    int (*pf_preparse)(struct vlc_preparser*, struct vlc_preparser_task*);
+
+    void (*pf_cancel)(struct vlc_preparser*, void*);
+};
+
+struct vlc_preparser* vlc_preparser_New(vlc_object_t*);
+void vlc_preparser_Delete(struct vlc_preparser*);
 
 /**
  * This function enqueues the provided item to be preparsed.
@@ -54,38 +64,15 @@ input_preparser_t *input_preparser_New( vlc_object_t * );
  * otherwise
  * If this returns an error, the on_preparse_ended will *not* be invoked
  */
-int input_preparser_Push( input_preparser_t *, input_item_t *,
+int vlc_preparser_Preparse(struct vlc_preparser*, input_item_t*,
                            input_item_meta_request_option_t,
-                           const input_preparser_callbacks_t *cbs,
-                           void *cbs_userdata,
-                           int timeout, void *id );
+                           const input_preparser_callbacks_t*,
+                           void*, int, void*);
 
-void input_preparser_fetcher_Push( input_preparser_t *, input_item_t *,
-                                   input_item_meta_request_option_t,
-                                   const input_fetcher_callbacks_t *cbs,
-                                   void *cbs_userdata );
+void vlc_preparser_Cancel(struct vlc_preparser*, void*);
 
-/**
- * This function cancel all preparsing requests for a given id
- *
- * @param id unique id given to input_preparser_Push()
- */
-void input_preparser_Cancel( input_preparser_t *, void *id );
+void vlc_preparser_fetcher_Push( struct vlc_preparser *preparser,
+    input_item_t *item, input_item_meta_request_option_t options,
+    const input_fetcher_callbacks_t *cbs, void *cbs_userdata );
 
-/**
- * This function destroys the preparser object and thread.
- *
- * All pending input items will be released.
- */
-void input_preparser_Delete( input_preparser_t * );
-
-/**
- * This function deactivates the preparser
- *
- * All pending requests will be removed, and it will block until the currently
- * running entity has finished (if any).
- */
-void input_preparser_Deactivate( input_preparser_t * );
-
-#endif
-
+#endif // VLC_PREPARSER_H

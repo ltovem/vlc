@@ -40,7 +40,6 @@
 
 #include "modules/modules.h"
 #include "config/configuration.h"
-#include "preparser/preparser.h"
 #include "media_source/media_source.h"
 
 #include <stdio.h>                                              /* sprintf() */
@@ -63,6 +62,7 @@
 #include <vlc_modules.h>
 #include <vlc_media_library.h>
 #include <vlc_thumbnailer.h>
+#include <vlc_preparser.h>
 
 #include "libvlc.h"
 
@@ -226,7 +226,7 @@ int libvlc_InternalInit( libvlc_int_t *p_libvlc, int i_argc,
     /*
      * Meta data handling
      */
-    priv->parser = input_preparser_New(VLC_OBJECT(p_libvlc));
+    priv->parser = vlc_preparser_New(VLC_OBJECT(p_libvlc));
     if( !priv->parser )
         goto error;
 
@@ -338,9 +338,6 @@ void libvlc_InternalCleanup( libvlc_int_t *p_libvlc )
 {
     libvlc_priv_t *priv = libvlc_priv (p_libvlc);
 
-    if (priv->parser != NULL)
-        input_preparser_Deactivate(priv->parser);
-
     /* Ask the interfaces to stop and destroy them */
     msg_Dbg( p_libvlc, "removing all interfaces" );
     intf_DestroyAll( p_libvlc );
@@ -372,7 +369,7 @@ void libvlc_InternalCleanup( libvlc_int_t *p_libvlc )
 #endif
 
     if (priv->parser != NULL)
-        input_preparser_Delete(priv->parser);
+        vlc_preparser_Delete(priv->parser);
 
     if (priv->main_playlist)
         vlc_playlist_Delete(priv->main_playlist);
@@ -460,7 +457,7 @@ int vlc_MetadataRequest(libvlc_int_t *libvlc, input_item_t *item,
     if (unlikely(priv->parser == NULL))
         return VLC_ENOMEM;
 
-    return input_preparser_Push( priv->parser, item, i_options, cbs,
+    return vlc_preparser_Preparse( priv->parser, item, i_options, cbs,
                                  cbs_userdata, timeout, id );
 }
 
@@ -504,7 +501,7 @@ int libvlc_ArtRequest(libvlc_int_t *libvlc, input_item_t *item,
     if (unlikely(priv->parser == NULL))
         return VLC_ENOMEM;
 
-    input_preparser_fetcher_Push(priv->parser, item, i_options,
+    vlc_preparser_fetcher_Push(priv->parser, item, i_options,
                                  cbs, cbs_userdata);
     return VLC_SUCCESS;
 }
@@ -522,5 +519,5 @@ void libvlc_MetadataCancel(libvlc_int_t *libvlc, void *id)
     if (unlikely(priv->parser == NULL))
         return;
 
-    input_preparser_Cancel(priv->parser, id);
+    vlc_preparser_Cancel(priv->parser, id);
 }

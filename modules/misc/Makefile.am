@@ -139,3 +139,7 @@ libmedialibrary_plugin_la_LIBADD = $(MEDIALIBRARY_LIBS)
 libmedialibrary_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(miscdir)'
 EXTRA_LTLIBRARIES += libmedialibrary_plugin.la
 misc_LTLIBRARIES += $(LTLIBmedialibrary)
+
+libpreparser_thread_plugin_la_SOURCES = misc/preparser/thread.c
+libpreparser_thread_plugin_la_CFLAGS = $(AM_CFLAGS)
+misc_LTLIBRARIES += libpreparser_thread_plugin.la
