@@ -51,9 +51,7 @@ const mutations = {
     },
     setPlaylist(state, playlist) {
         const origin = location.origin;
-        let index = 0;
-        playlist = playlist.map((pl) => {
-            index++;
+        playlist = playlist.map((pl, index) => {
             pl.nb = index;
             // @TODO: uncomment when working in the backend side
             pl.src = '' // origin + '?item=' + pl.id;
