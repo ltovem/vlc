@@ -11,7 +11,9 @@ Vue.component('play-button-secondary', {
     },
     watch: {
         playlist(playlist = []) {
-            this.isAlreadyAdded = !!playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl))
+            if (this.item) {
+                this.isAlreadyAdded = !!playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl))
+            }
         }
     },
     methods: {

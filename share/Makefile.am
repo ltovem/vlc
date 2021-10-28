@@ -4,6 +4,7 @@ MOSTLYCLEANFILES =
 EXTRA_DIST =
 
 JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
+--js $(srcdir)/lua/http/src/services/router.service.js \
 --js $(srcdir)/lua/http/src/utils/lang/index.js \
 --js $(srcdir)/lua/http/src/utils/media/types.js \
 --js $(srcdir)/lua/http/src/utils/time/index.js \
