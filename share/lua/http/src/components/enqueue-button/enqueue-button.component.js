@@ -11,7 +11,7 @@ Vue.component('enqueue-button', {
     },
     watch: {
         playlist(playlist = []) {
-            this.playlistItem = playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl))
+            this.playlistItem = playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl || this.item.uri))
         }
     },
     methods: {

@@ -1,6 +1,5 @@
 Vue.component('tracks', {
     template: '#tracks-template',
-    props: ['item'],
     data: function() {
         return {
             displayMode: 'table'

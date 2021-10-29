@@ -96,11 +96,12 @@ processcommands = function ()
     elseif command == "in_enqueue" then
         vlc.playlist.enqueue({{path=vlc.strings.make_uri(input),options=options,name=name,duration=duration}})
     elseif command == "pl_play" then
-        if id == -1 then
-            vlc.playlist.play()
-        else
-            vlc.playlist.gotoitem(id)
-        end
+        -- if id == -1 then
+        --     vlc.playlist.play()
+        -- else
+        vlc.playlist.gotoitem(id)
+        vlc.playlist.play()
+        -- end
     elseif command == "pl_pause" then
         if vlc.playlist.status() == "stopped" then
             if id == -1 then
