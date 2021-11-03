@@ -13,33 +13,39 @@ Vue.component('player-button', {
         };
 
         return {
-            isAlreadyAdded: true,
             isPlaying: false,
             classname,
         }
     },
-    watch: {
-        playlist(playlist = []) {
-            if (this.item) {
-                const currPlaylistItem = this.item && playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl || this.item.uri))
-
-                this.isAlreadyAdded = !!currPlaylistItem
-
-                if (this.mustPlay) {
-                    this.$store.dispatch('status/play', currPlaylistItem.id);
-                    this.mustPlay = false;
-                }
-            }
-        }
-    },
     methods: {
-        play() {
+        async play() {
             if (this.item) {
-                this.mustPlay = true;
+                let currItem = this.playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl || this.item.uri));
 
-                if (this.item.mrl && !this.isAlreadyAdded) {
-                    this.$store.dispatch('playlist/addItem', this.item.mrl);
+                if (!currItem) {
+                    currItem = await this.$store.dispatch('playlist/addAndGetItem', this.item.mrl)
                 }
+
+                const path = '/watch';
+
+                if (currItem.type === 'audio') {
+                    if (this.$route.path === path) {
+                        this.$router.push('/');
+                    }
+
+                    this.$store.dispatch('layout/openAudioPlayer');
+                }
+
+                if (currItem.type === 'leaf' || currItem.type === 'video') {
+                    if (this.$route.path !== path) {
+                        this.$router.push(path);
+                    }
+
+                    this.$store.dispatch('layout/closeAudioPlayer');
+                }
+
+                this.$store.dispatch('status/play', currItem.id)
+                this.$store.dispatch('playlist/setActiveItem', currItem);
             }
         }
     }

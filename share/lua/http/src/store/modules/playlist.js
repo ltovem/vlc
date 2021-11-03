@@ -24,20 +24,34 @@ const actions = {
         playlistService.fetchPlaylist()
             .then((playlist) => {
                 commit('setPlaylist', playlist);
-            });
+            }).catch(e => reject(e));
     },
     addItem({ commit, dispatch }, src) {
         playlistService.addItem(src)
             .then(() => {
                 // Refresh playlist
                 dispatch('fetchPlaylist');
-            });
+            }).catch(e => reject(e));
     },
     removeItem({ commit }, id) {
         playlistService.removeItem(id)
             .then(() => {
                 commit('removeItem', id);
             });
+    },
+    async addAndGetItem({ commit, dispatch }, src) {
+        try {
+            await playlistService.addItem(src)
+
+            const fetchedPlaylist = await playlistService.fetchPlaylist()
+            await commit('setPlaylist', fetchedPlaylist);
+
+            const currItem = state.items.find((item = {}) => decodeURI(item.uri || item.mrl) === decodeURI(src))
+
+            return currItem;
+        } catch (e) {
+            return e;
+        }
     },
 };
 
@@ -50,15 +64,18 @@ const mutations = {
         });
     },
     setPlaylist(state, playlist) {
-        const origin = location.origin;
-        playlist = playlist.map((pl, index) => {
-            pl.nb = index;
-            // @TODO: uncomment when working in the backend side
-            pl.src = '' // origin + '?item=' + pl.id;
-            pl.active = state.activeItem && state.activeItem.id === pl.id;
-            return pl;
+        return new Promise((resolve, reject) => {
+            const origin = location.origin;
+            playlist = playlist.map((pl, index) => {
+                pl.nb = index;
+                // @TODO: uncomment when working in the backend side
+                pl.src = '' // origin + '?item=' + pl.id;
+                pl.active = state.activeItem && state.activeItem.id === pl.id;
+                return pl;
+            });
+            state.items = playlist;
+            resolve(playlist);
         });
-        state.items = playlist;
     },
     removeItem(state, id) {
         return state.items = state.items.filter((item) => {
