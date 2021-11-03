@@ -25,7 +25,7 @@ Vue.component('play-button', {
         }
     },
     methods: {
-        playItem() {
+        play() {
             if (this.item) {
                 this.mustPlay = true;
 

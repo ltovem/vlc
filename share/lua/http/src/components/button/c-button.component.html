@@ -1,0 +1,5 @@
+<script type="text/x-template" id="c-button-template">
+    <button v-on:click="$emit('click', $event)" class="btn" v-bind:class="classname">
+        <slot></slot>
+    </button>
+</script>

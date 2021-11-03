@@ -25,7 +25,7 @@ Vue.component('play-button-secondary', {
         }
     },
     methods: {
-        playItem() {
+        play() {
             if (this.item) {
                 this.mustPlay = true;
 

@@ -1,5 +1,5 @@
 <script type="text/x-template" id="play-button-template">
-    <button v-on:click="playItem()" class="btn btn-link play-button">
+    <c-button v-on:click="play()" v-bind:classname="['btn-link', 'play-button']">
         <svg-icon name="play_arrow"></svg-icon>
-    </button>
+    </c-button>
 </script>
