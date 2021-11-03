@@ -14,7 +14,7 @@
                             <img v-if="item.src" width="171" height="171" class="embed-responsive-item item-img" :src="item.src">
                             <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon item-img"></svg-icon>
                             <div class="mt-2 d-flex">
-                                <play-button-secondary :item="item"></play-button-secondary>
+                                <player-button v-bind:type="'secondary'" :item="item"></player-button>
                                 <enqueue-button class="ml-2" :item="item"></enqueue-button>
                             </div>
                         </div>
@@ -38,7 +38,7 @@
                                         <th scope="row" class="d-flex justify-content-between">
                                             <div class="item-img">
                                                 <span>{{ index + 1 }}</span>
-                                                <play-button class="item-primary-action item-action" :item="item"></play-button>
+                                                <player-button v-bind:type="'primary'" class="item-primary-action item-action" :item="item"></player-button>
                                             </div>
                                           </th>
                                         <td>

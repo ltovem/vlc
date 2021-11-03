@@ -21,7 +21,7 @@
                         <div>
                             <img width="260" class="embed-responsive-item" :src="item.src">
                             <div class="mt-2 d-flex">
-                                <play-button-secondary :item="item"></play-button-secondary>
+                                <player-button v-bind:type="'secondary'" :item="item"></player-button>
                                 <enqueue-button class="ml-2" :item="item"></enqueue-button>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                             <div>
                                 <img width="260" class="embed-responsive-item" :src="item.src">
                                 <div class="mt-2 d-flex">
-                                    <play-button-secondary :item="item"></play-button-secondary>
+                                    <player-button v-bind:type="'secondary'" :item="item"></player-button>
                                     <enqueue-button class="ml-2" :item="item"></enqueue-button>
                                 </div>
                             </div>

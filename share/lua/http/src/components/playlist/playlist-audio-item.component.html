@@ -7,7 +7,7 @@
                 <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
                 <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
                 <div class="overlay">
-                    <play-button :item="item" class="item-primary-action item-action"></play-button>
+                    <player-button v-bind:type="'primary'" :item="item" class="item-primary-action item-action"></player-button>
                 </div>
             </div>
             <span class="item-duration">{{ item.duration | formatDuration }}</span>

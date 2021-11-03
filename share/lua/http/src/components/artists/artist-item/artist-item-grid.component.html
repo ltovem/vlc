@@ -4,7 +4,7 @@
             <img v-if="item.src" class="embed-responsive-item" :src="item.src">
             <svg-icon v-if="!item.src" name="placeholder-artist" class="placeholder-artist-icon"></svg-icon>
             <div class="overlay">
-                <play-button class="item-primary-action"></play-button>
+                <player-button v-bind:type="'primary'" class="item-primary-action"></player-button>
             </div>
         </div>
         <div class="item-body">

@@ -1,13 +1,21 @@
-Vue.component('play-button', {
-    template: '#play-button-template',
-    props: ['item'],
+Vue.component('player-button', {
+    template: '#player-button-template',
+    props: ['item', 'type'],
     computed: {
         ...Vuex.mapState({ playlist: state => state.playlist.items }),
     },
     data() {
+        const classname = {
+            'btn-link': this.type === 'primary',
+            'play-button':  this.type === 'primary',
+            'btn-sm': this.type === 'secondary',
+            'play-button-secondary': this.type === 'secondary',
+        };
+
         return {
             isAlreadyAdded: true,
             isPlaying: false,
+            classname,
         }
     },
     watch: {

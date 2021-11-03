@@ -44,8 +44,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/components/library/library-item/library-item.component.js \
 --js $(srcdir)/lua/http/src/components/media-player/media-player.component.js \
 --js $(srcdir)/lua/http/src/components/enqueue-button/enqueue-button.component.js \
---js $(srcdir)/lua/http/src/components/play-button/play-button-secondary.component.js \
---js $(srcdir)/lua/http/src/components/play-button/play-button.component.js \
+--js $(srcdir)/lua/http/src/components/player-button/player-button.component.js \
 --js $(srcdir)/lua/http/src/components/button/c-button.component.js \
 --js $(srcdir)/lua/http/src/routes/main/main-view.component.js \
 --js $(srcdir)/lua/http/src/routes/browse/browse-view.component.js \

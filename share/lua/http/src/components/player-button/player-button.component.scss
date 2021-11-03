@@ -1,3 +1,16 @@
+.btn.play-button-secondary {
+    background-color: var(--highlight-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    .svg-icon {
+        color: #fff;
+    }
+    &:hover, &:active, &:focus {
+        color: #fff;
+    }
+}
+
 .play-button {
     display: flex;
     align-items: center;

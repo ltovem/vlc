@@ -2,7 +2,7 @@
     <div class="row align-items-center list-table-item">
       <div class="d-flex justify-content-between col-2">
         <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
-          <play-button class="item-primary-action item-action m-auto" :item="item"></play-button>
+          <player-button v-bind:type="'primary'" class="item-primary-action item-action m-auto" :item="item"></player-button>
         </div>
       </div>
       <div class="col-6">

@@ -3,7 +3,7 @@
         <div class="item-img embed-responsive embed-responsive-4by6">
             <img class="embed-responsive-item" :src="item.src">
             <div class="overlay">
-                <play-button class="item-primary-action" :item="item"></play-button>
+                <player-button v-bind:type="'primary'" class="item-primary-action" :item="item"></player-button>
                 <div class="item-secondary-action">
                     <div class="icon-wrapper">
                         <svg-icon name="more-horizontal"></svg-icon>
