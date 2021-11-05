@@ -494,6 +494,11 @@ input_item_t *vlclua_read_input_item(vlc_object_t *obj, lua_State *L)
     lua_pop(L, 3); /* pop "path name item" */
     /* playlist key item */
 
+    lua_getfield(L, -1, "mediaID");
+    if (lua_isnumber(L, -1))
+        item->i_mediaID = lua_tonumber(L, -1);
+    lua_pop( L, 1 );
+
     /* Read meta data: item must be on top of stack */
     vlclua_read_meta_data(obj, L, item);
 

@@ -404,6 +404,9 @@ static void push_playlist_item(lua_State *L, vlc_playlist_item_t *item)
     lua_pushstring(L, media->psz_uri);
     lua_setfield(L, -2, "path");
 
+    lua_pushnumber(L, media->i_mediaID);
+    lua_setfield(L, -2, "mediaID");
+
     if( media->i_duration < 0 )
         lua_pushnumber(L, -1);
     else

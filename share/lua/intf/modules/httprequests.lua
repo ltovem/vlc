@@ -94,7 +94,7 @@ processcommands = function ()
     elseif command == "addsubtitle" then
         vlc.player.add_subtitle(val)
     elseif command == "in_enqueue" then
-        vlc.playlist.enqueue({{path=vlc.strings.make_uri(input),options=options,name=name,duration=duration}})
+        vlc.playlist.enqueue({{path=vlc.strings.make_uri(input),mediaID=id,options=options,name=name,duration=duration}})
     elseif command == "pl_play" then
         -- if id == -1 then
         --     vlc.playlist.play()
@@ -330,6 +330,7 @@ parseplaylist = function (list)
         result["type"]="leaf"
         result.id=tostring(item.id)
         result.uri=tostring(path)
+        result.mediaID=tostring(item.mediaID)
         result.name=name
         result.duration=math.floor(item.duration)
         playlist[i] = result
