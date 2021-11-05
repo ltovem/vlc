@@ -26,8 +26,8 @@ const actions = {
                 commit('setPlaylist', playlist);
             }).catch(e => reject(e));
     },
-    addItem({ commit, dispatch }, src) {
-        playlistService.addItem(src)
+    addItem({ commit, dispatch }, item) {
+        playlistService.addItem(item)
             .then(() => {
                 // Refresh playlist
                 dispatch('fetchPlaylist');
@@ -39,16 +39,14 @@ const actions = {
                 commit('removeItem', id);
             });
     },
-    async addAndGetItem({ commit, dispatch }, src) {
+    async addAndGetItem({ commit, dispatch }, item) {
         try {
-            await playlistService.addItem(src)
+            await playlistService.addItem(item);
 
-            const fetchedPlaylist = await playlistService.fetchPlaylist()
+            const fetchedPlaylist = await playlistService.fetchPlaylist();
             await commit('setPlaylist', fetchedPlaylist);
 
-            const currItem = state.items.find((item = {}) => decodeURI(item.uri || item.mrl) === decodeURI(src))
-
-            return currItem;
+            return state.items.find((currItem = {}) => Number(currItem.mediaID) === Number(item.mediaID));
         } catch (e) {
             return e;
         }

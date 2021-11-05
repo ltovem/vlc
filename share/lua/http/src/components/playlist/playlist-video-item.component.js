@@ -8,7 +8,7 @@ Vue.component('playlist-video-item', {
     },
     methods: {
         addItem(mode, id, title, src) {
-            this.$store.dispatch('playlist/addItem', src);
+            this.$store.dispatch('playlist/addItem', { mediaID: id, src });
         },
         play(src, id) {
             this.$store.dispatch('status/play', id);

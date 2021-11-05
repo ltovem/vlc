@@ -3,7 +3,7 @@ Vue.component('playlist-audio-item', {
     props: ['item', 'index'],
     methods: {
         addItem(mode, id, title, src) {
-            this.$store.dispatch('playlist/addItem', src);
+            this.$store.dispatch('playlist/addItem', { mediaID: id, src });
         },
         play(src, id) {
             this.$store.dispatch('layout/openAudioPlayer');

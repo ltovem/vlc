@@ -32,8 +32,8 @@ export default {
     fetchPlaylist() {
         return this.sendPlaylist();
     },
-    addItem(src) {
-        return this.sendPlaylistStatus(`command=in_enqueue&input=${src}`);
+    addItem({ mediaID, src }) {
+        return this.sendPlaylistStatus(`command=in_enqueue&input=${src}&id=${mediaID}`);
     },
     removeItem(id) {
         if (id) {

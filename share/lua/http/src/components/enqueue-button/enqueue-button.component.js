@@ -11,22 +11,18 @@ Vue.component('enqueue-button', {
     },
     watch: {
         playlist(playlist = []) {
-            this.playlistItem = playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl || this.item.uri))
+            this.playlistItem = playlist.find((item = {}) => Number(item.mediaID) === Number(this.item.id))
         }
     },
     methods: {
         enqueueItem() {
-            if (this.item) {
-                if (this.item.mrl) {
-                    this.$store.dispatch('playlist/addItem', this.item.mrl);
-                }
+            if (this.item && this.item.mrl) {
+                this.$store.dispatch('playlist/addItem', { src: this.item.mrl, mediaID: this.item.id });
             }
         },
         removeFromQueue() {
-            if (this.item) {
-                if (this.item.mrl) {
-                    this.$store.dispatch('playlist/removeItem', this.playlistItem.id);
-                }
+            if (this.item && this.item.mrl) {
+                this.$store.dispatch('playlist/removeItem', this.playlistItem.id);
             }
         }
     }

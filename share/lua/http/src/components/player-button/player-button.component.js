@@ -20,10 +20,14 @@ Vue.component('player-button', {
     methods: {
         async play() {
             if (this.item) {
-                let currItem = this.playlist.find((item = {}) => decodeURI(item.uri) === decodeURI(this.item.mrl || this.item.uri));
+                let currItem = this.item;
+
+                if (!currItem.mediaID) {
+                    currItem = this.playlist.find((item = {}) => Number(item.mediaID) === Number(this.item.id));
+                }
 
                 if (!currItem) {
-                    currItem = await this.$store.dispatch('playlist/addAndGetItem', this.item.mrl)
+                    currItem = await this.$store.dispatch('playlist/addAndGetItem', { src: this.item.mrl, mediaID: this.item.id })
                 }
 
                 const path = '/watch';
