@@ -1112,7 +1112,8 @@ libqt_plugin_la_QML = \
 	widgets/qml/FadingEdge.qml \
 	widgets/qml/FadingEdgeForListView.qml \
 	widgets/qml/PopupIconToolButton.qml \
-	widgets/qml/PartialEffect.qml
+	widgets/qml/PartialEffect.qml \
+	widgets/qml/RubberBandOverlapNotifier.qml
 
 lib_qt_plugin_la_QRC = vlc.qrc
 
