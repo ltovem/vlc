@@ -329,6 +329,8 @@ libqt_plugin_la_SOURCES = \
 	util/dismiss_popup_event_filter.hpp \
 	util/list_selection_model.cpp \
 	util/list_selection_model.hpp \
+	util/item_overlap_notifier.cpp \
+	util/item_overlap_notifier.hpp \
 	widgets/native/animators.cpp \
 	widgets/native/animators.hpp \
 	widgets/native/customwidgets.cpp widgets/native/customwidgets.hpp \
@@ -476,6 +478,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	util/vlctick.moc.cpp \
 	util/dismiss_popup_event_filter.moc.cpp \
 	util/list_selection_model.moc.cpp \
+	util/item_overlap_notifier.moc.cpp \
 	widgets/native/animators.moc.cpp \
 	widgets/native/csdthemeimage.moc.cpp \
 	widgets/native/customwidgets.moc.cpp \
