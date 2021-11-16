@@ -59,6 +59,9 @@ QtObject {
     readonly property int border: MainCtx.dp(1, scale)
     readonly property int focus_border: border
 
+    readonly property real rubberBand_border: border
+    readonly property real rubberBand_radius: 3
+
     readonly property int fontSize_xsmall: fontMetrics_xsmall.font.pixelSize
     readonly property int fontSize_small:  fontMetrics_small.font.pixelSize
     readonly property int fontSize_normal: fontMetrics_normal.font.pixelSize
