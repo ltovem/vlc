@@ -48,6 +48,11 @@ T.ItemDelegate {
     // if the item is selected
     property bool selected: false
 
+    // TODO: Remove this and use `required property index`
+    readonly property int _index: index
+
+    property bool delayRemove: false
+
     // Aliases
 
     property alias image: picture.source

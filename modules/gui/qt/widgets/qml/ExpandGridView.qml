@@ -61,7 +61,9 @@ FocusScope {
     // different indexes when particular index goes out of view
     // not setting may result in large performance penalty
     // default is true
-    property bool reuseItems: true
+    property bool reuseItems: (backgroundInteractionAccessoryLoader.item &&
+                              (backgroundInteractionAccessoryLoader.item instanceof RubberBandSelector)) ?
+                              !backgroundInteractionAccessoryLoader.item.active : true
 
     property int rowX: 0
     property int horizontalSpacing: VLCStyle.column_spacing
@@ -86,6 +88,8 @@ FocusScope {
     property int currentIndex: 0
 
     property bool isAnimating: animateRetractItem.running || animateExpandItem.running
+
+    property bool rubberBandSelectorEnabled: true
 
     property int _count: 0
 
@@ -728,25 +732,77 @@ FocusScope {
             id: flickableScrollBar
         }
 
-        MouseArea {
+        Loader {
+            id: backgroundInteractionAccessoryLoader
+
+            parent: flickable
             anchors.fill: parent
             z: -1
 
-            preventStealing: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            sourceComponent: (root.rubberBandSelectorEnabled && !!root.selectionModel) ? rubberBandSelectorComponent
+                                                                                       : backgroundMouseArea
 
-            onPressed: (mouse) => {
-                Helpers.enforceFocus(flickable, Qt.MouseFocusReason)
+            Component {
+                id: rubberBandSelectorComponent
 
-                if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
-                    if (selectionModel)
-                        selectionModel.clearSelection()
+                RubberBandSelector {
+                    containerItem: flickable.contentItem
+
+                    property list<Item> delayRemoveItems
+
+                    Component.onCompleted: {
+                        showContextMenu.connect(root.showContextMenu)
+                    }
+
+                    onClearSelection: {
+                        root.selectionModel.clearSelection()
+                    }
+
+                    onToggleSelection: function(item) {
+                        console.assert(item)
+                        console.assert(root.model)
+
+                        if (typeof item._index !== 'undefined') {
+                            console.assert(typeof item.delayRemove === 'boolean')
+                            root.selectionModel.select(root.model.index(item._index, 0), ItemSelectionModel.Toggle)
+                            item.delayRemove = true
+                            delayRemoveItems.push(item)
+                        }
+                    }
+
+                    onActiveChanged: {
+                        if (!active) {
+                            for (const item in delayRemoveItems) {
+                                if (item)
+                                    item.delayRemove = false
+                            }
+                            delayRemoveItems.length = 0
+                        }
+                    }
                 }
             }
 
-            onReleased: (mouse) => {
-                if (mouse.button & Qt.RightButton) {
-                    root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
+            Component {
+                id: backgroundMouseArea
+
+                MouseArea {
+                    preventStealing: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                    onPressed: (mouse) => {
+                        Helpers.enforceFocus(flickable, Qt.MouseFocusReason)
+
+                        if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
+                            if (selectionModel)
+                                selectionModel.clearSelection()
+                        }
+                    }
+
+                    onReleased: (mouse) => {
+                        if (mouse.button & Qt.RightButton) {
+                            root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
+                        }
+                    }
                 }
             }
         }

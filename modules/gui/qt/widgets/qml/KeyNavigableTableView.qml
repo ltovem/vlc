@@ -230,6 +230,8 @@ FocusScope {
 
         flickableDirection: Flickable.AutoFlickDirection
 
+        rubberBandSelectorEnabled: true
+
         Navigation.parentItem: root
 
         onActionAtIndex: (index) => { root.actionForSelection( selectionModel.selectedIndexes ) }

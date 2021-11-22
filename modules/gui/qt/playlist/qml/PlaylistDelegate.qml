@@ -43,6 +43,9 @@ T.ItemDelegate {
 
     readonly property bool containsDrag: (topContainsDrag || bottomContainsDrag)
 
+    // TODO: Remove this and use `required property index`
+    readonly property int _index: index
+
     // drag -> point
     // current drag pos inside the item
     readonly property point drag: {
