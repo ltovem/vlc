@@ -173,6 +173,7 @@ typedef enum vlc_action_id {
     ACTIONID_JUMP_BACKWARD_LONG,
     ACTIONID_JUMP_FORWARD_LONG,
     ACTIONID_POSITION,
+    ACTIONID_SHOW_TITLE,
     /* program SID, chapter and title navigation */
     ACTIONID_PROGRAM_SID_PREV,
     ACTIONID_PROGRAM_SID_NEXT,

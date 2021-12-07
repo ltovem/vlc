@@ -1328,6 +1328,8 @@ static const char *const mouse_wheel_texts[] = {
 #define STOP_KEY_LONGTEXT N_("Select the hotkey to stop playback.")
 #define POSITION_KEY_TEXT N_("Position")
 #define POSITION_KEY_LONGTEXT N_("Select the hotkey to display the position.")
+#define SHOW_TITLE_KEY_TEXT N_("Show title")
+#define SHOW_TITLE_KEY_LONGTEXT N_("Select the hotkey to display the current media title.")
 
 #define JBEXTRASHORT_KEY_TEXT N_("Very short backwards jump")
 #define JBEXTRASHORT_KEY_LONGTEXT \
@@ -2289,6 +2291,7 @@ vlc_module_begin ()
 #   define KEY_PREV               "Command+Left"
 #   define KEY_STOP               "Command+."
 #   define KEY_POSITION           "t"
+#   define KEY_SHOW_TITLE         NULL
 #   define KEY_JUMP_MEXTRASHORT   "Command+Ctrl+Left"
 #   define KEY_JUMP_PEXTRASHORT   "Command+Ctrl+Right"
 #   define KEY_JUMP_MSHORT        "Command+Alt+Left"
@@ -2421,6 +2424,7 @@ vlc_module_begin ()
 #   define KEY_STOP               "s\tMedia Stop"
 #endif
 #   define KEY_POSITION           "t"
+#   define KEY_SHOW_TITLE         NULL
 #   define KEY_JUMP_MEXTRASHORT   "Shift+Left"
 #   define KEY_JUMP_PEXTRASHORT   "Shift+Right"
 #   define KEY_JUMP_MSHORT        "Alt+Left"
@@ -2563,6 +2567,8 @@ vlc_module_begin ()
     add_key("key-stop", KEY_STOP, STOP_KEY_TEXT, STOP_KEY_LONGTEXT)
     add_key("key-position", KEY_POSITION, POSITION_KEY_TEXT,
              POSITION_KEY_LONGTEXT)
+    add_key("key-show-title", KEY_SHOW_TITLE, SHOW_TITLE_KEY_TEXT,
+             SHOW_TITLE_KEY_LONGTEXT)
     add_key("key-jump-extrashort", KEY_JUMP_MEXTRASHORT,
              JBEXTRASHORT_KEY_TEXT, JBEXTRASHORT_KEY_LONGTEXT)
     add_key("key-jump+extrashort", KEY_JUMP_PEXTRASHORT,
