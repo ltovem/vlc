@@ -360,6 +360,42 @@ void vout_DisplayTitle(vout_thread_t *vout, const char *title)
                  VLC_TICK_FROM_MS(sys->title.timeout), title);
 }
 
+void vout_DisplayItemTitle(vout_thread_t *vout, input_item_t *item)
+{
+    char *psz_nowplaying = input_item_GetNowPlayingFb( item );
+    if( psz_nowplaying && *psz_nowplaying )
+    {
+        vout_DisplayTitle( vout, psz_nowplaying );
+    }
+    else
+    {
+        char *psz_artist = input_item_GetArtist( item );
+        char *psz_name = input_item_GetTitle( item );
+
+        if( !psz_name || *psz_name == '\0' )
+        {
+            free( psz_name );
+            psz_name = input_item_GetName( item );
+        }
+        if( psz_artist && *psz_artist )
+        {
+            char *psz_string;
+            if( asprintf( &psz_string, "%s - %s", psz_name, psz_artist ) != -1 )
+            {
+                vout_DisplayTitle( vout, psz_string );
+                free( psz_string );
+            }
+        }
+        else if( psz_name )
+        {
+            vout_DisplayTitle( vout, psz_name );
+        }
+        free( psz_name );
+        free( psz_artist );
+    }
+    free( psz_nowplaying );
+}
+
 void vout_MouseState(vout_thread_t *vout, const vlc_mouse_t *mouse)
 {
     vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
