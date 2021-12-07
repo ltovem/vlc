@@ -170,7 +170,7 @@ static void DisplayVoutTitle( input_resource_t *p_resource,
 
     input_item_t *p_item = input_GetItem( p_resource->p_input );
 
-    vout_DisplayItemTitle( p_vout, p_item );
+    vout_DisplayItemTitle( p_vout, p_item, false );
 }
 
 /* Audio output */

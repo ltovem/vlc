@@ -55,10 +55,14 @@ enum
 /**
  * Display the title of the given input item
  *
+ * By default this honors the "video-title-show" setting
+ * unless display is forced with the force argument.
+ *
  * \param vout The vout on which the title will be displayed
  * \param item Item to display the title for
+ * \param force whether displaying the title should ignore the respective setting
  */
-VLC_API void vout_DisplayItemTitle( vout_thread_t *vout, input_item_t *item );
+VLC_API void vout_DisplayItemTitle( vout_thread_t *vout, input_item_t *item, bool force );
 
 VLC_API int vout_OSDEpg( vout_thread_t *, input_item_t * );
 

@@ -230,7 +230,7 @@ void vout_NextPicture( vout_thread_t *p_vout, vlc_tick_t *pi_duration );
 /**
  * This function will ask the display of the input title
  */
-void vout_DisplayTitle( vout_thread_t *p_vout, const char *psz_title );
+void vout_DisplayTitle( vout_thread_t *p_vout, const char *psz_title, bool force );
 
 /**
  * This function will return true if no more pictures are to be displayed.

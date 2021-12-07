@@ -331,7 +331,7 @@ PLAYER_ACTION_HANDLER(ShowTitle)
     VLC_UNUSED(action_id); VLC_UNUSED(intf);
     vout_thread_t *vout = vlc_player_vout_Hold(player);
     input_item_t *item = vlc_player_GetCurrentMedia(player);
-    vout_DisplayItemTitle(vout, item);
+    vout_DisplayItemTitle(vout, item, true);
     vout_Release(vout);
 }
 
