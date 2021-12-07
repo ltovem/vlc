@@ -233,11 +233,6 @@ void vout_NextPicture( vout_thread_t *p_vout, vlc_tick_t *pi_duration );
 void vout_DisplayTitle( vout_thread_t *p_vout, const char *psz_title );
 
 /**
- * Display the title of the given input item
- */
-void vout_DisplayItemTitle( vout_thread_t *vout, input_item_t *item );
-
-/**
  * This function will return true if no more pictures are to be displayed.
  */
 bool vout_IsEmpty( vout_thread_t *p_vout );
