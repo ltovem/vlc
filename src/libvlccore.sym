@@ -722,6 +722,7 @@ vout_UnregisterSubpictureChannel
 vout_FlushSubpictureChannel
 vout_Flush
 vout_GetSnapshot
+vout_DisplayItemTitle
 vout_OSDIcon
 vout_OSDMessageVa
 vout_OSDEpg

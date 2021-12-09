@@ -326,6 +326,15 @@ PLAYER_ACTION_HANDLER(Position)
     vout_Release(vout);
 }
 
+PLAYER_ACTION_HANDLER(ShowTitle)
+{
+    VLC_UNUSED(action_id); VLC_UNUSED(intf);
+    vout_thread_t *vout = vlc_player_vout_Hold(player);
+    input_item_t *item = vlc_player_GetCurrentMedia(player);
+    vout_DisplayItemTitle(vout, item, true);
+    vout_Release(vout);
+}
+
 PLAYER_ACTION_HANDLER(NavigateMedia)
 {
     VLC_UNUSED(intf);
@@ -1017,6 +1026,7 @@ static struct vlc_action const actions[] =
     VLC_ACTION_PLAYER(PLAY_PAUSE, FRAME_NEXT, State, true)
     VLC_ACTION_INTF(JUMP_BACKWARD_EXTRASHORT, JUMP_FORWARD_LONG, PlayerSeek, true)
     VLC_ACTION_PLAYER(POSITION, POSITION, Position, true)
+    VLC_ACTION_PLAYER(SHOW_TITLE, SHOW_TITLE, ShowTitle, true)
     VLC_ACTION_PLAYER(PROGRAM_SID_PREV, DISC_MENU, NavigateMedia, true)
     VLC_ACTION_PLAYER(AUDIO_TRACK, SUBTITLE_TRACK, Track, true)
     VLC_ACTION_PLAYER(AUDIODELAY_DOWN, SUBDELAY_UP, Delay, true)

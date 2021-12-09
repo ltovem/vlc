@@ -358,6 +358,7 @@ static const struct name2action
     { "set-bookmark7", ACTIONID_SET_BOOKMARK7, },
     { "set-bookmark8", ACTIONID_SET_BOOKMARK8, },
     { "set-bookmark9", ACTIONID_SET_BOOKMARK9, },
+    { "show-title", ACTIONID_SHOW_TITLE, },
     { "slower", ACTIONID_RATE_SLOWER, },
     { "snapshot", ACTIONID_SNAPSHOT, },
     { "stop", ACTIONID_STOP, },
