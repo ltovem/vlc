@@ -68,10 +68,11 @@
 #import <vlc_mouse.h>
 #import <vlc_vout_window.h>
 
+#import <assert.h>
+
 @interface VLCVideoUIView : UIView {
     /* VLC window object, set to NULL under _mutex lock when closing. */
     vout_window_t *_wnd;
-    vlc_mutex_t _mutex;
 
     /* Parent view defined by libvlc_media_player_set_nsobject. */
     UIView *_viewContainer;
@@ -81,17 +82,20 @@
 
     /* Window state */
     BOOL _enabled;
-    int _subviews;
+
+    /* Constraints */
+    NSArray<NSLayoutConstraint*> *_constraints;
 
     dispatch_queue_t _eventq;
 }
 
 - (id)initWithWindow:(vout_window_t *)wnd;
-- (BOOL)fetchViewContainer;
+- (UIView *)fetchViewContainer;
 - (void)detachFromParent;
 - (void)tapRecognized:(UITapGestureRecognizer *)tapRecognizer;
 - (void)enable;
 - (void)disable;
+- (void)applicationStateChanged:(NSNotification*)notification;
 @end
 
 /*****************************************************************************
@@ -103,27 +107,37 @@
 {
     _wnd = wnd;
     _enabled = NO;
-    _subviews = 0;
 
-    self = [super initWithFrame:CGRectMake(0., 0., 320., 240.)];
+    UIView *superview = [self fetchViewContainer];
+    if (superview == nil)
+        return nil;
+
+    self = [super initWithFrame:[superview frame]];
     if (!self)
         return nil;
 
     _eventq = dispatch_queue_create("vlc_eventq", DISPATCH_QUEUE_SERIAL);
-    vlc_mutex_init(&_mutex);
 
     /* The window is controlled by the host application through the UIView
      * sizing mechanisms. */
-    self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-    if (![self fetchViewContainer])
-        return nil;
+    self.translatesAutoresizingMaskIntoConstraints = false;
 
     /* add tap gesture recognizer for DVD menus and stuff */
     _tapRecognizer = [[UITapGestureRecognizer alloc]
         initWithTarget:self action:@selector(tapRecognized:)];
+    _tapRecognizer.cancelsTouchesInView = NO;
 
-    CGSize size = _viewContainer.bounds.size;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationStateChanged:)
+                                                 name:UIApplicationWillEnterForegroundNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationStateChanged:)
+                                                 name:UIApplicationDidEnterBackgroundNotification
+                                               object:nil];
+    _viewContainer = superview;
+    CGSize size = superview.bounds.size;
+
     [self reportEvent:^{
         vout_window_ReportSize(_wnd, size.width, size.height);
     }];
@@ -131,41 +145,55 @@
     return self;
 }
 
-- (BOOL)fetchViewContainer
+- (void)didMoveToSuperview
+{
+    if ([self superview] == nil)
+        return;
+
+    _constraints = @[
+        [self.centerXAnchor constraintEqualToAnchor:[[self superview] centerXAnchor]],
+        [self.centerYAnchor constraintEqualToAnchor:[[self superview] centerYAnchor]],
+        [self.widthAnchor constraintEqualToAnchor:[[self superview] widthAnchor]],
+        [self.heightAnchor constraintEqualToAnchor:[[self superview] heightAnchor]],
+    ];
+    [[self superview] addConstraints:_constraints];
+    [NSLayoutConstraint activateConstraints:_constraints];
+}
+
+- (void)willRemoveFromSuperview
+{
+    if ([self superview] == nil)
+        return;
+
+    [NSLayoutConstraint deactivateConstraints:_constraints];
+    [[self superview] removeConstraints:_constraints];
+    _constraints = nil;
+}
+
+- (UIView *)fetchViewContainer
 {
     @try {
         /* get the object we will draw into */
         UIView *viewContainer = (__bridge UIView*)var_InheritAddress (_wnd, "drawable-nsobject");
         if (unlikely(viewContainer == nil)) {
             msg_Err(_wnd, "provided view container is nil");
-            return NO;
+            return nil;
         }
 
         if (unlikely(![viewContainer respondsToSelector:@selector(isKindOfClass:)])) {
             msg_Err(_wnd, "void pointer not an ObjC object");
-            return NO;
+            return nil;
         }
 
         if (![viewContainer isKindOfClass:[UIView class]]) {
             msg_Err(_wnd, "passed ObjC object not of class UIView");
-            return NO;
+            return nil;
         }
 
-        /* We need to store the view container because we'll add our view
-         * only when a subview (hopefully able to handle the rendering) will
-         * get created. The main reason for this is that we cannot report
-         * events from the window until the display is opened, otherwise a
-         * race condition involving locking both the main thread and the lock
-         * in the core for the display are happening. */
-        _viewContainer = viewContainer;
-
-        self.frame = viewContainer.bounds;
-        [self reshape];
-
-        return YES;
+        return viewContainer;
     } @catch (NSException *exception) {
         msg_Err(_wnd, "Handling the view container failed due to an Obj-C exception (%s, %s", [exception.name UTF8String], [exception.reason UTF8String]);
-        return NO;
+        return nil;
     }
 }
 
@@ -183,7 +211,10 @@
          * want to block the main CFRunLoop since the vout
          * display module typically needs it to Open(). */
         dispatch_async(_eventq, ^{
-            (eventBlock)();
+            /* We need to lock to ensure _wnd is still valid,
+             * see detachFromParent. */
+            if (_wnd != NULL)
+                (eventBlock)();
             CFRunLoopPerformBlock(runloop, mode, ^{
                 /* Signal that we can end the ReportEvent call */
                 CFRunLoopStop(runloop);
@@ -217,46 +248,15 @@
 
 - (void)detachFromParent
 {
-    /* We need to lock because we consider that _wnd might be destroyed
-     * after this function returns, typically as it will be called in the
-     * Close() operation which preceed the vout_window_t destruction in
-     * the core. */
-    vlc_mutex_lock(&_mutex);
-    /* The UIView must not be attached before releasing. Disable() is doing
-     * exactly this asynchronously in the main thread so ensure it was called
-     * here before detaching from the parent. */
-    _wnd = NULL;
-    vlc_mutex_unlock(&_mutex);
-}
-
-/**
- * We track whether we currently have a child view, which will be able
- * to do the actual rendering. Depending on how many children view we had
- * and whether we are in enabled state or not, we add or remove the view
- * from/to the parent UIView.
- * This is needed because we cannot emit resize event from the main
- * thread as long as the display is not created, since the display will
- * need the main thread too. It would non-deterministically deadlock
- * otherwise.
- */
-
-- (void)didAddSubview:(UIView*)subview
-{
-    assert(_enabled);
-    _subviews++;
-    if (_subviews == 1)
-        [_viewContainer addSubview:self];
-
-    VLC_UNUSED(subview);
-}
-
-- (void)willRemoveSubview:(UIView*)subview
-{
-    _subviews--;
-    if (_enabled && _subviews == 0)
-        [self removeFromSuperview];
-
-    VLC_UNUSED(subview);
+    /* We need to dispatch synchronously to ensure _wnd is set to null after
+     * all events have been reported in the _eventq
+     */
+    dispatch_sync(_eventq, ^{
+        /* The UIView must not be attached before releasing. Disable() is doing
+         * exactly this asynchronously in the main thread so ensure it was called
+         * here before detaching from the parent. */
+        _wnd = NULL;
+    });
 }
 
 /**
@@ -270,24 +270,18 @@
 
 - (void)enable
 {
-    if (_enabled)
-        return;
-
-    assert(_subviews == 0);
+    assert(!_enabled);
     _enabled = YES;
 
     /* Bind tapRecognizer. */
     [self addGestureRecognizer:_tapRecognizer];
-    _tapRecognizer.cancelsTouchesInView = NO;
+    [_viewContainer addSubview:self];
 }
 
 - (void)disable
 {
-    if (!_enabled)
-        return;
-
+    assert(_enabled);
     _enabled = NO;
-    assert(_subviews == 0);
     [self removeFromSuperview];
 
     [_tapRecognizer.view removeGestureRecognizer:_tapRecognizer];
@@ -314,20 +308,11 @@
     CGSize viewSize = [self bounds].size;
     CGFloat scaleFactor = self.contentScaleFactor;
 
-    /* We need to lock to ensure _wnd is still valid, see detachFromParent. */
-    vlc_mutex_lock(&_mutex);
-    if (_wnd == NULL)
-    {
-        vlc_mutex_unlock(&_mutex);
-        return;
-    }
-
     [self reportEvent:^{
         vout_window_ReportSize(_wnd,
                 viewSize.width * scaleFactor,
                 viewSize.height * scaleFactor);
     }];
-    vlc_mutex_unlock(&_mutex);
 }
 
 - (void)tapRecognized:(UITapGestureRecognizer *)tapRecognizer
@@ -336,27 +321,28 @@
     CGPoint touchPoint = [tapRecognizer locationInView:self];
     CGFloat scaleFactor = self.contentScaleFactor;
 
-    /* We need to lock to ensure _wnd is still valid, see detachFromParent. */
-    vlc_mutex_lock(&_mutex);
-    if (_wnd == NULL)
-    {
-        vlc_mutex_unlock(&_mutex);
-        return;
-    }
-
     [self reportEvent:^{
         vout_window_ReportMouseMoved(_wnd,
                 (int)touchPoint.x * scaleFactor, (int)touchPoint.y * scaleFactor);
         vout_window_ReportMousePressed(_wnd, MOUSE_BUTTON_LEFT);
         vout_window_ReportMouseReleased(_wnd, MOUSE_BUTTON_LEFT);
     }];
-    vlc_mutex_unlock(&_mutex);
 }
 
 - (void)updateConstraints
 {
     [super updateConstraints];
     [self reshape];
+}
+
+- (void)applicationStateChanged:(NSNotification *)notification
+{
+    [self reportEvent:^{
+        if ([[notification name] isEqualToString:UIApplicationWillEnterForegroundNotification])
+            vout_window_ReportVisibilityChanged(_wnd, true);
+        else if ([[notification name] isEqualToString:UIApplicationDidEnterBackgroundNotification])
+            vout_window_ReportVisibilityChanged(_wnd, false);
+    }];
 }
 
 /* Subview are expected to fill the whole frame so tell the compositor
