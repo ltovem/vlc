@@ -1,11 +1,11 @@
 <script type="text/x-template" id="enqueue-button-template">
     <div>
-        <c-button v-if="!playlistItem" v-on:click="enqueueItem()" v-bind:classname="['btn-sm', 'enqueue-button']">
+        <c-button v-if="!isEnqueued" v-on:click="enqueueItem()" v-bind:classname="['btn-sm', 'enqueue-button']">
             <svg-icon name="playlist_add"></svg-icon> Enqueue
         </c-button>
 
-        <c-button v-if="playlistItem" v-on:click="removeFromQueue()" v-bind:classname="['btn-sm', 'enqueue-button']">
-            <svg-icon name="playlist_added"></svg-icon> Remove from queue
+        <c-button v-if="isEnqueued" v-on:click="removeFromQueue()" v-bind:classname="['btn-sm', 'enqueue-button']">
+            <svg-icon name="playlist_added"></svg-icon> Dequeue
         </c-button>
     </div>
 </script>

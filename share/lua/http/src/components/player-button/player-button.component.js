@@ -1,6 +1,6 @@
 Vue.component('player-button', {
     template: '#player-button-template',
-    props: ['item', 'type'],
+    props: ['item', 'type', 'items'],
     computed: {
         ...Vuex.mapState({ playlist: state => state.playlist.items }),
     },
@@ -18,16 +18,22 @@ Vue.component('player-button', {
         }
     },
     methods: {
-        async play() {
-            if (this.item) {
-                let currItem = this.item;
+        enqueueItem(item) {
+            if (item && item.mrl && !this.playlist.find(({ mediaID }) => Number(mediaID) === Number(item.id))) {
+                this.$store.dispatch('playlist/addItem', { src: item.mrl, mediaID: item.id });
+            }
+        },
+
+        playItem(item) {
+            return new Promise(async resolve => {
+                let currItem = item;
 
                 if (!currItem.mediaID) {
-                    currItem = this.playlist.find((item = {}) => Number(item.mediaID) === Number(this.item.id));
+                    currItem = this.playlist.find((pitem = {}) => Number(pitem.mediaID) === Number(item.id));
                 }
 
                 if (!currItem) {
-                    currItem = await this.$store.dispatch('playlist/addAndGetItem', { src: this.item.mrl, mediaID: this.item.id })
+                    currItem = await this.$store.dispatch('playlist/addAndGetItem', { src: item.mrl, mediaID: item.id })
                 }
 
                 const path = '/watch';
@@ -50,6 +56,20 @@ Vue.component('player-button', {
 
                 this.$store.dispatch('status/play', currItem.id)
                 this.$store.dispatch('playlist/setActiveItem', currItem);
+
+                resolve();
+            });
+        },
+
+        async play() {
+            if (this.item) {
+                this.playItem(this.item);
+            }
+
+            if (this.items && this.items.length) {
+                await this.playItem(this.items[0]);
+
+                this.items.forEach((item, index) => index && this.enqueueItem(item));
             }
         }
     }
