@@ -371,8 +371,6 @@ char *vlc_http_auth_FormatAuthorizationHeader(
 {
     char *psz_result = NULL;
     char *psz_buffer = NULL;
-    char *psz_base64 = NULL;
-    int i_rc;
 
     if ( p_auth->psz_nonce )
     {
@@ -383,7 +381,7 @@ char *vlc_http_auth_FormatAuthorizationHeader(
         {
             msg_Err( p_this, "Digest Access Authentication: "
                      "Unknown algorithm '%s'", p_auth->psz_algorithm );
-            goto error;
+            return NULL;
         }
 
         if ( p_auth->psz_qop != NULL || p_auth->psz_cnonce == NULL )
@@ -392,7 +390,7 @@ char *vlc_http_auth_FormatAuthorizationHeader(
 
             p_auth->psz_cnonce = GenerateCnonce();
             if ( p_auth->psz_cnonce == NULL )
-                goto error;
+                return NULL;
         }
 
         ++p_auth->i_nonce;
@@ -400,9 +398,9 @@ char *vlc_http_auth_FormatAuthorizationHeader(
         psz_buffer = AuthDigest( p_this, p_auth, psz_method, psz_path,
                                  psz_username, psz_password );
         if ( psz_buffer == NULL )
-            goto error;
+            return NULL;
 
-        i_rc = asprintf( &psz_result,
+        if( asprintf( &psz_result,
             "Digest "
             /* Mandatory parameters */
             "username=\"%s\", "
@@ -438,29 +436,25 @@ char *vlc_http_auth_FormatAuthorizationHeader(
             /* "uglyhack" will be parsed as an unhandled extension */
             p_auth->i_nonce ? "nc" : "uglyhack",
             p_auth->i_nonce
-        );
-        if ( i_rc < 0 )
-            goto error;
+        ) < 0 )
+            psz_result = NULL;
     }
     else
     {
         /* Basic Access Authentication */
-        i_rc = asprintf( &psz_buffer, "%s:%s", psz_username, psz_password );
-        if ( i_rc < 0 )
-            goto error;
+        if( asprintf( &psz_buffer, "%s:%s", psz_username, psz_password ) < 0 )
+            return NULL;
 
-        psz_base64 = vlc_b64_encode( psz_buffer );
-        if ( psz_base64 == NULL )
-            goto error;
-
-        i_rc = asprintf( &psz_result, "Basic %s", psz_base64 );
-        if ( i_rc < 0 )
-            goto error;
+        char *psz_base64 = vlc_b64_encode( psz_buffer );
+        if( psz_base64 != NULL )
+        {
+            if( asprintf( &psz_result, "Basic %s", psz_base64 ) < 0 )
+                psz_result = NULL;
+            free( psz_base64 );
+        }
     }
 
-error:
     free( psz_buffer );
-    free( psz_base64 );
 
     return psz_result;
 }
