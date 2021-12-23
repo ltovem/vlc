@@ -166,13 +166,17 @@ static int vlclua_httpd_handler_callback(
         char *no_password = NULL;
         if (asprintf(&no_password, no_password_fmt,
                 _(no_password_title), _(no_password_body)) < 0) {
+            *pp_data = NULL;
             *pi_data = 0;
         } else {
             size_t s = strlen(no_password);
             if (asprintf((char**)pp_data, "Status: 403\n"
                         "Content-Length: %zu\n"
                         "Content-Type: text/html\n\n%s", s, no_password) < 0)
+            {
+                *pp_data = NULL;
                 *pi_data = 0;
+            }
             else
                 *pi_data = strlen((char*)*pp_data);
             free(no_password);
@@ -274,6 +278,7 @@ static int vlclua_httpd_file_callback(
         free(*pp_data);
         if (asprintf((char**)pp_data, no_password_fmt,
                 _(no_password_title), _(no_password_body)) < 0) {
+            *pp_data = NULL;
             *pi_data = 0;
         } else {
             *pi_data = strlen((char*)*pp_data);
