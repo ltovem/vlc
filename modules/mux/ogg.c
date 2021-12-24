@@ -766,12 +766,13 @@ static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
                   psz_value );
     }
 
+    *pp_buffer = NULL;
+
     /* Content Type Header */
-    if ( asprintf( &headers.psz_content_type, "Content-Type: %s\r\n", psz_value ) != -1 )
-    {
-        headers.i_size += strlen( headers.psz_content_type );
-        headers.i_count++;
-    }
+    if ( asprintf( &headers.psz_content_type, "Content-Type: %s\r\n", psz_value ) == -1 )
+        return;
+    headers.i_size += strlen( headers.psz_content_type );
+    headers.i_count++;
 
     /* Set Role Header */
     if ( p_input->p_fmt->i_priority > ES_PRIORITY_NOT_SELECTABLE )
@@ -799,8 +800,13 @@ static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
                         "text/karaoke" : "text/subtitle";
         }
 
-        if ( psz_value && asprintf( &headers.psz_role, "Role: %s\r\n", psz_value ) != -1 )
+        if ( psz_value )
         {
+            if ( asprintf( &headers.psz_role, "Role: %s\r\n", psz_value ) == -1 )
+            {
+                free( headers.psz_content_type );
+                return;
+            }
             headers.i_size += strlen( headers.psz_role );
             headers.i_count++;
         }
@@ -838,14 +844,12 @@ static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
                                           p_input->p_fmt->i_extra,
                                           p_input->p_fmt->i_codec ) );
 
-    if ( headers.i_size > 0 )
-    {
-        psz_header = *pp_buffer + FISBONE_BASE_SIZE;
-        memcpy( psz_header, headers.psz_content_type, strlen( headers.psz_content_type ) );
-        psz_header += strlen( headers.psz_content_type );
-        if ( headers.psz_role )
-            memcpy( psz_header, headers.psz_role, strlen( headers.psz_role ) );
-    }
+    psz_header = *pp_buffer + FISBONE_BASE_SIZE;
+    memcpy( psz_header, headers.psz_content_type, strlen( headers.psz_content_type ) );
+    psz_header += strlen( headers.psz_content_type );
+    if ( headers.psz_role )
+        memcpy( psz_header, headers.psz_role, strlen( headers.psz_role ) );
+
     *pi_size = FISBONE_BASE_SIZE + headers.i_size;
 
     free( headers.psz_content_type );
