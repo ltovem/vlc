@@ -301,16 +301,12 @@ static void SavePicture( filter_t *p_filter, picture_t *p_pic )
                           p_sys->i_frames, p_sys->psz_format );
 
     if( i_ret == -1 )
-    {
-        msg_Err( p_filter, "could not create snapshot %s", psz_filename );
-        goto error;
-    }
+        return;
 
-    i_ret = asprintf( &psz_temp, "%s.swp", psz_filename );
-    if( i_ret == -1 )
+    if( asprintf( &psz_temp, "%s.swp", psz_filename ) == -1 )
     {
-        msg_Err( p_filter, "could not create snapshot temporarily file %s", psz_temp );
-        goto error;
+        free( psz_filename );
+        return;
     }
 
     /* Save the image */
@@ -318,7 +314,7 @@ static void SavePicture( filter_t *p_filter, picture_t *p_pic )
                             psz_temp );
     if( i_ret != VLC_SUCCESS )
     {
-        msg_Err( p_filter, "could not create snapshot %s", psz_temp );
+        msg_Err( p_filter, "could not create snapshot file at temporary location %s", psz_temp );
     }
     else
     {
@@ -329,13 +325,11 @@ static void SavePicture( filter_t *p_filter, picture_t *p_pic )
         i_ret = vlc_rename( psz_temp, psz_filename );
         if( i_ret == -1 )
         {
-            msg_Err( p_filter, "could not rename snapshot %s: %s",
+            msg_Err( p_filter, "could not rename snapshot file to %s: %s",
                      psz_filename, vlc_strerror_c(errno) );
-            goto error;
         }
     }
 
-error:
     free( psz_temp );
     free( psz_filename );
 }
