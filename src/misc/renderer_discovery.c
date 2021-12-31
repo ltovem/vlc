@@ -265,3 +265,43 @@ vlc_rd_new(vlc_object_t *p_obj, const char *psz_name,
 
     return p_rd;
 }
+
+void
+vlc_rd_parser_Init(vlc_rd_parser_t *rd_parser, vlc_object_t *p_obj, const vlc_rd_parser_owner_t *restrict owner)
+{
+    rd_parser->p_obj = p_obj;
+
+    rd_parser->parser_info.psz_friendly_name = NULL;
+    rd_parser->parser_info.psz_icon_uri = NULL;
+    rd_parser->parser_info.psz_uri = NULL;
+
+    rd_parser->owner = *owner;
+}
+
+static int rd_parser_load(void *func, bool forced, va_list ap)
+{
+    VLC_UNUSED(forced);
+    int (*activate)(vlc_rd_parser_t *, const protocol_info_t *) = func;
+
+    vlc_rd_parser_t *rd_parser = va_arg(ap, vlc_rd_parser_t *);
+    const struct protocol_info_t * protocol_info = va_arg(ap, const struct protocol_info_t *);
+
+    return activate(rd_parser, protocol_info);
+}
+
+int
+vlc_rd_parser_AddRenderer(vlc_rd_parser_t *rd_parser, const protocol_info_t *protocol_info)
+{
+    vlc_logger_t *logger = rd_parser->p_obj->logger;
+    module_t *p_module = vlc_module_load(logger, "renderer_discovery_parser",
+                                         NULL, false, rd_parser_load,
+                                         rd_parser, protocol_info);
+    if (p_module == NULL)
+    {
+        msg_Err(rd_parser->p_obj, "no suitable renderer discovery module for '%s'",
+                protocol_info->psz_protocol);
+        return VLC_EACCES;
+    }
+
+    return VLC_SUCCESS;
+}

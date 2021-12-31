@@ -101,8 +101,16 @@ static const struct
 };
 #define NB_PROTOCOLS (sizeof(protocols) / sizeof(*protocols))
 
-static char* get_string_list_value( AvahiStringList* txt, const char* key )
+struct vlc_avahi_rd_parser
 {
+    AvahiStringList *txt;
+    vlc_renderer_discovery_t *p_rd;
+    discovery_sys_t *p_sys;
+};
+
+static char* get_string_list_value(vlc_rd_parser_t *rd_parser, const char* key)
+{
+    AvahiStringList *txt = ((struct vlc_avahi_rd_parser *) rd_parser->owner.p_sys)->txt;
     AvahiStringList *asl = avahi_string_list_find( txt, key );
     if( asl == NULL )
         return NULL;
@@ -122,6 +130,22 @@ static char* get_string_list_value( AvahiStringList* txt, const char* key )
     return res;
 }
 
+static int insert_renderer(vlc_rd_parser_t *rd_parser, const char *key,
+                              vlc_renderer_item_t *renderer_item)
+{
+    struct vlc_avahi_rd_parser *avahi_rd_parser = (struct vlc_avahi_rd_parser *) rd_parser->owner.p_sys;
+    vlc_dictionary_insert( &avahi_rd_parser->p_sys->services_name_to_input_item,
+                           key, renderer_item);
+    vlc_rd_add_item( avahi_rd_parser->p_rd, renderer_item );
+    return VLC_SUCCESS;
+}
+
+static const struct rd_parser_callbacks rd_parser_ops =
+{
+    get_string_list_value,
+    insert_renderer
+};
+
 /*****************************************************************************
  * helpers
  *****************************************************************************/
@@ -130,83 +154,15 @@ static void add_renderer( const char *psz_protocol, const char *psz_name,
                           AvahiStringList *txt, discovery_sys_t *p_sys )
 {
     vlc_renderer_discovery_t *p_rd = ( vlc_renderer_discovery_t* )(p_sys->parent);
-    AvahiStringList *asl = NULL;
-    char *friendly_name = NULL;
-    char *icon_uri = NULL;
-    char *uri = NULL;
-    char *model = NULL;
-    const char *demux = NULL;
-    const char *extra_uri = NULL;
-    int renderer_flags = 0;
 
-    if( !strcmp( "chromecast", psz_protocol ) ) {
-        /* Capabilities */
-        asl = avahi_string_list_find( txt, "ca" );
-        if( asl != NULL ) {
-            char *key = NULL;
-            char *value = NULL;
-            if( avahi_string_list_get_pair( asl, &key, &value, NULL ) == 0 &&
-                value != NULL )
-            {
-                int ca = atoi( value );
+    struct vlc_avahi_rd_parser avahi_rd_parser = {txt, p_rd, p_sys};
+    vlc_rd_parser_owner_t rd_parser_owner = {&rd_parser_ops, &avahi_rd_parser};
 
-                if( ( ca & 0x01 ) != 0 )
-                    renderer_flags |= VLC_RENDERER_CAN_VIDEO;
-                if( ( ca & 0x04 ) != 0 )
-                    renderer_flags |= VLC_RENDERER_CAN_AUDIO;
-            }
+    vlc_rd_parser_t rd_parser;
+    vlc_rd_parser_Init(&rd_parser, &p_rd->obj, &rd_parser_owner);
 
-            if( key != NULL )
-                avahi_free( (void *)key );
-            if( value != NULL )
-                avahi_free( (void *)value );
-        }
-
-        /* Friendly name */
-        friendly_name = get_string_list_value( txt, "fn" );
-
-        /* Icon */
-        char* icon_raw = get_string_list_value( txt, "ic" );
-        if( icon_raw != NULL ) {
-            if( asprintf( &icon_uri, "http://%s:8008%s", psz_addr, icon_raw) < 0 )
-                icon_uri = NULL;
-            free( icon_raw );
-        }
-
-        model = get_string_list_value( txt, "md" );
-
-        if( asprintf( &uri, "%s://%s:%u", psz_protocol, psz_addr, i_port ) < 0 )
-            goto error;
-
-        extra_uri = renderer_flags & VLC_RENDERER_CAN_VIDEO ? NULL : "no-video";
-        demux = "cc_demux";
-    }
-
-    if ( friendly_name && model ) {
-        char* combined;
-        if ( asprintf( &combined, "%s (%s)", friendly_name, model ) == -1 )
-            combined = NULL;
-        if ( combined != NULL ) {
-            free(friendly_name);
-            friendly_name = combined;
-        }
-    }
-
-    vlc_renderer_item_t *p_renderer_item =
-        vlc_renderer_item_new( psz_protocol, friendly_name ? friendly_name : psz_name, uri, extra_uri,
-                               demux, icon_uri, renderer_flags );
-    if( p_renderer_item == NULL )
-        goto error;
-
-    vlc_dictionary_insert( &p_sys->services_name_to_input_item,
-        psz_name, p_renderer_item);
-    vlc_rd_add_item( p_rd, p_renderer_item );
-
-error:
-    free( friendly_name );
-    free( icon_uri );
-    free( uri );
-    free( model );
+    protocol_info_t protocol_info = {psz_protocol, psz_name, psz_addr, i_port};
+    vlc_rd_parser_AddRenderer(&rd_parser, &protocol_info);
 }
 
 /*****************************************************************************
