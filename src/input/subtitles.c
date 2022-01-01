@@ -161,7 +161,7 @@ int subtitles_Filter( const char *psz_dir_content )
  */
 static char **paths_to_list( const char *psz_dir, char *psz_path )
 {
-    unsigned int i, k, i_nb_subdirs;
+    size_t i, k, i_nb_subdirs;
     char **subdirs; /* list of subdirectories to look in */
     char *psz_parser = psz_path;
 
@@ -257,7 +257,7 @@ int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_na
     f_fname_trim = filename_trim_inplace(f_fname_trim);
 
     subdirs = paths_to_list( f_dir, psz_path );
-    for( int j = -1; (j == -1) || ( j >= 0 && subdirs != NULL && subdirs[j] != NULL ); j++ )
+    for( ssize_t j = -1; (j == -1) || ( j >= 0 && subdirs != NULL && subdirs[j] != NULL ); j++ )
     {
         const char *psz_dir = (j < 0) ? f_dir : subdirs[j];
         if( psz_dir == NULL || ( j >= 0 && !strcmp( psz_dir, f_dir ) ) )
