@@ -23,6 +23,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/store/modules/vlm_cmd.js \
 --js $(srcdir)/lua/http/src/components/albums/album-item/album-item-grid.component.js \
 --js $(srcdir)/lua/http/src/components/albums/album-item/album-item-list.component.js \
+--js $(srcdir)/lua/http/src/components/tracks/track-item/track-item-list.component.js \
 --js $(srcdir)/lua/http/src/components/artists/artist-item/artist-item-grid.component.js \
 --js $(srcdir)/lua/http/src/components/albums/albums.component.js \
 --js $(srcdir)/lua/http/src/components/artists/artists.component.js \
@@ -75,7 +76,6 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/components/videos/video-item/video-item-list.component.js \
 --js $(srcdir)/lua/http/src/components/videos/video-item/video-item-poster.component.js \
 --js $(srcdir)/lua/http/src/components/videos/videos.component.js \
---js $(srcdir)/lua/http/src/components/tracks/track-item/track-item-table.component.js \
 --js $(srcdir)/lua/http/src/assets/compiled-icons/*.js \
 --js_output_file $(srcdir)/lua/http/dist/js/script.min.js
 

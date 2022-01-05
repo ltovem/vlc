@@ -13,7 +13,8 @@
             </div> -->
             <template v-for="(item, index) in videos">
                 <video-item-grid :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
-                </video-item-grid><div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
+                </video-item-grid>
+                <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
                     <div class="d-flex ml-2">
                         <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
                             <svg-icon name="add"></svg-icon>
@@ -54,8 +55,8 @@
                     </span>
                 </div>
                 <template v-for="(item, index) in videos">
-                    <video-item-list :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item">
-                    </video-item-list><div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
+                    <video-item-list :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item"></video-item-list>
+                    <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
                         <div class="d-flex ml-2">
                             <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
                                 <svg-icon name="add"></svg-icon>
