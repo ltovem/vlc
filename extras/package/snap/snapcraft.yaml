@@ -67,6 +67,7 @@ apps:
       - removable-media
       - screen-inhibit-control
       - x11
+      - wayland
       - desktop
       - desktop-legacy
       - dvb
@@ -233,12 +234,14 @@ parts:
       - libsystemd-dev
       - libprotobuf-dev
       - protobuf-compiler
+      - wayland-protocols
       # qt6
       # kde_neon-sdk is broken right now and doesn't ship qt6, install dev package
       - qt6-shader-baker
       - libqt6svg6-dev
       - libqt6opengl6-dev
       - libqt6shadertools6-dev
+      - qt6-wayland-dev
       - qt6-base-dev
       - qt6-base-private-dev
       - qt6-declarative-dev
@@ -311,9 +314,11 @@ parts:
       - libxcursor1
       - libxrandr2
       - libatk1.0-0
+      - libva-wayland2
       - libprotobuf23
 
       # following are usually shiped with kde-neon
+      - qt6-wayland
       - qt6-qpa-plugins
       - qml6-module-qt5compat-graphicaleffects
       - qml6-module-qtcore
