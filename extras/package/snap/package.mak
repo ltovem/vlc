@@ -1,7 +1,9 @@
 snap:
 	export SNAPCRAFT_BUILD_INFO=1
-	snapcraft snap
+    #snapcraft only support to be called from project root
+	cd ../../.. && ln -s -f extras/package/snap/snapcraft.yaml .snapcraft.yaml
+	cd ../../.. && snapcraft pack
 
 snap-clean:
-	snapcraft clean
+	cd ../../.. && snapcraft clean
 	rm -rf snap

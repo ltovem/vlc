@@ -25,7 +25,7 @@ variables:
     VLC_WIN_LLVM_UCRT_IMAGE: registry.videolan.org/vlc-debian-llvm-ucrt:20240212151604
     VLC_DEBIAN_IMAGE: registry.videolan.org/vlc-debian-unstable:20240212151604
     VLC_ANDROID_IMAGE: registry.videolan.org/vlc-debian-android:20231013040434
-    VLC_SNAP_IMAGE: registry.videolan.org/vlc-ubuntu-focal:20231013031754
+    VLC_SNAP_IMAGE: registry.videolan.org/vlc-snap:20231013031754
     VLC_RASPBIAN_IMAGE: registry.videolan.org/vlc-ubuntu-raspberry:20231013032350
     VLC_WASM_EMSCRIPTEN: registry.videolan.org/vlc-debian-wasm-emscripten:20240313095757
 
@@ -423,7 +423,7 @@ nightly-snap:
     after_script:
         - if [ "$CI_PROJECT_NAMESPACE" = "videolan" ]; then /bin/true; else exit 0; fi
         - mkdir nightlies
-        - mv extras/package/snap/vlc_*.snap nightlies/
+        - mv vlc_*.snap nightlies/
         - echo $SNAP_LOGIN | base64 --decode | snapcraft login --with -
         - snapcraft push nightlies/vlc_*.snap --release edge
         - snapcraft logout
