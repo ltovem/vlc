@@ -68,6 +68,19 @@ video_output/wayland/xdg-decoration-protocol.c: \
 		video_output/Makefile.am
 	$(AM_V_GEN)$(WAYLAND_SCANNER) private-code $< $@
 
+video_output/wayland/drm-lease-client-protocol.h: \
+		$(WAYLAND_PROTOCOLS)/staging/drm-lease/drm-lease-v1.xml \
+		video_output/wayland/Makefile.am
+	$(AM_V_GEN)$(WAYLAND_SCANNER) client-header $< $@
+
+video_output/wayland/drm-lease-client-protocol.c: \
+		$(WAYLAND_PROTOCOLS)/staging/drm-lease/drm-lease-v1.xml \
+		video_output/wayland/Makefile.am
+	$(AM_V_GEN)$(WAYLAND_SCANNER) private-code $< $@
+
+# TODO: move to feature guards
+BUILT_SOURCES += $(nodist_libwl_drm_lease_plugin_la_SOURCES)
+
 libegl_wl_plugin_la_SOURCES = video_output/opengl/egl.c
 libegl_wl_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DUSE_PLATFORM_WAYLAND=1
 libegl_wl_plugin_la_CFLAGS = $(AM_CFLAGS) $(EGL_CFLAGS) $(WAYLAND_EGL_CFLAGS)
@@ -94,3 +107,15 @@ if HAVE_VULKAN
 vout_LTLIBRARIES += libvk_wl_plugin.la
 endif
 endif
+
+libwl_drm_lease_plugin_la_SOURCES = \
+	video_output/wayland/drm-lease.c
+nodist_libwl_drm_lease_plugin_la_SOURCES = \
+	video_output/wayland/drm-lease-client-protocol.h \
+	video_output/wayland/drm-lease-client-protocol.c
+libwl_drm_lease_plugin_la_CPPFLAGS = \
+	$(AM_CPPFLAGS) $(WAYLAND_CLIENT_CFLAGS) $(KMS_CFLAGS)\
+	-I$(builddir)/video_output/wayland
+libwl_drm_lease_plugin_la_LIBADD = $(WAYLAND_CLIENT_LIBS) $(KMS_LIBS)
+
+vout_LTLIBRARIES += libwl_drm_lease_plugin.la

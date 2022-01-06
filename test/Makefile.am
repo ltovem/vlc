@@ -313,3 +313,10 @@ endif
 if HAVE_TVOS
 noinst_PROGRAMS += vlccoreios
 endif
+
+vlc_window_SOURCES = vlc-window.c
+vlc_window_CPPFLAGS = $(AM_CPPFLAGS) -I../include/ \
+	-DTOP_BUILDDIR=\"$$(cd "$(top_builddir)"; pwd)\" \
+	-DTOP_SRCDIR=\"$$(cd "$(top_srcdir)"; pwd)\"
+vlc_window_LDADD = ../lib/libvlc.la ../src/libvlccore.la ../compat/libcompat.la
+noinst_PROGRAMS = vlc-window

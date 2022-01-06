@@ -317,9 +317,13 @@ vout_LTLIBRARIES += $(LTLIBfb)
 libkms_plugin_la_SOURCES = video_output/kms.c
 libkms_plugin_la_CFLAGS = $(AM_CFLAGS) $(KMS_CFLAGS)
 libkms_plugin_la_LIBADD = $(KMS_LIBS)
-libkms_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)'
-EXTRA_LTLIBRARIES += libkms_plugin.la
-vout_LTLIBRARIES += $(LTLIBkms)
+
+libdrm_display_plugin_la_SOURCES = video_output/drm_display.c
+libdrm_display_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) $(KMS_CFLAGS)
+libdrm_display_plugin_la_LIBADD = $(KMS_LIBS)
+if HAVE_KMS
+vout_LTLIBRARIES += libkms_plugin.la libdrm_display_plugin.la
+endif
 
 
 ### Coloured ASCII art ###
