@@ -206,7 +206,7 @@ static char **paths_to_list( const char *psz_dir, char *psz_path )
 /**
  * Detect subtitle files.
  *
- * When called this function will split up the psz_name string into a
+ * When called this function will split up the psz_name_org string into a
  * directory, filename and extension. It then opens the directory
  * in which the file resides and tries to find possible matches of
  * subtitles files.
@@ -215,18 +215,18 @@ static char **paths_to_list( const char *psz_dir, char *psz_path )
  * \param p_this the calling \ref input_thread_t
  * \param psz_path a list of subdirectories (separated by a ',') to look in.
  * \param psz_name_org the complete filename to base the search on.
- * \param pp_slaves an initialized input item slave list to append detected subtitles to
- * \param p_slaves pointer to the size of the slave list
+ * \param ppp_slaves an initialized input item slave list to append detected subtitles to
+ * \param pi_slaves pointer to the size of the slave list
  * \return VLC_SUCCESS if ok
  */
 int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_name_org,
-                      input_item_slave_t ***ppp_slaves, int *p_slaves )
+                      input_item_slave_t ***ppp_slaves, int *pi_slaves )
 {
     int i_fuzzy = var_GetInteger( p_this, "sub-autodetect-fuzzy" );
     if ( i_fuzzy == 0 )
         return VLC_EGENERIC;
     input_item_slave_t **pp_slaves = *ppp_slaves;
-    int i_slaves = *p_slaves;
+    int i_slaves = *pi_slaves;
     char **subdirs; /* list of subdirectories to look in */
 
     if( !psz_name_org )
@@ -421,6 +421,6 @@ int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_na
         qsort( pp_slaves, i_slaves, sizeof (input_item_slave_t*), slave_strcmp );
 
     *ppp_slaves = pp_slaves; /* in case of realloc */
-    *p_slaves = i_slaves;
+    *pi_slaves = i_slaves;
     return VLC_SUCCESS;
 }
