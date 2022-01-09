@@ -201,8 +201,16 @@ static char **paths_to_list( const char *basedir, char *pathlist )
         if( *subdir == '\0' )
             continue;
 
-        if( asprintf( &subdirs[i], "%s%s",
-                  subdir[0] == '.' ? basedir : "",
+        bool rel = ( subdir[0] == '.' );
+        if( rel )
+        {
+            if( subdir[1] == DIR_SEP_CHAR )
+                subdir += 2;
+            else if( subdir[1] == '\0' )
+                subdir += 1;
+        }
+
+        if( asprintf( &subdirs[i], "%s%s", rel ? basedir : "",
                   subdir ) == -1 )
             break;
         i++;
