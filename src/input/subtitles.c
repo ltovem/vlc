@@ -91,13 +91,12 @@ VLC_USED static char *filename_trim_inplace(char *str)
                 continue;
             }
 
-            c = ' ';
             consecutive = true;
+            *writehead++ = ' ';
         } else {
             consecutive = false;
+            *writehead++ = tolower(c);
         }
-
-        *writehead++ = tolower(c);
         str++;
     }
     *writehead = '\0';
