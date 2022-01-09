@@ -180,16 +180,25 @@ static char **paths_to_list( const char *psz_dir, char *psz_path )
 
     for( i = 0; psz_parser && *psz_parser != '\0' ; )
     {
+        while( *psz_parser == ' ' )
+            psz_parser++;
         char *psz_subdir = psz_parser;
-        psz_parser = strchr( psz_subdir, ',' );
-        if( psz_parser )
+        char *psz_subdir_end = psz_subdir;
+        char ch;
+        while( ( ch = *psz_parser ) != '\0' )
         {
-            *psz_parser++ = '\0';
-            while( *psz_parser == ' ' )
-                psz_parser++;
-            if( *psz_subdir == '\0' )
-                continue;
+            if( ch != ' ' && ch != ',' )
+            {
+                psz_subdir_end = psz_parser;
+                psz_subdir_end++;
+            }
+            psz_parser++;
+            if( ch == ',' )
+                break;
         }
+        *psz_subdir_end = '\0';
+        if( *psz_subdir == '\0' )
+            continue;
 
         if( asprintf( &subdirs[i], "%s%s",
                   psz_subdir[0] == '.' ? psz_dir : "",
@@ -197,6 +206,12 @@ static char **paths_to_list( const char *psz_dir, char *psz_path )
             break;
         i++;
     }
+    if( i == 0 )
+    {
+        free( subdirs );
+        return NULL;
+    }
+    assert(i <= i_nb_subdirs);
     subdirs[i] = NULL;
 
     return subdirs;
