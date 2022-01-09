@@ -209,9 +209,10 @@ static char **paths_to_list( const char *basedir, char *pathlist )
             else if( subdir[1] == '\0' )
                 subdir += 1;
         }
+        bool has_sep = ( subdir_end == subdir || *--subdir_end == DIR_SEP_CHAR );
 
-        if( asprintf( &subdirs[i], "%s%s", rel ? basedir : "",
-                  subdir ) == -1 )
+        if( asprintf( &subdirs[i], "%s%s%c", rel ? basedir : "",
+                  subdir, has_sep ? '\0' : DIR_SEP_CHAR ) == -1 )
             break;
         i++;
     }
@@ -345,16 +346,7 @@ int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_na
                 struct stat st;
                 char *path;
 
-                size_t i_len = strlen( psz_dir );
-                const char *psz_format;
-                if ( i_len == 0 )
-                    continue;
-                if( psz_dir[i_len - 1] == DIR_SEP_CHAR )
-                    psz_format = "%s%s";
-                else
-                    psz_format = "%s"DIR_SEP"%s";
-
-                if( asprintf( &path, psz_format, psz_dir, psz_name ) < 0 )
+                if( asprintf( &path, "%s%s", psz_dir, psz_name ) < 0 )
                     continue;
 
                 if( strcmp( path, psz_fname )
