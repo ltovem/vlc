@@ -1067,7 +1067,7 @@ vlc_player_AddAssociatedMedia(vlc_player_t *player,
             break;
     }
 
-    if (check_ext && type == SLAVE_TYPE_SPU && !subtitles_Filter(uri))
+    if (check_ext && type == SLAVE_TYPE_SPU && subtitles_Filter(uri))
         return VLC_EGENERIC;
 
     input_item_slave_t *slave =

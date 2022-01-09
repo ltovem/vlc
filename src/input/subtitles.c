@@ -139,20 +139,21 @@ static int slave_strcmp( const void *a, const void *b )
 }
 
 /*
- * Check if a file ends with a subtitle extension
+ * Check if a file should be filtered (skipped) as a non-subtitle file.
+ *
+ * Returns true if it does not end with a known subtitle extension.
  */
-int subtitles_Filter( const char *psz_dir_content )
+bool subtitles_Filter( const char *file )
 {
-    const char *tmp = strrchr( psz_dir_content, '.');
+    const char *ext = strrchr( file, '.' );
+    if( !ext )
+        return true;
+    ext++;
 
-    if( !tmp )
-        return 0;
-    tmp++;
-
-    for( int i = 0; sub_exts[i][0]; i++ )
-        if( strcasecmp( sub_exts[i], tmp ) == 0 )
-            return 1;
-    return 0;
+    for( size_t i = 0; sub_exts[i][0] != '\0'; i++ )
+        if( strcasecmp( sub_exts[i], ext ) == 0 )
+            return false;
+    return true;
 }
 
 
@@ -273,7 +274,7 @@ int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_na
         const char *psz_name;
         while( (psz_name = vlc_readdir( dir )) )
         {
-            if( psz_name[0] == '.' || !subtitles_Filter( psz_name ) )
+            if( psz_name[0] == '.' || subtitles_Filter( psz_name ) )
                 continue;
 
             char *tmp_fname = strdup(psz_name);
