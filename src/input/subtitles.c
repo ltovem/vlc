@@ -159,50 +159,51 @@ bool subtitles_Filter( const char *file )
 /**
  * Convert a list of paths separated by ',' to a char**
  */
-static char **paths_to_list( const char *psz_dir, char *psz_path )
+static char **paths_to_list( const char *basedir, char *pathlist )
 {
-    size_t i, k, i_nb_subdirs;
+    size_t i, num_subdirs;
     char **subdirs; /* list of subdirectories to look in */
-    char *psz_parser = psz_path;
+    char *parser = pathlist;
 
-    if( !psz_dir || !psz_path )
+    if( !basedir || !pathlist )
         return NULL;
 
-    for( k = 0, i_nb_subdirs = 1; psz_path[k] != '\0'; k++ )
+    for( i = 0, num_subdirs = 1; pathlist[i] != '\0'; i++ )
     {
-        if( psz_path[k] == ',' )
-            i_nb_subdirs++;
+        if( pathlist[i] == ',' )
+            num_subdirs++;
     }
+    i = 0;
 
-    subdirs = calloc( i_nb_subdirs + 1, sizeof(char*) );
+    subdirs = calloc( num_subdirs + 1, sizeof(char*) );
     if( !subdirs )
         return NULL;
 
-    for( i = 0; psz_parser && *psz_parser != '\0' ; )
+    for( i = 0; parser && *parser != '\0' ; )
     {
-        while( *psz_parser == ' ' )
-            psz_parser++;
-        char *psz_subdir = psz_parser;
-        char *psz_subdir_end = psz_subdir;
+        while( *parser == ' ' )
+            parser++;
+        char *subdir = parser;
+        char *subdir_end = subdir;
         char ch;
-        while( ( ch = *psz_parser ) != '\0' )
+        while( ( ch = *parser ) != '\0' )
         {
             if( ch != ' ' && ch != ',' )
             {
-                psz_subdir_end = psz_parser;
-                psz_subdir_end++;
+                subdir_end = parser;
+                subdir_end++;
             }
-            psz_parser++;
+            parser++;
             if( ch == ',' )
                 break;
         }
-        *psz_subdir_end = '\0';
-        if( *psz_subdir == '\0' )
+        *subdir_end = '\0';
+        if( *subdir == '\0' )
             continue;
 
         if( asprintf( &subdirs[i], "%s%s",
-                  psz_subdir[0] == '.' ? psz_dir : "",
-                  psz_subdir ) == -1 )
+                  subdir[0] == '.' ? basedir : "",
+                  subdir ) == -1 )
             break;
         i++;
     }
@@ -211,7 +212,7 @@ static char **paths_to_list( const char *psz_dir, char *psz_path )
         free( subdirs );
         return NULL;
     }
-    assert(i <= i_nb_subdirs);
+    assert(i <= num_subdirs);
     subdirs[i] = NULL;
 
     return subdirs;
