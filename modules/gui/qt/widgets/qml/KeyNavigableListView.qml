@@ -210,8 +210,8 @@ FocusScope {
         //key navigation is reimplemented for item selection
         keyNavigationEnabled: false
 
-        ScrollBar.vertical: ScrollBar { id: scroll_id }
-        ScrollBar.horizontal: ScrollBar { visible: view.contentWidth > view.width }
+        ScrollBar.vertical: ScrollBarExt { id: scroll_id }
+        ScrollBar.horizontal: ScrollBarExt { visible: view.contentWidth > view.width }
 
         highlightMoveDuration: 300 //ms
         highlightMoveVelocity: 1000 //px/s

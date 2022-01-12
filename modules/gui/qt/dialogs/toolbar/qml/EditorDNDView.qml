@@ -23,6 +23,7 @@ import org.videolan.vlc 0.1
 
 import "qrc:///style/"
 import "qrc:///util/" as Util
+import "qrc:///widgets/" as Widgets
 
 ListView {
     id: playerBtnDND
@@ -40,7 +41,7 @@ ListView {
 
     property bool extraWidthAvailable: true
 
-    ScrollBar.horizontal: ScrollBar {
+    ScrollBar.horizontal: Widgets.ScrollBarExt {
         id: scrollBar
         policy: playerBtnDND.contentWidth > playerBtnDND.width ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
     }
