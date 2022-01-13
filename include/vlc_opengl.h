@@ -46,6 +46,7 @@ enum vlc_gl_api_type {
 };
 
 struct vlc_gl_callbacks {
+    void (*init)(struct vlc_gl_t *gl, void *data);
     void (*render)(struct vlc_gl_t *gl, void *data);
 };
 
