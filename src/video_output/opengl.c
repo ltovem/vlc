@@ -102,8 +102,11 @@ vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
         vlc_object_delete(gl);
         return NULL;
     }
-    assert(gl->make_current && gl->release_current && gl->swap
-        && gl->get_proc_address);
+    assert(gl->ops);
+    assert(gl->ops->make_current);
+    assert(gl->ops->release_current);
+    assert(gl->ops->swap);
+    assert(gl->ops->get_proc_address);
     vlc_atomic_rc_init(&glpriv->rc);
 
     return &glpriv->gl;
@@ -160,10 +163,10 @@ vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
 
     vlc_atomic_rc_init(&glpriv->rc);
 
-    assert(gl->make_current);
-    assert(gl->release_current);
-    assert(gl->swap_offscreen);
-    assert(gl->get_proc_address);
+    assert(gl->ops->make_current);
+    assert(gl->ops->release_current);
+    assert(gl->ops->swap_offscreen);
+    assert(gl->ops->get_proc_address);
 
     return &glpriv->gl;
 }
@@ -180,8 +183,8 @@ void vlc_gl_Release(vlc_gl_t *gl)
     if (!vlc_atomic_rc_dec(&glpriv->rc))
         return;
 
-    if (gl->destroy != NULL)
-        gl->destroy(gl);
+    if (gl->ops->close != NULL)
+        gl->ops->close(gl);
 
     if (gl->device)
         vlc_decoder_device_Release(gl->device);

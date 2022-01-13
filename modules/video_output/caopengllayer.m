@@ -183,10 +183,15 @@ static int Open (vout_display_t *vd,
         sys->gl = vlc_object_create(vd, sizeof(*sys->gl));
         if (unlikely(!sys->gl))
             goto bailout;
-        sys->gl->make_current = OpenglLock;
-        sys->gl->release_current = OpenglUnlock;
-        sys->gl->swap = OpenglSwap;
-        sys->gl->get_proc_address = OurGetProcAddress;
+
+        static const struct vlc_gl_operations gl_ops =
+        {
+            .make_current = OpenglLock,
+            .release_current = OpenglUnlock,
+            .swap = OpenglSwap,
+            .get_proc_address = OurGetProcAddress,
+        };
+        sys->gl->ops = &gl_ops;
         sys->gl->api_type = VLC_OPENGL;
 
         struct gl_sys *glsys = sys->gl->sys = malloc(sizeof(*glsys));
