@@ -1,5 +1,8 @@
+import capitalizeFirstLetter from '../../utils/strings/index.js';
+
 Vue.component('videos', {
     template: '#videos-template',
+    props: ['type'],
     data: function() {
         return {
             displayMode: 'grid'
@@ -7,13 +10,15 @@ Vue.component('videos', {
     },
     computed: {
         ...Vuex.mapState({
-            videos: state => state.video.videos,
+            videos(state) {
+                return state.video[this.type];
+            },
             layout: state => state.layout
         }),
     },
     methods: {
         fetchVideos() {
-            this.$store.dispatch('video/fetchVideos');
+            this.$store.dispatch(`video/fetch${capitalizeFirstLetter(this.type)}`);
         }
     },
     created() {

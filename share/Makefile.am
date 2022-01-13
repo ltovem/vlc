@@ -8,6 +8,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/utils/lang/index.js \
 --js $(srcdir)/lua/http/src/utils/media/types.js \
 --js $(srcdir)/lua/http/src/utils/time/index.js \
+--js $(srcdir)/lua/http/src/utils/strings/index.js \
 --js $(srcdir)/lua/http/src/utils/filters/duration.js \
 --js $(srcdir)/lua/http/src/services/playlist.service.js \
 --js $(srcdir)/lua/http/src/services/music.service.js \
