@@ -45,17 +45,28 @@ enum vlc_gl_api_type {
     VLC_OPENGL_ES2,
 };
 
+struct vlc_gl_callbacks {
+    void (*render)(struct vlc_gl_t *gl, void *data);
+};
+
 struct vlc_gl_operations
 {
     union {
         void (*swap)(vlc_gl_t *);
         picture_t *(*swap_offscreen)(vlc_gl_t *);
     };
+
     int  (*make_current)(vlc_gl_t *gl);
     void (*release_current)(vlc_gl_t *gl);
     void (*resize)(vlc_gl_t *gl, unsigned width, unsigned height);
     void*(*get_proc_address)(vlc_gl_t *gl, const char *symbol);
     void (*close)(vlc_gl_t *gl);
+
+    /* TODO: it might have been better to have an argument there, but it
+     * is not symmetric with (*init). Maybe a wait init function instead?
+     * Otherwise, having (*init) in callbacks might provide handling for
+     * context lost and such. */
+    void (*render_next)(vlc_gl_t *gl);
 };
 
 struct vlc_gl_t
@@ -83,6 +94,11 @@ struct vlc_gl_t
     enum vlc_gl_api_type api_type;
 
     const struct vlc_gl_operations *ops;
+
+    struct {
+        const struct vlc_gl_callbacks *cbs;
+        void *sys;
+    } owner;
 };
 
 /**
