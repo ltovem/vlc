@@ -1665,6 +1665,7 @@ vlc_module_begin ()
     // autohide after 1 second
     add_integer( "mouse-hide-timeout", 1000, MOUSE_HIDE_TIMEOUT_TEXT,
                  MOUSE_HIDE_TIMEOUT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     set_section( N_("Snapshot") , NULL )
     add_directory("snapshot-path", NULL, SNAP_PATH_TEXT, SNAP_PATH_LONGTEXT)
     add_string( "snapshot-prefix", "vlcsnap-", SNAP_PREFIX_TEXT,
