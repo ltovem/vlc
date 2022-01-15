@@ -48,6 +48,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -83,6 +84,7 @@ vlc_module_begin ()
      /* Channels, potentially from MRL. */
      add_integer( "jack-input-channels", 0,
          CHANNELS_TEXT, CHANNELS_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
         change_safe()
 
     /* Ports, potentially from MRL. */
