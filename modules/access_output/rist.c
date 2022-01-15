@@ -31,6 +31,7 @@
 #include <vlc_block.h>
 #include <vlc_rand.h>
 #include <sys/time.h>
+#include <limits.h>
 
 #define RIST_CFG_PREFIX "sout-rist-"
 #include "../access/rist.h"
@@ -274,6 +275,7 @@ vlc_module_begin()
 
     add_integer( RIST_CFG_PREFIX RIST_CFG_MAX_PACKET_SIZE, RIST_DEFAULT_TARGET_PAYLOAD_SIZE,
             N_("RIST target payload size (bytes)"), NULL )
+        change_integer_range( 0, INT_MAX )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_VIRT_SRC_PORT, RIST_DEFAULT_VIRT_SRC_PORT,
             SRC_PORT_TEXT, SRC_PORT_LONGTEXT )
         change_integer_range( 0, 65535 )
