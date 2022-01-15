@@ -105,6 +105,11 @@ Item {
 
     property color buttonPlayIcon: "#333333"
 
+    // ScrollBar
+
+    property color scrollBarColor: VLC.SystemPalette.mid
+    property color scrollBarPressedColor: VLC.SystemPalette.dark
+
     // GridItem
 
     // NOTE: This needs to contrast with the background because we have no border.

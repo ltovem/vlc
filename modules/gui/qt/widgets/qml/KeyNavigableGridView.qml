@@ -65,7 +65,7 @@ FocusScope {
         anchors.fill: parent
 
         clip: true
-        ScrollBar.vertical: ScrollBar { }
+        ScrollBar.vertical: ScrollBarExt { }
 
         focus: true
 

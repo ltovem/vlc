@@ -562,7 +562,7 @@ FocusScope {
 
         flickableDirection: Flickable.VerticalFlick
 
-        ScrollBar.vertical: ScrollBar {
+        ScrollBar.vertical: ScrollBarExt {
             id: flickableScrollBar
         }
 

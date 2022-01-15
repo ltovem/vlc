@@ -148,7 +148,7 @@ Item {
             Flickable {
                 anchors.fill: parent
                 anchors.margins: VLCStyle.fontHeight_normal / 2
-                ScrollBar.vertical: ScrollBar{}
+                ScrollBar.vertical: Widgets.ScrollBarExt{}
                 contentY: VLCStyle.fontHeight_normal * ((_model.count * 2) - 4)
                 clip: true
 
