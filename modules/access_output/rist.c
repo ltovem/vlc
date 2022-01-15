@@ -276,8 +276,10 @@ vlc_module_begin()
             N_("RIST target payload size (bytes)"), NULL )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_VIRT_SRC_PORT, RIST_DEFAULT_VIRT_SRC_PORT,
             SRC_PORT_TEXT, SRC_PORT_LONGTEXT )
+        change_integer_range( 0, 65535 )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_VIRT_DST_PORT, RIST_DEFAULT_VIRT_DST_PORT,
             DST_PORT_TEXT, DST_PORT_LONGTEXT )
+        change_integer_range( 0, 65535 )
     add_integer( RIST_CFG_PREFIX "multipeer-mode", RIST_DEFAULT_MULTIPEER_MODE,
             RIST_MULTIPEER_MODE_TEXT, RIST_MULTIPEER_MODE_LONGTEXT )
         change_integer_list( multipeer_mode_type, multipeer_mode_type_names )

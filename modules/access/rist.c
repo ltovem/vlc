@@ -321,6 +321,7 @@ vlc_module_begin ()
         change_integer_list( nack_type_values, nack_type_names )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_VIRT_DST_PORT, 0,
             DST_PORT_TEXT, DST_PORT_LONGTEXT )
+        change_integer_range( 0, 65535 )
     add_integer( RIST_CFG_PREFIX RIST_CFG_MAX_PACKET_SIZE, RIST_MAX_PACKET_SIZE,
             RIST_PACKET_SIZE_TEXT, NULL )
         change_integer_range( 0, INT_MAX )
