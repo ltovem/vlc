@@ -6,7 +6,10 @@
         <!-- <h5 class="separator-title d-flex align-items-center">
             <span>Videos</span>
         </h5> -->
-        <div id="collapse-group-grid" class="position-relative collapse-container" v-if="layout.itemLayout === 'grid'">
+        <template v-if="!videos.length">
+            <h4 class="title">No media was found</h4>
+        </template>
+        <div id="collapse-group-grid" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'grid'">
             <!-- <div class="carousel-navigation d-flex align-items-center">
                 <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
                 <svg-icon name="keyboard_arrow_right"></svg-icon>
@@ -36,7 +39,7 @@
                 </div>
             </template>
         </div>
-        <div id="collapse-group-list" class="position-relative collapse-container" v-if="layout.itemLayout === 'list'">
+        <div id="collapse-group-list" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'list'">
             <!-- <div class="carousel-navigation d-flex align-items-center">
                 <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
                 <svg-icon name="keyboard_arrow_right"></svg-icon>
