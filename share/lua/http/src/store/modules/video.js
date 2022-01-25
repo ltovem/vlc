@@ -4,6 +4,7 @@ import videoService from '../../services/video.service.js';
 const state = {
     videos: [],
     movies: [],
+    tvShows: [],
 };
 
 const getters = {
@@ -22,6 +23,12 @@ const actions = {
             .then((tracks) => {
                 commit('updateMovies', tracks);
             });
+    },
+    fetchTvShows({ commit }) {
+        videoService.fetchTvShows()
+            .then((tracks) => {
+                commit('updateTvShows', tracks);
+            });
     }
 };
 
@@ -31,6 +38,9 @@ const mutations = {
     },
     updateMovies(state, data) {
         state.movies = data;
+    },
+    updateTvShows(state, data) {
+        state.tvShows = data;
     }
 };
 
