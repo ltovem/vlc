@@ -56,11 +56,10 @@ libwindow_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 libwindow_macosx_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) \
 	-fobjc-arc -fobjc-exceptions
 
-libvout_macosx_plugin_la_SOURCES = video_output/macosx.m \
-	$(OPENGL_VOUT_COMMONSOURCES)
+libvout_macosx_plugin_la_SOURCES = video_output/macosx.m
+libvout_macosx_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc
 libvout_macosx_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DHAVE_GL_CORE_SYMBOLS
-libvout_macosx_plugin_la_LIBADD = libvlc_opengl.la
-libvout_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)' \
+libvout_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	-Wl,-framework,OpenGL,-framework,Cocoa
 
 libcaopengllayer_plugin_la_SOURCES = video_output/caopengllayer.m \
