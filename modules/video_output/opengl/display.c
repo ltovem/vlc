@@ -79,12 +79,17 @@ typedef struct vout_display_sys_t
     bool place_changed;
 
     struct {
+        picture_t *picture;
+        subpicture_t *subpicture;
+    } latch;
+
+    struct {
         PFNGLFLUSHPROC Flush;
     } vt;
 } vout_display_sys_t;
 
 /* Display callbacks */
-static void PictureRender (vout_display_t *, picture_t *, subpicture_t *, vlc_tick_t);
+static void PicturePrepare (vout_display_t *, picture_t *, subpicture_t *, vlc_tick_t);
 static void PictureDisplay (vout_display_t *, picture_t *);
 static int Control (vout_display_t *, int);
 
@@ -96,7 +101,7 @@ static int SetViewpoint(vout_display_t *vd, const vlc_viewpoint_t *vp)
 
 static const struct vlc_display_operations ops = {
     .close = Close,
-    .prepare = PictureRender,
+    .prepare = PicturePrepare,
     .display = PictureDisplay,
     .control = Control,
     .set_viewpoint = SetViewpoint,
@@ -133,6 +138,18 @@ static void PictureRender(vlc_gl_t *gl, void *data)
     vout_display_t *vd = data;
     vout_display_sys_t *sys = vd->sys;
 
+    msg_Info(vd, "Render new frame");
+    if (sys->latch.picture == NULL)
+    {
+        msg_Info(vd, "Dropping new frame");
+        return;
+    }
+
+    msg_Info(gl, "Display new frame %p", sys->latch.picture);
+
+    picture_t *pic = sys->latch.picture;
+    subpicture_t *subpicture = sys->latch.subpicture;
+
     vout_display_opengl_Prepare (sys->vgl, pic, subpicture);
     if (sys->place_changed)
     {
@@ -144,6 +161,8 @@ static void PictureRender(vlc_gl_t *gl, void *data)
     }
     vout_display_opengl_Display(sys->vgl);
     sys->vt.Flush();
+
+    msg_Info(vd, "Rendered new frame");
 }
 
 static void PicturePrepare (vout_display_t *vd, picture_t *pic, subpicture_t *subpicture,
@@ -151,6 +170,10 @@ static void PicturePrepare (vout_display_t *vd, picture_t *pic, subpicture_t *su
 {
     VLC_UNUSED(date);
     vout_display_sys_t *sys = vd->sys;
+    msg_Info(vd, "Prepare new frame %p", pic);
+
+    sys->latch.picture = pic;
+    sys->latch.subpicture = subpicture;
 
     vlc_gl_RenderNext(sys->gl);
     // TODO: what to do in case of error
@@ -160,6 +183,7 @@ static void PicturePrepare (vout_display_t *vd, picture_t *pic, subpicture_t *su
         PictureRender(sys->gl, vd);
     }
     */
+    msg_Info(vd, "Prepared new frame %p", sys->latch.picture);
 }
 
 static void PictureDisplay (vout_display_t *vd, picture_t *pic)
@@ -168,9 +192,7 @@ static void PictureDisplay (vout_display_t *vd, picture_t *pic)
     VLC_UNUSED(pic);
 
     /* Present on screen TODO */
-    vlc_gl_MakeCurrent (sys->gl);
     vlc_gl_Swap(sys->gl);
-    vlc_gl_ReleaseCurrent (sys->gl);
 }
 
 static int Control (vout_display_t *vd, int query)
@@ -222,6 +244,8 @@ static int Open(vout_display_t *vd,
         return VLC_ENOMEM;
 
     sys->gl = NULL;
+    sys->latch.picture = NULL;
+    sys->latch.subpicture = NULL;
 
     vout_window_t *surface = vd->cfg->window;
     char *gl_name = var_InheritString(surface, MODULE_VARNAME);
@@ -252,7 +276,11 @@ static int Open(vout_display_t *vd,
     }
 #endif
 
-    sys->gl = vlc_gl_Create(vd->cfg, API, gl_name);
+    static const struct vlc_gl_callbacks gl_cbs = {
+        .render = PictureRender
+    };
+
+    sys->gl = vlc_gl_CreateWithOwner(vd->cfg, API, gl_name, &gl_cbs, vd);
     free(gl_name);
     if (sys->gl == NULL)
         goto error;
