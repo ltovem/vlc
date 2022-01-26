@@ -184,4 +184,7 @@ static inline bool vlc_gl_StrHasToken(const char *apis, const char *api)
     return false;
 }
 
+VLC_API void vlc_gl_RenderNext(vlc_gl_t *gl);
+VLC_API void vlc_gl_ReportRender(vlc_gl_t *gl);
+
 #endif /* VLC_GL_H */

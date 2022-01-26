@@ -38,6 +38,9 @@ struct vlc_gl_priv_t
     vlc_gl_t gl;
     vlc_atomic_rc_t rc;
 
+    vlc_sem_t sem_client;
+    atomic_bool dirty;
+
     struct {
         const uint8_t* (*GetString)(uint32_t);
         const uint8_t* (*GetStringi)(uint32_t, uint32_t);
@@ -98,6 +101,8 @@ vlc_gl_t *(vlc_gl_Create)(
     glpriv->vt.GetString = NULL;
     glpriv->vt.GetStringi = NULL;
     glpriv->vt.GetIntegerv = NULL;
+    vlc_sem_init(&glpriv->sem_client, 0);
+    atomic_init(&glpriv->dirty, false);
 
     gl->module = vlc_module_load(gl, type, name, true, vlc_gl_start, gl,
                                  cfg->display.width, cfg->display.height);
@@ -143,6 +148,12 @@ vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
     glpriv = vlc_custom_create(parent, sizeof (*glpriv), "gl");
     if (unlikely(glpriv == NULL))
         return NULL;
+
+    glpriv->vt.GetString = NULL;
+    glpriv->vt.GetStringi = NULL;
+    glpriv->vt.GetIntegerv = NULL;
+    vlc_sem_init(&glpriv->sem_client, 0);
+    atomic_init(&glpriv->dirty, false);
 
     vlc_gl_t *gl = &glpriv->gl;
 
@@ -258,6 +269,29 @@ bool vlc_gl_HasExtension(vlc_gl_t *gl, const char *extension)
             return true;
     }
     return false;
+}
+
+void vlc_gl_RenderNext(vlc_gl_t *gl)
+{
+    struct vlc_gl_priv_t *glpriv = (struct vlc_gl_priv_t *)gl;
+
+    atomic_store_explicit(&glpriv->dirty, true, memory_order_release);
+    if (gl->ops && gl->ops->render_next)
+        gl->ops->render_next(gl);
+    vlc_sem_wait(&glpriv->sem_client);
+}
+
+void vlc_gl_ReportRender(vlc_gl_t *gl)
+{
+    struct vlc_gl_priv_t *glpriv = (struct vlc_gl_priv_t *)gl;
+
+    bool dirty = atomic_exchange_explicit(&glpriv->dirty, false, memory_order_acquire);
+    if (!dirty)
+        return;
+
+    if (gl->owner.cbs && gl->owner.cbs->render)
+        gl->owner.cbs->render(gl, gl->owner.sys);
+    vlc_sem_post(&glpriv->sem_client);
 }
 
 #include <vlc_vout_window.h>
