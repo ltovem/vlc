@@ -60,8 +60,10 @@ static int vlc_gl_start(void *func, bool forced, va_list ap)
     return ret;
 }
 
-vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
-                        unsigned flags, const char *name)
+vlc_gl_t *(vlc_gl_Create)(
+        const struct vout_display_cfg *restrict cfg,
+        unsigned flags, const char *name,
+        const struct vlc_gl_callbacks *cbs, void *owner)
 {
     vout_window_t *wnd = cfg->window;
     struct vlc_gl_priv_t *glpriv;
@@ -91,6 +93,8 @@ vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
     gl->api_type = api_type;
     gl->surface = wnd;
     gl->device = NULL;
+    gl->owner.cbs = cbs;
+    gl->owner.sys = owner;
     glpriv->vt.GetString = NULL;
     glpriv->vt.GetStringi = NULL;
     glpriv->vt.GetIntegerv = NULL;
@@ -282,9 +286,10 @@ static void vlc_gl_surface_ResizeNotify(vout_window_t *surface,
     vlc_mutex_unlock(&sys->lock);
 }
 
-vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *obj,
-                                const vout_window_cfg_t *cfg,
-                                struct vout_window_t **restrict wp)
+vlc_gl_t *(vlc_gl_surface_Create)(
+        vlc_object_t *obj, const vout_window_cfg_t *cfg,
+        const struct vlc_gl_callbacks *gl_cbs, void *gl_owner,
+        struct vout_window_t **restrict wp)
 {
     vlc_gl_surface_t *sys = malloc(sizeof (*sys));
     if (unlikely(sys == NULL))
@@ -329,7 +334,8 @@ vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *obj,
     }
     vlc_mutex_unlock(&sys->lock);
 
-    vlc_gl_t *gl = vlc_gl_Create(&dcfg, VLC_OPENGL, NULL);
+    vlc_gl_t *gl = vlc_gl_CreateWithOwner(&dcfg, VLC_OPENGL,
+            NULL, gl_cbs, gl_owner);
     if (gl == NULL) {
         vout_window_Disable(surface);
         vout_window_Delete(surface);

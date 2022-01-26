@@ -113,7 +113,11 @@ struct vlc_gl_t
  * @return a new context, or NULL on failure
  */
 VLC_API vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *cfg,
-                                unsigned flags, const char *name) VLC_USED;
+                                unsigned flags, const char *name,
+                                const struct vlc_gl_callbacks *cbs,
+                                void *owner) VLC_USED;
+#define vlc_gl_Create(c,f,n) (vlc_gl_Create)(c,f,n,NULL,NULL)
+#define vlc_gl_CreateWithOwner(c,f,n,cbs,o) (vlc_gl_Create)(c,f,n,cbs,o)
 VLC_API vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
                                          struct vlc_decoder_device *device,
                                          unsigned width, unsigned height,
@@ -155,9 +159,15 @@ static inline void *vlc_gl_GetProcAddress(vlc_gl_t *gl, const char *name)
     return gl->ops->get_proc_address(gl, name);
 }
 
-VLC_API vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *,
-                                        const struct vout_window_cfg_t *,
-                                        struct vout_window_t **) VLC_USED;
+VLC_API vlc_gl_t *vlc_gl_surface_Create(
+        vlc_object_t *obj, const struct vout_window_cfg_t *cfg,
+        const struct vlc_gl_callbacks *cbs, void *owner,
+        struct vout_window_t **) VLC_USED;
+#define vlc_gl_surface_Create(o,c,w) \
+    (vlc_gl_surface_Create)(o,c,NULL,NULL,w)
+#define vlc_gl_surface_CreateWithOwner(o,c,cbs,owner,w) \
+    (vlc_gl_surface_Create)(o,c,cbs,owner,w)
+
 VLC_API bool vlc_gl_surface_CheckSize(vlc_gl_t *, unsigned *w, unsigned *h);
 VLC_API void vlc_gl_surface_Destroy(vlc_gl_t *);
 
