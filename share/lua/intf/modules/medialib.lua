@@ -48,6 +48,11 @@ movies = function(get)
     return wrapResult(200, a)
 end
 
+listShowEpisode = function(get)
+    local a = vlc.ml.show_episodes(get['limit'], get['offset'], get['desc'])
+    return wrapResult(200, a)
+end
+
 listAudio = function(get)
     local a = vlc.ml.audio(get['limit'], get['offset'], get['desc'])
     return wrapResult(200, a)
@@ -191,6 +196,7 @@ setupHandlers = function(h, password)
         h:handler("/medialib/video", nil, password, wrapHandler(listVideo), nil),
         h:handler("/medialib/audio", nil, password, wrapHandler(listAudio), nil),
         h:handler("/medialib/movies", nil, password, wrapHandler(movies), nil),
+        h:handler("/medialib/tvshows", nil, password, wrapHandler(listShowEpisode), nil),
         h:handler("/medialib/thumbnail", nil, password, wrapHandler(getThumbnail), nil),
         h:handler("/medialib/albums", nil, password, wrapHandler(listAlbums), nil),
         h:handler("/medialib/album", nil, password, wrapHandler(getAlbum), nil),

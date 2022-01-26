@@ -150,6 +150,27 @@ static void vlclua_ml_push_media( lua_State *L, const vlc_ml_media_t *media )
     lua_setfield( L, -2, "nbChannels" );
 }
 
+static void vlclua_ml_push_show( lua_State *L, const vlc_ml_show_t *show )
+{
+    lua_newtable( L );
+    lua_pushinteger( L, show->i_id );
+    lua_setfield( L, -2, "id" );
+    lua_pushstring( L, show->psz_name );
+    lua_setfield( L, -2, "name" );
+    lua_pushstring( L, show->psz_summary );
+    lua_setfield( L, -2, "summary" );
+    lua_pushstring( L, show->psz_artwork_mrl );
+    lua_setfield( L, -2, "artworkMrl" );
+    lua_pushstring( L, show->psz_tvdb_id );
+    lua_setfield( L, -2, "tvdbId" );
+    lua_pushboolean( L, show->i_release_year );
+    lua_setfield( L, -2, "releaseYear" );
+    lua_pushboolean( L, show->i_nb_episodes );
+    lua_setfield( L, -2, "nbEpisodes" );
+    lua_pushboolean( L, show->i_nb_seasons );
+    lua_setfield( L, -2, "nbSeason" );
+}
+
 static void vlclua_ml_push_album( lua_State* L, const vlc_ml_album_t *album )
 {
     lua_newtable( L );
@@ -211,6 +232,20 @@ static int vlclua_ml_list_media( lua_State* L, vlc_ml_media_list_t* list )
     return 1;
 }
 
+static int vlclua_ml_list_show( lua_State* L, vlc_ml_show_list_t* list )
+{
+    if ( list == NULL )
+        return luaL_error( L, "Failed to list show" );
+    lua_createtable( L, list->i_nb_items, 0 );
+    for ( size_t i = 0; i < list->i_nb_items; ++i )
+    {
+        vlclua_ml_push_show( L, &list->p_items[i] );
+        lua_rawseti( L, -2, i + 1 );
+    }
+    vlc_ml_release( list );
+    return 1;
+}
+
 static void vlclua_ml_assign_params( lua_State *L, vlc_ml_query_params_t *params )
 {
     params->i_nbResults = lua_tointeger( L, 1 );
@@ -238,6 +273,16 @@ static int vlclua_ml_list_movies( lua_State *L )
     vlc_medialibrary_t* ml = vlc_ml_instance_get( p_this );
     vlc_ml_media_list_t* list = vlc_ml_list_movie_media( ml, &params );
     return vlclua_ml_list_media( L, list );
+}
+
+static int vlclua_ml_list_shows( lua_State *L )
+{
+    vlc_object_t *p_this = vlclua_get_this( L );
+    vlc_ml_query_params_t params;
+    vlclua_ml_assign_params( L, &params );
+    vlc_medialibrary_t* ml = vlc_ml_instance_get( p_this );
+    vlc_ml_show_list_t* list = vlc_ml_list_shows( ml, &params );
+    return vlclua_ml_list_show( L, list );
 }
 
 static int vlclua_ml_audio( lua_State *L )
@@ -468,6 +513,7 @@ static int vlclua_ml_reload( lua_State *L )
 static const luaL_Reg vlclua_ml_reg[] = {
     { "video", vlclua_ml_video },
     { "movies", vlclua_ml_list_movies },
+    { "show_episodes", vlclua_ml_list_shows },
     { "audio", vlclua_ml_audio },
     { "media_thumbnail", vlclua_ml_get_media_thumbnail },
     { "albums", vlclua_ml_list_all_albums },
