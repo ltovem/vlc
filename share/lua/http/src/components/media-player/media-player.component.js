@@ -40,6 +40,8 @@ Vue.component('media-player', {
             this.scrubber.addEventListener('input', this._handleScrubberChange);
             this.volume.addEventListener('input', this._handleVolumeChange);
             this._handleVolumeChange();
+
+            window.addEventListener('keyup', this._handleShortcuts);
         },
         fetchStatus() {
             this.$store.dispatch('status/fetchStatus');
@@ -143,6 +145,33 @@ Vue.component('media-player', {
         handleCurrentTime(currentTime) {
             this.player.currentTime = currentTime;
             this._handleTimeUpdate();
+        },
+        _handleShortcuts(event) {
+            const { code, target: { tagName } } = event;
+
+            if (tagName === 'BUTTON' || tagName === 'INPUT') {
+                return;
+            }
+
+            if (code === 'Space' || code === 'MediaPlayPause') {
+                if (this.playing) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+
+            if (code === 'MediaTrackNext') {
+                this.next();
+            }
+
+            if (code === 'MediaTrackPrevious') {
+                if (this.player.currentTime > 5) {
+                    this._handleSeek(0);
+                } else {
+                    this.previous();
+                }
+            }
         },
         _handleSeeked() {
         },
@@ -263,6 +292,7 @@ Vue.component('media-player', {
 
         this.scrubber.removeEventListener('input', this._handleScrubberChange);
         this.volume.removeEventListener('input', this._handleVolumeChange);
+        window.removeEventListener('keyup', this._handleShortcuts);
         clearTimeout(this.interval);
     }
 });
