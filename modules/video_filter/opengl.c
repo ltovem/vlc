@@ -45,31 +45,32 @@ typedef struct
     struct vlc_gl_filters *filters;
     struct vlc_gl_interop *interop;
     struct vlc_gl_api api;
+
+    picture_t *input;
 } filter_sys_t;
+
+static int RenderNext(vlc_gl_t *gl, void *opaque)
+{
+    filter_t *filter = opaque;
+    filter_sys_t *sys = filter->p_sys;
+
+    // TODO: error handling
+    int ret = vlc_gl_filters_UpdatePicture(sys->filters, sys->input);
+    if (ret != VLC_SUCCESS)
+        return ret;
+
+    ret = vlc_gl_filters_Draw(sys->filters);
+    if (ret != VLC_SUCCESS)
+        return ret;
+}
 
 static picture_t *Filter(filter_t *filter, picture_t *input)
 {
     filter_sys_t *sys = filter->p_sys;
 
-    if (vlc_gl_MakeCurrent(sys->gl) != VLC_SUCCESS)
-        return NULL;
-
-    int ret = vlc_gl_filters_UpdatePicture(sys->filters, input);
-    if (ret != VLC_SUCCESS)
-    {
-        vlc_gl_ReleaseCurrent(sys->gl);
-        return NULL;
-    }
-
-    ret = vlc_gl_filters_Draw(sys->filters);
-    if (ret != VLC_SUCCESS)
-    {
-        vlc_gl_ReleaseCurrent(sys->gl);
-        return NULL;
-    }
-
+    sys->input = input;
+    vlc_gl_RenderNext(sys->gl);
     picture_t *output = vlc_gl_SwapOffscreen(sys->gl);
-    vlc_gl_ReleaseCurrent(sys->gl);
 
     if (output == NULL)
         goto end;
@@ -181,9 +182,14 @@ static int Open( vlc_object_t *obj )
 # define VLCGLAPI VLC_OPENGL
 #endif
 
+    static const struct vlc_gl_callbacks gl_cbs =
+    {
+        .render = RenderNext,
+    };
+
     struct vlc_decoder_device *device = filter_HoldDecoderDevice(filter);
     sys->gl = vlc_gl_CreateOffscreen(obj, device, width, height, VLCGLAPI,
-                                     NULL);
+                                     NULL, &gl_cbs, filter);
 
     /* The vlc_gl_t instance must have hold the device if it needs it. */
     if (device)
