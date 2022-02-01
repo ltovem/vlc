@@ -31,7 +31,7 @@ Vue.component('media-player', {
             this.player.addEventListener('loadeddata', this._handleLoaded);
             this.player.addEventListener('pause', this._handlePlayPause);
             this.player.addEventListener('play', this._handlePlayPause);
-            this.player.addEventListener('seeked', this._handleSeeked);
+            this.player.addEventListener('seeked', this._handleSeek);
             this.player.addEventListener('progress', this._handleProgress);
             this.player.addEventListener('timeupdate', this._handleTimeUpdate);
             this.player.addEventListener('ended', this._handleEnded);
@@ -172,8 +172,17 @@ Vue.component('media-player', {
                     this.previous();
                 }
             }
+
+            if (this.$route.path === "/watch" && code === 'ArrowRight') {
+                this._handleSeek(this.player.currentTime + 5);
+            }
+
+            if (this.$route.path === "/watch" && code === 'ArrowLeft') {
+                this._handleSeek(this.player.currentTime - 5);
+            }
         },
-        _handleSeeked() {
+        _handleSeek(value) {
+            this.$store.dispatch('status/seek', value.toFixed());
         },
         _handleProgress: function() {
             let duration = this.player.duration;
@@ -285,7 +294,7 @@ Vue.component('media-player', {
         this.player.removeEventListener('loadeddata', this._handleLoaded);
         this.player.removeEventListener('pause', this._handlePlayPause);
         this.player.removeEventListener('play', this._handlePlayPause);
-        this.player.removeEventListener('seeked', this._handleSeeked);
+        this.player.removeEventListener('seeked', this._handleSeek);
         this.player.removeEventListener('progress', this._handleProgress);
         this.player.removeEventListener('timeupdate', this._handleTimeUpdate);
         this.player.removeEventListener('ended', this._handleEnded);
