@@ -173,12 +173,24 @@ Vue.component('media-player', {
                 }
             }
 
-            if (this.$route.path === "/watch" && code === 'ArrowRight') {
-                this._handleSeek(this.player.currentTime + 5);
-            }
+            if (this.$route.path === "/watch") {
+                if (code === 'ArrowRight') {
+                    this._handleSeek(this.player.currentTime + 5);
+                }
 
-            if (this.$route.path === "/watch" && code === 'ArrowLeft') {
-                this._handleSeek(this.player.currentTime - 5);
+                if (code === 'ArrowLeft') {
+                    this._handleSeek(this.player.currentTime - 5);
+                }
+
+                if (code === 'ArrowUp') {
+                    this.volume.value = Number(this.volume.value) + 5;
+                    this._handleVolumeChange();
+                }
+
+                if (code === 'ArrowDown') {
+                    this.volume.value = Number(this.volume.value) - 5;
+                    this._handleVolumeChange();
+                }
             }
         },
         _handleSeek(value) {
