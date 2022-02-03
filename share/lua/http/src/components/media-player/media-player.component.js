@@ -175,27 +175,55 @@ Vue.component('media-player', {
 
             if (this.$route.path === "/watch") {
                 if (code === 'ArrowRight') {
-                    this._handleSeek(this.player.currentTime + 5);
+                    this.calls('incrementedSeek', 5)(this.player.currentTime);
                 }
 
                 if (code === 'ArrowLeft') {
-                    this._handleSeek(this.player.currentTime - 5);
+                    this.calls('incrementedSeek', -5)(this.player.currentTime);
                 }
 
                 if (code === 'ArrowUp') {
-                    this.volume.value = Number(this.volume.value) + 5;
-                    this._handleVolumeChange();
+                    this.calls('incrementedVolume', 5)(Number(this.volume.value));
                 }
 
                 if (code === 'ArrowDown') {
-                    this.volume.value = Number(this.volume.value) - 5;
-                    this._handleVolumeChange();
+                    this.calls('incrementedVolume', -5)(Number(this.volume.value));
                 }
             }
         },
+
+        calls(callback, increment, timer = 1000) {
+            this[`${callback}Increment`] = (this[`${callback}Increment`] || 0) + increment;
+
+            if (this[`${callback}Timeout`]) {
+                clearTimeout(this[`${callback}Timeout`]);
+            }
+
+            return (...args) => {
+                this[`${callback}Timeout`] = setTimeout(() => {
+                    this[callback](...args, this[`${callback}Increment`]);
+                    this[`${callback}Increment`] = 0;
+                }, timer);
+            }
+        },
+
+        incrementedSeek(value, increment) {
+            this._handleSeek(value + increment);
+        },
+
+        incrementedVolume(value, increment) {
+            this._handleVolume(value + increment);
+        },
+
+        _handleVolume(value) {
+            this.volume.value = value;
+            this._handleVolumeChange();
+        },
+
         _handleSeek(value) {
             this.$store.dispatch('status/seek', value.toFixed());
         },
+
         _handleProgress: function() {
             let duration = this.player.duration;
             if (duration > 0) {
