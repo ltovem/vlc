@@ -17,8 +17,9 @@
         color: #fff;
     }
     .item-img {
-        width: 120px;
-        height: 70px;
-        object-fit: cover;
+        width: 52px;
+        height: 52px;
+        border-radius: 6px;
+        overflow: hidden;
     }
 }
