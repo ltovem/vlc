@@ -297,7 +297,7 @@ Vue.component('media-player', {
             this.volumeBar.style.width = `${this.volume.value}%`;
             this.player.volume = this.volume.value / 100;
             if (dispatch) {
-                this.$store.dispatch('status/updateVolume', this.player.volume * 255);
+                this.$store.dispatch('status/updateVolume', Math.round(this.player.volume * 255));
             }
             if (this.volume.value >= 50) {
                 this.volumeIconState = 'up';
