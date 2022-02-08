@@ -10,6 +10,8 @@ Vue.component('media-player', {
     },
     data() {
         return {
+            incrementedSeekIncrement: 0,
+            incrementedVolumeIncrement: 0,
             firstPlay: true,
             isMuted: false,
             loaded: false,
