@@ -1,3 +1,8 @@
+AM_LDFLAGS = $(VLC_ldflags) -no-undefined
+if HAVE_WIN32
+AM_LDFLAGS += -mwindows -Wc,-static
+endif
+
 pkglib_LTLIBRARIES = libcompat.la
 libcompat_la_SOURCES = dummy.c
 libcompat_la_LIBADD = $(LTLIBOBJS) $(LIBRT) $(LIBM)
