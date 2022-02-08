@@ -86,6 +86,10 @@ AM_LDFLAGS = -no-install $(LDFLAGS_vlc)
 LIBVLCCORE = -L../src/ -lvlccore
 LIBVLC = -L../lib -lvlc
 
+if HAVE_WIN32
+AM_LDFLAGS += -mwindows -Wc,-static
+endif
+
 test_libvlc_core_SOURCES = libvlc/core.c
 test_libvlc_core_LDADD = $(LIBVLC)
 test_libvlc_equalizer_SOURCES = libvlc/equalizer.c
