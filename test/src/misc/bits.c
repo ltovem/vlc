@@ -26,7 +26,7 @@
     ssize_t a = (foo); \
     ssize_t b = (bar); \
     if(a != b) { \
-        printf("Failed (%s) line %d : %ld != %ld\n", psz_tag, __LINE__, a, b ); \
+        printf("Failed (%s) line %d : %zi != %zi\n", psz_tag, __LINE__, a, b ); \
         return 1; \
     } } while( 0 )
 
