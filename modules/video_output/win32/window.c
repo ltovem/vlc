@@ -338,7 +338,10 @@ static long FAR PASCAL WinVoutEventProc( HWND hwnd, UINT message,
     {
     case WM_CLOSE:
         vout_window_ReportClose(wnd);
-        break;
+        /* Do not close the window, just signal the user intention.
+         * If the window must be closed, the vout window client will
+         * be the one doing it. */
+        return true;
 
     case WM_DESTROY:
         PostQuitMessage(0);
