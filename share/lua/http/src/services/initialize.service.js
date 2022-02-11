@@ -1,16 +1,27 @@
 import store from '../store/index.js';
 import router from './router.service.js';
+import components from './components.service.js';
+import filters from '../utils/filters/index.js';
 
 function vueInit() {
-    return new Vue({
-        router,
-        el: '#app',
-        data: {
-            playlistItems: []
-        },
-        store,
-        mounted() { }
+    const app = Vue.createApp({
+        data() {
+            return {
+                playlistItems: []
+            }
+        }
     });
+
+    components.forEach(({ name, component }) => app.component(name, component));
+
+    app.use(store);
+    app.use(router);
+
+    app.config.globalProperties.$filters = {
+        formatDuration: filters.formatDuration,
+    };
+
+    app.mount('#app');
 }
 
 $(() => {

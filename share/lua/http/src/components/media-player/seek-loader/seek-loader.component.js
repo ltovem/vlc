@@ -1,4 +1,4 @@
-Vue.component('seek-loader', {
+export default {
     template: '#seek-loader-template',
     props: ['value'],
-});
+};

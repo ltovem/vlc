@@ -1,4 +1,4 @@
-Vue.component('vlm-modal', {
+export default {
     template: '#vlm-modal-template',
     methods: {
         executeVLM() {
@@ -6,4 +6,4 @@ Vue.component('vlm-modal', {
             this.$store.dispatch('vlmCmd/postCmd', cmd);
         }
     }
-});
+};

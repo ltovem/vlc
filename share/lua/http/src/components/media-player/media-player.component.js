@@ -1,5 +1,5 @@
 const formatTime = second => new Date(second * 1000).toISOString().substr(11, 8);
-Vue.component('media-player', {
+export default {
     template: '#media-player-template',
     props: ['src', 'autoPlay', 'ended', 'canPlay'],
     computed: {
@@ -346,4 +346,4 @@ Vue.component('media-player', {
         window.removeEventListener('keydown', this._handleShortcuts);
         clearTimeout(this.interval);
     }
-});
+};

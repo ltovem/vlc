@@ -1,4 +1,4 @@
-Vue.component('tracks', {
+export default {
     template: '#tracks-template',
     data: function() {
         return {
@@ -18,4 +18,4 @@ Vue.component('tracks', {
     created() {
         this.fetchTracks();
     }
-});
+};

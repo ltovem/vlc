@@ -2,7 +2,7 @@ const data = {
     eqVal: 0
 };
 
-Vue.component('equalizer-modal', {
+export default {
     template: '#equalizer-modal-template',
     data() {
         return data;
@@ -19,4 +19,4 @@ Vue.component('equalizer-modal', {
     mounted() {
         this.handleEvents();
     }
-});
+};

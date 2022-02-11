@@ -1,4 +1,4 @@
-Vue.component('artists-detail', {
+export default {
     template: '#artists-detail-template',
     data: function() {
         return {
@@ -22,4 +22,4 @@ Vue.component('artists-detail', {
     created() {
         this.fetchArtists();
     }
-});
+};

@@ -1,4 +1,4 @@
-Vue.component('album-item-grid', {
+export default {
     template: '#album-item-grid-template',
     props: ['item'],
     data: function() {
@@ -17,4 +17,4 @@ Vue.component('album-item-grid', {
         }
     },
     created() { }
-});
+};

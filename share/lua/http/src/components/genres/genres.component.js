@@ -1,4 +1,4 @@
-Vue.component('genres', {
+export default {
     template: '#genres-template',
     data: function() {
         return {
@@ -22,4 +22,4 @@ Vue.component('genres', {
     created() {
         this.fetchGenres();
     }
-});
+};

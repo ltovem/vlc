@@ -1,4 +1,4 @@
-Vue.component('albums', {
+export default {
     template: '#albums-template',
     props: ['artistId'],
     watch: {
@@ -38,4 +38,4 @@ Vue.component('albums', {
             this.fetchAlbums();
         }
     }
-});
+};

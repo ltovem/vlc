@@ -1,4 +1,4 @@
-Vue.component('library-item', {
+export default {
     template: '#library-item-template',
     computed: {
 
@@ -12,4 +12,4 @@ Vue.component('library-item', {
             artist: 'Some artist'
         }
     }
-});
+};

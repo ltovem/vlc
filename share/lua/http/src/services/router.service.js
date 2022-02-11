@@ -26,12 +26,12 @@ const routes = [
     {
         path: '/',
         component: BrowseViewComponent,
-        redirect: '/video',
+        redirect: '/video/all',
         children: [
             {
                 path: 'music',
                 component: MusicViewComponent,
-                redirect: 'music/albums',
+                redirect: '/music/albums',
                 children: [
                     {
                         path: 'albums',
@@ -62,7 +62,7 @@ const routes = [
             {
                 path: 'video',
                 component: VideoViewComponent,
-                redirect: 'video/all',
+                redirect: '/video/all',
                 children: [
                     {
                         path: 'all',
@@ -89,7 +89,7 @@ const routes = [
             {
                 path: 'discover',
                 component: DiscoverViewComponent,
-                redirect: 'discover/home',
+                redirect: '/discover/home',
                 children: [
                     {
                         path: 'home',
@@ -117,4 +117,7 @@ const routes = [
     }
 ];
 
-export default new VueRouter({ routes })
+export default VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes,
+});

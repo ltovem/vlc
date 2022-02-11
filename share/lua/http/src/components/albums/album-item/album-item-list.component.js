@@ -1,4 +1,4 @@
-Vue.component('album-item-list', {
+export default {
     template: '#album-item-list-template',
     props: ['item'],
     data: function() {
@@ -13,4 +13,4 @@ Vue.component('album-item-list', {
         }
     },
     created() { }
-});
+};

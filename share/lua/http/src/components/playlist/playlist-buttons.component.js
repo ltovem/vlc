@@ -1,4 +1,4 @@
-Vue.component('playlist-buttons', {
+export default {
     template: '#button-template',
     computed: {
         ...Vuex.mapState({
@@ -23,4 +23,4 @@ Vue.component('playlist-buttons', {
             this.$store.dispatch('playlist/removeItem', id);
         }
     }
-});
+};

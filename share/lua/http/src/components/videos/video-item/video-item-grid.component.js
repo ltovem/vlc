@@ -1,4 +1,4 @@
-Vue.component('video-item-grid', {
+export default {
     template: '#video-item-grid-template',
     props: ['item'],
     methods: {
@@ -6,4 +6,4 @@ Vue.component('video-item-grid', {
             this.liked = !this.liked;
         }
     }
-});
+};

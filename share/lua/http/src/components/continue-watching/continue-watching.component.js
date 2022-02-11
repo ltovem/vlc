@@ -1,4 +1,4 @@
-Vue.component('continue-watching', {
+export default {
     template: '#continue-watching-template',
     data: function() {
         return {
@@ -10,4 +10,4 @@ Vue.component('continue-watching', {
     },
     computed: { },
     methods: { }
-});
+};

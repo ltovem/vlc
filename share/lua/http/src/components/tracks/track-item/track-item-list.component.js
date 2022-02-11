@@ -1,4 +1,4 @@
-Vue.component('track-item-list', {
+export default {
     template: '#track-item-list-template',
     props: ['item', 'index'],
     methods: {
@@ -6,4 +6,4 @@ Vue.component('track-item-list', {
             this.liked = !this.liked;
         }
     }
-});
+};

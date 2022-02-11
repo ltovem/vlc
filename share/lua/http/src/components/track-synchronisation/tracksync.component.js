@@ -8,7 +8,7 @@ let playbackElement;
 let audioDelayElement;
 let subDelayElement;
 
-Vue.component('track-sync-modal', {
+export default {
     template: '#track-sync-modal-template',
     data() {
         return trackData;
@@ -40,4 +40,4 @@ Vue.component('track-sync-modal', {
         subDelayElement = $('#subDelayInput');
         this.handleEvents();
     }
-});
+};

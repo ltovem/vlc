@@ -1,4 +1,4 @@
-Vue.component('playlist-audio-item', {
+export default {
     template: '#playlist-audio-item-template',
     props: ['item', 'index'],
     methods: {
@@ -20,4 +20,4 @@ Vue.component('playlist-audio-item', {
     created() {
 
     }
-});
+};

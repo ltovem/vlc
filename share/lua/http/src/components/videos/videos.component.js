@@ -1,6 +1,6 @@
 import capitalizeFirstLetter from '../../utils/strings/index.js';
 
-Vue.component('videos', {
+export default {
     template: '#videos-template',
     props: ['type'],
     data: function() {
@@ -24,4 +24,4 @@ Vue.component('videos', {
     created() {
         this.fetchVideos();
     }
-});
+};

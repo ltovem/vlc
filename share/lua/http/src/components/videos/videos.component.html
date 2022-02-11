@@ -14,8 +14,8 @@
                 <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
                 <svg-icon name="keyboard_arrow_right"></svg-icon>
             </div> -->
-            <template v-for="(item, index) in videos">
-                <video-item-grid :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
+            <template v-for="(item, index) in videos" :key="item">
+                <video-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
                 </video-item-grid>
                 <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
                     <div class="d-flex ml-2">
@@ -31,7 +31,7 @@
                         </div>
                         <div class="ml-2">
                             <h4 class="title mb-0">{{ item.title }}</h4>
-                            <span class="caption">{{ item.duration | formatDuration }}</span>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
                             <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
                             <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
                         </div>
@@ -57,8 +57,8 @@
                         <svg-icon name="Icon-Time"></svg-icon>
                     </span>
                 </div>
-                <template v-for="(item, index) in videos">
-                    <video-item-list :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item"></video-item-list>
+                <template v-for="(item, index) in videos" :key="item">
+                    <video-item-list data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item"></video-item-list>
                     <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
                         <div class="d-flex ml-2">
                             <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
@@ -73,7 +73,7 @@
                             </div>
                             <div class="ml-2">
                                 <h4 class="title mb-0">{{ item.title }}</h4>
-                                <span class="caption">{{ item.duration | formatDuration }}</span>
+                                <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
                                 <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
                                 <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
                             </div>

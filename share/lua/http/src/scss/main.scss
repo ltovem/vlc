@@ -40,6 +40,10 @@ body {
     border-color: var(--divider-color);
 }
 
+.center {
+    text-align: center;
+}
+
 // component styles
 @import 'components.scss';
 

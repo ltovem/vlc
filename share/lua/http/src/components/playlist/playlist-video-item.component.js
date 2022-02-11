@@ -1,4 +1,4 @@
-Vue.component('playlist-video-item', {
+export default {
     template: '#playlist-video-item-template',
     props: ['item', 'index'],
     computed: {
@@ -28,4 +28,4 @@ Vue.component('playlist-video-item', {
     created() {
 
     }
-});
+};

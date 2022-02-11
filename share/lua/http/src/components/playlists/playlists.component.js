@@ -1,4 +1,4 @@
-Vue.component('playlists', {
+export default {
     template: '#playlists-template',
     data: function() {
         return {
@@ -16,4 +16,4 @@ Vue.component('playlists', {
     created() {
 
     }
-});
+};

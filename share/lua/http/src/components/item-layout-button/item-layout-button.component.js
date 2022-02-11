@@ -1,4 +1,4 @@
-Vue.component('item-layout-button', {
+export default {
     template: '#item-layout-button-template',
     props: ['disabled'],
     computed: {
@@ -17,4 +17,4 @@ Vue.component('item-layout-button', {
             this.$store.dispatch('layout/toggleItemLayout');
         }
     }
-});
+};

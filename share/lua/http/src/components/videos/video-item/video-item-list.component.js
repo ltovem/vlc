@@ -1,4 +1,4 @@
-Vue.component('video-item-list', {
+export default {
     template: '#video-item-list-template',
     props: ['item'],
     methods: {
@@ -6,4 +6,4 @@ Vue.component('video-item-list', {
             this.liked = !this.liked;
         }
     }
-});
+};

@@ -9,12 +9,13 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/utils/media/types.js \
 --js $(srcdir)/lua/http/src/utils/time/index.js \
 --js $(srcdir)/lua/http/src/utils/strings/index.js \
---js $(srcdir)/lua/http/src/utils/filters/duration.js \
+--js $(srcdir)/lua/http/src/utils/filters/index.js \
 --js $(srcdir)/lua/http/src/services/playlist.service.js \
 --js $(srcdir)/lua/http/src/services/music.service.js \
 --js $(srcdir)/lua/http/src/services/video.service.js \
 --js $(srcdir)/lua/http/src/services/status.service.js \
 --js $(srcdir)/lua/http/src/services/vlm_cmd.service.js \
+--js $(srcdir)/lua/http/src/services/components.service.js \
 --js $(srcdir)/lua/http/src/store/index.js \
 --js $(srcdir)/lua/http/src/store/modules/layout.js \
 --js $(srcdir)/lua/http/src/store/modules/music.js \
@@ -33,7 +34,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/components/playlist/playlist.component.js \
 --js $(srcdir)/lua/http/src/components/playlist/playlist-video-item.component.js \
 --js $(srcdir)/lua/http/src/components/playlist/playlist-audio-item.component.js \
---js $(srcdir)/lua/http/src/components/playlist/buttons.playlist.component.js \
+--js $(srcdir)/lua/http/src/components/playlist/playlist-buttons.component.js \
 --js $(srcdir)/lua/http/src/components/playlists/playlists.component.js \
 --js $(srcdir)/lua/http/src/components/playlists/playlists-item/playlists-item.component.js \
 --js $(srcdir)/lua/http/src/components/vlm/vlm.component.js \
@@ -71,7 +72,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/routes/video/playlists/video-playlists-view.component.js \
 --js $(srcdir)/lua/http/src/routes/watch/watch-view.component.js \
 --js $(srcdir)/lua/http/src/components/track-synchronisation/tracksync.component.js \
---js $(srcdir)/lua/http/src/components/sot/stream.manager.component.js \
+--js $(srcdir)/lua/http/src/components/sot/stream-manager.component.js \
 --js $(srcdir)/lua/http/src/components/svg-icon/svg-icon.component.js \
 --js $(srcdir)/lua/http/src/components/tracks/tracks.component.js \
 --js $(srcdir)/lua/http/src/components/videos/video-item/video-item-grid.component.js \

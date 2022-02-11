@@ -10,7 +10,7 @@
                     <player-button v-bind:type="'primary'" :item="item" class="item-primary-action item-action"></player-button>
                 </div>
             </div>
-            <span class="item-duration">{{ item.duration | formatDuration }}</span>
+            <span class="item-duration">{{ $filters.formatDuration(item.duration) }}</span>
             <!-- <span class="item-nb">{{ index + 1 }}</span> -->
             <div class="item-body d-flex flex-column mx-2 pt-1">
                 <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>

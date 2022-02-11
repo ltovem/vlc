@@ -1,4 +1,4 @@
-Vue.component('genre-item-grid', {
+export default {
     template: '#genre-item-grid-template',
     props: ['item'],
     data: function() {
@@ -13,4 +13,4 @@ Vue.component('genre-item-grid', {
         }
     },
     created() { }
-});
+};

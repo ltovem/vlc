@@ -1,4 +1,4 @@
-Vue.component('player-button', {
+export default {
     template: '#player-button-template',
     props: ['item', 'type', 'items'],
     computed: {
@@ -73,4 +73,4 @@ Vue.component('player-button', {
             }
         }
     }
-});
+};

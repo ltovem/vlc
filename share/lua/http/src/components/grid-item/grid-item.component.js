@@ -1,5 +1,5 @@
-Vue.component('grid-item', {
+export default {
     template: '#grid-item-template',
     props: ['item'],
     created() { }
-});
+};

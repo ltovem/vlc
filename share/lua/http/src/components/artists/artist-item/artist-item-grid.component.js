@@ -1,4 +1,4 @@
-Vue.component('artist-item-grid', {
+export default {
     template: '#artist-item-grid-template',
     props: ['item'],
     data: function() {
@@ -9,4 +9,4 @@ Vue.component('artist-item-grid', {
     computed: { },
     methods: { },
     created() { }
-});
+};

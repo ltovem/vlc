@@ -25,7 +25,7 @@
                 <router-link to="/album" class="item-title text-truncate">
                     <span>{{ item.title }}</span>
                 </router-link>
-                <span class="item-subtitle">{{ item.duration | formatDuration }}</span>
+                <span class="item-subtitle">{{ $filters.formatDuration(item.duration) }}</span>
             </span>
             <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
         </div>

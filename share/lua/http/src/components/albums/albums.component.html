@@ -4,8 +4,8 @@
             <!-- <album-item-list v-for="(item, index) in music.albums" :item="item" :key="index"></album-item-list> -->
         </div>
         <div id="album-collapse-group" class="position-relative collapse-container album-collapse-container" v-if="layout.itemLayout === 'grid'">
-            <template v-for="(item, index) in getAlbums()">
-                <album-item-grid :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 collapse-item"></album-item-grid>
+            <template v-for="(item, index) in getAlbums()" :key="item">
+                <album-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 collapse-item"></album-item-grid>
                 <div class="collapse album-collapse-detail collapse-detail" v-bind:id="'collapse-album-' + item.id" data-parent="#album-collapse-group">
                     <div class="d-flex ml-2">
                         <!-- <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
@@ -24,7 +24,7 @@
                                 <svg-icon name="add"></svg-icon>
                             </button>
                             <h4 class="title mb-0">{{ item.title }}</h4>
-                            <span class="caption">{{ item.duration | formatDuration }}</span>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
                             <table class="table table-hover table-item">
                                 <thead>
                                   <tr>
@@ -53,7 +53,7 @@
                                           </div>
                                         </td>
                                         <td>
-                                            {{ track.duration | formatDuration }}
+                                            {{ $filters.formatDuration(track.duration) }}
                                         </td>
                                       </tr>
                                 </tbody>

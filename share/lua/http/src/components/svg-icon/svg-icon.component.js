@@ -1,5 +1,5 @@
 const svgIconCache = new Map();
-Vue.component('svg-icon', {
+export default {
     template: '#svg-icon-template',
     props: ['name'],
     watch: {
@@ -27,4 +27,4 @@ Vue.component('svg-icon', {
     mounted() {
         this.setIcon();
     }
-});
+};

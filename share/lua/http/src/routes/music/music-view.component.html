@@ -23,9 +23,14 @@
         <div class="container-fluid px-0 h-100" :class="'push'">
             <div class="row collapse show no-gutters d-flex h-100 position-relative">
                 <div class="col container-view">
-                    <transition name="fade" mode="out-in">
-                        <router-view></router-view>
-                    </transition>
+                    <router-view v-slot="{ Component, route }">
+                        <transition name="fade" mode="out-in">
+                            <component
+                                :is="Component"
+                                :key="route.meta.usePathKey ? route.path : undefined"
+                            />
+                        </transition>
+                    </router-view>
                 </div>
                 <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
                     <!-- fixed sidebar -->

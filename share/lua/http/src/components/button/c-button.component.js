@@ -1,4 +1,5 @@
-Vue.component('c-button', {
+export default {
     template: '#c-button-template',
-    props: ['classname']
-});
+    props: ['classname'],
+    emits: ["click"],
+};

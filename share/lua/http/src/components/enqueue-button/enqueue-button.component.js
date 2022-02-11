@@ -1,4 +1,4 @@
-Vue.component('enqueue-button', {
+export default {
     template: '#enqueue-button-template',
     props: ['item', 'items'],
     computed: {
@@ -74,4 +74,4 @@ Vue.component('enqueue-button', {
     mounted() {
         this.checkQueue(this.playlist || []);
     }
-});
+};

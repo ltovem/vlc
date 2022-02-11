@@ -1,4 +1,4 @@
-Vue.component('video-item-poster', {
+export default {
     template: '#video-item-poster-template',
     props: ['item']
-});
+};

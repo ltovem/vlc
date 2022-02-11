@@ -1,8 +1,7 @@
-
-Vue.component('stream-manager-modal', {
+export default {
     template: '#stream-manager-modal-template',
     methods: {
     },
     created: function() {
     }
-});
+};

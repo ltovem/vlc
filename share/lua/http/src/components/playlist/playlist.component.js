@@ -1,4 +1,4 @@
-Vue.component('playlist', {
+export default {
     template: '#playlist-template',
     computed: {
         ...Vuex.mapState({
@@ -33,4 +33,4 @@ Vue.component('playlist', {
         });
         this.refreshPlaylist();
     }
-});
+};

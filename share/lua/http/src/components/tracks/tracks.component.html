@@ -26,8 +26,8 @@
                     <span class="col-1 text-muted text-center">Track</span>
                     <span class="col-1 text-muted"></span>
                 </div>
-                <template v-for="(item, index) in music.tracks">
-                    <track-item-list :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" :index="index"></track-item-list>
+                <template v-for="(item, index) in music.tracks" :key="item">
+                    <track-item-list data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" :index="index"></track-item-list>
                     <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
                         <div class="d-flex ml-2">
                             <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
@@ -42,7 +42,7 @@
                             </div>
                             <div class="ml-2">
                                 <h4 class="title mb-0">{{ item.title }}</h4>
-                                <span class="caption">{{ item.duration | formatDuration }}</span>
+                                <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
                                 <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
                                 <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
                             </div>
