@@ -36,6 +36,367 @@
         </div>
     </div>
 </body>
+<script type="text/x-template" id="browse-view-template">
+    <div class="browse-view h-100" :class="{ 'media-player-opened': audioPlayerOpened }">
+        <div class="container-fluid fixed-top primary-navbar d-flex align-content-center align-items-center text-center justify-content-center">
+            <div class="d-flex align-items-center flex-1 justify-content-start">
+                <img width="23" height="26" src="http://images.videolan.org/images/VLC-IconSmall.png">
+                <span class="ml-2">VLC</span>
+            </div>
+            <ul class="nav d-flex align-items-center justify-content-center">
+                <li class="nav-item">
+                    <router-link title="Video" active-class="active" to="/video" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="local_movies_outline"></svg-icon>
+                        <span>Video</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Music" active-class="active" to="/music" class="btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="audiotrack_outline"></svg-icon>
+                        <span>Music</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Network" active-class="active" to="/network" class="disabled btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="wifi"></svg-icon>
+                        <span>Browse</span>
+                    </router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link title="Discover" active-class="active" to="/discover" class="disabled btn btn-icon btn-link d-flex flex-column">
+                        <svg-icon name="explore"></svg-icon>
+                        <span>Discover</span>
+                    </router-link>
+                </li>
+            </ul>
+            <div class="d-flex flex-1 justify-content-end h-100">
+                <button v-on:click="" class="disabled btn-circle mr-2"><svg-icon name="search"></svg-icon></button>
+                <button v-on:click="" class="disabled btn-circle"><svg-icon name="more-horizontal"></svg-icon></button>
+            </div>
+        </div>
+        <router-view v-slot="{ Component, route }">
+            <transition name="fade" mode="out-in">
+                <component
+                    :is="Component"
+                    :key="route.meta.usePathKey ? route.path : undefined"
+                />
+            </transition>
+        </router-view>
+        <transition name="slide-fade">
+            <media-player
+                v-if="audioPlayerOpened"
+                canPlay="canPlay"
+                ended="ended"
+                src="">
+            </media-player>
+        </transition>
+    </div>
+</script>
+<script type="text/x-template" id="video-view-template">
+    <div class="video-view h-100 pt-4">
+        <div class="fixed-top secondary-navbar">
+            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                <div class="d-flex align-items-center flex-1 justify-content-start">
+                    <item-layout-button></item-layout-button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
+                </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <router-link to="/video/all" exact-active-class="active" class="btn btn-link">All</router-link>
+                    <router-link to="/video/movies" exact-active-class="active" class="btn btn-link">Movies</router-link>
+                    <router-link to="/video/tvshows" exact-active-class="active" class="btn btn-link">Tv Shows</router-link>
+                    <router-link to="/video/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
+                </div>
+                <div class="d-flex flex-1 justify-content-end h-100">
+                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                        <svg-icon name="playlist_play"></svg-icon>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0 h-100" :class="'push'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col container-view">
+                    <router-view v-slot="{ Component, route }">
+                        <transition name="fade" mode="out-in">
+                            <component
+                                :is="Component"
+                                :key="route.meta.usePathKey ? route.path : undefined"
+                            />
+                        </transition>
+                    </router-view>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="video-movies-view-template">
+    <div class="video-movies-view">
+        <videos type="movies"></videos>
+    </div>
+</script>
+<script type="text/x-template" id="video-playlists-view-template">
+    <div class="video-playlists-view"></div>
+</script>
+<script type="text/x-template" id="video-all-view-template">
+    <div class="video-all-view">
+        <!-- <continue-watching></continue-watching> -->
+        <videos type="videos"></videos>
+    </div>
+</script>
+<script type="text/x-template" id="video-tvshows-view-template">
+    <div class="video-tvshows-view">
+        <videos type="tvShows"></videos>
+    </div>
+</script>
+<script type="text/x-template" id="watch-view-template">
+    <div class="watch-view h-100">
+        <div id="shortcuts-overlay"></div>
+        <div>
+            <div class="container-fluid fixed-top primary-navbar">
+                <div class="d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                    <div class="d-flex align-items-center flex-1 justify-content-start">
+                        <router-link to="/">
+                            <button class="btn btn-circle">
+                                <svg-icon name="keyboard_arrow_left"></svg-icon>
+                            </button>
+                        </router-link>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center"></div>
+                    <div class="d-flex flex-1 justify-content-end h-100">
+                        <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                            <svg-icon name="playlist_play"></svg-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0" :class="'overlay'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col">
+                    <media-player></media-player>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="discover-home-view-template">
+    <div class="discover-home-view">
+    </div>
+</script>
+<script type="text/x-template" id="discover-url-view-template">
+    <div class="discover-url-view">
+    </div>
+</script>
+<script type="text/x-template" id="discover-services-view-template">
+    <div class="discover-services-view">
+        <div class="row">
+            <grid-item :item="addService"></grid-item>
+            <template v-for="service in mainServices" :key="service">
+                <grid-item :item="service"></grid-item>
+            </template>
+        </div>
+        <div class="row">
+            <template v-for="service in secondaryServices" :key="service">
+                <grid-item :item="service"></grid-item>
+            </template>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="discover-services-tv-view-template">
+    <div class="discover-services-tv-view container-fluid">
+        <div v-if="displayMode === 'list'" class="row">
+            <grid-list v-for="(item, index) in items" :item="item" :key="index"></grid-list>
+        </div>
+        <div class="row" v-if="displayMode === 'grid'">
+            <grid-item v-for="(item, index) in items" :item="item" :key="index"></grid-item>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="discover-view-template">
+    <div class="discover-view h-100 pt-4">
+        <div class="fixed-top secondary-navbar">
+            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                <div class="d-flex align-items-center flex-1 justify-content-start">
+                    <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
+                </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <router-link to="/discover/home" active-class="active" class="btn btn-link">Home</router-link>
+                    <router-link to="/discover/services" active-class="active" class="btn btn-link">Services</router-link>
+                    <router-link to="/discover/url" active-class="active" class="btn btn-link">URL</router-link>
+                </div>
+                <div class="d-flex flex-1 justify-content-end h-100">
+                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                        <svg-icon name="playlist_play"></svg-icon>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0 h-100" :class="'push'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col container-view">
+                    <router-view v-slot="{ Component, route }">
+                        <transition name="fade" mode="out-in">
+                            <component
+                                :is="Component"
+                                :key="route.meta.usePathKey ? route.path : undefined"
+                            />
+                        </transition>
+                    </router-view>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="main-view-template">
+    <router-view></router-view>
+</script>
+<script type="text/x-template" id="music-playlists-view-template">
+    <div class="music-playlists-view pt-4">
+        <playlists></playlists>
+    </div>
+</script>
+<script type="text/x-template" id="music-view-template">
+    <div class="music-view h-100">
+        <div class="fixed-top secondary-navbar">
+            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                <div class="d-flex align-items-center flex-1 justify-content-start">
+                    <item-layout-button class="disabled"></item-layout-button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
+                </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <router-link to="/music/albums" exact-active-class="active" class="btn btn-link">Albums</router-link>
+                    <router-link to="/music/artists" active-class="active" class="btn btn-link">Artists</router-link>
+                    <router-link to="/music/genres" exact-active-class="active" class="btn btn-link">Genres</router-link>
+                    <router-link to="/music/tracks" exact-active-class="active" class="btn btn-link">Tracks</router-link>
+                    <router-link to="/music/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
+                </div>
+                <div class="d-flex flex-1 justify-content-end h-100">
+                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                        <svg-icon name="playlist_play"></svg-icon>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0 h-100" :class="'push'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col container-view">
+                    <router-view v-slot="{ Component, route }">
+                        <transition name="fade" mode="out-in">
+                            <component
+                                :is="Component"
+                                :key="route.meta.usePathKey ? route.path : undefined"
+                            />
+                        </transition>
+                    </router-view>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="music-albums-view-template">
+    <div class="music-albums-view pt-4">
+        <albums></albums>
+    </div>
+</script>
+<script type="text/x-template" id="music-genres-view-template">
+    <div class="music-genres-view pt-4">
+        <genres></genres>
+    </div>
+</script>
+<script type="text/x-template" id="music-artists-view-template">
+    <div class="music-artists-view pt-4">
+        <artists></artists>
+    </div>
+</script>
+<script type="text/x-template" id="music-artists-detail-view-template">
+    <div class="music-artists-detail-view">
+        <artists-detail></artists-detail>
+    </div>
+</script>
+<script type="text/x-template" id="music-tracks-view-template">
+    <div class="music-tracks-view pt-4">
+        <tracks></tracks>
+    </div>
+</script>
+<script type="text/x-template" id="network-view-template">
+    <div class="network-view h-100 pt-4">
+        <div class="fixed-top secondary-navbar">
+            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                <div class="d-flex align-items-center flex-1 justify-content-start">
+                    <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
+                </div>
+                <div class="d-flex align-items-center justify-content-center"></div>
+                <div class="d-flex flex-1 justify-content-end h-100">
+                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                        <svg-icon name="playlist_play"></svg-icon>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0 h-100" :class="'push'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col container-view">
+
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<!-- stream-manager modal Template -->
+<script type="text/x-template" id="stream-manager-modal-template">
+    <div>
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Stream Manager</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="player-button-template">
+    <c-button v-on:click="play()" v-bind:classname="classname">
+        <svg-icon name="play_arrow"></svg-icon> {{ type === 'secondary' ? 'Play' : '' }}
+    </c-button>
+</script>
 <script type="text/x-template" id="continue-watching-template">
     <div class="continue-watching-view container-fluid">
         <!-- <div v-if="displayMode === 'list'" class="row">
@@ -47,175 +408,18 @@
         </div>
     </div>
 </script>
-<!-- Templates -->
-<!-- Playlist Template -->
-<script type="text/x-template" id="playlist-template">
-    <div id="playlistNav" class="playlistNav h-100">
-        <h6 class="playlist-header">Playlist &bull; <span class="text-muted">{{ ' ' + items.length }}{{ items.length ? ' elements' : ''}}</span></h6>
-        <div class="dropdown-divider"></div>
-        <div id="playlist">
-            <div v-for="(item, index) in items" :key="index">
-                <playlist-video-item
-                    v-if="item.type === 'leaf' || item.type === 'video'"
-                    :item="item"
-                    :index="index">
-                </playlist-video-item>
-                <playlist-audio-item
-                    v-if="item.type === 'audio'"
-                    :item="item"
-                    :index="index">
-                </playlist-audio-item>
+<script type="text/x-template" id="seek-loader-template">
+    <teleport to="shortcuts-overlay">
+        <div class="seek-loader">
+            <div v-if="value > 0">
+                Avancer de {{ value }}
+            </div>
+
+            <div v-if="value < 0">
+                Reculer de {{ value }}
             </div>
         </div>
-        <playlist-buttons></playlist-buttons>
-    </div>
-</script>
-<!-- Button Template -->
-<script type="text/x-template" id="button-template">
-    <div class="playlist-actions">
-        <div class="d-flex justify-content-between mx-2" :class="{ disabled: !playlist.activeItem }">
-            <button v-on:click="toggleRepeat()" type="button" class="btn-circle" id="repeatButton"><svg-icon name="repeat"></svg-icon></button>
-            <button v-on:click="toggleRandom()" type="button" class="btn-circle" id="randomButton"><svg-icon name="shuffle"></svg-icon></button>
-            <!-- <span>{{ playlist.items.length ? playlist.items.length + ' items': '' }}</span> -->
-            <button type="button" class="btn-circle" data-toggle="modal" data-target="#equalizerModal"><svg-icon name="sort"></svg-icon></button>
-            <button v-on:click="removeItem(playlist.activeItem.id)" type="button" class="btn-circle"><svg-icon name="delete_outline"></svg-icon></button>
-        </div>
-    </div>
-</script>
-<!-- Playlist item Template -->
-<script type="text/x-template" id="playlist-video-item-template">
-    <button v-on:dblclick="play(item.uri, item.id)" class="btn btn-link pl-2 playlist-video-item list-item d-flex justify-content-between align-items-start position-relative"
-        :class="{ current: item.current === 'current', active: item.active }">
-        <div class="d-flex align-items-start w-100 mr-n3">
-            <div class="item-img" v-on:click="setActiveItem(item)">
-                <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
-                <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
-                <div class="overlay">
-                    <play-button :item="item" class="item-primary-action item-action"></play-button>
-                </div>
-            </div>
-            <span class="item-duration">{{ item.duration | formatDuration }}</span>
-            <!-- <span class="item-nb">{{ index + 1 }}</span> -->
-            <div class="item-body d-flex flex-column mx-2 pt-1">
-                <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
-                <router-link to="" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
-            </div>
-        </div>
-        <div class="disabled d-flex item-action pt-1">
-            <svg-icon name="more_vert"></svg-icon>
-        </div>
-        <div class="item-progress-bar" :style="{width: item.progress}"></div>
-    </button>
-</script>
-<!-- Playlist item Template -->
-<script type="text/x-template" id="playlist-audio-item-template">
-    <button v-on:dblclick="setActiveItem(item)" class="btn btn-link pl-2 playlist-audio-item list-item d-flex justify-content-between align-items-start position-relative"
-        :class="{ current: item.current === 'current', active: item.active }">
-        <div class="d-flex align-items-start w-100 mr-n3">
-            <div class="item-img" v-on:click="setActiveItem(item)">
-                <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
-                <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
-                <div class="overlay">
-                    <play-button class="item-primary-action item-action"></play-button>
-                </div>
-            </div>
-            <span class="item-duration">{{ item.duration | formatDuration }}</span>
-            <!-- <span class="item-nb">{{ index + 1 }}</span> -->
-            <div class="item-body d-flex flex-column mx-2 pt-1">
-                <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
-                <!-- <span class="item-subtitle text-truncate d-flex">
-                    <router-link to="/artist">{{ item.subtitle }}</router-link>&nbsp;&bull;&nbsp;<router-link to="/album">{{ item.album }}</router-link>
-                </span> -->
-            </div>
-        </div>
-        <div class="disabled d-flex item-action pt-1">
-            <svg-icon name="more_vert"></svg-icon>
-        </div>
-        <!-- <div class="item-progress-bar" :style="{width: item.progress}"></div> -->
-    </button>
-</script>
-<script type="text/x-template" id="playlists-template">
-    <div class="playlists-view container-fluid">
-        <div class="row">
-            <div class="playlists-item grid-item col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
-                <div class="create-item">
-                    Create a playlist
-                    <svg-icon name="add"></svg-icon>
-                </div>
-            </div>
-            <playlists-item v-for="item in items" :item="item"></playlists-item>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="playlists-item-template">
-    <div class="playlists-item grid-item col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="item-img">
-            <div>
-                <div class="d-flex">
-                    <img :src="item.images[0]">
-                    <img :src="item.images[1]">
-                </div>
-                <div class="d-flex">
-                    <img :src="item.images[2]">
-                    <img :src="item.images[3]">
-                </div>
-            </div>
-            <div class="overlay">
-                <play-button class="item-primary-action"></play-button>
-                <div class="item-secondary-action">
-                    <div class="icon-wrapper">
-                        <svg-icon name="more-horizontal"></svg-icon>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="item-body">
-            <router-link to="/album" class="item-title text-truncate">{{ item.name }}</router-link>
-            <router-link to="/artist" class="item-subtitle text-truncate">{{ item.nbItems }}&nbsp;files&nbsp;&bull;&nbsp;{{ item.duration }}</router-link>
-        </div>
-    </div>
-</script>
-<!-- equalizer modal Template -->
-<script type="text/x-template" id="equalizer-modal-template">
-    <div>
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Equalizer</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input type="range" name="equalizerInput" id="equalizerInput" min="-20" max="20" step="0.1"/>
-                    <center id="eqVal">{{ eqVal }}</center>
-                </div>
-                <div class="modal-footer">
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="genre-item-grid-template">
-    <div class="item-people genre-item tag-item genre-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3">
-        <div class="item-img">
-            <img :src="item.src">
-            <div class="item-body">
-                <span class="item-title text-truncate">{{ item.name }}</span>
-                <span class="item-subtitle text-truncate">{{ item.nbTracks }} tracks</span>
-            </div>
-            <div class="overlay"></div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="genres-template">
-    <div class="genres-view container-fluid">
-        <!-- <div v-if="displayMode === 'list'" class="row">
-            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
-        </div> -->
-        <div class="row" v-if="layout.itemLayout === 'grid'">
-            <genre-item-grid v-for="(item, index) in music.genres" :item="item" :key="index"></genre-item-grid>
-        </div>
-    </div>
+    </teleport>
 </script>
 <script type="text/x-template" id="media-player-template">
     <div id="media-player" class="media-player">
@@ -225,7 +429,7 @@
                 <div ref="progressBar" class="seek-bar-progress slider-fill"></div>
                 <div ref="bufferBar" class="seek-bar-buffer slider-fill"></div>
             </div>
-            <input ref="scrubber" class="seek-bar-scrubber" type="range" min="0" max="1000" value="0"></input>
+            <input ref="scrubber" class="seek-bar-scrubber" type="range" min="0" max="1000" value="0" />
         </div>
         <div class="d-flex align-items-center justify-content-center media-player-container">
             <div class="metadata d-flex flex-1">
@@ -281,61 +485,363 @@
                 </div>
             </div>
         </div>
+        <seek-loader :value="incrementedSeekIncrement"></seek-loader>
     </div>
 </script>
-<script type="text/x-template" id="tracks-template">
-    <div class="tracks-view container-fluid">
-        <!-- <div v-if="displayMode === 'list'" class="row">
-            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
-        </div> -->
-        <div class="row" v-if="displayMode === 'table'">
-            <table class="table table-hover table-item">
-                <thead>
-                  <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Title</th>
-                    <th scope="col">Artist</th>
-                    <th scope="col">Album</th>
-                    <th scope="col">Duration</th>
-                    <th scope="col">Track</th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                    <track-item-table v-for="(item, index) in music.tracks" :item="item" :key="index" :index="index"></track-item-table>
-                </tbody>
-            </table>
+<!-- Button Template -->
+<script type="text/x-template" id="button-template">
+    <div class="playlist-actions">
+        <div class="d-flex justify-content-between mx-2" :class="{ disabled: !playlist.activeItem }">
+            <button v-on:click="toggleRepeat()" type="button" class="btn-circle" id="repeatButton"><svg-icon name="repeat"></svg-icon></button>
+            <button v-on:click="toggleRandom()" type="button" class="btn-circle" id="randomButton"><svg-icon name="shuffle"></svg-icon></button>
+            <!-- <span>{{ playlist.items.length ? playlist.items.length + ' items': '' }}</span> -->
+            <button type="button" class="btn-circle" data-toggle="modal" data-target="#equalizerModal"><svg-icon name="sort"></svg-icon></button>
+            <button v-on:click="removeItem(playlist.activeItem.id)" type="button" class="btn-circle"><svg-icon name="delete_outline"></svg-icon></button>
         </div>
     </div>
 </script>
-<script type="text/x-template" id="track-item-table-template">
-  <tr>
-    <th scope="row" class="d-flex justify-content-between">
-      <div class="item-img">
-        <img v-if="item.src" :src="item.src">
-        <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
-        <play-button class="item-primary-action item-action" :item="item"></play-button>
+<!-- Playlist item Template -->
+<script type="text/x-template" id="playlist-audio-item-template">
+    <button v-on:dblclick="setActiveItem(item)" class="btn btn-link pl-2 playlist-audio-item list-item d-flex justify-content-between align-items-start position-relative"
+        :class="{ current: item.current === 'current', active: item.active }">
+        <div class="d-flex align-items-start w-100 mr-n3">
+            <div class="item-img" v-on:click="setActiveItem(item)">
+                <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
+                <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+                <div class="overlay">
+                    <player-button v-bind:type="'primary'" :item="item" class="item-primary-action item-action"></player-button>
+                </div>
+            </div>
+            <span class="item-duration">{{ $filters.formatDuration(item.duration) }}</span>
+            <!-- <span class="item-nb">{{ index + 1 }}</span> -->
+            <div class="item-body d-flex flex-column mx-2 pt-1">
+                <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
+                <!-- <span class="item-subtitle text-truncate d-flex">
+                    <router-link to="/artist">{{ item.subtitle }}</router-link>&nbsp;&bull;&nbsp;<router-link to="/album">{{ item.album }}</router-link>
+                </span> -->
+            </div>
+        </div>
+        <div class="disabled d-flex item-action pt-1">
+            <svg-icon name="more_vert"></svg-icon>
+        </div>
+        <!-- <div class="item-progress-bar" :style="{width: item.progress}"></div> -->
+    </button>
+</script>
+<!-- Playlist item Template -->
+<script type="text/x-template" id="playlist-video-item-template">
+    <button v-on:dblclick="play(item.uri, item.id)" class="btn btn-link pl-2 playlist-video-item list-item d-flex justify-content-between align-items-start position-relative"
+        :class="{ current: item.current === 'current', active: item.active }">
+        <div class="d-flex align-items-start w-100 mr-n3">
+            <div class="item-img" v-on:click="setActiveItem(item)">
+                <img v-if="item.src" class="img-art" :src="item.src" @error="onImgError(item)">
+                <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+                <div class="overlay">
+                    <player-button v-bind:type="'primary'" :item="item" class="item-primary-action item-action"></player-button>
+                </div>
+            </div>
+            <span class="item-duration">{{ $filters.formatDuration(item.duration) }}</span>
+            <!-- <span class="item-nb">{{ index + 1 }}</span> -->
+            <div class="item-body d-flex flex-column mx-2 pt-1">
+                <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
+                <router-link to="" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
+            </div>
+        </div>
+        <div class="disabled d-flex item-action pt-1">
+            <svg-icon name="more_vert"></svg-icon>
+        </div>
+        <div class="item-progress-bar" :style="{width: item.progress}"></div>
+    </button>
+</script>
+<!-- Templates -->
+<!-- Playlist Template -->
+<script type="text/x-template" id="playlist-template">
+    <div id="playlistNav" class="playlistNav h-100">
+        <h6 class="playlist-header">Playlist &bull; <span class="text-muted">{{ ' ' + items.length }}{{ items.length ? ' elements' : ''}}</span></h6>
+        <div class="dropdown-divider"></div>
+        <div id="playlist">
+            <div v-for="(item, index) in items" :key="index">
+                <playlist-video-item
+                    v-if="item.type === 'leaf' || item.type === 'video'"
+                    :item="item"
+                    :index="index">
+                </playlist-video-item>
+                <playlist-audio-item
+                    v-if="item.type === 'audio'"
+                    :item="item"
+                    :index="index">
+                </playlist-audio-item>
+            </div>
+        </div>
+        <playlist-buttons></playlist-buttons>
+    </div>
+</script>
+<!-- track-sync modal Template -->
+<script type="text/x-template" id="track-sync-modal-template">
+    <div>
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Set Track Synchronization</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="">
+                    Playback Rate
+                    <p class="center" id="playbackVal">{{ playbackVal }}</p>
+                    <input type="range" name="playbackInput" id="playbackInput" min="-20" max="20" step="0.1"/>
+                    <br>
+                    Audio Delay
+                    <p class="center" id="audioDelayVal">{{ audioDelayVal }}</p>
+                    <input type="range" name="audioDelayInput" id="audioDelayInput" min="-20" max="20" step="0.1"/>
+                    <br>
+                    Subtitle Delay
+                    <p class="center" id="subDelayVal">{{ subDelayVal }}</p>
+                    <input type="range" name="subDelayInput" id="subDelayInput" min="-20" max="20" step="0.1"/>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="playlists-item-template">
+    <div class="playlists-item grid-item col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="item-img">
+            <div>
+                <div class="d-flex">
+                    <img :src="item.images[0]">
+                    <img :src="item.images[1]">
+                </div>
+                <div class="d-flex">
+                    <img :src="item.images[2]">
+                    <img :src="item.images[3]">
+                </div>
+            </div>
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action"></player-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item-body">
+            <router-link to="/album" class="item-title text-truncate">{{ item.name }}</router-link>
+            <router-link to="/artist" class="item-subtitle text-truncate">{{ item.nbItems }}&nbsp;files&nbsp;&bull;&nbsp;{{ item.duration }}</router-link>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="playlists-template">
+    <div class="playlists-view container-fluid">
+        <div class="row">
+            <div class="playlists-item grid-item col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                <div class="create-item">
+                    Create a playlist
+                    <svg-icon name="add"></svg-icon>
+                </div>
+            </div>
+            <playlists-item v-for="item in items" :item="item"></playlists-item>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="enqueue-button-template">
+    <div>
+        <c-button v-if="!isEnqueued" v-on:click="enqueueItem()" v-bind:classname="['btn-sm', 'enqueue-button']">
+            <svg-icon name="playlist_add"></svg-icon> Enqueue
+        </c-button>
+
+        <c-button v-if="isEnqueued" v-on:click="removeFromQueue()" v-bind:classname="['btn-sm', 'enqueue-button']">
+            <svg-icon name="playlist_added"></svg-icon> Dequeue
+        </c-button>
+    </div>
+</script>
+<script type="text/x-template" id="video-item-poster-template">
+    <div class="video-item grid-item poster-item video-item-poster-template">
+        <div class="item-img embed-responsive embed-responsive-4by6">
+            <img class="embed-responsive-item" :src="item.src">
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action" :item="item"></player-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+            <div v-if="item.progress" class="item-progress-bar-container">
+                <div class="item-progress-bar" :style="{width: item.progress}"></div>
+            </div>
+        </div>
+        <div class="item-body px-2">
+            <span class="d-flex align-items-center justify-content-between">
+                <router-link to="/album" class="item-title text-truncate">
+                    <span>{{ item.title }}</span>
+                </router-link>
+                <span class="item-subtitle">{{ $filters.formatDuration(item.duration) }}</span>
+            </span>
+            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="video-item-grid-template">
+    <div class="video-item grid-item video-item-grid-template">
+        <div class="item-img embed-responsive embed-responsive-16by10">
+            <img class="embed-responsive-item" :src="item.src">
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" :item="item" class="item-primary-action"></player-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+            <div v-if="item.quality" class="quality">
+                <span class="quality-tag">{{ item.quality }}</span>
+            </div>
+            <div v-if="item.user" class="user">
+                <img src="">
+            </div>
+            <div v-if="item.progress" class="item-progress-bar-container">
+                <div class="item-progress-bar" :style="{width: item.progress}"></div>
+            </div>
+        </div>
+        <div class="item-body px-2">
+            <span class="d-flex align-items-center justify-content-between">
+                <router-link to="/album" class="item-title text-truncate">
+                    <span>{{ item.title }}</span>
+                </router-link>
+                <span class="item-subtitle">{{ $filters.formatDuration(item.duration) }}</span>
+            </span>
+            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="video-item-list-template">
+    <div class="row align-items-center list-table-item">
+      <div class="d-flex justify-content-between col-2">
+        <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
+          <player-button v-bind:type="'primary'" class="item-primary-action item-action m-auto" :item="item"></player-button>
+        </div>
       </div>
-    </th>
-    <td>
-      <router-link to="">
+      <div class="col-6">
         <span>{{ item.title }}</span>
-        <span></span>
-      </router-link>
-    </td>
-    <td><router-link to="">{{ item.artist }}</router-link></td>
-    <td><router-link to="">{{ item.album }}</router-link></td>
-    <td class="text-muted">{{ item.duration | formatDuration }}</td>
-    <td class="text-muted">{{ index + 1 }}</td>
-    <td class="text-muted">
-      <div class="d-flex justify-content-between">
-        <div class="disabled item-action">
-          <svg-icon name="more-horizontal"></svg-icon>
+      </div>
+      <div class="col-2 text-center">{{ $filters.formatDuration(item.duration) }}</div>
+      <div class="text-muted col-2">
+        <div class="d-flex justify-content-between">
+          <div class="disabled item-action">
+            <svg-icon name="more-horizontal"></svg-icon>
+          </div>
         </div>
       </div>
-    </td>
-  </tr>
-</script><script type="text/x-template" id="library-template">
+    </div>
+</script>
+<script type="text/x-template" id="videos-template">
+    <div class="videos-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <album-item-list v-for="(item, index) in items" :item="item" :key="index"></album-item-list>
+        </div> -->
+        <!-- <h5 class="separator-title d-flex align-items-center">
+            <span>Videos</span>
+        </h5> -->
+        <template v-if="!videos.length">
+            <h4 class="title">No media was found</h4>
+        </template>
+        <div id="collapse-group-grid" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'grid'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <template v-for="(item, index) in videos" :key="item">
+                <video-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
+                </video-item-grid>
+                <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
+                    <div class="d-flex ml-2">
+                        <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                            <svg-icon name="add"></svg-icon>
+                        </button>
+                        <div>
+                            <img width="260" class="embed-responsive-item" :src="item.src">
+                            <div class="mt-2 d-flex">
+                                <player-button v-bind:type="'secondary'" :item="item"></player-button>
+                                <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                            </div>
+                        </div>
+                        <div class="ml-2">
+                            <h4 class="title mb-0">{{ item.title }}</h4>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                            <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
+                            <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <div id="collapse-group-list" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'list'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <div class="tracks-view container-fluid list-table-view">
+                <!-- <div v-if="displayMode === 'list'" class="row">
+                    <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+                </div> -->
+                <div class="d-flex list-header row">
+                    <span class="col-2 text-muted track-img">
+                        <svg-icon name="Icon-Vinyl"></svg-icon>
+                    </span>
+                    <span class="col-6 text-muted">Title</span>
+                    <span class="col-2 text-muted text-center">
+                        <svg-icon name="Icon-Time"></svg-icon>
+                    </span>
+                </div>
+                <template v-for="(item, index) in videos" :key="item">
+                    <video-item-list data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item"></video-item-list>
+                    <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
+                        <div class="d-flex ml-2">
+                            <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                                <svg-icon name="add"></svg-icon>
+                            </button>
+                            <div>
+                                <img width="260" class="embed-responsive-item" :src="item.src">
+                                <div class="mt-2 d-flex">
+                                    <player-button v-bind:type="'secondary'" :item="item"></player-button>
+                                    <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                                </div>
+                            </div>
+                            <div class="ml-2">
+                                <h4 class="title mb-0">{{ item.title }}</h4>
+                                <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                                <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
+                                <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+        <div class="row position-relative" v-if="layout.itemLayout === 'poster'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <video-item-poster class="col-12 col-sm-6 col-md-4 col-lg-2" v-for="(item, index) in videos" :item="item" :key="index"></video-item-poster>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="library-item-template">
+    <div class="library-item">
+        <div class="library-item-img">
+            <img src="http://images.videolan.org/images/VLC-IconSmall.png">
+        </div>
+        <div class="library-item-body">
+            <div class="library-item-name text-truncate">{{ item.name }}</div>
+            <div class="library-item-artist text-truncate">{{ item.artist }}</div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="library-template">
     <div class="library-view container-fluid">
         <library-item></library-item>
         <library-item></library-item>
@@ -352,26 +858,19 @@
         <library-item></library-item>
     </div>
 </script>
-<script type="text/x-template" id="library-item-template">
-    <div class="library-item">
-        <div class="library-item-img">
-            <img src="http://images.videolan.org/images/VLC-IconSmall.png">
+<script type="text/x-template" id="grid-item-template">
+    <div class="grid-item discover-services-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+        <div :class="item.additionalClass" class="item-img embed-responsive embed-responsive-1by1 img-contain">
+            <img v-if="item.src" class="embed-responsive-item p-4" :src="item.src">
+            <div v-else="item.icon" class="embed-responsive-item" :class="item.additionalItemClass">
+                <svg-icon :name="item.icon"></svg-icon>
+            </div>
         </div>
-        <div class="library-item-body">
-            <div class="library-item-name text-truncate">{{ item.name }}</div>
-            <div class="library-item-artist text-truncate">{{ item.artist }}</div>
+        <div class="item-body">
+            <router-link :to="item.titleRoute || '/album'" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link v-if="item.subtitle" :to="item.subtitleRoute || '/artist'" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
         </div>
     </div>
-</script>
-<script type="text/x-template" id="play-button-secondary-template">
-    <button v-on:click="playItem()" class="btn btn-sm play-button-secondary">
-        <svg-icon name="play_arrow"></svg-icon> Play
-    </button>
-</script>
-<script type="text/x-template" id="play-button-template">
-    <button v-on:click="playItem()" class="btn btn-link play-button">
-        <svg-icon name="play_arrow"></svg-icon>
-    </button>
 </script>
 <!-- vlm modal Template -->
 <script type="text/x-template" id="vlm-modal-template">
@@ -397,198 +896,155 @@
         </div>
     </div>
 </script>
-<script type="text/x-template" id="videos-template">
-    <div class="videos-view container-fluid">
-        <!-- <div v-if="displayMode === 'list'" class="row">
-            <album-item-list v-for="(item, index) in items" :item="item" :key="index"></album-item-list>
-        </div> -->
-        <!-- <h5 class="separator-title d-flex align-items-center">
-            <span>Videos</span>
-        </h5> -->
-        <div id="collapse-group-grid" class="position-relative collapse-container" v-if="layout.itemLayout === 'grid'">
-            <!-- <div class="carousel-navigation d-flex align-items-center">
-                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
-                <svg-icon name="keyboard_arrow_right"></svg-icon>
-            </div> -->
-            <template v-for="(item, index) in videos">
-                <video-item-grid :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
-                </video-item-grid><div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
+<script type="text/x-template" id="albums-template">
+    <div class="albums-view container-fluid">
+        <div v-if="layout.itemLayout === 'list'" class="row">
+            <!-- <album-item-list v-for="(item, index) in music.albums" :item="item" :key="index"></album-item-list> -->
+        </div>
+        <div id="album-collapse-group" class="position-relative collapse-container album-collapse-container" v-if="layout.itemLayout === 'grid'">
+            <template v-for="(item, index) in getAlbums()" :key="item">
+                <album-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 collapse-item"></album-item-grid>
+                <div class="collapse album-collapse-detail collapse-detail" v-bind:id="'collapse-album-' + item.id" data-parent="#album-collapse-group">
                     <div class="d-flex ml-2">
-                        <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                        <!-- <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
                             <svg-icon name="add"></svg-icon>
-                        </button>
+                        </button> -->
                         <div>
-                            <img width="260" class="embed-responsive-item" :src="item.src">
+                            <img v-if="item.src" width="171" height="171" class="embed-responsive-item item-img" :src="item.src">
+                            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon item-img"></svg-icon>
                             <div class="mt-2 d-flex">
-                                <play-button-secondary :item="item"></play-button-secondary>
-                                <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                                <player-button v-bind:type="'secondary'" :items="music.albumTracks[item.id]"></player-button>
+                                <enqueue-button class="ml-2" :items="music.albumTracks[item.id]"></enqueue-button>
                             </div>
                         </div>
-                        <div class="ml-2">
+                        <div class="ml-2 w-100">
+                            <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                                <svg-icon name="add"></svg-icon>
+                            </button>
                             <h4 class="title mb-0">{{ item.title }}</h4>
-                            <span class="caption">{{ item.duration | formatDuration }}</span>
-                            <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
-                            <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                            <table class="table table-hover table-item">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col"></th>
+                                    <th scope="col"><svg-icon name="Icon-Time"></svg-icon></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(track, index) in music.albumTracks[item.id]">
+                                        <th scope="row" class="d-flex justify-content-between">
+                                            <div class="item-img">
+                                                <span>{{ index + 1 }}</span>
+                                                <player-button v-bind:type="'primary'" class="item-primary-action item-action" :item="track"></player-button>
+                                            </div>
+                                          </th>
+                                        <td>
+                                            {{ track.title }}
+                                        </td>
+                                        <td class="text-muted">
+                                          <div class="d-flex justify-content-between">
+                                            <div class="disabled item-action">
+                                              <svg-icon name="more-horizontal"></svg-icon>
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td>
+                                            {{ $filters.formatDuration(track.duration) }}
+                                        </td>
+                                      </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </template>
         </div>
-        <div id="collapse-group-list" class="position-relative collapse-container" v-if="layout.itemLayout === 'list'">
-            <!-- <div class="carousel-navigation d-flex align-items-center">
-                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
-                <svg-icon name="keyboard_arrow_right"></svg-icon>
-            </div> -->
-            <div class="tracks-view container-fluid list-table-view">
-                <!-- <div v-if="displayMode === 'list'" class="row">
-                    <artist-item-list v-for="item in items" :item="item"></artist-item-list>
-                </div> -->
-                <div class="d-flex list-header row">
-                    <span class="col-2 text-muted track-img">
-                        <svg-icon name="Icon-Vinyl"></svg-icon>
-                    </span>
-                    <span class="col-6 text-muted">Title</span>
-                    <span class="col-2 text-muted text-center">
-                        <svg-icon name="Icon-Time"></svg-icon>
-                    </span>
-                </div>
-                <template v-for="(item, index) in videos">
-                    <video-item-list :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item">
-                    </video-item-list><div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
-                        <div class="d-flex ml-2">
-                            <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
-                                <svg-icon name="add"></svg-icon>
-                            </button>
-                            <div>
-                                <img width="260" class="embed-responsive-item" :src="item.src">
-                                <div class="mt-2 d-flex">
-                                    <play-button-secondary :item="item"></play-button-secondary>
-                                    <enqueue-button class="ml-2" :item="item"></enqueue-button>
-                                </div>
-                            </div>
-                            <div class="ml-2">
-                                <h4 class="title mb-0">{{ item.title }}</h4>
-                                <span class="caption">{{ item.duration | formatDuration }}</span>
-                                <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
-                                <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
+    </div>
+</script>
+<script type="text/x-template" id="album-item-list-template">
+    <div class="album-item list-item album-item-list-template col-12 col-sm-6 col-md-6 col-lg-4">
+        <div class="item-img item-border-radius">
+            <img :src="item.src">
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action item-action"></player-button>
             </div>
         </div>
-        <div class="row position-relative" v-if="layout.itemLayout === 'poster'">
-            <!-- <div class="carousel-navigation d-flex align-items-center">
-                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
-                <svg-icon name="keyboard_arrow_right"></svg-icon>
-            </div> -->
-            <video-item-poster class="col-12 col-sm-6 col-md-4 col-lg-2" v-for="(item, index) in videos" :item="item" :key="index"></video-item-poster>
+        <div class="item-body">
+            <router-link to="/album" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link to="/artist" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
+            <div class="item-secondary-action">
+                <div v-on:click="toggleLiked()">
+                    <div v-if="!liked" class="disabled icon-wrapper item-action">
+                        <svg-icon name="favorite_outline"></svg-icon>
+                    </div>
+                    <div v-if="liked" class="disabled icon-wrapper item-action active">
+                        <svg-icon name="favorite"></svg-icon>
+                    </div>
+                </div>
+                <div class="icon-wrapper disabled item-action">
+                    <svg-icon name="more-horizontal"></svg-icon>
+                </div>
+            </div>
         </div>
     </div>
 </script>
-<script type="text/x-template" id="video-item-list-template">
-    <div class="row align-items-center list-table-item">
-      <div class="d-flex justify-content-between col-2">
-        <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
-          <play-button class="item-primary-action item-action m-auto" :item="item"></play-button>
-        </div>
-      </div>
-      <div class="col-6">
-        <span>{{ item.title }}</span>
-      </div>
-      <div class="col-2 text-center">{{ item.duration | formatDuration }}</div>
-      <div class="text-muted col-2">
-        <div class="d-flex justify-content-between">
-          <div class="disabled item-action">
-            <svg-icon name="more-horizontal"></svg-icon>
-          </div>
-        </div>
-      </div>
-    </div>
-</script>
-<script type="text/x-template" id="video-item-grid-template">
-    <div class="video-item grid-item video-item-grid-template">
-        <div class="item-img embed-responsive embed-responsive-16by10">
-            <img class="embed-responsive-item" :src="item.src">
+<script type="text/x-template" id="album-item-grid-template">
+    <div v-on:click="toggleAlbumTracks(item.id)" class="album-item grid-item album-item-grid-template">
+        <div class="item-img embed-responsive embed-responsive-1by1">
+            <img v-if="item.src" class="embed-responsive-item" :src="item.src">
+            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
             <div class="overlay">
-                <play-button :item="item" class="item-primary-action"></play-button>
+                <player-button v-bind:type="'primary'" class="item-primary-action"></player-button>
                 <div class="item-secondary-action">
                     <div class="icon-wrapper">
                         <svg-icon name="more-horizontal"></svg-icon>
                     </div>
                 </div>
             </div>
-            <div v-if="item.quality" class="quality">
-                <span class="quality-tag">{{ item.quality }}</span>
-            </div>
-            <div v-if="item.user" class="user">
-                <img src="">
-            </div>
-            <div v-if="item.progress" class="item-progress-bar-container">
-                <div class="item-progress-bar" :style="{width: item.progress}"></div>
-            </div>
         </div>
-        <div class="item-body px-2">
-            <span class="d-flex align-items-center justify-content-between">
-                <router-link to="/album" class="item-title text-truncate">
-                    <span>{{ item.title }}</span>
-                </router-link>
-                <span class="item-subtitle">{{ item.duration | formatDuration }}</span>
-            </span>
-            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+        <div class="item-body">
+            <router-link to="" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link to="" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
         </div>
     </div>
 </script>
-<script type="text/x-template" id="video-item-poster-template">
-    <div class="video-item grid-item poster-item video-item-poster-template">
-        <div class="item-img embed-responsive embed-responsive-4by6">
-            <img class="embed-responsive-item" :src="item.src">
-            <div class="overlay">
-                <play-button class="item-primary-action" :item="item"></play-button>
-                <div class="item-secondary-action">
-                    <div class="icon-wrapper">
-                        <svg-icon name="more-horizontal"></svg-icon>
-                    </div>
-                </div>
+<script type="text/x-template" id="genre-item-grid-template">
+    <div class="item-people genre-item tag-item genre-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="item-img">
+            <img :src="item.src">
+            <div class="item-body">
+                <span class="item-title text-truncate">{{ item.name }}</span>
+                <span class="item-subtitle text-truncate">{{ item.nbTracks }} tracks</span>
             </div>
-            <div v-if="item.progress" class="item-progress-bar-container">
-                <div class="item-progress-bar" :style="{width: item.progress}"></div>
-            </div>
-        </div>
-        <div class="item-body px-2">
-            <span class="d-flex align-items-center justify-content-between">
-                <router-link to="/album" class="item-title text-truncate">
-                    <span>{{ item.title }}</span>
-                </router-link>
-                <span class="item-subtitle">{{ item.duration | formatDuration }}</span>
-            </span>
-            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+            <div class="overlay"></div>
         </div>
     </div>
 </script>
-<!-- track-sync modal Template -->
-<script type="text/x-template" id="track-sync-modal-template">
+<script type="text/x-template" id="genres-template">
+    <div class="genres-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+        <div class="row" v-if="layout.itemLayout === 'grid'">
+            <genre-item-grid v-for="(item, index) in music.genres" :item="item" :key="index"></genre-item-grid>
+        </div>
+    </div>
+</script>
+<!-- equalizer modal Template -->
+<script type="text/x-template" id="equalizer-modal-template">
     <div>
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Set Track Synchronization</h4>
+                    <h4 class="modal-title">Equalizer</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
-                <div class="modal-body" id="">
-                    Playback Rate
-                    <center id="playbackVal">{{ playbackVal }}</center>
-                    <input type="range" name="playbackInput" id="playbackInput" min="-20" max="20" step="0.1"/>
-                    <br>
-                    Audio Delay
-                    <center id="audioDelayVal">{{ audioDelayVal }}</center>
-                    <input type="range" name="audioDelayInput" id="audioDelayInput" min="-20" max="20" step="0.1"/>
-                    <br>
-                    Subtitle Delay
-                    <center id="subDelayVal">{{ subDelayVal }}</center>
-                    <input type="range" name="subDelayInput" id="subDelayInput" min="-20" max="20" step="0.1"/>
+                <div class="modal-body">
+                    <input type="range" name="equalizerInput" id="equalizerInput" min="-20" max="20" step="0.1"/>
+                    <p class="center"  id="eqVal">{{ eqVal }}</p>
                 </div>
                 <div class="modal-footer">
                 </div>
@@ -596,50 +1052,10 @@
         </div>
     </div>
 </script>
-<script type="text/x-template" id="item-layout-button-template">
-    <button v-on:click="toggleItemLayout()" class="btn btn-circle active">
-        <svg-icon v-if="layout && layout.itemLayout === 'list'" name="format_list_bulleted"></svg-icon>
-        <svg-icon v-if="layout && layout.itemLayout === 'grid'" name="grid_view"></svg-icon>
+<script type="text/x-template" id="c-button-template">
+    <button v-on:click="$emit('click', $event)" class="btn" v-bind:class="classname">
+        <slot></slot>
     </button>
-</script>
-<script type="text/x-template" id="grid-item-template">
-    <div class="grid-item discover-services-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
-        <div :class="item.additionalClass" class="item-img embed-responsive embed-responsive-1by1 img-contain">
-            <img v-if="item.src" class="embed-responsive-item p-4" :src="item.src">
-            <div v-else="item.icon" class="embed-responsive-item" :class="item.additionalItemClass">
-                <svg-icon :name="item.icon"></svg-icon>
-            </div>
-        </div>
-        <div class="item-body">
-            <router-link :to="item.titleRoute || '/album'" class="item-title text-truncate">{{ item.title }}</router-link>
-            <router-link v-if="item.subtitle" :to="item.subtitleRoute || '/artist'" class="item-subtitle text-truncate">{{ item.subtitle }}</router-link>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="artists-template">
-    <div class="artits-view container-fluid">
-        <!-- <div v-if="displayMode === 'list'" class="row">
-            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
-        </div> -->
-        <div class="row" v-if="layout.itemLayout === 'grid'">
-            <artist-item-grid v-for="(item, index) in music.artists" :item="item" :key="index"></artist-item-grid>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="artist-item-grid-template">
-    <router-link :to="'/music/artists/' + item.id" class="item-people artist-item grid-item artist-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
-        <div class="item-img embed-responsive embed-responsive-1by1">
-            <img v-if="item.src" class="embed-responsive-item" :src="item.src">
-            <svg-icon v-if="!item.src" name="placeholder-artist" class="placeholder-artist-icon"></svg-icon>
-            <div class="overlay">
-                <play-button class="item-primary-action"></play-button>
-            </div>
-        </div>
-        <div class="item-body">
-            <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
-            <span class="item-subtitle text-truncate">{{ item.nbTracks }} songs</span>
-        </div>
-    </router-link>
 </script>
 <script type="text/x-template" id="artists-detail-template">
     <div class="artits-detail-view container-fluid">
@@ -662,456 +1078,122 @@
         </div>
     </div>
 </script>
-<script type="text/x-template" id="enqueue-button-template">
-    <button v-on:click="enqueueItem()" class="btn btn-sm enqueue-button">
-        <svg-icon name="playlist_add"></svg-icon> Enqueue
+<script type="text/x-template" id="artists-template">
+    <div class="artits-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+        <div class="row" v-if="layout.itemLayout === 'grid'">
+            <artist-item-grid v-for="(item, index) in music.artists" :item="item" :key="index"></artist-item-grid>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="artist-item-grid-template">
+    <router-link :to="'/music/artists/' + item.id" class="item-people artist-item grid-item artist-item-grid-template col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+        <div class="item-img embed-responsive embed-responsive-1by1">
+            <img v-if="item.src" class="embed-responsive-item" :src="item.src">
+            <svg-icon v-if="!item.src" name="placeholder-artist" class="placeholder-artist-icon"></svg-icon>
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action"></player-button>
+            </div>
+        </div>
+        <div class="item-body">
+            <router-link to="" class="item-title text-truncate">{{ item.name }}</router-link>
+            <span class="item-subtitle text-truncate">{{ item.nbTracks }} songs</span>
+        </div>
+    </router-link>
+</script>
+<script type="text/x-template" id="track-item-list-template">
+    <div class="row align-items-center list-table-item">
+      <div class="d-flex justify-content-between col-1">
+        <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
+          <player-button v-bind:type="'primary'" class="item-primary-action item-action m-auto" :item="item"></player-button>
+        </div>
+      </div>
+      <div class="col-6">
+        <span>{{ item.title }}</span>
+      </div>
+      <div class="col-1">
+        <span><router-link to="">{{ item.artist }}</router-link></span>
+      </div>
+      <div class="col-1">
+        <span><router-link to="">{{ item.album }}</router-link></span>
+      </div>
+      <div class="col-1 text-center">{{ $filters.formatDuration(item.duration) }}</div>
+      <div class="col-1 text-center">
+        <span class="text-muted">{{ index + 1 }}</span>
+      </div>
+      <div class="text-muted col-1">
+        <div class="d-flex justify-content-between">
+          <div class="disabled item-action">
+            <svg-icon name="more-horizontal"></svg-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+</script>
+<script type="text/x-template" id="tracks-template">
+    <div class="tracks-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+        </div> -->
+
+        <div id="collapse-group-list" class="position-relative collapse-container">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <div class="tracks-view container-fluid list-table-view">
+                <!-- <div v-if="displayMode === 'list'" class="row">
+                    <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+                </div> -->
+                <div class="d-flex list-header">
+                    <span class="col-1 text-muted text-center">
+                        <svg-icon name="Icon-Vinyl"></svg-icon>
+                    </span>
+                    <span class="col-6 text-muted">Title</span>
+                    <span class="col-1 text-muted">Artist</span>
+                    <span class="col-1 text-muted">Album</span>
+                    <span class="col-1 text-muted text-center">
+                        <svg-icon name="Icon-Time"></svg-icon>
+                    </span>
+                    <span class="col-1 text-muted text-center">Track</span>
+                    <span class="col-1 text-muted"></span>
+                </div>
+                <template v-for="(item, index) in music.tracks" :key="item">
+                    <track-item-list data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" :index="index"></track-item-list>
+                    <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
+                        <div class="d-flex ml-2">
+                            <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                                <svg-icon name="add"></svg-icon>
+                            </button>
+                            <div>
+                                <img width="260" class="embed-responsive-item" :src="item.src">
+                                <div class="mt-2 d-flex">
+                                    <player-button v-bind:type="'secondary'" :item="item"></player-button>
+                                    <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                                </div>
+                            </div>
+                            <div class="ml-2">
+                                <h4 class="title mb-0">{{ item.title }}</h4>
+                                <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                                <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
+                                <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="item-layout-button-template">
+    <button v-on:click="toggleItemLayout()" class="btn btn-circle active">
+        <svg-icon v-if="layout && layout.itemLayout === 'list'" name="format_list_bulleted"></svg-icon>
+        <svg-icon v-if="layout && layout.itemLayout === 'grid'" name="grid_view"></svg-icon>
     </button>
 </script>
 <script type="text/x-template" id="svg-icon-template">
     <span class="svg-icon"></span>
-</script>
-<!-- stream-manager modal Template -->
-<script type="text/x-template" id="stream-manager-modal-template">
-    <div>
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Stream Manager</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="albums-template">
-    <div class="albums-view container-fluid">
-        <div v-if="layout.itemLayout === 'list'" class="row">
-            <!-- <album-item-list v-for="(item, index) in music.albums" :item="item" :key="index"></album-item-list> -->
-        </div>
-        <div id="album-collapse-group" class="position-relative collapse-container album-collapse-container" v-if="layout.itemLayout === 'grid'">
-            <template v-for="(item, index) in getAlbums()">
-                <album-item-grid :key="index" data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 collapse-item"></album-item-grid><div class="collapse album-collapse-detail collapse-detail" v-bind:id="'collapse-album-' + item.id" data-parent="#album-collapse-group">
-                    <div class="d-flex ml-2">
-                        <!-- <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
-                            <svg-icon name="add"></svg-icon>
-                        </button> -->
-                        <div>
-                            <img v-if="item.src" width="171" height="171" class="embed-responsive-item item-img" :src="item.src">
-                            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon item-img"></svg-icon>
-                            <div class="mt-2 d-flex">
-                                <play-button-secondary :item="item"></play-button-secondary>
-                                <enqueue-button class="ml-2" :item="item"></enqueue-button>
-                            </div>
-                        </div>
-                        <div class="ml-2 w-100">
-                            <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
-                                <svg-icon name="add"></svg-icon>
-                            </button>
-                            <h4 class="title mb-0">{{ item.title }}</h4>
-                            <span class="caption">{{ item.duration | formatDuration }}</span>
-                            <table class="table table-hover table-item">
-                                <thead>
-                                  <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Title</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"><svg-icon name="Icon-Time"></svg-icon></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(track, index) in music.albumTracks[item.id]">
-                                        <th scope="row" class="d-flex justify-content-between">
-                                            <div class="item-img">
-                                                <span>{{ index + 1 }}</span>
-                                                <play-button class="item-primary-action item-action" :item="item"></play-button>
-                                            </div>
-                                          </th>
-                                        <td>
-                                            {{ track.title }}
-                                        </td>
-                                        <td class="text-muted">
-                                          <div class="d-flex justify-content-between">
-                                            <div class="disabled item-action">
-                                              <svg-icon name="more-horizontal"></svg-icon>
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td>
-                                            {{ track.duration | formatDuration }}
-                                        </td>
-                                      </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="album-item-grid-template">
-    <div v-on:click="toggleAlbumTracks(item.id)" class="album-item grid-item album-item-grid-template">
-        <div class="item-img embed-responsive embed-responsive-1by1">
-            <img v-if="item.src" class="embed-responsive-item" :src="item.src">
-            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
-            <div class="overlay">
-                <play-button class="item-primary-action"></play-button>
-                <div class="item-secondary-action">
-                    <div class="icon-wrapper">
-                        <svg-icon name="more-horizontal"></svg-icon>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="item-body">
-            <router-link to="" class="item-title text-truncate">{{ item.title }}</router-link>
-            <router-link to="" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="album-item-list-template">
-    <div class="album-item list-item album-item-list-template col-12 col-sm-6 col-md-6 col-lg-4">
-        <div class="item-img item-border-radius">
-            <img :src="item.src">
-            <div class="overlay">
-                <play-button class="item-primary-action item-action"></play-button>
-            </div>
-        </div>
-        <div class="item-body">
-            <router-link to="/album" class="item-title text-truncate">{{ item.title }}</router-link>
-            <router-link to="/artist" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
-            <div class="item-secondary-action">
-                <div v-on:click="toggleLiked()">
-                    <div v-if="!liked" class="disabled icon-wrapper item-action">
-                        <svg-icon name="favorite_outline"></svg-icon>
-                    </div>
-                    <div v-if="liked" class="disabled icon-wrapper item-action active">
-                        <svg-icon name="favorite"></svg-icon>
-                    </div>
-                </div>
-                <div class="icon-wrapper disabled item-action">
-                    <svg-icon name="more-horizontal"></svg-icon>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="music-view-template">
-    <div class="music-view h-100">
-        <div class="fixed-top secondary-navbar">
-            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
-                <div class="d-flex align-items-center flex-1 justify-content-start">
-                    <item-layout-button class="disabled"></item-layout-button>
-                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
-                </div>
-                <div class="d-flex align-items-center justify-content-center">
-                    <router-link to="/music/albums" exact-active-class="active" class="btn btn-link">Albums</router-link>
-                    <router-link to="/music/artists" active-class="active" class="btn btn-link">Artists</router-link>
-                    <router-link to="/music/genres" exact-active-class="active" class="btn btn-link">Genres</router-link>
-                    <router-link to="/music/tracks" exact-active-class="active" class="btn btn-link">Tracks</router-link>
-                    <router-link to="/music/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
-                </div>
-                <div class="d-flex flex-1 justify-content-end h-100">
-                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
-                        <svg-icon name="playlist_play"></svg-icon>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid px-0 h-100" :class="'push'">
-            <div class="row collapse show no-gutters d-flex h-100 position-relative">
-                <div class="col container-view">
-                    <transition name="fade" mode="out-in">
-                        <router-view></router-view>
-                    </transition>
-                </div>
-                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
-                    <!-- fixed sidebar -->
-                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
-                        <playlist></playlist>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="music-playlists-view-template">
-    <div class="music-playlists-view pt-4">
-        <playlists></playlists>
-    </div>
-</script>
-<script type="text/x-template" id="music-genres-view-template">
-    <div class="music-genres-view pt-4">
-        <genres></genres>
-    </div>
-</script>
-<script type="text/x-template" id="music-tracks-view-template">
-    <div class="music-tracks-view pt-4">
-        <tracks></tracks>
-    </div>
-</script>
-<script type="text/x-template" id="music-artists-detail-view-template">
-    <div class="music-artists-detail-view">
-        <artists-detail></artists-detail>
-    </div>
-</script>
-<script type="text/x-template" id="music-artists-view-template">
-    <div class="music-artists-view pt-4">
-        <artists></artists>
-    </div>
-</script>
-<script type="text/x-template" id="music-albums-view-template">
-    <div class="music-albums-view pt-4">
-        <albums></albums>
-    </div>
-</script>
-<script type="text/x-template" id="video-playlists-view-template">
-    <div class="video-playlists-view"></div>
-</script>
-<script type="text/x-template" id="video-all-view-template">
-    <div class="video-all-view">
-        <!-- <continue-watching></continue-watching> -->
-        <videos></videos>
-    </div>
-</script>
-<script type="text/x-template" id="video-tvshows-view-template">
-    <div class="video-tvshows-view"></div>
-</script>
-<script type="text/x-template" id="video-view-template">
-    <div class="video-view h-100 pt-4">
-        <div class="fixed-top secondary-navbar">
-            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
-                <div class="d-flex align-items-center flex-1 justify-content-start">
-                    <item-layout-button></item-layout-button>
-                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
-                </div>
-                <div class="d-flex align-items-center justify-content-center">
-                    <router-link to="/video/all" exact-active-class="active" class="btn btn-link">All</router-link>
-                    <router-link to="/video/movies" exact-active-class="active" class="btn btn-link disabled">Movies</router-link>
-                    <router-link to="/video/tvshows" exact-active-class="active" class="btn btn-link disabled">Tv Shows</router-link>
-                    <router-link to="/video/playlists" exact-active-class="active" class="btn btn-link disabled">Playlists</router-link>
-                </div>
-                <div class="d-flex flex-1 justify-content-end h-100">
-                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
-                        <svg-icon name="playlist_play"></svg-icon>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid px-0 h-100" :class="'push'">
-            <div class="row collapse show no-gutters d-flex h-100 position-relative">
-                <div class="col container-view">
-                    <transition name="fade" mode="out-in">
-                        <router-view></router-view>
-                    </transition>
-                </div>
-                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
-                    <!-- fixed sidebar -->
-                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
-                        <playlist></playlist>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="video-movies-view-template">
-    <div class="video-movies-view"></div>
-</script>
-<script type="text/x-template" id="discover-home-view-template">
-    <div class="discover-home-view">
-    </div>
-</script>
-<script type="text/x-template" id="discover-view-template">
-    <div class="discover-view h-100 pt-4">
-        <div class="fixed-top secondary-navbar">
-            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
-                <div class="d-flex align-items-center flex-1 justify-content-start">
-                    <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
-                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
-                </div>
-                <div class="d-flex align-items-center justify-content-center">
-                    <router-link to="/discover/home" active-class="active" class="btn btn-link">Home</router-link>
-                    <router-link to="/discover/services" active-class="active" class="btn btn-link">Services</router-link>
-                    <router-link to="/discover/url" active-class="active" class="btn btn-link">URL</router-link>
-                </div>
-                <div class="d-flex flex-1 justify-content-end h-100">
-                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
-                        <svg-icon name="playlist_play"></svg-icon>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid px-0 h-100" :class="'push'">
-            <div class="row collapse show no-gutters d-flex h-100 position-relative">
-                <div class="col container-view">
-                    <transition name="fade" mode="out-in">
-                        <router-view></router-view>
-                    </transition>
-                </div>
-                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
-                    <!-- fixed sidebar -->
-                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
-                        <playlist></playlist>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="discover-url-view-template">
-    <div class="discover-url-view">
-    </div>
-</script>
-<script type="text/x-template" id="discover-services-view-template">
-    <div class="discover-services-view">
-        <div class="row">
-            <grid-item :item="addService"></grid-item>
-            <template v-for="service in mainServices">
-                <grid-item :item="service"></grid-item>
-            </template>
-        </div>
-        <div class="row">
-            <template v-for="service in secondaryServices">
-                <grid-item :item="service"></grid-item>
-            </template>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="discover-services-tv-view-template">
-    <div class="discover-services-tv-view container-fluid">
-        <div v-if="displayMode === 'list'" class="row">
-            <grid-list v-for="(item, index) in items" :item="item" :key="index"></grid-list>
-        </div>
-        <div class="row" v-if="displayMode === 'grid'">
-            <grid-item v-for="(item, index) in items" :item="item" :key="index"></grid-item>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="network-view-template">
-    <div class="network-view h-100 pt-4">
-        <div class="fixed-top secondary-navbar">
-            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
-                <div class="d-flex align-items-center flex-1 justify-content-start">
-                    <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
-                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
-                </div>
-                <div class="d-flex align-items-center justify-content-center"></div>
-                <div class="d-flex flex-1 justify-content-end h-100">
-                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
-                        <svg-icon name="playlist_play"></svg-icon>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid px-0 h-100" :class="'push'">
-            <div class="row collapse show no-gutters d-flex h-100 position-relative">
-                <div class="col container-view">
-
-                </div>
-                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
-                    <!-- fixed sidebar -->
-                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
-                        <playlist></playlist>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="watch-view-template">
-    <div class="watch-view h-100">
-        <div>
-            <div class="container-fluid fixed-top primary-navbar">
-                <div class="d-flex h-100 position-relative show collapse justify-content-between align-items-center">
-                    <div class="d-flex align-items-center flex-1 justify-content-start">
-                        <router-link to="/">
-                            <button class="btn btn-circle">
-                                <svg-icon name="keyboard_arrow_left"></svg-icon>
-                            </button>
-                        </router-link>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center"></div>
-                    <div class="d-flex flex-1 justify-content-end h-100">
-                        <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
-                            <svg-icon name="playlist_play"></svg-icon>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid px-0" :class="'overlay'">
-            <div class="row collapse show no-gutters d-flex h-100 position-relative">
-                <div class="col">
-                    <media-player></media-player>
-                </div>
-                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
-                    <!-- fixed sidebar -->
-                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
-                        <playlist></playlist>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/x-template" id="browse-view-template">
-    <div class="browse-view h-100" :class="{ 'media-player-opened': audioPlayerOpened }">
-        <div class="container-fluid fixed-top primary-navbar d-flex align-content-center align-items-center text-center justify-content-center">
-            <div class="d-flex align-items-center flex-1 justify-content-start">
-                <img width="23" height="26" src="http://images.videolan.org/images/VLC-IconSmall.png">
-                <span class="ml-2">VLC</span>
-            </div>
-            <ul class="nav d-flex align-items-center justify-content-center">
-                <li class="nav-item">
-                    <router-link title="Video" active-class="active" to="/video" class="btn btn-icon btn-link d-flex flex-column">
-                        <svg-icon name="local_movies_outline"></svg-icon>
-                        <span>Video</span>
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link title="Music" active-class="active" to="/music" class="btn btn-icon btn-link d-flex flex-column">
-                        <svg-icon name="audiotrack_outline"></svg-icon>
-                        <span>Music</span>
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link title="Network" active-class="active" to="/network" class="disabled btn btn-icon btn-link d-flex flex-column">
-                        <svg-icon name="wifi"></svg-icon>
-                        <span>Browse</span>
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link title="Discover" active-class="active" to="/discover" class="disabled btn btn-icon btn-link d-flex flex-column">
-                        <svg-icon name="explore"></svg-icon>
-                        <span>Discover</span>
-                    </router-link>
-                </li>
-            </ul>
-            <div class="d-flex flex-1 justify-content-end h-100">
-                <button v-on:click="" class="disabled btn-circle mr-2"><svg-icon name="search"></svg-icon></button>
-                <button v-on:click="" class="disabled btn-circle"><svg-icon name="more-horizontal"></svg-icon></button>
-            </div>
-        </div>
-        <transition name="fade" mode="out-in">
-            <router-view></router-view>
-        </transition>
-        <transition name="slide-fade">
-            <media-player
-                v-if="audioPlayerOpened"
-                canPlay="canPlay"
-                ended="ended"
-                src="">
-            </media-player>
-        </transition>
-    </div>
-</script>
-<script type="text/x-template" id="main-view-template">
-    <router-view></router-view>
 </script>
 </html>
