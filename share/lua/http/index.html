@@ -15,6 +15,8 @@
     <script src="dist/js/script.min.js"></script>
 </head>
 <body>
+    <div id="seek-overlay"></div>
+    <div id="volume-overlay"></div>
     <div id="app">
         <!-- <sidenav></sidenav> -->
         <main-view></main-view>
@@ -156,7 +158,6 @@
 </script>
 <script type="text/x-template" id="watch-view-template">
     <div class="watch-view h-100">
-        <div id="shortcuts-overlay"></div>
         <div>
             <div class="container-fluid fixed-top primary-navbar">
                 <div class="d-flex h-100 position-relative show collapse justify-content-between align-items-center">
@@ -408,15 +409,15 @@
         </div>
     </div>
 </script>
-<script type="text/x-template" id="seek-loader-template">
-    <teleport to="shortcuts-overlay">
-        <div class="seek-loader">
-            <div v-if="value > 0">
-                Avancer de {{ value }}
+<script type="text/x-template" id="seek-overlay-template">
+    <teleport to="#seek-overlay">
+        <div>
+            <div class="seek-forward" v-if="value > 0">
+                <p class="icon-control">+{{ value }} <svg-icon name="forward"></svg-icon></p>
             </div>
 
-            <div v-if="value < 0">
-                Reculer de {{ value }}
+            <div class="seek-backward" v-if="value < 0">
+                <p class="icon-control"><svg-icon name="backward"></svg-icon> {{ value }}</p>
             </div>
         </div>
     </teleport>
@@ -485,8 +486,22 @@
                 </div>
             </div>
         </div>
-        <seek-loader :value="incrementedSeekIncrement"></seek-loader>
+        <seek-overlay :value="incrementedSeekIncrement"></seek-overlay>
+        <volume-overlay :value="incrementedVolumeIncrement"></volume-overlay>
     </div>
+</script>
+<script type="text/x-template" id="volume-overlay-template">
+    <teleport to="#volume-overlay">
+        <div>
+            <div class="volume-up" v-if="value > 0">
+                <p class="icon-control"><svg-icon name="volume_up"></svg-icon> +{{ value }}</p>
+            </div>
+
+            <div class="volume-down" v-if="value < 0">
+                <p class="icon-control"><svg-icon name="volume_down"></svg-icon> {{ value }}</p>
+            </div>
+        </div>
+    </teleport>
 </script>
 <!-- Button Template -->
 <script type="text/x-template" id="button-template">

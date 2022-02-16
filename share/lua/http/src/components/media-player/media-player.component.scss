@@ -131,3 +131,23 @@
         font-size: 0.8rem;
     }
 }
+
+.icon-control {
+    color: whitesmoke;
+    background-color: rgb(29, 29, 29);
+    margin: 20px 0 20px;
+    display: flex;
+    font-size: xx-large;
+    padding: 10px;
+}
+
+.icon-control > span {
+    display: block;
+    height: 50px;
+    width: 50px;
+}
+
+.icon-control > span > svg {
+    height: 50px;
+    width: 50px;
+}

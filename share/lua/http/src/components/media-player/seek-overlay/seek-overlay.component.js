@@ -1,4 +1,4 @@
 export default {
-    template: '#seek-loader-template',
+    template: '#seek-overlay-template',
     props: ['value'],
 };

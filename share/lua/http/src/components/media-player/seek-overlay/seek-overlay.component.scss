@@ -1,0 +1,13 @@
+.seek-forward {
+    z-index: 20000; // Higher than bootstrap popin
+    position: absolute;
+    top: calc(50% - 25px);
+    right: 10%;
+}
+
+.seek-backward {
+    z-index: 20000; // Higher than bootstrap popin
+    position: absolute;
+    top: calc(50% - 25px);
+    left: 10%;
+}

@@ -1,0 +1,13 @@
+.volume-up {
+    z-index: 20000; // Higher than bootstrap popin
+    position: absolute;
+    left: calc(50% - 25px);
+    bottom: 20%;
+}
+
+.volume-down {
+    z-index: 20000; // Higher than bootstrap popin
+    position: absolute;
+    left: calc(50% - 25px);
+    bottom: 20%;
+}

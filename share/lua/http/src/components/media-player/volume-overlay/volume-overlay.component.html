@@ -1,0 +1,13 @@
+<script type="text/x-template" id="volume-overlay-template">
+    <teleport to="#volume-overlay">
+        <div>
+            <div class="volume-up" v-if="value > 0">
+                <p class="icon-control"><svg-icon name="volume_up"></svg-icon> +{{ value }}</p>
+            </div>
+
+            <div class="volume-down" v-if="value < 0">
+                <p class="icon-control"><svg-icon name="volume_down"></svg-icon> {{ value }}</p>
+            </div>
+        </div>
+    </teleport>
+</script>

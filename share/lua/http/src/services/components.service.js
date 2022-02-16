@@ -19,7 +19,8 @@ import ItemLayoutButton from '../components/item-layout-button/item-layout-butto
 import Library from '../components/library/library.component.js';
 import LibraryItem from '../components/library/library-item/library-item.component.js';
 import MediaPlayer from '../components/media-player/media-player.component.js';
-import SeekLoader from '../components/media-player/seek-loader/seek-loader.component.js';
+import SeekOverlay from '../components/media-player/seek-overlay/seek-overlay.component.js';
+import VolumeOverlay from '../components/media-player/volume-overlay/volume-overlay.component.js';
 import PlayerButton from '../components/player-button/player-button.component.js';
 import PlaylistButtons from '../components/playlist/playlist-buttons.component.js';
 import PlaylistAudioItem from '../components/playlist/playlist-audio-item.component.js';
@@ -117,8 +118,12 @@ export default [
         component: MediaPlayer,
     },
     {
-        name: 'SeekLoader',
-        component: SeekLoader,
+        name: 'SeekOverlay',
+        component: SeekOverlay,
+    },
+    {
+        name: 'VolumeOverlay',
+        component: VolumeOverlay,
     },
     {
         name: 'PlayerButton',
