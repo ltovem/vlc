@@ -3194,6 +3194,11 @@ PKG_CHECK_MODULES([GL], [gl], [
       GL_LIBS="-lopengl32"
     ])
   ])
+  AS_IF([test "${SYS}" = "darwin" -a "${HAVE_OSX}" = "1"],[
+    have_gl="yes"
+    GL_CFLAGS=""
+    GL_LIBS="-Wl,-framework,OpenGL"
+  ])
   AC_MSG_CHECKING([for OpenGL])
   AC_MSG_RESULT([${have_gl}])
 ])

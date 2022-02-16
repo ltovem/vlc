@@ -56,11 +56,10 @@ libwindow_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 libwindow_macosx_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) \
 	-fobjc-arc -fobjc-exceptions
 
-libvout_macosx_plugin_la_SOURCES = video_output/macosx.m \
-	$(OPENGL_VOUT_COMMONSOURCES)
+libvout_macosx_plugin_la_SOURCES = video_output/macosx.m
+libvout_macosx_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc
 libvout_macosx_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DHAVE_GL_CORE_SYMBOLS
-libvout_macosx_plugin_la_LIBADD = libvlc_opengl.la
-libvout_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)' \
+libvout_macosx_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	-Wl,-framework,OpenGL,-framework,Cocoa
 
 libcaopengllayer_plugin_la_SOURCES = video_output/caopengllayer.m \
@@ -196,26 +195,14 @@ libdirect3d11_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)'
 vout_LTLIBRARIES += $(LTLIBdirect3d11)
 EXTRA_LTLIBRARIES += libdirect3d11_plugin.la
 
-libglwin32_plugin_la_SOURCES = $(OPENGL_VOUT_COMMONSOURCES) \
-	video_output/win32/glwin32.c \
-	video_output/win32/common.c video_output/win32/common.h \
-	video_output/win32/events.c video_output/win32/events.h \
-	video_output/win32/sensors.cpp \
-	video_output/win32/win32touch.c video_output/win32/win32touch.h
 libwgl_plugin_la_SOURCES = video_output/win32/wgl.c
-
-libglwin32_plugin_la_LIBADD = libchroma_copy.la -lopengl32 -lgdi32 $(LIBCOM) -luuid libvlc_opengl.la
 libwgl_plugin_la_LIBADD = -lopengl32 -lgdi32 libvlc_opengl.la
-
-libglwin32_plugin_la_CFLAGS = $(AM_CFLAGS) $(OPENGL_COMMONCFLAGS)
 libwgl_plugin_la_CFLAGS = $(AM_CFLAGS) $(OPENGL_COMMONCFLAGS)
-
-libglwin32_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)'
 libwgl_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(voutdir)'
 
 if HAVE_WIN32_DESKTOP
-vout_LTLIBRARIES += $(LTLIBglwin32) $(LTLIBwgl)
-EXTRA_LTLIBRARIES += libglwin32_plugin.la libwgl_plugin.la
+vout_LTLIBRARIES += $(LTLIBwgl)
+EXTRA_LTLIBRARIES += libwgl_plugin.la
 endif
 
 libwingdi_plugin_la_SOURCES = video_output/win32/wingdi.c \

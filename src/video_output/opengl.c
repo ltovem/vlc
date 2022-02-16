@@ -38,6 +38,9 @@ struct vlc_gl_priv_t
     vlc_gl_t gl;
     vlc_atomic_rc_t rc;
 
+    vlc_sem_t sem_client;
+    atomic_bool dirty;
+
     struct {
         const uint8_t* (*GetString)(uint32_t);
         const uint8_t* (*GetStringi)(uint32_t, uint32_t);
@@ -60,8 +63,10 @@ static int vlc_gl_start(void *func, bool forced, va_list ap)
     return ret;
 }
 
-vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
-                        unsigned flags, const char *name)
+vlc_gl_t *(vlc_gl_Create)(
+        const struct vout_display_cfg *restrict cfg,
+        unsigned flags, const char *name,
+        const struct vlc_gl_callbacks *cbs, void *owner)
 {
     vout_window_t *wnd = cfg->window;
     struct vlc_gl_priv_t *glpriv;
@@ -91,9 +96,13 @@ vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
     gl->api_type = api_type;
     gl->surface = wnd;
     gl->device = NULL;
+    gl->owner.cbs = cbs;
+    gl->owner.sys = owner;
     glpriv->vt.GetString = NULL;
     glpriv->vt.GetStringi = NULL;
     glpriv->vt.GetIntegerv = NULL;
+    vlc_sem_init(&glpriv->sem_client, 0);
+    atomic_init(&glpriv->dirty, false);
 
     gl->module = vlc_module_load(gl, type, name, true, vlc_gl_start, gl,
                                  cfg->display.width, cfg->display.height);
@@ -102,8 +111,11 @@ vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
         vlc_object_delete(gl);
         return NULL;
     }
-    assert(gl->make_current && gl->release_current && gl->swap
-        && gl->get_proc_address);
+    assert(gl->ops);
+    assert(gl->ops->make_current);
+    assert(gl->ops->release_current);
+    assert(gl->ops->swap);
+    assert(gl->ops->get_proc_address);
     vlc_atomic_rc_init(&glpriv->rc);
 
     return &glpriv->gl;
@@ -112,7 +124,9 @@ vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *restrict cfg,
 vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
                                  struct vlc_decoder_device *device,
                                  unsigned width, unsigned height,
-                                 unsigned flags, const char *name)
+                                 unsigned flags, const char *name,
+                                 const struct vlc_gl_callbacks *cbs,
+                                 void *owner)
 {
     struct vlc_gl_priv_t *glpriv;
     const char *type;
@@ -137,6 +151,12 @@ vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
     if (unlikely(glpriv == NULL))
         return NULL;
 
+    glpriv->vt.GetString = NULL;
+    glpriv->vt.GetStringi = NULL;
+    glpriv->vt.GetIntegerv = NULL;
+    vlc_sem_init(&glpriv->sem_client, 0);
+    atomic_init(&glpriv->dirty, false);
+
     vlc_gl_t *gl = &glpriv->gl;
 
     gl->api_type = api_type;
@@ -144,6 +164,8 @@ vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
     gl->offscreen_chroma_out = VLC_CODEC_UNKNOWN;
     gl->offscreen_vflip = false;
     gl->offscreen_vctx_out = NULL;
+    gl->owner.sys = owner;
+    gl->owner.cbs = cbs;
 
     gl->surface = NULL;
     gl->device = device ? vlc_decoder_device_Hold(device) : NULL;
@@ -160,10 +182,10 @@ vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
 
     vlc_atomic_rc_init(&glpriv->rc);
 
-    assert(gl->make_current);
-    assert(gl->release_current);
-    assert(gl->swap_offscreen);
-    assert(gl->get_proc_address);
+    assert(gl->ops->make_current);
+    assert(gl->ops->release_current);
+    assert(gl->ops->swap_offscreen);
+    assert(gl->ops->get_proc_address);
 
     return &glpriv->gl;
 }
@@ -180,8 +202,8 @@ void vlc_gl_Release(vlc_gl_t *gl)
     if (!vlc_atomic_rc_dec(&glpriv->rc))
         return;
 
-    if (gl->destroy != NULL)
-        gl->destroy(gl);
+    if (gl->ops->close != NULL)
+        gl->ops->close(gl);
 
     if (gl->device)
         vlc_decoder_device_Release(gl->device);
@@ -253,6 +275,29 @@ bool vlc_gl_HasExtension(vlc_gl_t *gl, const char *extension)
     return false;
 }
 
+void vlc_gl_RenderNext(vlc_gl_t *gl)
+{
+    struct vlc_gl_priv_t *glpriv = (struct vlc_gl_priv_t *)gl;
+
+    atomic_store_explicit(&glpriv->dirty, true, memory_order_release);
+    if (gl->ops && gl->ops->render_next)
+        gl->ops->render_next(gl);
+    vlc_sem_wait(&glpriv->sem_client);
+}
+
+void vlc_gl_ReportRender(vlc_gl_t *gl)
+{
+    struct vlc_gl_priv_t *glpriv = (struct vlc_gl_priv_t *)gl;
+
+    bool dirty = atomic_exchange_explicit(&glpriv->dirty, false, memory_order_acquire);
+    if (!dirty)
+        return;
+
+    if (gl->owner.cbs && gl->owner.cbs->render)
+        gl->owner.cbs->render(gl, gl->owner.sys);
+    vlc_sem_post(&glpriv->sem_client);
+}
+
 #include <vlc_vout_window.h>
 
 typedef struct vlc_gl_surface
@@ -279,9 +324,10 @@ static void vlc_gl_surface_ResizeNotify(vout_window_t *surface,
     vlc_mutex_unlock(&sys->lock);
 }
 
-vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *obj,
-                                const vout_window_cfg_t *cfg,
-                                struct vout_window_t **restrict wp)
+vlc_gl_t *(vlc_gl_surface_Create)(
+        vlc_object_t *obj, const vout_window_cfg_t *cfg,
+        const struct vlc_gl_callbacks *gl_cbs, void *gl_owner,
+        struct vout_window_t **restrict wp)
 {
     vlc_gl_surface_t *sys = malloc(sizeof (*sys));
     if (unlikely(sys == NULL))
@@ -326,7 +372,8 @@ vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *obj,
     }
     vlc_mutex_unlock(&sys->lock);
 
-    vlc_gl_t *gl = vlc_gl_Create(&dcfg, VLC_OPENGL, NULL);
+    vlc_gl_t *gl = vlc_gl_CreateWithOwner(&dcfg, VLC_OPENGL,
+            NULL, gl_cbs, gl_owner);
     if (gl == NULL) {
         vout_window_Disable(surface);
         vout_window_Delete(surface);

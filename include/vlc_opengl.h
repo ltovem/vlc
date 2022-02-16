@@ -45,6 +45,31 @@ enum vlc_gl_api_type {
     VLC_OPENGL_ES2,
 };
 
+struct vlc_gl_callbacks {
+    void (*init)(struct vlc_gl_t *gl, void *data);
+    void (*render)(struct vlc_gl_t *gl, void *data);
+};
+
+struct vlc_gl_operations
+{
+    union {
+        void (*swap)(vlc_gl_t *);
+        picture_t *(*swap_offscreen)(vlc_gl_t *);
+    };
+
+    int  (*make_current)(vlc_gl_t *gl);
+    void (*release_current)(vlc_gl_t *gl);
+    void (*resize)(vlc_gl_t *gl, unsigned width, unsigned height);
+    void*(*get_proc_address)(vlc_gl_t *gl, const char *symbol);
+    void (*close)(vlc_gl_t *gl);
+
+    /* TODO: it might have been better to have an argument there, but it
+     * is not symmetric with (*init). Maybe a wait init function instead?
+     * Otherwise, having (*init) in callbacks might provide handling for
+     * context lost and such. */
+    void (*render_next)(vlc_gl_t *gl);
+};
+
 struct vlc_gl_t
 {
     struct vlc_object_t obj;
@@ -55,13 +80,9 @@ struct vlc_gl_t
     struct vlc_decoder_device *device;
     union {
         struct { /* on-screen */
-            void (*swap)(vlc_gl_t *);
-
             struct vout_window_t *surface;
         };
         struct { /* off-screen */
-            picture_t *(*swap_offscreen)(vlc_gl_t *);
-
             vlc_fourcc_t offscreen_chroma_out;
             struct vlc_video_context *offscreen_vctx_out;
             /* Flag to indicate if the OpenGL implementation produces upside-down
@@ -70,14 +91,15 @@ struct vlc_gl_t
         };
     };
 
-    int  (*make_current)(vlc_gl_t *);
-    void (*release_current)(vlc_gl_t *);
-    void (*resize)(vlc_gl_t *, unsigned, unsigned);
-    void*(*get_proc_address)(vlc_gl_t *, const char *);
-    void (*destroy)(vlc_gl_t *);
-
     /* Defined by the core for libvlc_opengl API loading. */
     enum vlc_gl_api_type api_type;
+
+    const struct vlc_gl_operations *ops;
+
+    struct {
+        const struct vlc_gl_callbacks *cbs;
+        void *sys;
+    } owner;
 };
 
 /**
@@ -91,11 +113,17 @@ struct vlc_gl_t
  * @return a new context, or NULL on failure
  */
 VLC_API vlc_gl_t *vlc_gl_Create(const struct vout_display_cfg *cfg,
-                                unsigned flags, const char *name) VLC_USED;
+                                unsigned flags, const char *name,
+                                const struct vlc_gl_callbacks *cbs,
+                                void *owner) VLC_USED;
+#define vlc_gl_Create(c,f,n) (vlc_gl_Create)(c,f,n,NULL,NULL)
+#define vlc_gl_CreateWithOwner(c,f,n,cbs,o) (vlc_gl_Create)(c,f,n,cbs,o)
 VLC_API vlc_gl_t *vlc_gl_CreateOffscreen(vlc_object_t *parent,
                                          struct vlc_decoder_device *device,
                                          unsigned width, unsigned height,
-                                         unsigned flags, const char *name);
+                                         unsigned flags, const char *name,
+                                         const struct vlc_gl_callbacks *cbs,
+                                         void *owner);
 
 VLC_API void vlc_gl_Release(vlc_gl_t *);
 VLC_API void vlc_gl_Hold(vlc_gl_t *);
@@ -104,38 +132,44 @@ VLC_API bool vlc_gl_HasExtension(vlc_gl_t *gl, const char *extension);
 
 static inline int vlc_gl_MakeCurrent(vlc_gl_t *gl)
 {
-    return gl->make_current(gl);
+    return gl->ops->make_current(gl);
 }
 
 static inline void vlc_gl_ReleaseCurrent(vlc_gl_t *gl)
 {
-    gl->release_current(gl);
+    gl->ops->release_current(gl);
 }
 
 static inline void vlc_gl_Resize(vlc_gl_t *gl, unsigned w, unsigned h)
 {
-    if (gl->resize != NULL)
-        gl->resize(gl, w, h);
+    if (gl->ops->resize != NULL)
+        gl->ops->resize(gl, w, h);
 }
 
 static inline void vlc_gl_Swap(vlc_gl_t *gl)
 {
-    gl->swap(gl);
+    gl->ops->swap(gl);
 }
 
 static inline picture_t *vlc_gl_SwapOffscreen(vlc_gl_t *gl)
 {
-    return gl->swap_offscreen(gl);
+    return gl->ops->swap_offscreen(gl);
 }
 
 static inline void *vlc_gl_GetProcAddress(vlc_gl_t *gl, const char *name)
 {
-    return gl->get_proc_address(gl, name);
+    return gl->ops->get_proc_address(gl, name);
 }
 
-VLC_API vlc_gl_t *vlc_gl_surface_Create(vlc_object_t *,
-                                        const struct vout_window_cfg_t *,
-                                        struct vout_window_t **) VLC_USED;
+VLC_API vlc_gl_t *vlc_gl_surface_Create(
+        vlc_object_t *obj, const struct vout_window_cfg_t *cfg,
+        const struct vlc_gl_callbacks *cbs, void *owner,
+        struct vout_window_t **) VLC_USED;
+#define vlc_gl_surface_Create(o,c,w) \
+    (vlc_gl_surface_Create)(o,c,NULL,NULL,w)
+#define vlc_gl_surface_CreateWithOwner(o,c,cbs,owner,w) \
+    (vlc_gl_surface_Create)(o,c,cbs,owner,w)
+
 VLC_API bool vlc_gl_surface_CheckSize(vlc_gl_t *, unsigned *w, unsigned *h);
 VLC_API void vlc_gl_surface_Destroy(vlc_gl_t *);
 
@@ -151,5 +185,8 @@ static inline bool vlc_gl_StrHasToken(const char *apis, const char *api)
     }
     return false;
 }
+
+VLC_API void vlc_gl_RenderNext(vlc_gl_t *gl);
+VLC_API void vlc_gl_ReportRender(vlc_gl_t *gl);
 
 #endif /* VLC_GL_H */

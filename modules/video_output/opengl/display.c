@@ -77,10 +77,19 @@ typedef struct vout_display_sys_t
     vlc_gl_t *gl;
     vout_display_place_t place;
     bool place_changed;
+
+    struct {
+        picture_t *picture;
+        subpicture_t *subpicture;
+    } latch;
+
+    struct {
+        PFNGLFLUSHPROC Flush;
+    } vt;
 } vout_display_sys_t;
 
 /* Display callbacks */
-static void PictureRender (vout_display_t *, picture_t *, subpicture_t *, vlc_tick_t);
+static void PicturePrepare (vout_display_t *, picture_t *, subpicture_t *, vlc_tick_t);
 static void PictureDisplay (vout_display_t *, picture_t *);
 static int Control (vout_display_t *, int);
 
@@ -92,7 +101,7 @@ static int SetViewpoint(vout_display_t *vd, const vlc_viewpoint_t *vp)
 
 static const struct vlc_display_operations ops = {
     .close = Close,
-    .prepare = PictureRender,
+    .prepare = PicturePrepare,
     .display = PictureDisplay,
     .control = Control,
     .set_viewpoint = SetViewpoint,
@@ -106,84 +115,6 @@ FlipVerticalAlign(vout_display_cfg_t *cfg)
         cfg->align.vertical = VLC_VIDEO_ALIGN_BOTTOM;
     else if (cfg->align.vertical == VLC_VIDEO_ALIGN_BOTTOM)
         cfg->align.vertical = VLC_VIDEO_ALIGN_TOP;
-}
-
-/**
- * Allocates a surface and an OpenGL context for video output.
- */
-static int Open(vout_display_t *vd,
-                video_format_t *fmt, vlc_video_context *context)
-{
-    vout_display_sys_t *sys = malloc (sizeof (*sys));
-    if (unlikely(sys == NULL))
-        return VLC_ENOMEM;
-
-    sys->gl = NULL;
-
-    vout_window_t *surface = vd->cfg->window;
-    char *gl_name = var_InheritString(surface, MODULE_VARNAME);
-
-    /* VDPAU GL interop works only with GLX. Override the "gl" option to force
-     * it. */
-#ifndef USE_OPENGL_ES2
-    if (surface->type == VOUT_WINDOW_TYPE_XID)
-    {
-        switch (vd->source->i_chroma)
-        {
-            case VLC_CODEC_VDPAU_VIDEO_444:
-            case VLC_CODEC_VDPAU_VIDEO_422:
-            case VLC_CODEC_VDPAU_VIDEO_420:
-            {
-                /* Force the option only if it was not previously set */
-                if (gl_name == NULL || gl_name[0] == 0
-                 || strcmp(gl_name, "any") == 0)
-                {
-                    free(gl_name);
-                    gl_name = strdup("glx");
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-#endif
-
-    sys->gl = vlc_gl_Create(vd->cfg, API, gl_name);
-    free(gl_name);
-    if (sys->gl == NULL)
-        goto error;
-
-
-    vout_display_cfg_t flipped_cfg = *vd->cfg;
-    FlipVerticalAlign(&flipped_cfg);
-    vout_display_PlacePicture(&sys->place, vd->source, &flipped_cfg);
-    sys->place_changed = true;
-    vlc_gl_Resize (sys->gl, vd->cfg->display.width, vd->cfg->display.height);
-
-    /* Initialize video display */
-    const vlc_fourcc_t *spu_chromas;
-
-    if (vlc_gl_MakeCurrent (sys->gl))
-        goto error;
-
-    sys->vgl = vout_display_opengl_New (fmt, &spu_chromas, sys->gl,
-                                        &vd->cfg->viewpoint, context);
-    vlc_gl_ReleaseCurrent (sys->gl);
-
-    if (sys->vgl == NULL)
-        goto error;
-
-    vd->sys = sys;
-    vd->info.subpicture_chromas = spu_chromas;
-    vd->ops = &ops;
-    return VLC_SUCCESS;
-
-error:
-    if (sys->gl != NULL)
-        vlc_gl_Release (sys->gl);
-    free (sys);
-    return VLC_EGENERIC;
 }
 
 /**
@@ -202,17 +133,57 @@ static void Close(vout_display_t *vd)
     free (sys);
 }
 
-static void PictureRender (vout_display_t *vd, picture_t *pic, subpicture_t *subpicture,
+static void PictureRender(vlc_gl_t *gl, void *data)
+{
+    vout_display_t *vd = data;
+    vout_display_sys_t *sys = vd->sys;
+
+    msg_Info(vd, "Render new frame");
+    if (sys->latch.picture == NULL)
+    {
+        msg_Info(vd, "Dropping new frame");
+        return;
+    }
+
+    msg_Info(gl, "Display new frame %p", sys->latch.picture);
+
+    picture_t *pic = sys->latch.picture;
+    subpicture_t *subpicture = sys->latch.subpicture;
+
+    vout_display_opengl_Prepare (sys->vgl, pic, subpicture);
+    if (sys->place_changed)
+    {
+        vout_display_opengl_SetOutputSize(sys->vgl, sys->place.width,
+                sys->place.height);
+        vout_display_opengl_Viewport(sys->vgl, sys->place.x, sys->place.y,
+                sys->place.width, sys->place.height);
+        sys->place_changed = false;
+    }
+    vout_display_opengl_Display(sys->vgl);
+    sys->vt.Flush();
+
+    msg_Info(vd, "Rendered new frame");
+}
+
+static void PicturePrepare (vout_display_t *vd, picture_t *pic, subpicture_t *subpicture,
                            vlc_tick_t date)
 {
     VLC_UNUSED(date);
     vout_display_sys_t *sys = vd->sys;
+    msg_Info(vd, "Prepare new frame %p", pic);
 
+    sys->latch.picture = pic;
+    sys->latch.subpicture = subpicture;
+
+    vlc_gl_RenderNext(sys->gl);
+    // TODO: what to do in case of error
+    /*
     if (vlc_gl_MakeCurrent (sys->gl) == VLC_SUCCESS)
     {
-        vout_display_opengl_Prepare (sys->vgl, pic, subpicture);
-        vlc_gl_ReleaseCurrent (sys->gl);
+        PictureRender(sys->gl, vd);
     }
+    */
+    msg_Info(vd, "Prepared new frame %p", sys->latch.picture);
 }
 
 static void PictureDisplay (vout_display_t *vd, picture_t *pic)
@@ -220,20 +191,8 @@ static void PictureDisplay (vout_display_t *vd, picture_t *pic)
     vout_display_sys_t *sys = vd->sys;
     VLC_UNUSED(pic);
 
-    if (vlc_gl_MakeCurrent (sys->gl) == VLC_SUCCESS)
-    {
-        if (sys->place_changed)
-        {
-            vout_display_opengl_SetOutputSize(sys->vgl, sys->place.width,
-                                                        sys->place.height);
-            vout_display_opengl_Viewport(sys->vgl, sys->place.x, sys->place.y,
-                                         sys->place.width, sys->place.height);
-            sys->place_changed = false;
-        }
-
-        vout_display_opengl_Display(sys->vgl);
-        vlc_gl_ReleaseCurrent (sys->gl);
-    }
+    /* Present on screen TODO */
+    vlc_gl_Swap(sys->gl);
 }
 
 static int Control (vout_display_t *vd, int query)
@@ -271,5 +230,92 @@ static int Control (vout_display_t *vd, int query)
       default:
         msg_Err (vd, "Unknown request %d", query);
     }
+    return VLC_EGENERIC;
+}
+
+/**
+ * Allocates a surface and an OpenGL context for video output.
+ */
+static int Open(vout_display_t *vd,
+                video_format_t *fmt, vlc_video_context *context)
+{
+    vout_display_sys_t *sys = malloc (sizeof (*sys));
+    if (unlikely(sys == NULL))
+        return VLC_ENOMEM;
+
+    sys->gl = NULL;
+    sys->latch.picture = NULL;
+    sys->latch.subpicture = NULL;
+
+    vout_window_t *surface = vd->cfg->window;
+    char *gl_name = var_InheritString(surface, MODULE_VARNAME);
+
+    /* VDPAU GL interop works only with GLX. Override the "gl" option to force
+     * it. */
+#ifndef USE_OPENGL_ES2
+    if (surface->type == VOUT_WINDOW_TYPE_XID)
+    {
+        switch (vd->source->i_chroma)
+        {
+            case VLC_CODEC_VDPAU_VIDEO_444:
+            case VLC_CODEC_VDPAU_VIDEO_422:
+            case VLC_CODEC_VDPAU_VIDEO_420:
+            {
+                /* Force the option only if it was not previously set */
+                if (gl_name == NULL || gl_name[0] == 0
+                 || strcmp(gl_name, "any") == 0)
+                {
+                    free(gl_name);
+                    gl_name = strdup("glx");
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+#endif
+
+    static const struct vlc_gl_callbacks gl_cbs = {
+        .render = PictureRender
+    };
+
+    sys->gl = vlc_gl_CreateWithOwner(vd->cfg, API, gl_name, &gl_cbs, vd);
+    free(gl_name);
+    if (sys->gl == NULL)
+        goto error;
+
+    sys->vt.Flush = vlc_gl_GetProcAddress(sys->gl, "glFlush");
+    if (sys->vt.Flush == NULL)
+        goto error;
+
+    vout_display_cfg_t flipped_cfg = *vd->cfg;
+    FlipVerticalAlign(&flipped_cfg);
+    vout_display_PlacePicture(&sys->place, vd->source, &flipped_cfg);
+    sys->place_changed = true;
+    vlc_gl_Resize (sys->gl, vd->cfg->display.width, vd->cfg->display.height);
+
+    /* Initialize video display */
+    const vlc_fourcc_t *spu_chromas;
+
+    if (vlc_gl_MakeCurrent (sys->gl))
+        goto error;
+
+    sys->vgl = vout_display_opengl_New (fmt, &spu_chromas, sys->gl,
+                                        &vd->cfg->viewpoint, context);
+    vlc_gl_ReleaseCurrent (sys->gl);
+
+    if (sys->vgl == NULL)
+        goto error;
+
+    vd->sys = sys;
+    vd->info.subpicture_chromas = spu_chromas;
+    vd->ops = &ops;
+    return VLC_SUCCESS;
+
+error:
+    if (sys->gl != NULL)
+        vlc_gl_Release (sys->gl);
+    free (sys);
     return VLC_EGENERIC;
 }

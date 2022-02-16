@@ -137,10 +137,7 @@ video_filter_LTLIBRARIES += libpl_scale_plugin.la
 endif
 
 if HAVE_DARWIN
-video_filter_LTLIBRARIES += libpl_scale_plugin.la
-if HAVE_OSX
-libpl_scale_plugin_la_LIBADD += libvlc_opengl.la
-else
+if !HAVE_OSX
 libpl_scale_plugin_la_LIBADD += libvlc_opengles.la
 libpl_scale_plugin_la_CPPFLAGS += -DUSE_OPENGL_ES2=1
 endif
