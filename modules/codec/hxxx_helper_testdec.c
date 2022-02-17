@@ -68,10 +68,11 @@ DecodeBlock(decoder_t *dec, block_t *block)
             dec->fmt_out.video.color_range = full_range;
         }
 
-        unsigned width, height, vis_width, vis_height;
+        unsigned width, height, vis_width, vis_height, left, top;
         ret = hxxx_helper_get_current_picture_size(&sys->hh,
                                                    &width, &height,
-                                                   &vis_width, &vis_height);
+                                                   &vis_width, &vis_height,
+                                                   &left, &top);
         if (ret == VLC_SUCCESS)
         {
             dec->fmt_out.video.i_width =

@@ -113,7 +113,9 @@ block_t * hxxx_helper_get_extradata_block(const struct hxxx_helper *hh);
 
 int hxxx_helper_get_current_picture_size(const struct hxxx_helper *hh,
                                          unsigned *p_w, unsigned *p_h,
-                                         unsigned *p_vw, unsigned *p_vh);
+                                         unsigned *p_vw, unsigned *p_vh,
+                                         unsigned *p_left_offset,
+                                         unsigned *p_top_offset);
 
 int hxxx_helper_get_current_sar(const struct hxxx_helper *hh, int *p_num, int *p_den);
 
