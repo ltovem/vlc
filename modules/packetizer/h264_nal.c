@@ -807,7 +807,8 @@ bool h264_get_dpb_values( const h264_sequence_parameter_set_t *p_sps,
 }
 
 bool h264_get_picture_size( const h264_sequence_parameter_set_t *p_sps, unsigned *p_w, unsigned *p_h,
-                            unsigned *p_vw, unsigned *p_vh )
+                            unsigned *p_vw, unsigned *p_vh,
+                            unsigned *left_offset, unsigned *top_offset )
 {
     unsigned CropUnitX = 1;
     unsigned CropUnitY = 2 - p_sps->frame_mbs_only_flag;
@@ -834,6 +835,8 @@ bool h264_get_picture_size( const h264_sequence_parameter_set_t *p_sps, unsigned
 
     *p_vw = *p_w - ( p_sps->frame_crop.left_offset + p_sps->frame_crop.right_offset ) * CropUnitX;
     *p_vh = *p_h - ( p_sps->frame_crop.bottom_offset + p_sps->frame_crop.top_offset ) * CropUnitY;
+    *left_offset = p_sps->frame_crop.left_offset * CropUnitX;
+    *top_offset = p_sps->frame_crop.top_offset * CropUnitY;
 
     return true;
 }

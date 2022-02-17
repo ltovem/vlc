@@ -813,16 +813,17 @@ hxxx_helper_get_current_picture_size(const struct hxxx_helper *hh,
                                      unsigned *p_w, unsigned *p_h,
                                      unsigned *p_vw, unsigned *p_vh)
 {
+    unsigned left_offset, top_offset;
     if(hh->i_codec == VLC_CODEC_H264)
     {
         const struct hxxx_helper_nal *hsps = h264_helper_get_current_sps(hh);
-        if (hsps && h264_get_picture_size(hsps->h264_sps, p_w, p_h, p_vw, p_vh))
+        if (hsps && h264_get_picture_size(hsps->h264_sps, p_w, p_h, p_vw, p_vh, &left_offset, &top_offset))
                return VLC_SUCCESS;
     }
     else if(hh->i_codec == VLC_CODEC_HEVC)
     {
         const struct hxxx_helper_nal *hsps = &hh->hevc.sps_list[hh->hevc.i_current_sps];
-        if(hsps && hsps->hevc_sps && hevc_get_picture_size(hsps->hevc_sps, p_w, p_h, p_vw, p_vh))
+        if(hsps && hsps->hevc_sps && hevc_get_picture_size(hsps->hevc_sps, p_w, p_h, p_vw, p_vh, &left_offset, &top_offset))
             return VLC_SUCCESS;
     }
     return VLC_EGENERIC;

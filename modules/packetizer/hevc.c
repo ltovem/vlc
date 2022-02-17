@@ -617,8 +617,10 @@ static void ActivateSets(decoder_t *p_dec,
         }
 
         unsigned sizes[4];
+        unsigned x_offset, y_offset;
         if( hevc_get_picture_size( p_sps, &sizes[0], &sizes[1],
-                                          &sizes[2], &sizes[3] ) )
+                                          &sizes[2], &sizes[3],
+                                          &x_offset, &y_offset ) )
         {
             p_dec->fmt_out.video.i_width = sizes[0];
             p_dec->fmt_out.video.i_height = sizes[1];
@@ -626,6 +628,8 @@ static void ActivateSets(decoder_t *p_dec,
             {
                 p_dec->fmt_out.video.i_visible_width = sizes[2];
                 p_dec->fmt_out.video.i_visible_height = sizes[3];
+                p_dec->fmt_out.video.i_x_offset = x_offset;
+                p_dec->fmt_out.video.i_y_offset = y_offset;
             }
         }
 
