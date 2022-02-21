@@ -58,7 +58,12 @@ static int  Activate   ( filter_t * );
 static void Deactivate ( filter_t * );
 
 vlc_module_begin ()
-#if defined (PLUGIN_SSE2)
+#if defined (PLUGIN_AVX2)
+    set_description( N_( "AVX2 I420,IYUV,YV12 to "
+                        "RV15,RV16,RV32 conversions") )
+    set_callback_video_converter( Activate, 130 )
+# define vlc_CPU_capable() vlc_CPU_AVX2()
+#elif defined (PLUGIN_SSE2)
     set_description( N_( "SSE2 I420,IYUV,YV12 to "
                         "RV15,RV16,RV24,RV32 conversions") )
     set_callback_video_converter( Activate, 120 )
