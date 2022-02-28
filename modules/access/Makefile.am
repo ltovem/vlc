@@ -430,8 +430,8 @@ libaccess_concat_plugin_la_SOURCES = access/concat.c
 access_LTLIBRARIES += libaccess_concat_plugin.la
 
 libaccess_mtp_plugin_la_SOURCES = access/mtp.c
-libaccess_mtp_plugin_la_CFLAGS = $(AM_CFLAGS) $(MTP_CFLAGS)
-libaccess_mtp_plugin_la_LIBADD = $(MTP_LIBS)
+libaccess_mtp_plugin_la_CFLAGS = $(AM_CFLAGS) $(MTP_ACCESS_CFLAGS)
+libaccess_mtp_plugin_la_LIBADD = $(MTP_ACCESS_LIBS)
 libaccess_mtp_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(accessdir)'
 access_LTLIBRARIES += $(LTLIBaccess_mtp)
 EXTRA_LTLIBRARIES += libaccess_mtp_plugin.la

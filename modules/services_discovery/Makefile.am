@@ -17,9 +17,9 @@ EXTRA_LTLIBRARIES += libavahi_plugin.la
 sd_LTLIBRARIES += $(LTLIBavahi)
 
 libmtp_plugin_la_SOURCES = services_discovery/mtp.c
-libmtp_plugin_la_CFLAGS = $(AM_CFLAGS) $(MTP_CFLAGS)
+libmtp_plugin_la_CFLAGS = $(AM_CFLAGS) $(MTP_DISCOVERY_CFLAGS)
 libmtp_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(sddir)'
-libmtp_plugin_la_LIBADD = $(MTP_LIBS)
+libmtp_plugin_la_LIBADD = $(MTP_DISCOVERY_LIBS)
 EXTRA_LTLIBRARIES += libmtp_plugin.la
 sd_LTLIBRARIES += $(LTLIBmtp)
 
