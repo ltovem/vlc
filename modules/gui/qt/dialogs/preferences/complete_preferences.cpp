@@ -125,6 +125,10 @@ PrefsTree::PrefsTree( qt_intf_t *_p_intf, QWidget *_parent,
                 continue;
             }
 
+            /* Hotkeys are edited in the separate hotkey editor */
+            if( p_item->i_type == CONFIG_ITEM_KEY )
+                continue;
+
             if( CONFIG_ITEM(p_item->i_type) )
             {
                 has_options = true;
@@ -503,6 +507,10 @@ bool PrefsTreeItem::contains( const QString &text, Qt::CaseSensitivity cs )
         /* cat-hint items are not relevant, they are an alternate set of headings for help output */
         if( p_item->i_type == CONFIG_HINT_CATEGORY ) continue;
 
+        /* Hotkeys are only shown in the separate hotkey editor */
+        if( p_item->i_type == CONFIG_ITEM_KEY )
+            continue;
+
         if ( p_item->psz_text && qfut( p_item->psz_text ).contains( text, cs ) )
         {
             ret = true;
@@ -581,7 +589,6 @@ AdvPrefsPanel::AdvPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
     QGridLayout *layout = new QGridLayout();
     int i_line = 0, i_boxline = 0;
-    bool has_hotkey = false;
 
     if( p_item ) for ( ; p_item < p_end; ++p_item)
     {
@@ -608,13 +615,9 @@ AdvPrefsPanel::AdvPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             boxlayout = new QGridLayout();
         }
 
-        /* Only one hotkey control */
+        /* Hotkeys are edited in the separate hotkey editor */
         if( p_item->i_type == CONFIG_ITEM_KEY )
-        {
-            if( has_hotkey )
-                continue;
-            has_hotkey = true;
-        }
+            continue;
 
         ConfigControl *control;
         if( ! box )
