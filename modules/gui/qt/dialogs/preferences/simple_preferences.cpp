@@ -1010,7 +1010,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             panel_label->setText( qtr( "Configure Hotkeys" ) );
 
-            KeySelectorControl *hotkey_editor = new KeySelectorControl( this );
+            HotkeyEditor *hotkey_editor = new HotkeyEditor( this );
             optionWidgets["hotkey_editor"] = hotkey_editor;
             bLayout->addWidget( hotkey_editor );
 
@@ -1300,7 +1300,7 @@ void SPrefsPanel::apply()
     }
     case SPrefsHotkeys:
     {
-        qobject_cast<KeySelectorControl *>(optionWidgets["hotkey_editor"])->doApply();
+        qobject_cast<HotkeyEditor *>(optionWidgets["hotkey_editor"])->doApply();
         break;
     }
     case SPrefsMediaLibrary:

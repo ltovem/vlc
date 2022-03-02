@@ -120,6 +120,8 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/dialogs/preferences/preferences_widgets.hpp \
 	gui/qt/dialogs/preferences/simple_preferences.cpp \
 	gui/qt/dialogs/preferences/simple_preferences.hpp \
+	gui/qt/dialogs/preferences/hotkey_editor.cpp \
+	gui/qt/dialogs/preferences/hotkey_editor.hpp \
 	gui/qt/dialogs/sout/convert.cpp gui/qt/dialogs/sout/convert.hpp \
 	gui/qt/dialogs/sout/profile_selector.cpp \
 	gui/qt/dialogs/sout/profile_selector.hpp \
@@ -377,6 +379,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/dialogs/preferences/preferences.moc.cpp \
 	gui/qt/dialogs/preferences/preferences_widgets.moc.cpp \
 	gui/qt/dialogs/preferences/simple_preferences.moc.cpp \
+	gui/qt/dialogs/preferences/hotkey_editor.moc.cpp \
 	gui/qt/dialogs/sout/convert.moc.cpp \
 	gui/qt/dialogs/sout/profile_selector.moc.cpp \
 	gui/qt/dialogs/sout/sout.moc.cpp \

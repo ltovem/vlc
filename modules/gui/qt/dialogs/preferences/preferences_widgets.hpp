@@ -30,20 +30,13 @@
 #endif
 
 #include "qt.hpp"
-#include <assert.h>
 
-#include <QTreeWidgetItem>
 #include <QLabel>
-#include <QDialog>
-#include <QSet>
-#include <QContextMenuEvent>
 
 class QWidget;
-class QTreeWidget;
 class QGroupBox;
 class QGridLayout;
 class QBoxLayout;
-class SearchLineEdit;
 class QDoubleSpinBox;
 class QCheckBox;
 class QComboBox;
@@ -408,112 +401,4 @@ private slots:
 };
 
 void setfillVLCConfigCombo(const char *configname, QComboBox *combo );
-
-/**********************************************************************
- * Key selector widget
- **********************************************************************/
-class KeyTableItem;
-
-class KeySelectorControl : public QWidget
-{
-    Q_OBJECT
-
-public:
-    KeySelectorControl( QWidget * );
-    void doApply();
-    enum ColumnIndex
-    {
-        ACTION_COL = 0,
-        HOTKEY_COL = 1,
-        GLOBAL_HOTKEY_COL = 2,
-        ANY_COL = 3 // == count()
-    };
-    static KeyTableItem *find_conflict( QTreeWidget *, QString, KeyTableItem *, enum ColumnIndex );
-
-protected:
-    bool eventFilter( QObject *, QEvent * ) Q_DECL_OVERRIDE;
-#ifndef QT_NO_CONTEXTMENU
-    void tableContextMenuEvent( QContextMenuEvent * );
-#endif
-    void unset( KeyTableItem *, enum ColumnIndex );
-    void unset( QTreeWidgetItem *, int );
-    void reset( KeyTableItem *, enum ColumnIndex );
-    void reset_all( enum KeySelectorControl::ColumnIndex column );
-    /** Reassign key to specified item */
-    void reassign_key( KeyTableItem *item, QString keys,
-                       enum KeySelectorControl::ColumnIndex column );
-    void copy_value( KeyTableItem *, enum KeySelectorControl::ColumnIndex );
-
-private:
-    void selectKey( KeyTableItem *, enum ColumnIndex );
-    void buildAppHotkeysList( QWidget *rootWidget );
-    void finish();
-    SearchLineEdit *actionSearch;
-    QComboBox *searchOption;
-    QTreeWidget *table;
-    QSet<QString> existingkeys;
-
-private slots:
-    void selectKey( QTreeWidgetItem *, int );
-    void filter();
-};
-
-struct KeyItemAttr
-{
-    const char *config_name;
-    QString default_keys;
-    QString keys;
-    bool matches_default;
-};
-
-class KeyTableItem : public QTreeWidgetItem
-{
-public:
-    KeyTableItem() {}
-    const QString &get_keys( enum KeySelectorControl::ColumnIndex );
-    QString get_default_keys( enum KeySelectorControl::ColumnIndex );
-    void set_keys( QString, enum KeySelectorControl::ColumnIndex );
-    void set_keys( const char *keys, enum KeySelectorControl::ColumnIndex column )
-    {
-        set_keys( (keys) ? qfut( keys ) : qfu( "" ), column );
-    }
-    bool contains_key( QString, enum KeySelectorControl::ColumnIndex );
-    void remove_key( QString, enum KeySelectorControl::ColumnIndex );
-    struct KeyItemAttr normal;
-    struct KeyItemAttr global;
-};
-
-class KeyInputDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    KeyInputDialog( QTreeWidget *, KeyTableItem *, enum KeySelectorControl::ColumnIndex );
-    bool conflicts;
-    QString vlckey, vlckey_tr;
-    void setExistingkeysSet( const QSet<QString> *keyset = NULL );
-
-private:
-    QTreeWidget *table;
-    QLabel *selected, *warning;
-    QPushButton *ok, *unset;
-    KeyTableItem *keyItem;
-    enum KeySelectorControl::ColumnIndex column;
-
-    void checkForConflicts( const QString &sequence );
-    void keyPressEvent( QKeyEvent *);
-    void wheelEvent( QWheelEvent *);
-    const QSet<QString> *existingkeys;
-
-private slots:
-    void unsetAction();
-};
-
-class KeyConflictDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    KeyConflictDialog( QTreeWidget *, KeyTableItem *, enum KeySelectorControl::ColumnIndex );
-};
 #endif
