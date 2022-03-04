@@ -181,6 +181,9 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     BUTTONACT( all, &PrefsDialog::setAdvanced );
     BUTTONACT( expert, &PrefsDialog::setExpert );
 
+    search = new QShortcut( QKeySequence( QKeySequence::Find ), this );
+    connect( search, &QShortcut::activated, this, &PrefsDialog::setSearchFocus );
+
     QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, QSize( 850, 700 ) );
 }
 
@@ -201,8 +204,6 @@ void PrefsDialog::setExpert()
         expert_table_filter->setMinimumHeight( 26 );
         expert_table_filter_modified = new QCheckBox( qtr( "Modified only" ), expert_widget );
 
-        QShortcut *search = new QShortcut( QKeySequence( QKeySequence::Find ), expert_table_filter );
-
         ExpertPrefsTableModel *table_model = new ExpertPrefsTableModel( p_list, count, this );
         expert_table = new ExpertPrefsTable( expert_widget );
         expert_table->setModel( table_model );
@@ -218,8 +219,6 @@ void PrefsDialog::setExpert()
                  this, &PrefsDialog::expertTableFilterChanged );
         connect( expert_table_filter_modified, &QCheckBox::toggled,
                  this, &PrefsDialog::expertTableFilterModifiedToggled );
-        connect( search, &QShortcut::activated,
-                 expert_table_filter, QOverload<>::of(&SearchLineEdit::setFocus) );
 
         /* Set initial selection */
         expert_table->setCurrentIndex(
@@ -248,8 +247,6 @@ void PrefsDialog::setAdvanced()
         current_filter->setToolTip(
                     qtr("Only show modules related to current playback") );
 
-        QShortcut *search = new QShortcut( QKeySequence( QKeySequence::Find ), tree_filter );
-
         advanced_tree_panel->layout()->addWidget( tree_filter );
         advanced_tree_panel->layout()->addWidget( current_filter );
         advanced_tree_panel->layout()->addWidget( advanced_tree );
@@ -258,7 +255,6 @@ void PrefsDialog::setAdvanced()
         connect( advanced_tree, &PrefsTree::currentItemChanged, this, &PrefsDialog::changeAdvPanel );
         connect( tree_filter, &SearchLineEdit::textChanged, this, &PrefsDialog::advancedTreeFilterChanged );
         connect( current_filter, &QCheckBox::stateChanged, this, &PrefsDialog::onlyLoadedToggled );
-        connect( search, &QShortcut::activated, tree_filter, QOverload<>::of(&SearchLineEdit::setFocus) );
 
         /* Set initial selection */
         advanced_tree->setCurrentIndex(
@@ -417,4 +413,12 @@ void PrefsDialog::advancedTreeFilterChanged( const QString & text )
 void PrefsDialog::onlyLoadedToggled()
 {
     advanced_tree->setLoadedOnly( current_filter->isChecked() );
+}
+
+void PrefsDialog::setSearchFocus()
+{
+    if( all->isChecked() )
+        tree_filter->setFocus();
+    else if( expert->isChecked() )
+        expert_table_filter->setFocus();
 }

@@ -38,6 +38,7 @@ class QCheckBox;
 class SearchLineEdit;
 class QStackedWidget;
 class QSplitter;
+class QShortcut;
 
 class PrefsDialog : public QVLCDialog
 {
@@ -82,6 +83,8 @@ private:
     QLabel *expert_text;
     QLabel *expert_longtext;
 
+    QShortcut *search;
+
 private slots:
     void setExpert();
     void setAdvanced();
@@ -94,6 +97,7 @@ private slots:
     void expertTableFilterChanged( const QString & );
     void expertTableFilterModifiedToggled( bool );
     void onlyLoadedToggled();
+    void setSearchFocus();
 
     void save();
     void cancel();
