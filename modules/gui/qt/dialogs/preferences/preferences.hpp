@@ -29,7 +29,6 @@
 /* Auto-generated from .ui files */
 #include "ui_preferences.h"
 
-class SPrefsCatList;
 class SPrefsPanel;
 class QTreeWidgetItem;
 class QShortcut;
@@ -50,10 +49,10 @@ private:
     /* View selection */
     enum { SIMPLE, ADVANCED, EXPERT };
 
+    bool simple_initialised = false;
     bool advanced_initialised = false;
     bool expert_initialised = false;
 
-    SPrefsCatList *simple_tree = nullptr;
     SPrefsPanel *simple_panels[SPrefsMax];
 
     QShortcut *search;

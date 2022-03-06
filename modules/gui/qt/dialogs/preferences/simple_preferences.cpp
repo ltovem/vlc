@@ -34,13 +34,11 @@
 #include "util/proxycolumnmodel.hpp"
 #include "medialibrary/mlrecentsmodel.hpp"
 
-#include <vlc_config_cat.h>
 #include <vlc_configuration.h>
 #include <vlc_aout.h>
 
 #include <QString>
 #include <QFont>
-#include <QToolButton>
 #include <QButtonGroup>
 #include <QSignalMapper>
 #include <QVBoxLayout>
@@ -64,9 +62,6 @@
 
 #include <assert.h>
 #include <math.h>
-
-#define ICON_HEIGHT 48
-#define ICON_WIDTH 48
 
 #ifdef _WIN32
 # include <vlc_charset.h>
@@ -235,68 +230,6 @@ private:
     const QByteArray m_property;
     const QVariant m_initialValue;
 };
-
-/*********************************************************************
- * The List of categories
- *********************************************************************/
-SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
-                                  QWidget( _parent ), p_intf( _p_intf )
-{
-    QHBoxLayout *layout = new QHBoxLayout();
-
-    /* Use autoExclusive buttons and a mapper as QButtonGroup can't
-       set focus (keys) when it manages the buttons's exclusivity.
-       See QT bugs 131 & 816 and QAbstractButton's source code. */
-    QSignalMapper *mapper = new QSignalMapper( layout );
-    connect( mapper, QSIGNALMAPPER_MAPPEDINT_SIGNAL, this, &SPrefsCatList::switchPanel );
-
-    QPixmap scaled;
-    qreal dpr = devicePixelRatioF();
-
-#define ADD_CATEGORY( button, label, ltooltip, icon, numb )                 \
-    QToolButton * button = new QToolButton( this );                         \
-    /* Scale icon to non native size outside of toolbutton to avoid widget size */\
-    /* computation using native size */\
-    scaled = QPixmap( ":/prefsmenu/" #icon ".png" )\
-             .scaledToHeight( ICON_HEIGHT * dpr, Qt::SmoothTransformation );\
-    scaled.setDevicePixelRatio( dpr ); \
-    button->setIcon( scaled );                \
-    button->setText( label );                                               \
-    button->setToolTip( ltooltip );                                         \
-    button->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );              \
-    button->setIconSize( QSize( ICON_WIDTH, ICON_HEIGHT ) );          \
-    button->setMinimumWidth( 40 + ICON_WIDTH );\
-    button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum); \
-    button->setAutoRaise( true );                                           \
-    button->setCheckable( true );                                           \
-    button->setAutoExclusive( true );                                       \
-    connect( button, &QToolButton::clicked, mapper, QOverload<>::of(&QSignalMapper::map) ); \
-    mapper->setMapping( button, numb );                                     \
-    layout->addWidget( button );
-
-    ADD_CATEGORY( SPrefsInterface, qfut(INTF_TITLE), qfut(INTF_TOOLTIP), cone_interface_64, 0 );
-    ADD_CATEGORY( SPrefsAudio, qfut(AUDIO_TITLE), qfut(AUDIO_TOOLTIP), cone_audio_64, 1 );
-    ADD_CATEGORY( SPrefsVideo, qfut(VIDEO_TITLE), qfut(VIDEO_TOOLTIP), cone_video_64, 2 );
-    ADD_CATEGORY( SPrefsSubtitles, qfut(SUBPIC_TITLE), qfut(SUBPIC_TOOLTIP), cone_subtitles_64, 3 );
-    ADD_CATEGORY( SPrefsInputAndCodecs, qfut(INPUT_TITLE), qfut(INPUT_TOOLTIP), cone_input_64, 4 );
-    ADD_CATEGORY( SPrefsHotkeys, qfut(HOTKEYS_TITLE), qfut(HOTKEYS_TOOLTIP), cone_hotkeys_64, 5 );
-    ADD_CATEGORY( SPrefsMediaLibrary, qfut(ML_TITLE), qfut(ML_TOOLTIP), cone_medialibrary_64, 6 );
-
-#undef ADD_CATEGORY
-
-    SPrefsInterface->setChecked( true );
-    layout->setMargin( 0 );
-    layout->setSpacing( 1 );
-
-    setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Preferred);
-    setMinimumWidth( ICON_HEIGHT * 6 + 10 );
-    setLayout( layout );
-}
-
-void SPrefsCatList::switchPanel( int i )
-{
-    emit currentItemChanged( i );
-}
 
 /*********************************************************************
  * The Panels

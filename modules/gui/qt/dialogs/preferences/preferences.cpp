@@ -33,10 +33,12 @@
 #include "maininterface/mainctx.hpp"
 
 #include <QPushButton>
+#include <QToolButton>
 #include <QMessageBox>
 #include <QShortcut>
 
 #include <vlc_modules.h>
+#include <vlc_config_cat.h>
 
 PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
             : QVLCDialog( parent, _p_intf )
@@ -150,17 +152,45 @@ void PrefsDialog::setAdvanced()
 
 void PrefsDialog::setSimple()
 {
-    /* If no simple_tree, create one, connect it */
-    if( !simple_tree )
+    if( !simple_initialised )
     {
-        simple_tree = new SPrefsCatList( p_intf, ui.simple_interface );
-        connect( simple_tree, &SPrefsCatList::currentItemChanged,
-                 this, &PrefsDialog::changeSimplePanel );
-        ui.simple_tabs_panel_layout->addWidget( simple_tree );
-    }
+        QToolButton *button;
+        QPixmap scaled;
+        qreal dpr = devicePixelRatioF();
 
-    if( ! simple_panels[SPrefsDefaultCat] )
+        #define SPREFS_ICON_SIZE 48
+        #define INIT_SPREFS_BTN( button_id, label, ltooltip, icon )                 \
+            button = ui.button_ ## button_id;                                       \
+            /* Scale icon to non native size outside of toolbutton to avoid widget size */\
+            /* computation using native size */                                     \
+            scaled = QPixmap( ":/prefsmenu/" #icon ".png" )                         \
+                     .scaledToHeight( SPREFS_ICON_SIZE * dpr, Qt::SmoothTransformation );\
+            scaled.setDevicePixelRatio( dpr );                                      \
+            button->setIcon( scaled );                                              \
+            button->setText( qfut( label ) );                                       \
+            button->setToolTip( qfut( ltooltip ) );                                 \
+            button->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );              \
+            button->setIconSize( QSize( SPREFS_ICON_SIZE, SPREFS_ICON_SIZE ) );     \
+            button->setMinimumWidth( 40 + SPREFS_ICON_SIZE );                       \
+            connect( button, &QToolButton::clicked, this, [=]() {                   \
+                this->changeSimplePanel( (int)button_id );                          \
+            } );
+
+        INIT_SPREFS_BTN( SPrefsInterface,      INTF_TITLE,    INTF_TOOLTIP,    cone_interface_64 );
+        INIT_SPREFS_BTN( SPrefsAudio,          AUDIO_TITLE,   AUDIO_TOOLTIP,   cone_audio_64 );
+        INIT_SPREFS_BTN( SPrefsVideo,          VIDEO_TITLE,   VIDEO_TOOLTIP,   cone_video_64 );
+        INIT_SPREFS_BTN( SPrefsSubtitles,      SUBPIC_TITLE,  SUBPIC_TOOLTIP,  cone_subtitles_64 );
+        INIT_SPREFS_BTN( SPrefsInputAndCodecs, INPUT_TITLE,   INPUT_TOOLTIP,   cone_input_64 );
+        INIT_SPREFS_BTN( SPrefsHotkeys,        HOTKEYS_TITLE, HOTKEYS_TOOLTIP, cone_hotkeys_64 );
+        INIT_SPREFS_BTN( SPrefsMediaLibrary,   ML_TITLE,      ML_TOOLTIP,      cone_medialibrary_64 );
+
+        #undef INIT_SPREFS_BTN
+        #undef SPREFS_ICON_SIZE
+
         changeSimplePanel( SPrefsDefaultCat );
+
+        simple_initialised = true;
+    }
 
     ui.simple->setChecked( true );
     ui.interface_stack->setCurrentIndex( SIMPLE );
@@ -208,7 +238,7 @@ void PrefsDialog::changeExpertDesc( const QModelIndex &current, const QModelInde
 /* Actual apply and save for the preferences */
 void PrefsDialog::save()
 {
-    if( ui.simple->isChecked() && simple_tree->isVisible() )
+    if( ui.simple->isChecked() && ui.simple_tabs->isVisible() )
     {
         msg_Dbg( p_intf, "Saving the simple preferences" );
         for( int i = 0 ; i< SPrefsMax; i++ ){
