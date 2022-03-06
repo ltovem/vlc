@@ -1005,16 +1005,18 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
          ********************************/
         case SPrefsHotkeys:
         {
-            QGridLayout *gLayout = new QGridLayout;
-            panel->setLayout( gLayout );
-            int line = 0;
+            QVBoxLayout *bLayout = new QVBoxLayout;
+            panel->setLayout( bLayout );
 
             panel_label->setText( qtr( "Configure Hotkeys" ) );
-            control = new KeySelectorControl( this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
 
-            line++;
+            KeySelectorControl *hotkey_editor = new KeySelectorControl( this );
+            optionWidgets["hotkey_editor"] = hotkey_editor;
+            bLayout->addWidget( hotkey_editor );
+
+            QGridLayout *gLayout = new QGridLayout;
+            bLayout->addLayout( gLayout );
+            int line = 0;
 
             p_config = config_FindConfig( "hotkeys-y-wheel-mode" );
             control = new IntegerListConfigControl( p_config, this );
@@ -1296,7 +1298,11 @@ void SPrefsPanel::apply()
         }
         break;
     }
-
+    case SPrefsHotkeys:
+    {
+        qobject_cast<KeySelectorControl *>(optionWidgets["hotkey_editor"])->doApply();
+        break;
+    }
     case SPrefsMediaLibrary:
     {
         mlFoldersEditor->commit();

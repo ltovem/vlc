@@ -414,15 +414,13 @@ void setfillVLCConfigCombo(const char *configname, QComboBox *combo );
  **********************************************************************/
 class KeyTableItem;
 
-class KeySelectorControl : public ConfigControl
+class KeySelectorControl : public QWidget
 {
     Q_OBJECT
 
 public:
     KeySelectorControl( QWidget * );
-    void insertInto( QGridLayout*, int row = 0 ) Q_DECL_OVERRIDE;
-    void doApply() Q_DECL_OVERRIDE;
-    void storeValue() {};
+    void doApply();
     enum ColumnIndex
     {
         ACTION_COL = 0,
@@ -437,7 +435,6 @@ protected:
 #ifndef QT_NO_CONTEXTMENU
     void tableContextMenuEvent( QContextMenuEvent * );
 #endif
-    void changeVisibility( bool ) Q_DECL_OVERRIDE;
     void unset( KeyTableItem *, enum ColumnIndex );
     void unset( QTreeWidgetItem *, int );
     void reset( KeyTableItem *, enum ColumnIndex );
@@ -451,11 +448,8 @@ private:
     void selectKey( KeyTableItem *, enum ColumnIndex );
     void buildAppHotkeysList( QWidget *rootWidget );
     void finish();
-    QLabel *label;
-    QLabel *searchLabel;
     SearchLineEdit *actionSearch;
     QComboBox *searchOption;
-    QLabel *searchOptionLabel;
     QTreeWidget *table;
     QSet<QString> existingkeys;
 

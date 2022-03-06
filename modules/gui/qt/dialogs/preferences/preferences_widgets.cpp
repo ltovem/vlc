@@ -131,15 +131,13 @@ ConfigControl *ConfigControl::createControl( module_config_t *p_item,
     case CONFIG_ITEM_FONT:
         p_control = new FontConfigControl( p_item, parent );
         break;
-    case CONFIG_ITEM_KEY:
-        p_control = new KeySelectorControl( parent );
-        break;
     case CONFIG_ITEM_BOOL:
         p_control = new BoolConfigControl( p_item, parent );
         break;
     case CONFIG_ITEM_FLOAT:
         p_control = new FloatRangeConfigControl( p_item, parent );
         break;
+    case CONFIG_ITEM_KEY: /* Handled by dedicated hotkey editor */
     default:
         break;
     }
@@ -1287,22 +1285,26 @@ void FloatRangeConfigControl::finish()
 /**********************************************************************
  * Key selector widget
  **********************************************************************/
-KeySelectorControl::KeySelectorControl( QWidget *p ) : ConfigControl( nullptr )
+KeySelectorControl::KeySelectorControl( QWidget *parent ) : QWidget( parent )
 {
-    label = new QLabel( qtr( "Action hotkey mappings." ), p );
+    QGridLayout *layout = new QGridLayout;
+    layout->setContentsMargins( 0, 0, 0, 0 );
+    setLayout( layout );
+
+    QLabel *label = new QLabel( qtr( "Action hotkey mappings." ), this );
 
     label->setWordWrap( true );
-    searchLabel = new QLabel( qtr( "Search" ), p );
-    actionSearch = new SearchLineEdit();
+    QLabel *searchLabel = new QLabel( qtr( "Search" ), this );
+    actionSearch = new SearchLineEdit( this );
 
-    searchOptionLabel = new QLabel( qtr("in") );
-    searchOption = new QComboBox();
+    QLabel *searchOptionLabel = new QLabel( qtr("in"), this );
+    searchOption = new QComboBox( this );
     searchOption->addItem( qtr("Any field"), ANY_COL );
     searchOption->addItem( qtr("Actions"), ACTION_COL );
     searchOption->addItem( qtr("Hotkeys"), HOTKEY_COL );
     searchOption->addItem( qtr("Global Hotkeys"), GLOBAL_HOTKEY_COL );
 
-    table = new QTreeWidget( p );
+    table = new QTreeWidget( this );
     table->setColumnCount( ANY_COL );
     table->headerItem()->setText( ACTION_COL, qtr( "Action" ) );
     table->headerItem()->setText( HOTKEY_COL, qtr( "Hotkey" ) );
@@ -1315,10 +1317,17 @@ KeySelectorControl::KeySelectorControl( QWidget *p ) : ConfigControl( nullptr )
 
     table->installEventFilter( this );
 
+    layout->addWidget( label, 0, 0, 1, 4 );
+    layout->addWidget( searchLabel, 1, 0, 1, 1 );
+    layout->addWidget( actionSearch, 1, 1, 1, 1 );
+    layout->addWidget( searchOptionLabel, 1, 2, 1, 1 );
+    layout->addWidget( searchOption, 1, 3, 1, 1 );
+    layout->addWidget( table, 2, 0, 1, 4 );
+
     /* Find the top most widget */
-    QWidget *parent, *rootWidget = p;
-    while( (parent = rootWidget->parentWidget()) != NULL )
-        rootWidget = parent;
+    QWidget *parent_tmp, *rootWidget = parent;
+    while( (parent_tmp = rootWidget->parentWidget()) != nullptr )
+        rootWidget = parent_tmp;
     buildAppHotkeysList( rootWidget );
 
     finish();
@@ -1326,18 +1335,6 @@ KeySelectorControl::KeySelectorControl( QWidget *p ) : ConfigControl( nullptr )
     connect( actionSearch, &SearchLineEdit::textChanged, this, &KeySelectorControl::filter );
     connect( searchOption, QOverload<int>::of(&QComboBox::activated),
              this, &KeySelectorControl::filter );
-}
-
-void KeySelectorControl::insertInto( QGridLayout *l, int line )
-{
-    QGridLayout *gLayout = new QGridLayout();
-    gLayout->addWidget( label, 0, 0, 1, 4 );
-    gLayout->addWidget( searchLabel, 1, 0, 1, 1 );
-    gLayout->addWidget( actionSearch, 1, 1, 1, 1 );
-    gLayout->addWidget( searchOptionLabel, 1, 2, 1, 1 );
-    gLayout->addWidget( searchOption, 1, 3, 1, 1 );
-    gLayout->addWidget( table, 2, 0, 1, 4 );
-    l->addLayout( gLayout, line, 0, 1, -1 );
 }
 
 void KeySelectorControl::buildAppHotkeysList( QWidget *rootWidget )
@@ -1417,16 +1414,10 @@ void KeySelectorControl::finish()
     table->resizeColumnToContents( ACTION_COL );
     table->resizeColumnToContents( HOTKEY_COL );
 
-    table->setUniformRowHeights( true );
+//    table->setUniformRowHeights( true );
 
     connect( table, &QTreeWidget::itemActivated,
              this, QOverload<QTreeWidgetItem *, int>::of(&KeySelectorControl::selectKey) );
-}
-
-void KeySelectorControl::changeVisibility( bool visible )
-{
-    table->setVisible( visible );
-    if ( label ) label->setVisible( visible );
 }
 
 void KeySelectorControl::filter()
@@ -1514,7 +1505,7 @@ bool KeySelectorControl::eventFilter( QObject *obj, QEvent *e )
 #endif
 
     if( obj != table || e->type() != QEvent::KeyPress )
-        return ConfigControl::eventFilter(obj, e);
+        return QWidget::eventFilter(obj, e);
 
     switch( static_cast<QKeyEvent*>(e)->key() )
     {
