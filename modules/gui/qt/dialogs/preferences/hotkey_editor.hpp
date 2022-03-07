@@ -52,6 +52,7 @@ class HotkeyEditor : public QWidget
 
 public:
     HotkeyEditor( QWidget * );
+    void init( QTreeWidget *, SearchLineEdit *, QComboBox * );
     void doApply();
     enum ColumnIndex
     {
@@ -78,11 +79,11 @@ protected:
 private:
     void selectKey( KeyTableItem *, enum ColumnIndex );
     void buildAppHotkeysList( QWidget *rootWidget );
-    void finish();
     SearchLineEdit *search_box;
     QComboBox *search_fields;
     QTreeWidget *table;
     QSet<QString> existing_keys;
+    bool initialised;
 
 private slots:
     void selectKey( QTreeWidgetItem *, int );

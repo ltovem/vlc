@@ -56,54 +56,10 @@
  **********************************************************************/
 HotkeyEditor::HotkeyEditor( QWidget *parent ) : QWidget( parent )
 {
-    QGridLayout *layout = new QGridLayout;
-    layout->setContentsMargins( 0, 0, 0, 0 );
-    setLayout( layout );
-
-    QLabel *label = new QLabel( qtr( "Action hotkey mappings." ), this );
-
-    label->setWordWrap( true );
-    QLabel *searchLabel = new QLabel( qtr( "Search" ), this );
-    search_box = new SearchLineEdit( this );
-
-    QLabel *searchOptionLabel = new QLabel( qtr("in"), this );
-    search_fields = new QComboBox( this );
-    search_fields->addItem( qtr("Any field"), ANY_COL );
-    search_fields->addItem( qtr("Actions"), ACTION_COL );
-    search_fields->addItem( qtr("Hotkeys"), HOTKEY_COL );
-    search_fields->addItem( qtr("Global Hotkeys"), GLOBAL_HOTKEY_COL );
-
-    table = new QTreeWidget( this );
-    table->setColumnCount( ANY_COL );
-    table->headerItem()->setText( ACTION_COL, qtr( "Action" ) );
-    table->headerItem()->setText( HOTKEY_COL, qtr( "Hotkey" ) );
-    table->headerItem()->setToolTip( HOTKEY_COL, qtr( "Application level hotkey" ) );
-    table->headerItem()->setText( GLOBAL_HOTKEY_COL, qtr( "Global" ) );
-    table->headerItem()->setToolTip( GLOBAL_HOTKEY_COL, qtr( "Desktop level hotkey" ) );
-    table->setAlternatingRowColors( true );
-    table->setSelectionBehavior( QAbstractItemView::SelectItems );
-    table->setStyleSheet( "QTreeView::item { padding: 5px 0; }" );
-
-    table->installEventFilter( this );
-
-    layout->addWidget( label, 0, 0, 1, 4 );
-    layout->addWidget( searchLabel, 1, 0, 1, 1 );
-    layout->addWidget( search_box, 1, 1, 1, 1 );
-    layout->addWidget( searchOptionLabel, 1, 2, 1, 1 );
-    layout->addWidget( search_fields, 1, 3, 1, 1 );
-    layout->addWidget( table, 2, 0, 1, 4 );
-
-    /* Find the top most widget */
-    QWidget *parent_tmp, *rootWidget = parent;
-    while( (parent_tmp = rootWidget->parentWidget()) != nullptr )
-        rootWidget = parent_tmp;
-    buildAppHotkeysList( rootWidget );
-
-    finish();
-
-    connect( search_box, &SearchLineEdit::textChanged, this, &HotkeyEditor::filter );
-    connect( search_fields, QOverload<int>::of(&QComboBox::activated),
-             this, &HotkeyEditor::filter );
+    initialised = false;
+    table = nullptr;
+    search_box = nullptr;
+    search_fields = nullptr;
 }
 
 void HotkeyEditor::buildAppHotkeysList( QWidget *rootWidget )
@@ -117,8 +73,22 @@ void HotkeyEditor::buildAppHotkeysList( QWidget *rootWidget )
     }
 }
 
-void HotkeyEditor::finish()
+void HotkeyEditor::init( QTreeWidget *table_, SearchLineEdit *search_box_, QComboBox *search_fields_ )
 {
+    assert( !initialised );
+    initialised = true;
+
+    table = table_;
+    search_box = search_box_;
+    search_fields = search_fields_;
+
+    search_fields->addItem( qtr("Any field"), ANY_COL );
+    search_fields->addItem( qtr("Actions"), ACTION_COL );
+    search_fields->addItem( qtr("Hotkeys"), HOTKEY_COL );
+    search_fields->addItem( qtr("Global Hotkeys"), GLOBAL_HOTKEY_COL );
+
+    table->setSelectionBehavior( QAbstractItemView::SelectItems );
+
     /* Get the main Module */
     module_t *p_main = module_get_main();
     assert( p_main );
@@ -185,8 +155,19 @@ void HotkeyEditor::finish()
 
 //    table->setUniformRowHeights( true );
 
+    table->installEventFilter( this );
+
+    /* Get the app hotkeys from the root widget */
+    QWidget *parent_tmp, *rootWidget = this;
+    while( (parent_tmp = rootWidget->parentWidget()) != nullptr )
+        rootWidget = parent_tmp;
+    buildAppHotkeysList( rootWidget );
+
     connect( table, &QTreeWidget::itemActivated,
              this, QOverload<QTreeWidgetItem *, int>::of(&HotkeyEditor::selectKey) );
+    connect( search_box, &SearchLineEdit::textChanged, this, &HotkeyEditor::filter );
+    connect( search_fields, QOverload<int>::of(&QComboBox::activated),
+             this, &HotkeyEditor::filter );
 }
 
 void HotkeyEditor::filter()

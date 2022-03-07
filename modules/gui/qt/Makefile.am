@@ -505,6 +505,7 @@ nodist_libqt_plugin_la_SOURCES += \
 	gui/qt/dialogs/preferences/ui_sprefs_medialibrary.h \
 	gui/qt/dialogs/preferences/ui_sprefs_subtitles.h \
 	gui/qt/dialogs/preferences/ui_sprefs_video.h \
+	gui/qt/dialogs/preferences/ui_sprefs_hotkeys.h \
 	gui/qt/dialogs/sout/ui_profiles.h \
 	gui/qt/dialogs/sout/ui_sout.h \
 	gui/qt/dialogs/vlm/ui_vlm.h
@@ -546,6 +547,7 @@ libqt_plugin_la_UI = \
 	gui/qt/dialogs/preferences/sprefs_medialibrary.ui \
 	gui/qt/dialogs/preferences/sprefs_subtitles.ui \
 	gui/qt/dialogs/preferences/sprefs_video.ui \
+	gui/qt/dialogs/preferences/sprefs_hotkeys.ui \
 	gui/qt/dialogs/sout/profiles.ui \
 	gui/qt/dialogs/sout/sout.ui \
 	gui/qt/dialogs/vlm/vlm.ui

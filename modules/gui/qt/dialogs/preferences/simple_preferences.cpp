@@ -1003,43 +1003,24 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         /********************************
          * HOTKEYS Panel Implementation *
          ********************************/
-        case SPrefsHotkeys:
-        {
-            QVBoxLayout *bLayout = new QVBoxLayout;
-            panel->setLayout( bLayout );
+        START_SPREFS_CAT( Hotkeys, qtr( "Configure Hotkeys" ) );
 
-            panel_label->setText( qtr( "Configure Hotkeys" ) );
+            optionWidgets["hotkeyEditor"] = ui.hotkeyEditor;
+            optionWidgets["wheelComboBoxY"] = ui.wheelComboBoxY;
+            optionWidgets["wheelComboBoxX"] = ui.wheelComboBoxX;
 
-            HotkeyEditor *hotkey_editor = new HotkeyEditor( this );
-            optionWidgets["hotkey_editor"] = hotkey_editor;
-            bLayout->addWidget( hotkey_editor );
+            ui.hotkeyEditor->init( ui.table, ui.searchBox, ui.searchField );
 
-            QGridLayout *gLayout = new QGridLayout;
-            bLayout->addLayout( gLayout );
-            int line = 0;
-
-            p_config = config_FindConfig( "hotkeys-y-wheel-mode" );
-            control = new IntegerListConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
-
-            line++;
-
-            p_config = config_FindConfig( "hotkeys-x-wheel-mode" );
-            control = new IntegerListConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
+            setfillVLCConfigCombo( "hotkeys-y-wheel-mode", ui.wheelComboBoxY );
+            setfillVLCConfigCombo( "hotkeys-x-wheel-mode", ui.wheelComboBoxX );
 
 #ifdef _WIN32
-            line++;
-
-            p_config = config_FindConfig( "qt-disable-volume-keys" );
-            control = new BoolConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
+            optionWidgets["disableVolKeys"] = ui.disableVolKeys;
+            ui.disableVolKeys->setChecked( !!config_GetInt( "qt-disable-volume-keys" ) );
+#else
+            ui.disableVolKeys->hide();
 #endif
-            break;
-        }
+        END_SPREFS_CAT;
 
         /**************************************
          * MEDIA LIBRARY Panel Implementation *
@@ -1300,7 +1281,18 @@ void SPrefsPanel::apply()
     }
     case SPrefsHotkeys:
     {
-        qobject_cast<HotkeyEditor *>(optionWidgets["hotkey_editor"])->doApply();
+        qobject_cast<HotkeyEditor *>(optionWidgets["hotkeyEditor"])->doApply();
+
+        int wheel_mode = qobject_cast<QComboBox *>(optionWidgets["wheelComboBoxY"])->currentData().toInt();
+        config_PutInt( "hotkeys-y-wheel-mode", wheel_mode );
+
+        wheel_mode = qobject_cast<QComboBox *>(optionWidgets["wheelComboBoxX"])->currentData().toInt();
+        config_PutInt( "hotkeys-x-wheel-mode", wheel_mode );
+
+#ifdef _WIN32
+        bool checked = qobject_cast<QCheckBox *>(optionWidgets["disableVolKeys"])->isChecked();
+        config_PutInt( "qt-disable-volume-keys", checked );
+#endif
         break;
     }
     case SPrefsMediaLibrary:
