@@ -80,7 +80,7 @@ class ConfigControl : public QObject
 {
     Q_OBJECT
 public:
-    int getType() const { return (p_item) ? p_item->i_type : -1; }
+    int getType() const { return p_item->i_type; }
     const char * getName() const { return  p_item->psz_name; }
     void hide() { changeVisibility( false ); }
     void show() { changeVisibility( true ); }
