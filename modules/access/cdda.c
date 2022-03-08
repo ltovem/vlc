@@ -317,6 +317,7 @@ static int DemuxOpen(vlc_object_t *obj, vcddev_t *dev, unsigned track)
     sys->vcddev = dev;
     sys->start = var_InheritInteger(obj, "cdda-first-sector");
     sys->length = var_InheritInteger(obj, "cdda-last-sector") - sys->start;
+    bool emphasis = var_InheritBool(obj, "cdda-emphasis");
 
     /* Track number in input item */
     if (sys->start == INVALID_SECTOR || sys->length == INVALID_SECTOR)
@@ -343,6 +344,7 @@ static int DemuxOpen(vlc_object_t *obj, vcddev_t *dev, unsigned track)
 
         sys->start = i_first_sector;
         sys->length = i_last_sector - i_first_sector;
+        emphasis = !!(p_toc->p_sectors[track].i_control & CD_ROM_SUBCODE_PRE_EMPHASIS);
         vcddev_toc_Free(p_toc);
     }
 
@@ -351,6 +353,8 @@ static int DemuxOpen(vlc_object_t *obj, vcddev_t *dev, unsigned track)
     es_format_Init(&fmt, AUDIO_ES, VLC_CODEC_S16L);
     fmt.audio.i_rate = 44100;
     fmt.audio.i_channels = 2;
+    if (emphasis)
+        fmt.audio.emphasis = AUDIO_EMPHASIS_CD_50_DIV_15_uS;
     sys->es = es_out_Add(demux->out, &fmt);
 
     date_Init(&sys->pts, CD_ROM_CDDA_FRAMES, 1);
@@ -1037,6 +1041,8 @@ vlc_module_begin ()
     add_integer( "cdda-first-sector", INVALID_SECTOR, NULL, NULL )
         change_volatile ()
     add_integer( "cdda-last-sector", INVALID_SECTOR, NULL, NULL )
+        change_volatile ()
+    add_bool( "cdda-emphasis", false, NULL, NULL )
         change_volatile ()
 
     add_string( "musicbrainz-server", MUSICBRAINZ_DEFAULT_SERVER,
