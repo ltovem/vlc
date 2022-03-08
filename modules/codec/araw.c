@@ -279,6 +279,7 @@ static int DecoderOpen( vlc_object_t *p_this )
         p_dec->fmt_out.audio.i_channels = p_dec->fmt_in.audio.i_channels;
         p_dec->fmt_out.audio.i_physical_channels = 0;
     }
+    p_dec->fmt_out.audio.emphasis = p_dec->fmt_in.audio.emphasis;
     aout_FormatPrepare( &p_dec->fmt_out.audio );
 
     p_sys->decode = decode;
