@@ -66,6 +66,7 @@ static const char *const enc_hq_list_text[] = {
 # include "../../demux/avformat/avformat.h"
 # include "../../access/avio.h"
 # include "../../packetizer/avparser.h"
+# include "../../audio_filter/emphasis/avfilter.h"
 #endif
 
 /*****************************************************************************
@@ -205,6 +206,8 @@ vlc_module_begin ()
         AVIO_MODULE
     add_submodule ()
         AVPARSER_MODULE
+    add_submodule ()
+        AVEMPHASIS_MODULE
 #endif
 vlc_module_end ()
 

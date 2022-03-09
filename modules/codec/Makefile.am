@@ -378,6 +378,11 @@ if ENABLE_SOUT
 libavcodec_plugin_la_SOURCES += demux/avformat/mux.c
 endif
 libavcodec_plugin_la_CFLAGS += -DMERGE_FFMPEG
+if HAVE_AVFILTER
+libavcodec_plugin_la_SOURCES += audio_filter/emphasis/avfilter.c
+libavcodec_plugin_la_CFLAGS += $(AVFILTER_CFLAGS) $(AVUTIL_CFLAGS)
+libavcodec_plugin_la_LIBADD += $(AVFILTER_LIBS) $(AVUTIL_LIBS) $(LIBM)
+endif
 endif
 if HAVE_DARWIN
 libavcodec_plugin_la_LDFLAGS += -Wl,-framework,Foundation -Wl,-framework,Security,-framework,CoreFoundation
