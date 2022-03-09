@@ -182,6 +182,7 @@ enum vlc_config_subcat
     SUBCAT_AUDIO_AFILTER       = 203,
     SUBCAT_AUDIO_VISUAL        = 204,
     SUBCAT_AUDIO_RESAMPLER     = 206,
+    SUBCAT_AUDIO_EMPHASIS      = 207,
 
     SUBCAT_VIDEO_GENERAL       = 301,
     SUBCAT_VIDEO_VOUT          = 302,

@@ -187,6 +187,7 @@ static const struct config_subcategory_t subcategories_array[] =
     { SUBCAT_AUDIO_AFILTER,        CAT_AUDIO,      N_("Filters"),             AFILTER_HELP       },
     { SUBCAT_AUDIO_AOUT,           CAT_AUDIO,      N_("Output modules"),      AOUT_HELP          },
     { SUBCAT_AUDIO_VISUAL,         CAT_AUDIO,      N_("Visualizations"),      AVISUAL_HELP       },
+    { SUBCAT_AUDIO_EMPHASIS,       CAT_AUDIO,      N_("Emphasis"),            AFILTER_HELP       },
 
     { SUBCAT_VIDEO_GENERAL,        CAT_VIDEO,      VIDEO_TITLE,               VIDEO_GENERAL_HELP },
     { SUBCAT_VIDEO_VFILTER,        CAT_VIDEO,      N_("Filters"),             VFILTER_HELP       },
