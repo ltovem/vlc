@@ -84,6 +84,7 @@ Video output:
 
 Audio filter:
  * Add RNNoise recurrent neural network denoiser
+ * Add de-emphasis filter to ajdust the sound of pre-emphased sources
 
 Video filter:
  * Update yadif
