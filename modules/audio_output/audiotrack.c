@@ -1295,6 +1295,7 @@ StartPCM( JNIEnv *env, audio_output_t *p_aout, unsigned i_max_channels )
                                     jfields.AudioManager.STREAM_MUSIC );
     else
         p_sys->fmt.i_rate = VLC_CLIP( p_sys->fmt.i_rate, 4000, 48000 );
+    p_sys->fmt.emphasis = AUDIO_EMPHASIS_NONE;
 
     do
     {

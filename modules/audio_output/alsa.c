@@ -614,6 +614,7 @@ static int Start (audio_output_t *aout, audio_sample_format_t *restrict fmt)
         fmt->i_frame_length = A52_FRAME_NB;
     }
     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
     sys->format = fmt->i_format;
 
     if (snd_pcm_hw_params_can_pause (hw))
@@ -675,7 +676,7 @@ static void Play(audio_output_t *aout, block_t *block, vlc_tick_t date)
             block->i_buffer -= bytes;
             // pts, length
         }
-        else  
+        else
         {
             int val = snd_pcm_recover (pcm, frames, 1);
             if (val)

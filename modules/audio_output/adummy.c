@@ -121,6 +121,7 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
             assert(aout_FormatNbChannels(fmt) > 0);
             fmt->i_format = HAVE_FPU ? VLC_CODEC_FL32 : VLC_CODEC_S16N;
             fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+            fmt->emphasis = AUDIO_EMPHASIS_NONE;
             break;
     }
 

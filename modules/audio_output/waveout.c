@@ -236,6 +236,8 @@ static int Start( audio_output_t *p_aout, audio_sample_format_t *restrict fmt )
 
     if( fmt->i_format != VLC_CODEC_SPDIFL )
     {
+        fmt->emphasis = AUDIO_EMPHASIS_NONE;
+
        /*
          check for configured audio device!
        */

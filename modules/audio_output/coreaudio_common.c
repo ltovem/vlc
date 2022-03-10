@@ -894,6 +894,7 @@ au_Initialize(audio_output_t *p_aout, AudioUnit au, audio_sample_format_t *fmt,
     {
         /* PCM */
         fmt->i_format = VLC_CODEC_FL32;
+        fmt->emphasis = AUDIO_EMPHASIS_NONE;
         ret = MapOutputLayout(p_aout, fmt, outlayout, warn_configuration);
         if (ret != VLC_SUCCESS)
             return ret;

@@ -175,6 +175,7 @@ static int Start (audio_output_t *aout, audio_sample_format_t *restrict fmt)
 
     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
     fmt->i_physical_channels = chans;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
     aout_FormatPrepare (fmt);
 
     aout->time_get = TimeGet;

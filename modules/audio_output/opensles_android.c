@@ -483,6 +483,7 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
     fmt->i_format              = VLC_CODEC_S16N;
     fmt->i_physical_channels   = AOUT_CHAN_LEFT | AOUT_CHAN_RIGHT;
     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
 
     SetPositionUpdatePeriod(sys->playerPlay, MS_FROM_VLC_TICK(AOUT_MIN_PREPARE_TIME));
 

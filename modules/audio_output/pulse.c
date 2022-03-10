@@ -930,6 +930,8 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
 
         pa_format_info_set_channels(formatv, ss.channels);
         pa_format_info_set_channel_map(formatv, &map);
+
+        fmt->emphasis = AUDIO_EMPHASIS_NONE;
     }
 
     /* Create a playback stream */
