@@ -49,12 +49,6 @@
 ExpertPrefsTable::ExpertPrefsTable( QWidget *parent ) :
     QTreeView( parent )
 {
-    setSelectionBehavior( QAbstractItemView::SelectRows );
-    setSelectionMode( QAbstractItemView::SingleSelection );
-    setAlternatingRowColors( true );
-
-    setStyleSheet( "QTreeView::item { padding: 9px 0; }" );
-
     /* edit sub-dialog (reusable) */
     expert_edit = new ExpertPrefsEditDialog( this );
 

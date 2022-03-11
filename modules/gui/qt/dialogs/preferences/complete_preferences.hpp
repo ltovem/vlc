@@ -89,7 +89,8 @@ class PrefsTree : public QTreeWidget
     Q_OBJECT
 
 public:
-    PrefsTree( qt_intf_t *, QWidget *, module_t **, size_t );
+    PrefsTree( QWidget *parent = nullptr ) : QTreeWidget( parent ) {}
+    void init( qt_intf_t *, module_t **, size_t );
 
     void applyAll();
     void filter( const QString &text );
@@ -113,6 +114,7 @@ private:
     bool b_show_only_loaded;
     QTreeWidgetItem *catMap[ARRAY_SIZE(categories_array)] = { nullptr };
     QTreeWidgetItem *subcatMap[ARRAY_SIZE(subcategories_array)] = { nullptr };
+    bool initialised = false;
 
 private slots:
     void resizeColumns();

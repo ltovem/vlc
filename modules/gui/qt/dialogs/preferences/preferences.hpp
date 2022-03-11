@@ -26,18 +26,12 @@
 #include "widgets/native/qvlcframe.hpp"
 #include "simple_preferences.hpp"
 
-class ExpertPrefsTable;
-class PrefsTree;
+/* Auto-generated from .ui files */
+#include "ui_preferences.h"
+
 class SPrefsCatList;
 class SPrefsPanel;
 class QTreeWidgetItem;
-class QGroupBox;
-class QRadioButton;
-class QWidget;
-class QCheckBox;
-class SearchLineEdit;
-class QStackedWidget;
-class QSplitter;
 class QShortcut;
 
 class PrefsDialog : public QVLCDialog
@@ -49,39 +43,18 @@ public:
 
 private:
     size_t count;
-    module_t **p_list;
+    module_t **p_list = nullptr;
 
-    /* View stack */
-    QStackedWidget *stack;
+    Ui::PrefsUI ui;
 
     /* View selection */
     enum { SIMPLE, ADVANCED, EXPERT };
-    QGroupBox *types;
-    QRadioButton *simple, *all, *expert;
 
-    /* Simple view components */
-    QWidget *simple_split_widget;
-    QWidget *simple_tree_panel;
-    SPrefsCatList *simple_tree;
-    QStackedWidget *simple_panels_stack;
+    bool advanced_initialised = false;
+    bool expert_initialised = false;
+
+    SPrefsCatList *simple_tree = nullptr;
     SPrefsPanel *simple_panels[SPrefsMax];
-
-    /* Advanced view components */
-    QSplitter *advanced_split_widget;
-    QWidget *advanced_tree_panel;
-    SearchLineEdit *tree_filter;
-    QCheckBox *current_filter;
-    PrefsTree *advanced_tree;
-    QStackedWidget *advanced_panels_stack;
-
-    /* Expert view components */
-    QWidget *expert_widget;
-    QGridLayout *expert_widget_layout;
-    SearchLineEdit *expert_table_filter;
-    QCheckBox *expert_table_filter_modified;
-    ExpertPrefsTable *expert_table;
-    QLabel *expert_text;
-    QLabel *expert_longtext;
 
     QShortcut *search;
 
