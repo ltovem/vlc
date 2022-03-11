@@ -25,7 +25,6 @@
 
 #include <QApplication>
 #include <QLabel>
-#include <QTreeWidget>
 #include <QString>
 #include <QFont>
 #include <QGroupBox>
@@ -33,8 +32,8 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 
-#include "dialogs/preferences/complete_preferences.hpp"
-#include "dialogs/preferences/preferences_widgets.hpp"
+#include "complete_preferences.hpp"
+#include "preferences_widgets.hpp"
 
 #include <vlc_modules.h>
 #include <assert.h>
