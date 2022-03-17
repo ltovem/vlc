@@ -4,6 +4,7 @@ import layout from './modules/layout.js';
 import music from './modules/music.js';
 import video from './modules/video.js';
 import vlmCmd from './modules/vlm_cmd.js';
+import sd from './modules/sd.js';
 
 export default new Vuex.Store({
     modules: {
@@ -12,6 +13,7 @@ export default new Vuex.Store({
         layout,
         music,
         video,
-        vlmCmd
+        vlmCmd,
+        sd
     }
 });

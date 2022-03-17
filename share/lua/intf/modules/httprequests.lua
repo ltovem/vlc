@@ -536,6 +536,15 @@ get_renderers = function()
     end
     return rd:list()
 end
+
+get_services = function()
+    local sd = get_service_discovery()
+    if not sd then
+        return {}
+    end
+    return sd:list()
+end
+
 httprequests.get_renderers = get_renderers
 
 _G.httprequests = httprequests

@@ -16,6 +16,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/services/status.service.js \
 --js $(srcdir)/lua/http/src/services/vlm_cmd.service.js \
 --js $(srcdir)/lua/http/src/services/components.service.js \
+--js $(srcdir)/lua/http/src/services/sd.service.js \
 --js $(srcdir)/lua/http/src/store/index.js \
 --js $(srcdir)/lua/http/src/store/modules/layout.js \
 --js $(srcdir)/lua/http/src/store/modules/music.js \
@@ -23,6 +24,7 @@ JS_TARGETS = --js $(srcdir)/lua/http/src/services/initialize.service.js \
 --js $(srcdir)/lua/http/src/store/modules/playlist.js \
 --js $(srcdir)/lua/http/src/store/modules/status.js \
 --js $(srcdir)/lua/http/src/store/modules/vlm_cmd.js \
+--js $(srcdir)/lua/http/src/store/modules/sd.js \
 --js $(srcdir)/lua/http/src/components/albums/album-item/album-item-grid.component.js \
 --js $(srcdir)/lua/http/src/components/albums/album-item/album-item-list.component.js \
 --js $(srcdir)/lua/http/src/components/tracks/track-item/track-item-list.component.js \
