@@ -22,6 +22,7 @@ liblua_plugin_la_SOURCES = \
 	lua/libs/osd.c \
 	lua/libs/playlist.c \
 	lua/libs/sd.c \
+	lua/libs/service_discoverer.c \
 	lua/libs/stream.c \
 	lua/libs/strings.c \
 	lua/libs/variables.c lua/libs/variables.h \
