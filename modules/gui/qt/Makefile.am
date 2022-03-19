@@ -272,6 +272,8 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/qmlinputitem.hpp \
 	gui/qt/util/mouse_event_filter.cpp \
 	gui/qt/util/mouse_event_filter.hpp \
+	gui/qt/util/gl_texture_helper.cpp \
+	gui/qt/util/gl_texture_helper.hpp \
 	gui/qt/widgets/native/animators.cpp \
 	gui/qt/widgets/native/animators.hpp \
 	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
