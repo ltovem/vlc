@@ -65,18 +65,13 @@ Segment * SegmentList::getMediaSegment(uint64_t number) const
         return segments.at(listindex);
     }
 
-    std::vector<Segment *>::const_iterator it = segments.begin();
-    for(it = segments.begin(); it != segments.end(); ++it)
+    for(auto &seg : segments)
     {
-        Segment *seg = *it;
         if(seg->getSequenceNumber() == number)
-        {
             return seg;
-        }
-        else if (seg->getSequenceNumber() > number)
-        {
+
+        if (seg->getSequenceNumber() > number)
             break;
-        }
     }
     return nullptr;
 }
@@ -122,9 +117,8 @@ void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
             return;
 
         /* merge update with current list */
-        for(auto it = updated->segments.begin(); it != updated->segments.end(); ++it)
+        for(auto &cur : updated->segments)
         {
-            Segment *cur = *it;
             cur->startTime.Set(prevSegment->startTime.Get() + prevSegment->duration.Get());
             /* not continuous */
             if(cur->getSequenceNumber() != prevSegment->getSequenceNumber() + 1)
@@ -154,10 +148,10 @@ void SegmentList::pruneByPlaybackTime(vlc_tick_t time)
 
 void SegmentList::pruneBySegmentNumber(uint64_t tobelownum)
 {
-    std::vector<Segment *>::iterator it = segments.begin();
+    auto it = segments.begin();
     while(it != segments.end())
     {
-        Segment *seg = *it;
+        auto &seg = *it;
 
         if(seg->getSequenceNumber() >= tobelownum)
             break;
@@ -193,18 +187,15 @@ bool SegmentList::getPlaybackTimeDurationBySegmentNumber(uint64_t number,
         if(segments.empty())
             return false;
 
-        const ISegment *first = segments.front();
+        const auto &first = segments.front();
         if(first->getSequenceNumber() > number)
             return false;
 
         bool found = false;
         stime = first->startTime.Get();
         sduration = 0;
-        std::vector<Segment *>::const_iterator it = segments.begin();
-        for(it = segments.begin(); it != segments.end(); ++it)
+        for(const auto &seg : segments)
         {
-            const Segment *seg = *it;
-
             if(seg->duration.Get())
                 sduration = seg->duration.Get();
             else
@@ -253,10 +244,8 @@ vlc_tick_t SegmentList::getMinAheadTime(uint64_t curnum) const
 
     vlc_tick_t minTime = 0;
     const Timescale timescale = inheritTimescale();
-    std::vector<Segment *>::const_iterator it;
-    for(it = segments.begin(); it != segments.end(); ++it)
+    for(const auto &seg : segments)
     {
-        const Segment *seg = *it;
         if(seg->getSequenceNumber() > curnum)
             minTime += timescale.ToTime(seg->duration.Get());
     }
@@ -278,10 +267,8 @@ Segment *  SegmentList::getNextMediaSegment(uint64_t i_pos,uint64_t *pi_newpos,
         return segments.at(listindex);
     }
 
-    std::vector<Segment *>::const_iterator it;
-    for(it = segments.begin(); it != segments.end(); ++it)
+    for(const auto &seg : segments)
     {
-        Segment *seg = *it;
         if(seg->getSequenceNumber() >= i_pos)
         {
             *pi_newpos = seg->getSequenceNumber();
@@ -322,9 +309,8 @@ bool SegmentList::getSegmentNumberByTime(vlc_tick_t time, uint64_t *ret) const
 void SegmentList::debug(vlc_object_t *obj, int indent) const
 {
     AbstractSegmentBaseType::debug(obj, indent);
-    std::vector<Segment *>::const_iterator it;
-    for(it = segments.begin(); it != segments.end(); ++it)
-        (*it)->debug(obj, indent);
+    for(const auto &seg : segments)
+        seg->debug(obj, indent);
     const AbstractAttr *p = getAttribute(Type::Timeline);
     if(p)
         static_cast<const SegmentTimeline *> (p)->debug(obj, indent + 1);
