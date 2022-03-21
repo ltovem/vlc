@@ -24,18 +24,21 @@
 #include <string.h>
 #include <limits.h>
 
+#include <vlc_common.h>
+#include <vlc_messages.h>
+
 #include "json_helper.h"
 #include "musicbrainz.h"
 
 typedef struct
 {
-    json_value *root;
+    struct json_value *root;
+    struct json_object json;
 } musicbrainz_lookup_t;
 
 static void musicbrainz_lookup_release(musicbrainz_lookup_t *p)
 {
-    if(p && p->root)
-        json_value_free(p->root);
+    json_free(&p->json);
     free(p);
 }
 
@@ -52,86 +55,92 @@ static musicbrainz_lookup_t * musicbrainz_lookup(vlc_object_t *p_obj, const char
         return NULL;
 
     musicbrainz_lookup_t *p_lookup = musicbrainz_lookup_new();
+
     if(p_lookup)
     {
-        p_lookup->root = json_parse_document(p_obj, p_buffer);
-        if (!p_lookup->root)
-            msg_Dbg(p_obj, "No results");
+        struct sys_json jsdata;
+        jsdata.logger = p_obj->logger;
+        jsdata.input = p_buffer;
+        jsdata.size = strlen(jsdata.input);
+        jsdata.json_read = Read;
+
+        int val = json_parse(&jsdata, &p_lookup->json);        
+        if (val) {
+            msg_Dbg( p_obj, "error: could not parse json!");
+            return false;
+        }
     }
     free(p_buffer);
     return p_lookup;
 }
 
-static bool musicbrainz_fill_track(const json_value *tracknode, musicbrainz_track_t *t)
+static bool musicbrainz_fill_track(struct json_value *tracknode, musicbrainz_track_t *t)
 {
     t->psz_title = json_dupstring(tracknode, "title");
 
-    const json_value *node = json_getbyname(tracknode, "artist-credit");
-    if (node && node->type == json_array && node->u.array.length)
-        t->psz_artist = json_dupstring(node->u.array.values[0], "name");
+    struct json_value node = json_getbyname(&tracknode->object, "artist-credit");
+    if (node.type == JSON_ARRAY)
+        t->psz_artist = json_dupstring(&node.array.entries[0], "name");
 
-    node = json_getbyname(tracknode, "position");
-    if (node && node->type == json_integer)
-        t->i_index = node->u.integer;
+    node = json_getbyname(&tracknode->object, "position");
+    if (node.type == JSON_NUMBER)
+        t->i_index = node.number;
 
     return true;
 }
 
-static bool musicbrainz_has_cover_in_releasegroup(json_value ** const p_nodes,
+static bool musicbrainz_has_cover_in_releasegroup(struct json_value ** const p_nodes,
                                                   size_t i_nodes,
                                                   const char *psz_group_id)
 {
+    /* FIXME, not sure it does what I want */
     for(size_t i=0; i<i_nodes; i++)
     {
-        const json_value *rgnode = json_getbyname(p_nodes[i], "release-group");
-        if(rgnode)
-        {
-            const char *psz_id = jsongetstring(rgnode, "id");
-            if(!psz_id || strcmp(psz_id, psz_group_id))
-                continue;
+        struct json_value rgnode = json_getbyname(&p_nodes[i]->object, "release-group");
+        const char *psz_id = jsongetstring(&rgnode, "id");
+        if(!psz_id || strcmp(psz_id, psz_group_id))
+            continue;
+        
+        struct json_value node = json_getbyname(&p_nodes[i]->object, "cover-art-archive");
+        
+        node = json_getbyname(&node.object, "front");
+        if(node.type != JSON_BOOLEAN || !node.boolean)
+            continue;
 
-            const json_value *node = json_getbyname(p_nodes[i], "cover-art-archive");
-            if(!node)
-                continue;
-
-            node = json_getbyname(node, "front");
-            if(!node || node->type != json_boolean || !node->u.boolean)
-                continue;
-
-            return true;
-        }
+        return true;
     }
 
     return false;
 }
 
-static char *musicbrainz_fill_artists(const json_value *arraynode)
+static char *musicbrainz_fill_artists(const struct json_value *arraynode)
 {
     char *psz = NULL;
-    if(arraynode->type != json_array || arraynode->u.array.length < 1)
+    if(arraynode->type != JSON_ARRAY || arraynode->array.size < 1)
         return psz;
 
     size_t i_total = 1;
-    for(size_t i=0; i<arraynode->u.array.length; i++)
+    size_t len = 0;
+    for(size_t i=0; i<arraynode->array.size; i++)
     {
-        const json_value *name = json_getbyname(arraynode->u.array.values[i], "name");
-        if(name->type != json_string)
+        struct json_value name = json_getbyname(&arraynode->array.entries[i].object, "name");
+        if(name.type != JSON_STRING)
             continue;
-
+        len = strlen(name.string);
         if(psz == NULL)
         {
-            psz = strdup(name->u.string.ptr);
-            i_total = name->u.string.length + 1;
+            psz = strdup(name.string);
+            i_total = len + 1;
         }
         else
         {
-            char *p = realloc(psz, i_total + name->u.string.length + 2);
+            char *p = realloc(psz, i_total + len + 2);
             if(p)
             {
                 psz = p;
                 psz = strcat(psz, ", ");
-                psz = strncat(psz, name->u.string.ptr, name->u.string.length);
-                i_total += name->u.string.length + 2;
+                psz = strncat(psz, name.string, len);
+                i_total += len + 2;
             }
         }
     }
@@ -139,54 +148,43 @@ static char *musicbrainz_fill_artists(const json_value *arraynode)
     return psz;
 }
 
-static bool musicbrainz_fill_release(const json_value *releasenode, musicbrainz_release_t *r)
+static bool musicbrainz_fill_release(struct json_value *releasenode, musicbrainz_release_t *r)
 {
-    const json_value *media = json_getbyname(releasenode, "media");
-    if(!media || media->type != json_array ||
-       media->u.array.length == 0)
+    struct json_value media = json_getbyname(&releasenode->object, "media");
+    if(media.type != JSON_ARRAY ||
+       media.array.size == 0)
         return false;
     /* we always use first media */
-    media = media->u.array.values[0];
+    media = media.array.entries[0];
 
-    const json_value *tracks = json_getbyname(media, "tracks");
-    if(!tracks || tracks->type != json_array ||
-       tracks->u.array.length == 0)
+    struct json_value tracks = json_getbyname(&media.object, "tracks");
+    if(tracks.type != JSON_ARRAY ||
+       tracks.array.size == 0)
         return false;
 
-    r->p_tracks = calloc(tracks->u.array.length, sizeof(*r->p_tracks));
+    r->p_tracks = calloc(tracks.array.size, sizeof(*r->p_tracks));
     if(!r->p_tracks)
         return false;
 
-    for(size_t i=0; i<tracks->u.array.length; i++)
+    for(size_t i=0; i<tracks.array.size; i++)
     {
-        if(musicbrainz_fill_track(tracks->u.array.values[i], &r->p_tracks[r->i_tracks]))
+        if(musicbrainz_fill_track(&tracks.array.entries[i], &r->p_tracks[r->i_tracks]))
             r->i_tracks++;
     }
 
     r->psz_title = json_dupstring(releasenode, "title");
     r->psz_id = json_dupstring(releasenode, "id");
 
-    const json_value *rgnode = json_getbyname(releasenode, "release-group");
-    if(rgnode)
-    {
-        r->psz_date = json_dupstring(rgnode, "first-release-date");
-        r->psz_group_id = json_dupstring(rgnode, "id");
-
-        const json_value *node = json_getbyname(rgnode, "artist-credit");
-        if(node)
-            r->psz_artist = musicbrainz_fill_artists(node);
-    }
-    else
-    {
-        const json_value *node = json_getbyname(releasenode, "artist-credit");
-        if(node)
-            r->psz_artist = musicbrainz_fill_artists(node);
-
-        node = json_getbyname(releasenode, "release-events");
-        if(node && node->type == json_array && node->u.array.length)
-            r->psz_date = json_dupstring(node->u.array.values[0], "date");
-    }
-
+    struct json_value rgnode = json_getbyname(&releasenode->object, "release-group");
+    r->psz_date = json_dupstring(&rgnode, "first-release-date");
+    r->psz_group_id = json_dupstring(&rgnode, "id");
+    
+    struct json_value node = json_getbyname(&rgnode.object, "artist-credit");
+    r->psz_artist = musicbrainz_fill_artists(&node);
+    
+    node = json_getbyname(&releasenode->object, "release-events");
+    if(node.type == JSON_ARRAY && node.array.size)
+        r->psz_date = json_dupstring(&node.array.entries[0], "date");
 
     return true;
 }
@@ -226,25 +224,25 @@ static musicbrainz_recording_t *musicbrainz_lookup_recording_by_apiurl(vlc_objec
         return NULL;
     }
 
-    const json_value *releases = json_getbyname(lookup->root, "releases");
-    if (releases && releases->type == json_array &&
-        releases->u.array.length)
+    struct json_value releases = json_getbyname(&lookup->json, "releases");
+    if (releases.type == JSON_ARRAY &&
+        releases.array.size)
     {
-        r->p_releases = calloc(releases->u.array.length, sizeof(*r->p_releases));
+        r->p_releases = calloc(releases.array.size, sizeof(*r->p_releases));
         if(r->p_releases)
         {
-            for(unsigned i=0; i<releases->u.array.length; i++)
+            for(unsigned i=0; i<releases.array.size; i++)
             {
-                json_value *node = releases->u.array.values[i];
+                struct json_value node = releases.array.entries[i];
                 musicbrainz_release_t *p_mbrel = &r->p_releases[r->i_release];
-                if (!node || node->type != json_object ||
-                    !musicbrainz_fill_release(node, p_mbrel))
+                if (node.type != JSON_OBJECT ||
+                    !musicbrainz_fill_release(&node, p_mbrel))
                     continue;
 
                 /* Try to find cover from other releases from the same group */
                 if(p_mbrel->psz_group_id && !p_mbrel->psz_coverart_url &&
-                   musicbrainz_has_cover_in_releasegroup(releases->u.array.values,
-                                                         releases->u.array.length,
+                   musicbrainz_has_cover_in_releasegroup(&releases.array.entries,
+                                                         releases.array.size,
                                                          p_mbrel->psz_group_id))
                 {
                     char *psz_art = coverartarchive_make_releasegroup_arturl(
@@ -348,3 +346,4 @@ coverartarchive_t * coverartarchive_lookup_releasegroup(musicbrainz_config_t *cf
 
     return c;
 }
+
