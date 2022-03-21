@@ -79,8 +79,8 @@ Segment * SegmentList::getMediaSegment(uint64_t number) const
 void SegmentList::addSegment(Segment *seg)
 {
     seg->setParent(AbstractSegmentBaseType::parent);
-    segments.push_back(seg);
     totalLength += seg->duration.Get();
+    segments.push_back(std::move(seg));
 }
 
 void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
@@ -101,8 +101,8 @@ void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
         if(!segments.empty())
             pruneBySegmentNumber(std::numeric_limits<uint64_t>::max());
         assert(segments.empty());
-        for(auto seg : updated->segments)
-            addSegment(seg);
+        for(auto &seg : updated->segments)
+            addSegment(std::move(seg));
         updated->segments.clear();
     }
     else
@@ -129,7 +129,7 @@ void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
                 cur->startTime.Set(cur->startTime.Get() + duration * gap);
             }
             prevSegment = cur;
-            addSegment(cur);
+            addSegment(std::move(cur));
         }
         updated->segments.clear();
 
