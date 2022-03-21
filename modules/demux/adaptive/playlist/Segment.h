@@ -34,6 +34,8 @@
 #include "../tools/Properties.hpp"
 #include "../Time.hpp"
 
+#include <memory>
+
 namespace adaptive
 {
     class SharedResources;
@@ -98,12 +100,12 @@ namespace adaptive
                 virtual SegmentChunk* createChunk(AbstractChunkSource *, BaseRepresentation *) override;
                 virtual void setSourceUrl( const std::string &url );
                 virtual Url getUrlSegment() const override;
-                virtual const std::vector<Segment*> & subSegments() const;
+                virtual const std::vector<std::unique_ptr<Segment>> & subSegments() const;
                 virtual void debug(vlc_object_t *,int = 0) const override;
-                virtual void addSubSegment(SubSegment *);
+                virtual void addSubSegment(std::unique_ptr<SubSegment>&& segment);
 
             protected:
-                std::vector<Segment *> subsegments;
+                std::vector<std::unique_ptr<Segment>> subsegments;
                 Url sourceUrl;
         };
 

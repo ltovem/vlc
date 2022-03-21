@@ -63,7 +63,7 @@ vlc_tick_t SegmentBase::getMinAheadTime(uint64_t curnum) const
 
 Segment * SegmentBase::getMediaSegment(uint64_t pos) const
 {
-    return (pos < subsegments.size()) ? subsegments.at(pos) : nullptr;
+    return (pos < subsegments.size()) ? subsegments.at(pos).get() : nullptr;
 }
 
 Segment *  SegmentBase::getNextMediaSegment(uint64_t i_pos,uint64_t *pi_newpos,

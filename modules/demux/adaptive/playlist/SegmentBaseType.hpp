@@ -51,9 +51,9 @@ namespace adaptive
 
                 virtual void debug(vlc_object_t *, int = 0) const;
 
-                static Segment * findSegmentByScaledTime(const std::vector<Segment *> &,
+                static Segment * findSegmentByScaledTime(const std::vector<std::unique_ptr<Segment>> &,
                                                          stime_t);
-                static uint64_t findSegmentNumberByScaledTime(const std::vector<Segment *> &,
+                static uint64_t findSegmentNumberByScaledTime(const std::vector<std::unique_ptr<Segment>> &,
                                                              stime_t);
 
             protected:

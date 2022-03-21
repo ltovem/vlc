@@ -31,7 +31,7 @@
 
 using namespace adaptive::playlist;
 
-Segment * AbstractSegmentBaseType::findSegmentByScaledTime(const std::vector<Segment *> &segments,
+Segment * AbstractSegmentBaseType::findSegmentByScaledTime(const std::vector<std::unique_ptr<Segment>> &segments,
                                                                  stime_t time)
 {
     if(segments.empty() || (segments.size() > 1 && segments[1]->startTime.Get() == 0) )
@@ -43,10 +43,10 @@ Segment * AbstractSegmentBaseType::findSegmentByScaledTime(const std::vector<Seg
 
     if (it == segments.begin())
         return nullptr;
-    return *(it-1);
+    return (it-1)->get();
 }
 
-uint64_t AbstractSegmentBaseType::findSegmentNumberByScaledTime(const std::vector<Segment *> &segments,
+uint64_t AbstractSegmentBaseType::findSegmentNumberByScaledTime(const std::vector<std::unique_ptr<Segment>> &segments,
                                                                stime_t time)
 {
     Segment *s = findSegmentByScaledTime(segments, time);

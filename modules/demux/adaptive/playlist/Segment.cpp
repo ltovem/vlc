@@ -209,7 +209,7 @@ SegmentChunk* Segment::createChunk(AbstractChunkSource *source, BaseRepresentati
     return new (std::nothrow) SegmentChunk(source, rep);
 }
 
-void Segment::addSubSegment(SubSegment *subsegment)
+void Segment::addSubSegment(std::unique_ptr<SubSegment>&& subsegment)
 {
     if(!subsegments.empty())
     {
@@ -220,12 +220,7 @@ void Segment::addSubSegment(SubSegment *subsegment)
     subsegments.push_back(std::move(subsegment));
 }
 
-Segment::~Segment()
-{
-    std::vector<Segment*>::iterator it;
-    for(it=subsegments.begin();it!=subsegments.end();++it)
-        delete *it;
-}
+Segment::~Segment() { }
 
 void                    Segment::setSourceUrl   ( const std::string &url )
 {
@@ -265,7 +260,7 @@ Url Segment::getUrlSegment() const
     }
 }
 
-const std::vector<Segment*> & Segment::subSegments() const
+const std::vector<std::unique_ptr<Segment>> & Segment::subSegments() const
 {
     return subsegments;
 }

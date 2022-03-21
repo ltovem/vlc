@@ -42,14 +42,9 @@ SegmentList::SegmentList( SegmentInformation *parent_, bool b_relative ):
     totalLength = 0;
     b_relative_mediatimes = b_relative;
 }
-SegmentList::~SegmentList()
-{
-    std::vector<Segment *>::iterator it;
-    for(it = segments.begin(); it != segments.end(); ++it)
-        delete(*it);
-}
+SegmentList::~SegmentList() = default;
 
-const std::vector<Segment*>& SegmentList::getSegments() const
+const std::vector<std::unique_ptr<Segment>>& SegmentList::getSegments() const
 {
     return segments;
 }
@@ -62,13 +57,13 @@ Segment * SegmentList::getMediaSegment(uint64_t number) const
         uint64_t listindex = timeline->getElementIndexBySequence(number);
         if(listindex >= segments.size())
             return nullptr;
-        return segments.at(listindex);
+        return segments.at(listindex).get();
     }
 
     for(auto &seg : segments)
     {
         if(seg->getSequenceNumber() == number)
-            return seg;
+            return seg.get();
 
         if (seg->getSequenceNumber() > number)
             break;
@@ -76,8 +71,9 @@ Segment * SegmentList::getMediaSegment(uint64_t number) const
     return nullptr;
 }
 
-void SegmentList::addSegment(Segment *seg)
+void SegmentList::addSegment(std::unique_ptr<Segment>&& seg)
 {
+    assert(seg.get());
     seg->setParent(AbstractSegmentBaseType::parent);
     totalLength += seg->duration.Get();
     segments.push_back(std::move(seg));
@@ -107,7 +103,7 @@ void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
     }
     else
     {
-        const Segment * prevSegment = segments.back();
+        const Segment * prevSegment = segments.back().get();
         const uint64_t oldest = updated->segments.front()->getSequenceNumber();
 
         /* filter out known segments from the update */
@@ -128,7 +124,7 @@ void SegmentList::updateWith(AbstractMultipleSegmentBaseType *updated_,
                 uint64_t gap = cur->getSequenceNumber() - prevSegment->getSequenceNumber() - 1;
                 cur->startTime.Set(cur->startTime.Get() + duration * gap);
             }
-            prevSegment = cur;
+            prevSegment = cur.get();
             addSegment(std::move(cur));
         }
         updated->segments.clear();
@@ -157,7 +153,6 @@ void SegmentList::pruneBySegmentNumber(uint64_t tobelownum)
             break;
 
         totalLength -= (*it)->duration.Get();
-        delete *it;
         it = segments.erase(it);
     }
 }
@@ -264,7 +259,7 @@ Segment *  SegmentList::getNextMediaSegment(uint64_t i_pos,uint64_t *pi_newpos,
         uint64_t listindex = timeline->getElementIndexBySequence(i_pos);
         if(listindex >= segments.size())
             return nullptr;
-        return segments.at(listindex);
+        return segments.at(listindex).get();
     }
 
     for(const auto &seg : segments)
@@ -273,7 +268,7 @@ Segment *  SegmentList::getNextMediaSegment(uint64_t i_pos,uint64_t *pi_newpos,
         {
             *pi_newpos = seg->getSequenceNumber();
             *pb_gap = (*pi_newpos != i_pos);
-            return seg;
+            return seg.get();
         }
     }
     return nullptr;

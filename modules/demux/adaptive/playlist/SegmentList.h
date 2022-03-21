@@ -28,6 +28,8 @@
 #include "SegmentBaseType.hpp"
 #include "Inheritables.hpp"
 
+#include <memory>
+
 namespace adaptive
 {
     namespace playlist
@@ -41,8 +43,9 @@ namespace adaptive
                 SegmentList             ( SegmentInformation * = nullptr, bool = false );
                 virtual ~SegmentList    ();
 
-                const std::vector<Segment *>&   getSegments() const;
-                void                    addSegment(Segment *seg);
+                const std::vector<std::unique_ptr<Segment>>&   getSegments() const;
+                void                    addSegment(std::unique_ptr<Segment>&& seg);
+                void                    addSegment(Segment *seg) { addSegment(std::unique_ptr<Segment>{seg}); }
                 virtual void            updateWith(AbstractMultipleSegmentBaseType *,
                                                    bool = false) override;
                 void                    pruneBySegmentNumber(uint64_t);
@@ -61,7 +64,7 @@ namespace adaptive
                 virtual void debug(vlc_object_t *, int = 0) const override;
 
             private:
-                std::vector<Segment *>  segments;
+                std::vector<std::unique_ptr<Segment>>  segments;
                 stime_t totalLength;
                 bool b_relative_mediatimes;
         };
