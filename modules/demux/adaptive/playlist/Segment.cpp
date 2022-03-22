@@ -217,7 +217,7 @@ void Segment::addSubSegment(SubSegment *subsegment)
            uneffective, also for next subsegments numbering */
         subsegment->setSequenceNumber(subsegments.size());
     }
-    subsegments.push_back(subsegment);
+    subsegments.push_back(std::move(subsegment));
 }
 
 Segment::~Segment()
@@ -245,8 +245,8 @@ void Segment::debug(vlc_object_t *obj, int indent) const
         text.append("Segment");
         msg_Dbg(obj, "%s", text.c_str());
         std::vector<Segment *>::const_iterator l;
-        for(l = subsegments.begin(); l != subsegments.end(); ++l)
-            (*l)->debug(obj, indent + 1);
+        for (const auto &l : subsegments)
+            l->debug(obj, indent + 1);
     }
 }
 
