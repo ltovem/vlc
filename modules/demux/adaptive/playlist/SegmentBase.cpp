@@ -54,7 +54,7 @@ vlc_tick_t SegmentBase::getMinAheadTime(uint64_t curnum) const
 
     stime_t minTime = 0;
     std::for_each(subsegments.cbegin() + curnum + 1, subsegments.cend(),
-        [&minTime](const Segment * seg){
+        [&minTime](const auto &seg){
             minTime += seg->duration.Get();
         });
 
@@ -108,5 +108,5 @@ void SegmentBase::debug(vlc_object_t *obj, int indent) const
 {
     AbstractSegmentBaseType::debug(obj, indent);
     std::for_each(subsegments.cbegin(), subsegments.cend(),
-                  [&](const Segment *seg){seg->debug(obj, indent);});
+                  [&](const auto &seg){seg->debug(obj, indent);});
 }
