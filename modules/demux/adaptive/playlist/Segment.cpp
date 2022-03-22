@@ -288,5 +288,3 @@ SubSegment::SubSegment(Segment *main, size_t start, size_t end) :
     setByteRange(start, end);
     debugName = "SubSegment";
 }
-
-
