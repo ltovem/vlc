@@ -244,7 +244,7 @@ int SegmentList_test() try
         seg->duration.Set(100);
         segmentList->addSegment(seg.release());
     }
-    const std::vector<Segment*>&allsegments = segmentList->getSegments();
+    const auto &allsegments = segmentList->getSegments();
 
     SegmentTimeline *timeline = new SegmentTimeline(nullptr);
     segmentList->addAttribute(timeline);
