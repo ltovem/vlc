@@ -260,8 +260,8 @@ bool BaseRepresentation::getMediaPlaybackRange(vlc_tick_t *rangeBegin,
     if ( segmentList && !segmentList->getSegments().empty() )
     {
         const Timescale timescale = segmentList->inheritTimescale();
-        const std::vector<Segment *> &list = segmentList->getSegments();
-        const ISegment *back = list.back();
+        const auto &list = segmentList->getSegments();
+        const auto &back = list.back();
         const stime_t startTime = list.front()->startTime.Get();
         const stime_t endTime = back->startTime.Get() + back->duration.Get();
         *rangeBegin = timescale.ToTime(startTime);
@@ -273,12 +273,12 @@ bool BaseRepresentation::getMediaPlaybackRange(vlc_tick_t *rangeBegin,
     SegmentBase *segmentBase = inheritSegmentBase();
     if( segmentBase )
     {
-        const std::vector<Segment *> &list = segmentBase->subSegments();
+        const auto &list = segmentBase->subSegments();
         if(list.empty())
             return false;
 
         const Timescale timescale = inheritTimescale();
-        const Segment *back = list.back();
+        const auto &back = list.back();
         const stime_t startTime = list.front()->startTime.Get();
         const stime_t endTime = back->startTime.Get() + back->duration.Get();
         *rangeBegin = timescale.ToTime(startTime);
