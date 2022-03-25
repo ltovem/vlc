@@ -174,17 +174,31 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
     stream->instance = aout_instance(p_aout);
 
     stream->volume = NULL;
-    if (!owner->bitexact)
-        stream->volume = aout_volume_New (p_aout, p_replay_gain);
-
     atomic_init(&stream->restart, 0);
     stream->input_profile = profile;
     stream->filter_format = stream->mixer_format = stream->input_format = *p_format;
 
     stream->sync.clock = clock;
 
+    stream->sync.rate = 1.f;
+    stream->sync.resamp_type = AOUT_RESAMPLING_NONE;
+    stream->sync.discontinuity = true;
+    stream->sync.delay = stream->sync.request_delay = 0;
+    stream->original_pts = VLC_TICK_INVALID;
+
+    atomic_init (&stream->buffers_lost, 0);
+    atomic_init (&stream->buffers_played, 0);
+    atomic_store_explicit(&owner->vp.update, true, memory_order_relaxed);
+
+    atomic_init(&stream->drained, false);
+    atomic_init(&stream->drain_deadline, VLC_TICK_INVALID);
+
     stream->filters = NULL;
     stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
+
+    if (!owner->bitexact)
+        stream->volume = aout_volume_New (p_aout, p_replay_gain);
+
     if (aout_OutputNew(p_aout, stream, &stream->mixer_format, stream->input_profile,
                        &stream->filter_format, &stream->filters_cfg))
         goto error;
@@ -213,19 +227,6 @@ error:
             return NULL;
         }
     }
-
-    stream->sync.rate = 1.f;
-    stream->sync.resamp_type = AOUT_RESAMPLING_NONE;
-    stream->sync.discontinuity = true;
-    stream->sync.delay = stream->sync.request_delay = 0;
-    stream->original_pts = VLC_TICK_INVALID;
-
-    atomic_init (&stream->buffers_lost, 0);
-    atomic_init (&stream->buffers_played, 0);
-    atomic_store_explicit(&owner->vp.update, true, memory_order_relaxed);
-
-    atomic_init(&stream->drained, false);
-    atomic_init(&stream->drain_deadline, VLC_TICK_INVALID);
 
     return stream;
 }
