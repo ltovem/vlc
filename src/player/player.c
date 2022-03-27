@@ -2004,7 +2004,9 @@ vlc_player_New(vlc_object_t *parent, enum vlc_player_lock_type lock_type,
     }
 #undef VAR_CREATE
 
-    player->resource = input_resource_New(VLC_OBJECT(player));
+    extern const struct vlc_audio_output_callbacks vlc_player_audio_cbs;
+    player->resource = input_resource_New(VLC_OBJECT(player),
+        player, &vlc_player_audio_cbs);
 
     if (!player->resource)
         goto error;

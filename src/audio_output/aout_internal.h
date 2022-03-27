@@ -71,6 +71,11 @@ typedef struct
     struct vlc_audio_meter meter;
 
     vlc_atomic_rc_t rc;
+
+    struct {
+        void *opaque;
+        const struct vlc_audio_output_callbacks *cbs;
+    } events;
 } aout_owner_t;
 
 typedef struct
@@ -104,8 +109,9 @@ void aout_volume_Delete(aout_volume_t *);
 
 
 /* From output.c : */
-audio_output_t *aout_New (vlc_object_t *);
-#define aout_New(a) aout_New(VLC_OBJECT(a))
+audio_output_t *aout_New (vlc_object_t *, void *opaque,
+        const struct vlc_audio_output_callbacks *cbs);
+#define aout_New(a,o,c) aout_New(VLC_OBJECT(a),o,c)
 void aout_Destroy (audio_output_t *);
 
 int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
