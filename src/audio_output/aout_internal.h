@@ -50,6 +50,7 @@ typedef struct
     bool bitexact;
 
     vlc_aout_stream *main_stream;
+    vlc_aout_stream *gapless_stream;
 
     struct
     {
@@ -111,7 +112,7 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
                    audio_sample_format_t *fmt, int input_profile,
                    audio_sample_format_t *filter_fmt,
                    aout_filters_cfg_t *filters_cfg);
-void aout_OutputDelete( audio_output_t * p_aout );
+void aout_OutputDelete( audio_output_t * p_aout, vlc_aout_stream *stream );
 
 vlc_audio_meter_plugin *
 aout_AddMeterPlugin(audio_output_t *aout, const char *chain,
@@ -131,8 +132,9 @@ void aout_FormatsPrint(vlc_object_t *, const char *,
 #define AOUT_DEC_SUCCESS 0
 #define AOUT_DEC_CHANGED 1
 #define AOUT_DEC_FAILED VLC_EGENERIC
+#define AOUT_DEC_EAGAIN (-EAGAIN)
 
-vlc_aout_stream *vlc_aout_stream_New(audio_output_t *p_aout,
+vlc_aout_stream *vlc_aout_stream_New(audio_output_t *p_aout, bool gapless,
                                      const audio_sample_format_t *p_format,
                                      int profile, struct vlc_clock_t *clock,
                                      const audio_replay_gain_t *p_replay_gain);
@@ -152,6 +154,8 @@ void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream);
 void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain);
 
 void vlc_aout_stream_RequestRestart(vlc_aout_stream *stream, unsigned);
+/* Called with owner->lock locked */
+void vlc_aout_stream_SwitchGapless(vlc_aout_stream *main, vlc_aout_stream *gapless);
 
 void aout_InputRequestRestart(audio_output_t *aout);
 

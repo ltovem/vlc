@@ -256,7 +256,7 @@ audio_output_t *aout_New (vlc_object_t *parent)
     vlc_atomic_rc_init(&owner->rc);
     vlc_audio_meter_Init(&owner->meter, aout);
 
-    owner->main_stream = NULL;
+    owner->main_stream = owner->gapless_stream = NULL;
 
     /* Audio output module callbacks */
     var_Create (aout, "volume", VLC_VAR_FLOAT);
@@ -762,9 +762,10 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
     for (size_t i = 0; formats[i] != 0 && ret != VLC_SUCCESS; ++i)
     {
         filter_fmt->i_format = fmt->i_format = formats[i];
+        owner->main_stream = stream;
         ret = aout->start(aout, fmt);
-        if (ret == 0)
-            owner->main_stream = stream;
+        if (ret != 0)
+            owner->main_stream = NULL;
     }
     vlc_mutex_unlock(&owner->lock);
     if (ret)
@@ -801,12 +802,31 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
  * \note This can only be called after a successful aout_OutputNew().
  * \warning The caller must NOT hold the audio output lock.
  */
-void aout_OutputDelete (audio_output_t *aout)
+void aout_OutputDelete (audio_output_t *aout, vlc_aout_stream *stream)
 {
     aout_owner_t *owner = aout_owner(aout);
     vlc_mutex_lock(&owner->lock);
-    aout->stop (aout);
-    owner->main_stream = NULL;
+    if (stream != NULL && owner->gapless_stream != NULL)
+    {
+        if (owner->main_stream == stream)
+        {
+            vlc_aout_stream_SwitchGapless(owner->main_stream,
+                                          owner->gapless_stream);
+            owner->main_stream = owner->gapless_stream;
+        }
+        else
+        {
+            /* The gapless stream is stopped before the transition (can happen
+             * if the user seek or remove the next media while waiting. */
+            assert(stream == owner->gapless_stream);
+        }
+        owner->gapless_stream = NULL;
+    }
+    else
+    {
+        aout->stop (aout);
+        owner->main_stream = NULL;
+    }
     vlc_mutex_unlock(&owner->lock);
 }
 

@@ -48,6 +48,22 @@ struct vlc_aout_stream
     atomic_uint drained;
     _Atomic vlc_tick_t drain_deadline;
 
+    /* Need owner lock locking on write */
+    enum
+    {
+        GAPLESS_STATE_NONE,
+        GAPLESS_STATE_STARTED,
+        GAPLESS_STATE_WAIT_PLAY,
+    } gapless_state;
+    /* Need owner lock locking on read/write */
+    enum
+    {
+        GAPLESS_TRANSITION_OK,
+        GAPLESS_TRANSITION_DRAINING,
+        GAPLESS_TRANSITION_DRAINED,
+        GAPLESS_TRANSITION_INVALID_DELAY,
+    } gapless_transition;
+
     struct
     {
         struct vlc_clock_t *clock;
@@ -144,10 +160,42 @@ static void stream_Reset(vlc_aout_stream *stream)
     stream->original_pts = VLC_TICK_INVALID;
 }
 
+static int stream_InitGapless(vlc_aout_stream *stream,
+                              const audio_sample_format_t *format)
+{
+    aout_owner_t *owner = aout_stream_owner(stream);
+
+    vlc_mutex_lock(&owner->lock);
+    if (owner->main_stream == NULL)
+    {
+        /* The main stream was terminated before the next stream could start */
+        vlc_mutex_unlock(&owner->lock);
+        return VLC_EGENERIC;
+    }
+
+    assert(owner->gapless_stream == NULL);
+
+    if (!aout_FormatEquals(format, &owner->main_stream->input_format))
+    {
+        vlc_mutex_unlock(&owner->lock);
+        return VLC_EGENERIC;
+    }
+
+    stream->input_format = owner->main_stream->input_format;
+    stream->filter_format = owner->main_stream->filter_format;
+    stream->mixer_format = owner->main_stream->mixer_format;
+    stream->filters_cfg = owner->main_stream->filters_cfg;
+    stream->filters = NULL;
+
+    owner->gapless_stream = stream;
+    vlc_mutex_unlock(&owner->lock);
+    return VLC_SUCCESS;
+}
+
 /**
  * Creates an audio output
  */
-vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
+vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout, bool gapless,
                                       const audio_sample_format_t *p_format,
                                       int profile, vlc_clock_t *clock,
                                       const audio_replay_gain_t *p_replay_gain)
@@ -188,6 +236,8 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
         return NULL;
     stream->instance = aout_instance(p_aout);
 
+    stream->gapless_state = gapless ? GAPLESS_STATE_STARTED : GAPLESS_STATE_NONE;
+    stream->gapless_transition = GAPLESS_TRANSITION_OK;
     stream->volume = NULL;
     atomic_init(&stream->restart, 0);
     stream->input_profile = profile;
@@ -211,6 +261,13 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
     stream->filters = NULL;
     stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
 
+    if (gapless)
+    {
+        if (stream_InitGapless(stream, p_format) != VLC_SUCCESS)
+            goto error;
+        return stream;
+    }
+
     if (!owner->bitexact)
         stream->volume = aout_volume_New (p_aout, p_replay_gain);
 
@@ -232,7 +289,7 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
                                                    &stream->filters_cfg);
         if (stream->filters == NULL)
         {
-            aout_OutputDelete (p_aout);
+            aout_OutputDelete(p_aout, NULL);
             vlc_audio_meter_Reset(&owner->meter, NULL);
 
 error:
@@ -258,9 +315,11 @@ void vlc_aout_stream_Delete (vlc_aout_stream *stream)
     {
         stream_Reset(stream);
         vlc_audio_meter_Reset(&owner->meter, NULL);
+        aout_OutputDelete(aout, stream);
+        /* Clean filters after since aout_OutputDelete() might save the filter
+         * chains for the next (gapless) stream. */
         if (stream->filters)
             aout_FiltersDelete (aout, stream->filters);
-        aout_OutputDelete (aout);
     }
     if (stream->volume != NULL)
         aout_volume_Delete(stream->volume);
@@ -287,7 +346,7 @@ static int stream_CheckReady (vlc_aout_stream *stream)
         {   /* Reinitializes the output */
             msg_Dbg (aout, "restarting output...");
             if (stream->mixer_format.i_format)
-                aout_OutputDelete (aout);
+                aout_OutputDelete(aout, NULL);
             stream->filter_format = stream->mixer_format = stream->input_format;
             stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
             if (aout_OutputNew(aout, stream, &stream->mixer_format, stream->input_profile,
@@ -317,7 +376,7 @@ static int stream_CheckReady (vlc_aout_stream *stream)
                                                        &stream->filters_cfg);
             if (stream->filters == NULL)
             {
-                aout_OutputDelete (aout);
+                aout_OutputDelete(aout, NULL);
                 stream->mixer_format.i_format = 0;
             }
             aout_FiltersSetClockDelay(stream->filters, stream->sync.delay);
@@ -537,6 +596,50 @@ static void stream_Synchronize(vlc_aout_stream *stream, vlc_tick_t system_now,
     stream_RequestRetiming(stream, system_now + delay, dec_pts);
 }
 
+static void stream_GaplessWaitMainStream(vlc_aout_stream *stream)
+{
+    aout_owner_t *owner = aout_stream_owner(stream);
+
+    assert(stream->gapless_state != GAPLESS_STATE_NONE);
+
+    assert(stream->gapless_state == GAPLESS_STATE_WAIT_PLAY);
+
+    vlc_mutex_lock(&owner->lock);
+    assert(owner->main_stream == stream);
+
+    if (stream->gapless_transition != GAPLESS_TRANSITION_OK)
+    {
+        bool wait_drain = stream->gapless_transition == GAPLESS_TRANSITION_DRAINING;
+        stream->gapless_transition = GAPLESS_TRANSITION_OK;
+        vlc_mutex_unlock(&owner->lock);
+
+        if (wait_drain)
+        {
+            /* Wait for the stream to be drained, if the transition failed */
+            vlc_tick_t drain_deadline =
+                atomic_load_explicit(&stream->drain_deadline, memory_order_relaxed);
+            if (drain_deadline == VLC_TICK_INVALID)
+            {
+                while (atomic_load_explicit(&stream->drained,
+                                            memory_order_relaxed) == 0)
+                    vlc_atomic_wait(&stream->drained, 0);
+            }
+            else
+                vlc_tick_wait(drain_deadline);
+        }
+
+        /* Flush after the drain */
+        vlc_aout_stream_Flush(stream);
+    }
+    else
+    {
+        vlc_mutex_unlock(&owner->lock);
+        stream->sync.discontinuity = false;
+    }
+
+    stream->gapless_state = GAPLESS_STATE_NONE;
+}
+
 /*****************************************************************************
  * vlc_aout_stream_Play : filter & mix the decoded buffer
  *****************************************************************************/
@@ -549,6 +652,23 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
 
     block->i_length = vlc_tick_from_samples( block->i_nb_samples,
                                    stream->input_format.i_rate );
+
+    if (stream->gapless_state != GAPLESS_STATE_NONE)
+    {
+        if (stream->gapless_state == GAPLESS_STATE_STARTED)
+        {
+            vlc_mutex_lock(&owner->lock);
+            stream->gapless_state = GAPLESS_STATE_WAIT_PLAY;
+            vlc_mutex_unlock(&owner->lock);
+
+            /* We signaled that this stream is ready for a gapless transition,
+             * let the caller wait from the main stream termination. */
+            return AOUT_DEC_EAGAIN;
+        }
+        stream_GaplessWaitMainStream(stream);
+    }
+
+    assert(stream->gapless_state == GAPLESS_STATE_NONE);
 
     int ret = stream_CheckReady (stream);
     if (unlikely(ret == AOUT_DEC_FAILED))
@@ -669,6 +789,9 @@ void vlc_aout_stream_Flush(vlc_aout_stream *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
+    if (unlikely(stream->gapless_state != GAPLESS_STATE_NONE))
+        return;
+
     stream_Reset(stream);
     if (stream->mixer_format.i_format)
         aout->flush(aout);
@@ -683,6 +806,7 @@ void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain)
 void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream)
 {
     atomic_store_explicit(&stream->drained, 1, memory_order_relaxed);
+    vlc_atomic_notify_one(&stream->drained);
 }
 
 bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
@@ -729,6 +853,9 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
     audio_output_t *aout = aout_stream_aout(stream);
     aout_owner_t *owner = aout_stream_owner(stream);
 
+    if (unlikely(stream->gapless_state != GAPLESS_STATE_NONE))
+        return;
+
     if (!stream->mixer_format.i_format)
         return;
 
@@ -739,7 +866,48 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
             aout->play(aout, block, vlc_tick_now());
     }
 
-    stream_Drain(stream);
+    vlc_mutex_lock(&owner->lock);
+    assert(stream == owner->main_stream);
+    if (owner->gapless_stream == NULL)
+    {
+        assert(stream == owner->main_stream);
+        vlc_mutex_unlock(&owner->lock);
+
+        /* Normal drain, no gapless transition */
+        stream_Drain(stream);
+
+        /* In case a future gapless stream becomes ready after the drain */
+        stream->gapless_transition = GAPLESS_TRANSITION_DRAINED;
+    }
+    else
+    {
+        /* Don't drain this stream if there is a stream following (gapless) */
+        vlc_mutex_unlock(&owner->lock);
+
+        /* Check if the aout delay allow a gapless transition */
+        vlc_tick_t delay;
+        int ret = aout_TimeGet(aout, &delay);
+        if (ret != 0 || delay < DEFAULT_PTS_DELAY)
+        {
+            if (ret != 0)
+                msg_Warn(aout, "gapless transition failed, invalid delay");
+            else
+                msg_Warn(aout, "gapless transition failed, "
+                         "not enough buffer (%"PRId64" us) for a gapless transition",
+                         delay);
+
+            stream_Drain(stream);
+            stream->gapless_transition = GAPLESS_TRANSITION_INVALID_DELAY;
+        }
+        else
+        {
+            /* Pace the current stream a little in order to avoid buffer
+             * overflow when playing several media in gapless. */
+            vlc_tick_t drain_deadline = vlc_tick_now() + delay - DEFAULT_PTS_DELAY;
+            atomic_store_explicit(&stream->drain_deadline, drain_deadline,
+                                  memory_order_relaxed);
+        }
+    }
 
     vlc_clock_Reset(stream->sync.clock);
     if (stream->filters)
@@ -747,4 +915,58 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
 
     stream->sync.discontinuity = true;
     stream->original_pts = VLC_TICK_INVALID;
+}
+
+void vlc_aout_stream_SwitchGapless(vlc_aout_stream *main, vlc_aout_stream *gapless)
+{
+    aout_owner_t *owner = aout_stream_owner(main);
+
+    if (!aout_FiltersCanSwitchStream(main->filters))
+    {
+        audio_output_t *aout = aout_stream_aout(main);
+        msg_Warn(aout, "gapless transition: need to restart aout filters");
+        vlc_aout_stream_RequestRestart(gapless, AOUT_RESTART_FILTERS);
+    }
+    else
+    {
+        gapless->filters = main->filters;
+        main->filters = NULL;
+    }
+    gapless->volume = main->volume;
+    main->volume = NULL;
+
+    /* Forward the gapless transition state from vlc_aout_stream_Drain() */
+    gapless->gapless_transition = main->gapless_transition;
+
+    assert(gapless->gapless_state != GAPLESS_STATE_NONE);
+
+    switch (gapless->gapless_transition)
+    {
+        case GAPLESS_TRANSITION_DRAINED:
+            msg_Warn(aout_stream_aout(main), "gapless transition failed, "
+                     "the main stream was already drained");
+            break;
+        case GAPLESS_TRANSITION_INVALID_DELAY:
+            break; /* already handled */
+        case GAPLESS_TRANSITION_OK:
+            if (gapless->gapless_state != GAPLESS_STATE_WAIT_PLAY)
+            {
+                msg_Warn(aout_stream_aout(main), "gapless transition failed, "
+                         "the next stream was not ready in time");
+                gapless->gapless_transition = GAPLESS_TRANSITION_DRAINING;
+
+                /* Both main and gapless use the same aout stream module, but
+                 * drain the gapless one now in order to keep the drain context
+                 * for later (since the main stream will be freed after this
+                 * call. This gapless stream will wait for the drained state
+                 * from the first play (cf. stream_GaplessWaitMainStream). */
+                vlc_mutex_unlock(&owner->lock);
+                stream_Drain(gapless);
+                vlc_mutex_lock(&owner->lock);
+            }
+            break;
+        case GAPLESS_TRANSITION_DRAINING:
+        default:
+            vlc_assert_unreachable();
+    }
 }
