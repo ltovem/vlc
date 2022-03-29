@@ -110,6 +110,48 @@ static int input_SlaveSourceAdd( input_thread_t *, enum slave_type,
 static char *input_SubtitleFile2Uri( input_thread_t *, const char * );
 static void input_ChangeState( input_thread_t *p_input, int i_state, vlc_tick_t ); /* TODO fix name */
 
+enum input_gapless_status input_WaitGapless(input_thread_t *input)
+{
+    input_thread_private_t *priv = input_priv(input);
+
+    vlc_mutex_lock(&priv->lock_gapless);
+
+    while (priv->gapless_status == INPUT_GAPLESS_STATUS_WAITING)
+        vlc_cond_wait(&priv->wait_gapless, &priv->lock_gapless);
+    enum input_gapless_status status = priv->gapless_status;
+
+    vlc_mutex_unlock(&priv->lock_gapless);
+    return status;
+}
+
+static void input_SignalGapless(input_thread_t *input,
+                                enum input_gapless_status status)
+{
+    input_thread_private_t *priv = input_priv(input);
+
+    vlc_mutex_lock(&priv->lock_gapless);
+
+    assert(status != INPUT_GAPLESS_STATUS_WAITING);
+    assert(priv->gapless_status == INPUT_GAPLESS_STATUS_WAITING);
+
+    priv->gapless_status = status;
+    vlc_cond_broadcast(&priv->wait_gapless);
+
+    vlc_mutex_unlock(&priv->lock_gapless);
+}
+
+void input_WakeGapless(input_thread_t *input)
+{
+    input_thread_private_t *priv = input_priv(input);
+
+    assert(priv->type == INPUT_TYPE_GAPLESS);
+    priv->type = INPUT_TYPE_NONE;
+
+    input_resource_SetInput(priv->p_resource, input);
+
+    input_SignalGapless(input, INPUT_GAPLESS_STATUS_NONE);
+}
+
 /**
  * Start a input_thread_t created by input_Create.
  *
@@ -157,6 +199,9 @@ void input_Stop( input_thread_t *p_input )
     vlc_cond_signal( &sys->wait_control );
     vlc_mutex_unlock( &sys->lock_control );
     vlc_interrupt_kill( &sys->interrupt );
+
+    if (sys->type == INPUT_TYPE_GAPLESS)
+        input_SignalGapless(p_input, INPUT_GAPLESS_STATUS_ABORTED);
 }
 
 /**
@@ -245,6 +290,9 @@ input_thread_t *input_Create( vlc_object_t *p_parent,
             break;
         case INPUT_TYPE_THUMBNAILING:
             type_str = "thumbnailing ";
+            break;
+        case INPUT_TYPE_GAPLESS:
+            type_str = "gapless ";
             break;
         default:
             type_str = "";
@@ -339,13 +387,19 @@ input_thread_t *input_Create( vlc_object_t *p_parent,
         priv->p_resource = input_resource_Hold( p_resource );
     else
         priv->p_resource = input_resource_New( VLC_OBJECT( p_input ) );
-    input_resource_SetInput( priv->p_resource, p_input );
 
     /* Init control buffer */
     vlc_mutex_init( &priv->lock_control );
     vlc_cond_init( &priv->wait_control );
     priv->i_control = 0;
     vlc_interrupt_init(&priv->interrupt);
+
+    if (priv->type == INPUT_TYPE_GAPLESS)
+    {
+        priv->gapless_status = INPUT_GAPLESS_STATUS_WAITING;
+        vlc_mutex_init(&priv->lock_gapless);
+        vlc_cond_init(&priv->wait_gapless);
+    }
 
     /* Create Object Variables for private use only */
     input_ConfigVarInit( p_input );
@@ -1276,6 +1330,9 @@ static int Init( input_thread_t * p_input )
         goto error;
 #endif
 
+    if (priv->type != INPUT_TYPE_GAPLESS)
+        input_resource_SetInput(priv->p_resource, p_input);
+
     /* Create es out */
     priv->p_es_out = input_EsOutTimeshiftNew( p_input, priv->p_es_out_display, priv->rate );
     if( priv->p_es_out == NULL )
@@ -1371,7 +1428,8 @@ error:
         if( input_priv(p_input)->p_sout )
             input_resource_PutSout( input_priv(p_input)->p_resource,
                                     input_priv(p_input)->p_sout );
-        input_resource_SetInput( input_priv(p_input)->p_resource, NULL );
+        if (priv->type != INPUT_TYPE_GAPLESS)
+            input_resource_SetInput( input_priv(p_input)->p_resource, NULL );
         if( input_priv(p_input)->p_resource )
         {
             input_resource_Release( input_priv(p_input)->p_resource );
@@ -1439,7 +1497,8 @@ static void End( input_thread_t * p_input )
     /* */
     input_resource_PutSout( input_priv(p_input)->p_resource,
                             input_priv(p_input)->p_sout );
-    input_resource_SetInput( input_priv(p_input)->p_resource, NULL );
+    if (priv->type != INPUT_TYPE_GAPLESS)
+        input_resource_SetInput(input_priv(p_input)->p_resource, NULL);
     if( input_priv(p_input)->p_resource )
     {
         input_resource_Release( input_priv(p_input)->p_resource );

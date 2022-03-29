@@ -58,6 +58,14 @@ enum input_type {
     INPUT_TYPE_NONE,
     INPUT_TYPE_PREPARSING,
     INPUT_TYPE_THUMBNAILING,
+    INPUT_TYPE_GAPLESS,
+};
+
+enum input_gapless_status
+{
+    INPUT_GAPLESS_STATUS_NONE,
+    INPUT_GAPLESS_STATUS_WAITING,
+    INPUT_GAPLESS_STATUS_ABORTED,
 };
 
 /**
@@ -512,6 +520,10 @@ typedef struct input_thread_private_t
     size_t i_control;
     input_control_t control[INPUT_CONTROL_FIFO_SIZE];
 
+    vlc_mutex_t lock_gapless;
+    vlc_cond_t  wait_gapless;
+    enum input_gapless_status gapless_status;
+
     vlc_thread_t thread;
     vlc_interrupt_t interrupt;
 } input_thread_private_t;
@@ -581,6 +593,9 @@ enum input_control_e
     INPUT_CONTROL_SET_VBI_PAGE,
     INPUT_CONTROL_SET_VBI_TRANSPARENCY,
 };
+
+enum input_gapless_status input_WaitGapless(input_thread_t *);
+void input_WakeGapless(input_thread_t *);
 
 /* Internal helpers */
 

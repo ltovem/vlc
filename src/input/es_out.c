@@ -1043,6 +1043,23 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
         return;
     }
 
+    if (p_sys->input_type == INPUT_TYPE_GAPLESS)
+    {
+        enum input_gapless_status status =
+            input_WaitGapless(p_sys->p_input);
+
+        /* Don't wait when re-buffering again */
+        if (status == INPUT_GAPLESS_STATUS_NONE)
+            p_sys->input_type = INPUT_TYPE_NONE;
+
+        foreach_es_then_es_slaves(p_es)
+        {
+            if (!p_es->p_dec)
+                continue;
+            vlc_input_decoder_SignalGaplessStatus(p_es->p_dec, status);
+        }
+    }
+
     const vlc_tick_t i_decoder_buffering_start = vlc_tick_now();
     foreach_es_then_es_slaves(p_es)
     {

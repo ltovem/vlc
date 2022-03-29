@@ -104,6 +104,7 @@ struct vlc_input_decoder_t
     vlc_cond_t  wait_request;
     vlc_cond_t  wait_acknowledge;
     vlc_cond_t  wait_fifo; /* TODO: merge with wait_acknowledge */
+    vlc_cond_t  wait_gapless;
 
     /* pool to use when the decoder doesn't use its own */
     struct picture_pool_t *out_pool;
@@ -158,6 +159,7 @@ struct vlc_input_decoder_t
     bool b_waiting;
     bool b_first;
     bool b_has_data;
+    enum input_gapless_status gapless_status;
 
     /* Flushing */
     bool flushing;
@@ -298,6 +300,20 @@ static void DecoderUpdateFormatLocked( vlc_input_decoder_t *p_owner )
     p_owner->b_fmt_description = true;
 }
 
+static int DecoderWaitGapless(decoder_t *dec)
+{
+    vlc_input_decoder_t *owner = dec_get_owner(dec);
+
+    /* Wait here, just before the vout request for ALL ESes, except audio. The
+     * audio ES will be paced by the aout stream creation in gapless mode. We
+     * could  think about waiting in DecoderWaitUnblock() but it's not possible
+     * since it requires a valid output. */
+
+    while (owner->gapless_status == INPUT_GAPLESS_STATUS_WAITING)
+        vlc_cond_wait(&owner->wait_gapless, &owner->lock);
+    return owner->gapless_status == INPUT_GAPLESS_STATUS_NONE ? 0 : -1;
+}
+
 static void MouseEvent( const vlc_mouse_t *newmouse, void *user_data )
 {
     decoder_t *dec = user_data;
@@ -379,14 +395,49 @@ static int ModuleThread_UpdateAudioFormat( decoder_t *p_dec )
 
         audio_output_t *p_aout;
         vlc_aout_stream *p_astream;
+        bool gapless;
 
-        p_aout = input_resource_GetAout(p_owner->p_resource, false);
+        vlc_mutex_lock(&p_owner->lock);
+        switch (p_owner->gapless_status)
+        {
+            case INPUT_GAPLESS_STATUS_NONE:
+                gapless = false;
+                break;
+            case INPUT_GAPLESS_STATUS_WAITING:
+                gapless = true;
+                break;
+            case INPUT_GAPLESS_STATUS_ABORTED:
+                vlc_mutex_unlock(&p_owner->lock);
+                return -1;
+            default:
+                vlc_assert_unreachable();
+        }
+        vlc_mutex_unlock(&p_owner->lock);
+
+        p_aout = input_resource_GetAout(p_owner->p_resource, gapless);
         if( p_aout )
         {
-            p_astream = vlc_aout_stream_New( p_aout, false, &format,
-                                             p_dec->fmt_out.i_profile,
-                                             p_owner->p_clock,
-                                             &p_dec->fmt_out.audio_replay_gain );
+            for (;;)
+            {
+                p_astream = vlc_aout_stream_New( p_aout, gapless, &format,
+                                                 p_dec->fmt_out.i_profile,
+                                                 p_owner->p_clock,
+                                                 &p_dec->fmt_out.audio_replay_gain );
+                if( p_astream != NULL || !gapless )
+                    break;
+
+                vlc_mutex_lock( &p_owner->lock );
+                /* The stream creation failed in gapless mode, wait for the
+                 * gapless transition to finish and try again without gapless.
+                 * */
+                if (DecoderWaitGapless(p_dec) != 0)
+                {
+                    vlc_mutex_unlock( &p_owner->lock );
+                    return -1;
+                }
+                vlc_mutex_unlock( &p_owner->lock );
+                gapless = false;
+            }
             if( p_astream == NULL )
             {
                 input_resource_PutAout( p_owner->p_resource, p_aout );
@@ -586,6 +637,12 @@ static int CreateVoutIfNeeded(vlc_input_decoder_t *p_owner)
 
     vlc_mutex_lock( &p_owner->lock );
 
+    if (DecoderWaitGapless(p_dec) != 0)
+    {
+        vlc_mutex_unlock( &p_owner->lock );
+        return -1;
+    }
+
     vout_thread_t *p_vout = p_owner->p_vout;
     p_owner->p_vout = NULL; // the DecoderThread should not use the old vout anymore
     p_owner->vout_started = false;
@@ -685,6 +742,14 @@ static subpicture_t *ModuleThread_NewSpuBuffer( decoder_t *p_dec,
     {
         if( p_owner->error )
             break;
+
+        vlc_mutex_lock( &p_owner->lock );
+        if (DecoderWaitGapless(p_dec) != 0)
+        {
+            vlc_mutex_unlock( &p_owner->lock );
+            return NULL;
+        }
+        vlc_mutex_unlock( &p_owner->lock );
 
         p_vout = input_resource_HoldVout( p_owner->p_resource );
         if( p_vout )
@@ -844,6 +909,13 @@ static void DecoderWaitUnblock( vlc_input_decoder_t *p_owner )
     {
         p_owner->b_has_data = true;
         vlc_cond_signal( &p_owner->wait_acknowledge );
+    }
+
+    if (p_owner->gapless_status == INPUT_GAPLESS_STATUS_WAITING)
+    {
+        /* Other ES types should wait in DecoderWaitGapless(). */
+        assert(p_owner->dec.fmt_in.i_cat == AUDIO_ES);
+        return;
     }
 
     while( p_owner->b_waiting && p_owner->b_has_data )
@@ -1206,6 +1278,14 @@ static int ModuleThread_PlayAudio( vlc_input_decoder_t *p_owner, vlc_frame_t *p_
     }
 
     vlc_mutex_lock( &p_owner->lock );
+
+    if( p_owner->gapless_status == INPUT_GAPLESS_STATUS_ABORTED )
+    {
+        vlc_mutex_unlock( &p_owner->lock );
+        block_Release( p_audio );
+        return VLC_EGENERIC;
+    }
+
     bool prerolled = p_owner->i_preroll_end != PREROLL_NONE;
     if( prerolled && p_owner->i_preroll_end > p_audio->i_pts )
     {
@@ -1226,7 +1306,6 @@ static int ModuleThread_PlayAudio( vlc_input_decoder_t *p_owner, vlc_frame_t *p_
     }
 
     /* */
-    /* */
     vlc_mutex_lock( &p_owner->lock );
 
     /* */
@@ -1242,7 +1321,25 @@ static int ModuleThread_PlayAudio( vlc_input_decoder_t *p_owner, vlc_frame_t *p_
         return VLC_EGENERIC;
     }
 
-    int status = vlc_aout_stream_Play( p_astream, p_audio );
+    int status;
+    for( ;; )
+    {
+        status = vlc_aout_stream_Play( p_astream, p_audio );
+        if( status != AOUT_DEC_EAGAIN )
+            break;
+
+        /* We signalled that the stream is ready for the gapless transition,
+         * now wait for the main media end. */
+        vlc_mutex_lock( &p_owner->lock );
+        if( DecoderWaitGapless(p_dec) != 0 )
+        {
+            vlc_mutex_unlock( &p_owner->lock );
+            block_Release( p_audio );
+            return VLC_EGENERIC;
+        }
+        vlc_mutex_unlock( &p_owner->lock );
+    }
+
     if( status == AOUT_DEC_CHANGED )
     {
         /* Only reload the decoder */
@@ -1866,6 +1963,13 @@ CreateDecoder( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
     p_owner->b_waiting = false;
     p_owner->b_first = true;
     p_owner->b_has_data = false;
+    p_owner->gapless_status = cfg->input_type == INPUT_TYPE_GAPLESS ?
+        INPUT_GAPLESS_STATUS_WAITING : INPUT_GAPLESS_STATUS_NONE;
+
+#ifndef NDEBUG
+    if (cfg->input_type == INPUT_TYPE_GAPLESS)
+        assert(!cfg->sout);
+#endif
 
     p_owner->error = false;
 
@@ -1892,6 +1996,7 @@ CreateDecoder( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
     vlc_cond_init( &p_owner->wait_request );
     vlc_cond_init( &p_owner->wait_acknowledge );
     vlc_cond_init( &p_owner->wait_fifo );
+    vlc_cond_init( &p_owner->wait_gapless );
 
     /* Load a packetizer module if the input is not already packetized */
     if( cfg->sout == NULL && !fmt->b_packetized )
@@ -2008,7 +2113,6 @@ static void DeleteDecoder( vlc_input_decoder_t *p_owner, enum es_format_category
         case AUDIO_ES:
             if( p_owner->p_aout )
             {
-                /* TODO: REVISIT gap-less audio */
                 assert( p_owner->p_astream );
                 vlc_aout_stream_Delete( p_owner->p_astream );
                 input_resource_PutAout( p_owner->p_resource, p_owner->p_aout );
@@ -2529,6 +2633,7 @@ void vlc_input_decoder_Wait( vlc_input_decoder_t *p_owner )
     assert( p_owner->b_waiting );
 
     vlc_mutex_lock( &p_owner->lock );
+
     while( !p_owner->b_has_data )
     {
         /* Don't need to lock p_owner->paused since it's only modified by the
@@ -2566,6 +2671,19 @@ void vlc_input_decoder_FrameNext( vlc_input_decoder_t *p_owner,
             vout_NextPicture( p_owner->p_vout, pi_duration );
     }
     vlc_mutex_unlock( &p_owner->lock );
+}
+
+void vlc_input_decoder_SignalGaplessStatus(vlc_input_decoder_t *owner,
+                                           enum input_gapless_status status)
+{
+    vlc_mutex_lock(&owner->lock);
+
+    assert(status != INPUT_GAPLESS_STATUS_WAITING);
+    assert(owner->gapless_status == INPUT_GAPLESS_STATUS_WAITING);
+
+    owner->gapless_status = status;
+    vlc_cond_signal(&owner->wait_gapless);
+    vlc_mutex_unlock(&owner->lock);
 }
 
 void vlc_input_decoder_GetStatus( vlc_input_decoder_t *p_owner,
