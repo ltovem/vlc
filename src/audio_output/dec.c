@@ -681,19 +681,9 @@ bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
         return atomic_load_explicit(&stream->drained, memory_order_relaxed) == 1;
 }
 
-void vlc_aout_stream_Drain(vlc_aout_stream *stream)
+static void stream_Drain(vlc_aout_stream *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
-
-    if (!stream->mixer_format.i_format)
-        return;
-
-    if (stream->filters)
-    {
-        block_t *block = aout_FiltersDrain (stream->filters);
-        if (block)
-            aout->play(aout, block, vlc_tick_now());
-    }
 
     if (aout->drain)
     {
@@ -717,6 +707,24 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
         atomic_store_explicit(&stream->drain_deadline, drain_deadline,
                               memory_order_relaxed);
     }
+}
+
+void vlc_aout_stream_Drain(vlc_aout_stream *stream)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    aout_owner_t *owner = aout_stream_owner(stream);
+
+    if (!stream->mixer_format.i_format)
+        return;
+
+    if (stream->filters)
+    {
+        block_t *block = aout_FiltersDrain (stream->filters);
+        if (block)
+            aout->play(aout, block, vlc_tick_now());
+    }
+
+    stream_Drain(stream);
 
     vlc_clock_Reset(stream->sync.clock);
     if (stream->filters)
