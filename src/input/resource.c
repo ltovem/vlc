@@ -82,7 +82,7 @@ struct input_resource_t
      * only lock or lock_hold to read them */
     struct vlc_list vout_rscs;
 
-    bool            b_aout_busy;
+    unsigned        i_aout_busy;
     audio_output_t *p_aout;
 };
 
@@ -222,14 +222,21 @@ static void DisplayVoutTitle( input_resource_t *p_resource,
 }
 
 /* Audio output */
-audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
+audio_output_t *input_resource_GetAout( input_resource_t *p_resource, bool gapless )
 {
     audio_output_t *p_aout;
 
     vlc_mutex_lock( &p_resource->lock_hold );
     p_aout = p_resource->p_aout;
 
-    if( p_aout == NULL || p_resource->b_aout_busy )
+    if( gapless )
+    {
+        if( p_aout )
+            msg_Dbg( p_resource->p_parent, "reusing audio output for gapless" );
+        else
+            msg_Err( p_resource->p_parent, "no audio output found for gapless" );
+    }
+    else if( p_aout == NULL || p_resource->i_aout_busy > 0 )
     {
         msg_Dbg( p_resource->p_parent, "creating audio output" );
         vlc_mutex_unlock( &p_resource->lock_hold );
@@ -247,8 +254,8 @@ audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
 
     if( p_resource->p_aout == p_aout )
     {
-        assert( !p_resource->b_aout_busy );
-        p_resource->b_aout_busy = true;
+        assert( gapless || p_resource->i_aout_busy == 0 );
+        p_resource->i_aout_busy++;
     }
     vlc_mutex_unlock( &p_resource->lock_hold );
     return p_aout;
@@ -262,8 +269,8 @@ void input_resource_PutAout( input_resource_t *p_resource,
     vlc_mutex_lock( &p_resource->lock_hold );
     if( p_aout == p_resource->p_aout )
     {
-        assert( p_resource->b_aout_busy );
-        p_resource->b_aout_busy = false;
+        assert( p_resource->i_aout_busy > 0 );
+        p_resource->i_aout_busy--;
         msg_Dbg( p_resource->p_parent, "keeping audio output" );
         p_aout = NULL;
     }
@@ -293,11 +300,11 @@ void input_resource_ResetAout( input_resource_t *p_resource )
     audio_output_t *p_aout = NULL;
 
     vlc_mutex_lock( &p_resource->lock_hold );
-    if( !p_resource->b_aout_busy )
+    if( p_resource->i_aout_busy == 0 )
         p_aout = p_resource->p_aout;
 
     p_resource->p_aout = NULL;
-    p_resource->b_aout_busy = false;
+    p_resource->i_aout_busy = 0;
     vlc_mutex_unlock( &p_resource->lock_hold );
 
     if( p_aout != NULL )
