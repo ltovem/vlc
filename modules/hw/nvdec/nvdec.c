@@ -110,7 +110,6 @@ struct nvdec_ctx {
 };
 
 #define CALL_CUDA_DEC(func, ...) CudaCheckErr(VLC_OBJECT(p_dec),  p_sys->devsys->cudaFunctions, p_sys->devsys->cudaFunctions->func(__VA_ARGS__), #func)
-#define CALL_CUDA_DEV(func, ...) CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, p_sys->cudaFunctions->func(__VA_ARGS__), #func)
 #define CALL_CUVID(func, ...)    CudaCheckErr(VLC_OBJECT(p_dec),  p_sys->devsys->cudaFunctions, p_sys->cuvidFunctions->func(__VA_ARGS__), #func)
 
 #define NVDEC_PICPOOLCTX_FROM_PICCTX(pic_ctx)  \
@@ -1040,7 +1039,11 @@ static void DecoderContextClose(vlc_decoder_device *device)
 {
     decoder_device_nvdec_t *p_sys = GetNVDECOpaqueDevice(device);
     if (p_sys->cuCtx)
-        CALL_CUDA_DEV(cuCtxDestroy, p_sys->cuCtx);
+    {
+        CUresult cuRes = p_sys->cudaFunctions->cuCtxDestroy(p_sys->cuCtx);
+        if (cuRes != CUDA_SUCCESS)
+            CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cuRes, "cuCtxDestroy");
+    }
     cuda_free_functions(&p_sys->cudaFunctions);
 }
 
@@ -1048,18 +1051,21 @@ static const struct vlc_decoder_device_operations dev_ops = {
     .close = DecoderContextClose,
 };
 
-static int cudaInitialized;
+static CUresult cudaInitialized;
 static void initCuda(void *opaque)
 {
     vlc_decoder_device *device = opaque;
     decoder_device_nvdec_t *p_sys = device->opaque;
-    cudaInitialized = CALL_CUDA_DEV(cuInit, 0);
+    cudaInitialized = p_sys->cudaFunctions->cuInit(0);
+    if (unlikely(cudaInitialized != CUDA_SUCCESS))
+        CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cudaInitialized, "cuInit");
 }
 
 static int
 DecoderContextOpen(vlc_decoder_device *device, vout_window_t *window)
 {
     VLC_UNUSED(window);
+    CUresult cuRes;
 
     decoder_device_nvdec_t *p_sys = vlc_obj_malloc(VLC_OBJECT(device), sizeof(*p_sys));
     if (unlikely(p_sys == NULL))
@@ -1085,11 +1091,12 @@ DecoderContextOpen(vlc_decoder_device *device, vout_window_t *window)
         return VLC_EGENERIC;
     }
 
-    result = CALL_CUDA_DEV(cuCtxCreate, &p_sys->cuCtx, 0, 0);
-    if (result != VLC_SUCCESS)
+    cuRes = p_sys->cudaFunctions->cuCtxCreate(&p_sys->cuCtx, 0, 0);
+    if (unlikely(cuRes != CUDA_SUCCESS))
     {
+        CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cuRes, "cuCtxCreate");
         DecoderContextClose(device);
-        return result;
+        return VLC_EGENERIC;
     }
 
     return VLC_SUCCESS;
