@@ -1037,6 +1037,15 @@ static void CloseDecoder(vlc_object_t *p_this)
 /** Decoder Device **/
 static CudaFunctions *cudaFunctions;
 
+#ifdef __has_attribute
+  #if __has_attribute(destructor)
+__attribute__((destructor)) static void cuda_functions_destructor(void)
+{
+    cuda_free_functions(&cudaFunctions);
+}
+  #endif
+#endif
+
 static void DecoderContextClose(vlc_decoder_device *device)
 {
     decoder_device_nvdec_t *p_sys = GetNVDECOpaqueDevice(device);
