@@ -66,6 +66,7 @@ static int var_CopyDevice (vlc_object_t *src, const char *name,
 static void aout_DrainedNotify(audio_output_t *aout)
 {
     aout_owner_t *owner = aout_owner (aout);
+
     assert(owner->main_stream);
     vlc_aout_stream_NotifyDrained(owner->main_stream);
 }
@@ -147,8 +148,11 @@ out:
 static void aout_RestartNotify (audio_output_t *aout, unsigned mode)
 {
     aout_owner_t *owner = aout_owner (aout);
+
+    vlc_mutex_lock(&owner->lock);
     if (owner->main_stream)
         vlc_aout_stream_RequestRestart(owner->main_stream, mode);
+    vlc_mutex_unlock(&owner->lock);
 }
 
 void aout_InputRequestRestart(audio_output_t *aout)
