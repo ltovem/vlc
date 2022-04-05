@@ -1070,7 +1070,8 @@ DecoderContextOpen(vlc_decoder_device *device, vout_window_t *window)
     p_sys->cudaFunctions = NULL;
 
     int result = cuda_load_functions(&p_sys->cudaFunctions, device);
-    if (result != VLC_SUCCESS) {
+    if (result != 0)
+    {
         return VLC_EGENERIC;
     }
 
