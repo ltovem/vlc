@@ -1035,31 +1035,20 @@ static void CloseDecoder(vlc_object_t *p_this)
 }
 
 /** Decoder Device **/
+static CudaFunctions *cudaFunctions;
+
 static void DecoderContextClose(vlc_decoder_device *device)
 {
     decoder_device_nvdec_t *p_sys = GetNVDECOpaqueDevice(device);
-    if (p_sys->cuCtx)
-    {
-        CUresult cuRes = p_sys->cudaFunctions->cuCtxDestroy(p_sys->cuCtx);
-        if (cuRes != CUDA_SUCCESS)
-            CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cuRes, "cuCtxDestroy");
-    }
-    cuda_free_functions(&p_sys->cudaFunctions);
+    CUresult cuRes;
+    cuRes = cudaFunctions->cuCtxDestroy(p_sys->cuCtx);
+    if (cuRes != CUDA_SUCCESS)
+        CudaCheckErr(VLC_OBJECT(device), cudaFunctions, cuRes, "cuCtxDestroy");
 }
 
 static const struct vlc_decoder_device_operations dev_ops = {
     .close = DecoderContextClose,
 };
-
-static CUresult cudaInitialized;
-static void initCuda(void *opaque)
-{
-    vlc_decoder_device *device = opaque;
-    decoder_device_nvdec_t *p_sys = device->opaque;
-    cudaInitialized = p_sys->cudaFunctions->cuInit(0);
-    if (unlikely(cudaInitialized != CUDA_SUCCESS))
-        CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cudaInitialized, "cuInit");
-}
 
 static int
 DecoderContextOpen(vlc_decoder_device *device, vout_window_t *window)
@@ -1075,27 +1064,32 @@ DecoderContextOpen(vlc_decoder_device *device, vout_window_t *window)
     device->type = VLC_DECODER_DEVICE_NVDEC;
     p_sys->cudaFunctions = NULL;
 
-    int result = cuda_load_functions(&p_sys->cudaFunctions, device);
-    if (result != 0)
+    static vlc_once_t init_once;
+    if (!vlc_once_begin(&init_once))
     {
-        return VLC_EGENERIC;
+        int res = cuda_load_functions(&cudaFunctions, device);
+        if (res == CUDA_SUCCESS)
+        {
+            /* Use the current device functions if not initialized yet. */
+            cuRes = cudaFunctions->cuInit(0);
+            if (unlikely(cuRes != CUDA_SUCCESS))
+            {
+                CudaCheckErr(VLC_OBJECT(device), cudaFunctions, cuRes, "cuInit");
+                cuda_free_functions(&cudaFunctions);
+            }
+        }
+        vlc_once_complete(&init_once);
     }
 
-    /* Use the current device functions if not initialized yet. */
-    static vlc_once_t init_once = VLC_STATIC_ONCE;
-    vlc_once(&init_once, initCuda, device);
-
-    if (cudaInitialized != CUDA_SUCCESS)
-    {
-        DecoderContextClose(device);
+    if (cudaFunctions == NULL)
         return VLC_EGENERIC;
-    }
 
-    cuRes = p_sys->cudaFunctions->cuCtxCreate(&p_sys->cuCtx, 0, 0);
+    p_sys->cudaFunctions = cudaFunctions;
+
+    cuRes = cudaFunctions->cuCtxCreate(&p_sys->cuCtx, 0, 0);
     if (unlikely(cuRes != CUDA_SUCCESS))
     {
-        CudaCheckErr(VLC_OBJECT(device), p_sys->cudaFunctions, cuRes, "cuCtxCreate");
-        DecoderContextClose(device);
+        CudaCheckErr(VLC_OBJECT(device), cudaFunctions, cuRes, "cuCtxCreate");
         return VLC_EGENERIC;
     }
 
