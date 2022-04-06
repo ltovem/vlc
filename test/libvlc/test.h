@@ -74,8 +74,8 @@ static inline void test_init (void)
     (void)test_default_sample; /* This one may not be used */
 
     /* Make sure "make check" does not get stuck */
-    /* Timeout of 10secs by default */
-    unsigned alarm_timeout = 10;
+    /* Timeout of 15secs by default */
+    unsigned alarm_timeout = 15;
     /* Valid timeout value are < 0, for infinite, and > 0, for the number of
      * seconds */
     char *alarm_timeout_str = getenv("VLC_TEST_TIMEOUT");
