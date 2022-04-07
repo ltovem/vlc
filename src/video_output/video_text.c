@@ -36,26 +36,18 @@ typedef struct {
 } osd_spu_updater_sys_t;
 
 static int OSDTextValidate(subpicture_t *subpic,
-                           bool has_src_changed, const video_format_t *fmt_src,
-                           bool has_dst_changed, const video_format_t *fmt_dst,
-                           vlc_tick_t ts)
+                           const vlc_subpicture_updater_params_t *params)
 {
-    VLC_UNUSED(subpic); VLC_UNUSED(ts);
-    VLC_UNUSED(fmt_src); VLC_UNUSED(has_src_changed);
-    VLC_UNUSED(fmt_dst);
-
-    if( !has_dst_changed )
-        return VLC_SUCCESS;
-    return VLC_EGENERIC;
+    VLC_UNUSED(subpic);
+    return (params->flags & VLC_SPU_UPDATER_FLAG_DEST_CHANGED) ? VLC_EGENERIC
+                                                               : VLC_SUCCESS;
 }
 
 static void OSDTextUpdate(subpicture_t *subpic,
-                          const video_format_t *fmt_src,
-                          const video_format_t *fmt_dst,
-                          vlc_tick_t ts)
+                          const vlc_subpicture_updater_params_t *params)
 {
     osd_spu_updater_sys_t *sys = subpic->updater.p_sys;
-    VLC_UNUSED(fmt_src); VLC_UNUSED(ts);
+    const video_format_t *fmt_dst = params->p_fmt_dst;
 
     if( fmt_dst->i_sar_num <= 0 || fmt_dst->i_sar_den <= 0 )
         return;
