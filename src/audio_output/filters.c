@@ -692,6 +692,28 @@ error:
     return NULL;
 }
 
+static int aout_FiltersPipelineCanSwitchStream(const struct aout_filter *tab,
+                                               unsigned count)
+{
+    for (unsigned i = 0; i < count; i++)
+    {
+        vlc_clock_t *clock = tab[i].clock;
+        vout_thread_t *vout = tab[i].vout;
+        /* We can't change the clock or the vout used by a filter */
+        if (clock != NULL && vout != NULL)
+            return false;
+    }
+
+    return true;
+}
+
+bool aout_FiltersCanSwitchStream(const aout_filters_t *filters)
+{
+    assert(filters->clock_source);
+
+    return aout_FiltersPipelineCanSwitchStream(filters->tab, filters->count);
+}
+
 static void aout_FiltersPipelineResetClock(const struct aout_filter *tab,
                                            unsigned count)
 {

@@ -179,6 +179,14 @@ aout_filters_t *aout_FiltersNewWithClock(vlc_object_t *, const vlc_clock_t *,
                                          const audio_sample_format_t *,
                                          const audio_sample_format_t *,
                                          const aout_filters_cfg_t *cfg) VLC_USED;
+/**
+ * Tell if aout_filters can handle a stream transition
+ *
+ * If a filter from the filter chain has a vout and a clock, aout_filters need
+ * to be restarted.
+ */
+bool aout_FiltersCanSwitchStream(const aout_filters_t *filters);
+
 void aout_FiltersResetClock(aout_filters_t *filters);
 void aout_FiltersSetClockDelay(aout_filters_t *filters, vlc_tick_t delay);
 bool aout_FiltersCanResample (aout_filters_t *filters);
