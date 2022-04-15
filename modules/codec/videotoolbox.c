@@ -2159,8 +2159,7 @@ static void DecoderCallback(void *decompressionOutputRefCon,
     }
     if (unlikely(!imageBuffer))
     {
-        msg_Err(p_dec, "critical: null imageBuffer with a valid status");
-        p_sys->vtsession_status = VTSESSION_STATUS_ABORT;
+        msg_Warn(p_dec, "null imageBuffer with a valid status");
         goto end;
     }
 
