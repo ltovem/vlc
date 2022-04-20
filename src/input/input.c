@@ -40,6 +40,7 @@
 #include "es_out.h"
 #include "demux.h"
 #include "item.h"
+#include "info.h"
 #include "resource.h"
 #include "stream.h"
 #include "stream_output/stream_output.h"
@@ -1255,6 +1256,33 @@ static void InitPrograms( input_thread_t * p_input )
     }
 }
 
+static void input_source_SendInfo(input_thread_t *input, input_source_t *source,
+                                  bool master, const char *url)
+{
+    char *cat_name;
+    if (asprintf(&cat_name, master ? _("Main input: '%s'") :
+                                     _("Sub input: '%s'"), url) == -1)
+        return;
+
+    info_category_t *cat =
+        info_category_New(cat_name, master ? INFO_CATEGORY_ORDER_MAIN_INPUT :
+                          INFO_CATEGORY_ORDER_SUB_INPUT, source, NULL);
+    free(cat_name);
+    if (unlikely(cat == NULL))
+        return;
+
+    stream_t *s = source->p_demux;
+    while (s)
+    {
+        struct vlc_module_desc desc;
+        if (vlc_stream_GetModuleDesc(s, &desc) == VLC_SUCCESS)
+            info_category_AddModuleInfo(cat, &desc);
+        s = s->s;
+    }
+
+    input_SendEventInfoAdded(input, cat);
+}
+
 static int Init( input_thread_t * p_input )
 {
     input_thread_private_t *priv = input_priv(p_input);
@@ -1359,6 +1387,8 @@ static int Init( input_thread_t * p_input )
     msg_Dbg( p_input, "`%s' successfully opened",
              input_priv(p_input)->p_item->psz_uri );
 
+    input_source_SendInfo( p_input, master, true, priv->p_item->psz_uri );
+
     /* initialization is complete */
     input_ChangeState( p_input, PLAYING_S, vlc_tick_now() );
 
@@ -1408,11 +1438,14 @@ static void End( input_thread_t * p_input )
     {
         InputSourceDestroy( priv->slave[i] );
         input_source_Release( priv->slave[i] );
+        input_SendEventInfoRemoved( p_input, priv->slave[i] );
     }
     free( priv->slave );
 
     /* Clean up master */
     InputSourceDestroy( priv->master );
+    input_SendEventInfoRemoved( p_input,  priv->master );
+
     priv->i_title_offset = 0;
     priv->i_seekpoint_offset = 0;
 
@@ -3413,6 +3446,8 @@ static int input_SlaveSourceAdd( input_thread_t *p_input,
         p_source->b_slave_sub = true;
 
     TAB_APPEND( priv->i_slave, priv->slave, p_source );
+
+    input_source_SendInfo( p_input, p_source, false, psz_uri );
 
     return VLC_SUCCESS;
 
