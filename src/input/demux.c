@@ -198,6 +198,9 @@ demux_t *demux_NewAdvanced( vlc_object_t *p_obj, input_thread_t *p_input,
     if (priv->module == NULL)
         goto error;
 
+    const struct vlc_module_desc desc = module_get_desc(priv->module);
+    vlc_stream_SetModuleDesc(p_demux, &desc);
+
     return p_demux;
 error:
     free( p_demux->psz_filepath );

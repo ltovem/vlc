@@ -82,6 +82,9 @@ stream_t *vlc_stream_FilterNew( stream_t *p_source,
     if (priv->module == NULL)
         goto error;
 
+    const struct vlc_module_desc desc = module_get_desc(priv->module);
+    vlc_stream_SetModuleDesc(s, &desc);
+
     return s;
 error:
     free(s->psz_filepath);
