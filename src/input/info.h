@@ -50,6 +50,7 @@ static inline info_category_t *info_category_New(const char *name)
         return NULL;
     cat->psz_name = strdup(name);
     vlc_list_init(&cat->infos);
+    vlc_atomic_rc_init(&cat->rc);
     return cat;
 }
 
@@ -116,9 +117,18 @@ static inline int info_category_DeleteInfo(info_category_t *cat, const char *nam
     return VLC_EGENERIC;
 }
 
-static inline void info_category_Delete(info_category_t *cat)
+static inline info_category_t *info_category_Hold(info_category_t *cat)
+{
+    vlc_atomic_rc_inc(&cat->rc);
+    return cat;
+}
+
+static inline void info_category_Release(info_category_t *cat)
 {
     info_t *info;
+
+    if (!vlc_atomic_rc_dec(&cat->rc))
+        return;
 
     while ((info = vlc_list_first_entry_or_null(&cat->infos, info_t, node))) {
         vlc_list_remove(&info->node);
