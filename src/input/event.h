@@ -26,6 +26,7 @@
 #include <vlc_common.h>
 #include <vlc_input.h>
 #include "input_internal.h"
+#include "info.h"
 
 static inline void input_SendEvent(input_thread_t *p_input,
                                    const struct vlc_input_event *event)
@@ -294,6 +295,27 @@ static inline void input_SendEventBookmark(input_thread_t *p_input)
 {
     input_SendEvent(p_input, &(struct vlc_input_event) {
         .type = INPUT_EVENT_BOOKMARK
+    });
+}
+
+static inline void input_SendEventInfoAdded(input_thread_t *p_input,
+                                            info_category_t *info_cat)
+{
+    assert(info_cat != NULL);
+    input_SendEvent(p_input, &(struct vlc_input_event) {
+        .type = INPUT_EVENT_INFO_ADDED,
+        .info_added = info_cat,
+    });
+    info_category_Release(info_cat);
+}
+
+static inline void input_SendEventInfoRemoved(input_thread_t *p_input,
+                                              const void *id)
+{
+    assert(id != NULL);
+    input_SendEvent(p_input, &(struct vlc_input_event) {
+        .type = INPUT_EVENT_INFO_REMOVED,
+        .info_removed = id,
     });
 }
 
