@@ -59,6 +59,8 @@ typedef struct stream_priv_t
         bool          little_endian;
     } text;
 
+    struct vlc_module_desc module_desc;
+
     max_align_t private_data[];
 } stream_priv_t;
 
@@ -102,6 +104,8 @@ stream_t *vlc_stream_CustomNew(vlc_object_t *parent,
     priv->text.conv = (vlc_iconv_t)(-1);
     priv->text.char_width = 1;
     priv->text.little_endian = false;
+
+    priv->module_desc.name = NULL;
 
     return &priv->stream;
 }
@@ -183,6 +187,23 @@ stream_t *(vlc_stream_NewMRL)(vlc_object_t* parent, const char* mrl )
         msg_Warn( parent, "ignoring extra fragment data: %s", extra );
 
     return stream;
+}
+
+void vlc_stream_SetModuleDesc(stream_t *s, const struct vlc_module_desc *desc)
+{
+    stream_priv_t *priv = stream_priv(s);
+    assert(priv->module_desc.name == NULL);
+    priv->module_desc = *desc;
+}
+
+
+int vlc_stream_GetModuleDesc(const stream_t *s, struct vlc_module_desc *desc)
+{
+    const stream_priv_t *priv = stream_priv(s);
+    if (priv->module_desc.name == NULL)
+        return VLC_EGENERIC;
+    *desc = priv->module_desc;
+    return VLC_SUCCESS;
 }
 
 /**

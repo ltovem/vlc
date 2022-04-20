@@ -26,7 +26,9 @@
 
 #include <vlc_common.h>
 #include <vlc_stream.h>
+#include <vlc_modules.h>
 #include "input_internal.h"
+#include "../modules/modules.h"
 
 stream_t *vlc_stream_CustomNew(vlc_object_t *parent,
                                void (*destroy)(stream_t *), size_t extra_size,
@@ -125,6 +127,10 @@ stream_t *stream_FilterChainNew( stream_t *source, const char *list ) VLC_USED;
  **/
 int stream_extractor_AttachParsed( stream_t** stream, const char* data,
                                    char const** out_extra );
+
+void vlc_stream_SetModuleDesc(stream_t *s, const struct vlc_module_desc *desc);
+
+int vlc_stream_GetModuleDesc(const stream_t *s, struct vlc_module_desc *desc);
 
 /**
  * @}
