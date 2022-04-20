@@ -297,7 +297,7 @@ stream_t *stream_AccessNew(vlc_object_t *parent, input_thread_t *input,
     {
         struct vlc_access_stream_private *priv;
         s = vlc_stream_CustomNew(VLC_OBJECT(access), AStreamDestroy,
-                                 sizeof(*priv), "stream");
+                                 sizeof(*priv), "access");
 
         if (unlikely(s == NULL))
         {
