@@ -122,6 +122,34 @@ static inline info_t *info_category_AddInfo(info_category_t *cat,
     return info;
 }
 
+static inline info_t *info_category_AddModuleInfo(info_category_t *cat,
+                                                  const struct vlc_module_desc *desc)
+{
+    info_t *info;
+    unsigned index = 0;
+    char *name_buf = NULL;
+    const char *name = desc->capability;
+    assert(desc->name != NULL && desc->capability != NULL
+        && desc->shortname != NULL && desc->longname != NULL);
+
+
+    /* Append an index if there is already the same module cap in this category
+     * (might happen with * filters) */
+    while ((info = info_category_FindInfo(cat, name)) != NULL)
+    {
+        index++;
+        free(name_buf);
+        if (asprintf(&name_buf, "%s(%u)", desc->capability, index) < 0)
+            return NULL;
+        name = name_buf;
+    }
+
+    info = info_category_AddInfo(cat, name, "[%s] %s (%s)",
+                                 desc->name, desc->shortname, desc->longname);
+    free(name_buf);
+    return info;
+}
+
 static inline int info_category_DeleteInfo(info_category_t *cat, const char *name)
 {
     info_t *info = info_category_FindInfo(cat, name);
