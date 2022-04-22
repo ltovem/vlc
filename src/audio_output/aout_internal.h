@@ -121,6 +121,8 @@ aout_AddMeterPlugin(audio_output_t *aout, const char *chain,
 void
 aout_RemoveMeterPlugin(audio_output_t *aout, vlc_audio_meter_plugin *plugin);
 
+void aout_GetModuleDesc(audio_output_t *aout, struct vlc_module_desc *desc);
+
 /* From common.c : */
 void aout_FormatsPrint(vlc_object_t *, const char *,
                        const audio_sample_format_t *,

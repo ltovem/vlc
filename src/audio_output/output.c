@@ -996,3 +996,9 @@ aout_RemoveMeterPlugin(audio_output_t *aout, vlc_audio_meter_plugin *plugin)
 
     vlc_audio_meter_RemovePlugin(&owner->meter, plugin);
 }
+
+void aout_GetModuleDesc(audio_output_t *aout, struct vlc_module_desc *desc)
+{
+    aout_owner_t *owner = aout_owner(aout);
+    *desc = module_get_desc(owner->module);
+}
