@@ -26,11 +26,14 @@
 #include <vlc_codec.h>
 #include <vlc_modules.h>
 #include "libvlc.h"
+#include "decoder_device.h"
+#include "../modules/modules.h"
 
 struct vlc_decoder_device_priv
 {
     struct vlc_decoder_device device;
     vlc_atomic_rc_t rc;
+    struct vlc_module_desc module_desc;
 };
 
 static int decoder_device_Open(void *func, bool forced, va_list ap)
@@ -65,6 +68,7 @@ vlc_decoder_device_Create(vlc_object_t *o, vout_window_t *window)
     }
     assert(priv->device.ops != NULL);
     vlc_atomic_rc_init(&priv->rc);
+    priv->module_desc = module_get_desc(module);
     return &priv->device;
 }
 
@@ -89,6 +93,15 @@ vlc_decoder_device_Release(vlc_decoder_device *device)
         vlc_objres_clear(VLC_OBJECT(device));
         vlc_object_delete(device);
     }
+}
+
+void
+vlc_decoder_device_GetModuleDesc(vlc_decoder_device *device,
+                                 struct vlc_module_desc *desc)
+{
+    struct vlc_decoder_device_priv *priv =
+            container_of(device, struct vlc_decoder_device_priv, device);
+    *desc = priv->module_desc;
 }
 
 /* video context */
