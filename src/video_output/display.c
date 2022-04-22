@@ -42,6 +42,7 @@
 
 #include "display.h"
 #include "vout_internal.h"
+#include "../misc/filter_chain.h"
 
 /*****************************************************************************
  * FIXME/TODO see how to have direct rendering here (interact with vout.c)
@@ -252,6 +253,8 @@ typedef struct {
       * can be done and nothing will be displayed */
     filter_chain_t *converters;
     picture_pool_t *pool;
+
+    struct vlc_module_desc module_desc;
 } vout_display_priv_t;
 
 static vlc_decoder_device * DisplayHoldDecoderDevice(vlc_object_t *o, void *sys)
@@ -680,6 +683,7 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
             if (VoutDisplayCreateRender(vd) == 0) {
                 msg_Dbg(vd, "using %s module \"%s\"", "vout display",
                         module_get_object(mods[i]));
+                osys->module_desc = module_get_desc(mods[i]);
                 free(mods);
                 return vd;
             }
@@ -722,4 +726,15 @@ void vout_display_Delete(vout_display_t *vd)
     video_format_Clean(&osys->source);
     video_format_Clean(&osys->display_fmt);
     vlc_object_delete(vd);
+}
+
+void vout_display_GetModuleDesc(vout_display_t *vd,
+                                struct vlc_module_desc *desc,
+                                size_t *conv_desc_count_out,
+                                struct vlc_module_desc **conv_desc_array_out)
+{
+    vout_display_priv_t *osys = container_of(vd, vout_display_priv_t, display);
+    *desc = osys->module_desc;
+    filter_chain_GetModuleDescArray(osys->converters, conv_desc_count_out,
+                                    conv_desc_array_out);
 }

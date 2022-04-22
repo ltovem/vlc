@@ -21,6 +21,11 @@
  *****************************************************************************/
 
 #include "vout_wrapper.h"
+#include "../modules/modules.h"
 
 void vout_UpdateDisplaySourceProperties(vout_display_t *vd, const video_format_t *, const vlc_rational_t *forced_dar);
 void VoutFixFormatAR(video_format_t *);
+void vout_display_GetModuleDesc(vout_display_t *vd,
+                                struct vlc_module_desc *desc,
+                                size_t *conv_desc_count_out,
+                                struct vlc_module_desc **conv_desc_array_out);
