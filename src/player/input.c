@@ -26,6 +26,150 @@
 #include <vlc_interface.h>
 #include <vlc_memstream.h>
 #include "player.h"
+#include "../input/info.h"
+
+static const info_category_t *
+vlc_player_input_GetCategoryById(struct vlc_player_input *input, const void *id)
+{
+    info_category_t *it;
+    vlc_list_foreach(it, &input->infos, node)
+    {
+        if (it->id != NULL && it->id == id)
+            return it;
+    }
+    return NULL;
+}
+
+const info_category_t *
+vlc_player_input_GetNextInfo(struct vlc_player_input *input,
+                             const info_category_t *prev_info, unsigned *level)
+{
+    *level = 0;
+    if (prev_info == NULL)
+        return vlc_list_first_entry_or_null(&input->infos, info_category_t, node);
+
+    const info_category_t *info =
+        vlc_list_next_entry_or_null(&input->infos, prev_info,
+                                    info_category_t, node);
+    if (info != NULL && info->parent_id != NULL)
+    {
+        const info_category_t *it = info;
+        while ((it = vlc_player_input_GetCategoryById(input, it->parent_id)) != NULL)
+            (*level)++;
+    }
+    return info;
+}
+
+static void
+vlc_player_input_AddInfo(struct vlc_player_input *input,
+                         info_category_t *info_cat)
+{
+    struct vlc_list *head = &input->infos;
+    struct vlc_list *pos = NULL;
+    info_category_t *it;
+
+    assert(info_cat != NULL);
+
+    bool has_parent = false, has_siblings = false;
+    if (info_cat->parent_id != NULL)
+    {
+        vlc_list_foreach(it, head, node)
+        {
+            if (it->id == info_cat->parent_id)
+                has_parent = true;
+            if (it->parent_id == info_cat->parent_id)
+                has_siblings = true;
+        }
+    }
+
+    bool parent_found = false, siblings_found = false;
+    vlc_list_foreach(it, head, node)
+    {
+        if (has_parent)
+        {
+            if (it->id != info_cat->parent_id)
+            {
+                if (parent_found)
+                    goto done;
+                continue;
+            }
+            parent_found = true;
+        }
+        if (has_siblings)
+        {
+            if (it->parent_id != info_cat->parent_id)
+            {
+                if (siblings_found)
+                    goto done;
+                continue;
+            }
+            siblings_found = true;
+        }
+
+        if (it->order < info_cat->order)
+            continue;
+        if (strcmp(it->psz_name, info_cat->psz_name) < 0)
+            continue;
+done:
+        pos = &it->node;
+        break;
+    }
+
+    if (pos == NULL)
+        vlc_list_append(&info_cat->node, head);
+    else
+        vlc_list_add_before(&info_cat->node, pos);
+    info_category_Hold(info_cat);
+
+    if (info_cat->id != NULL)
+    {
+        /* In case a parent was added after a child, move the children next to
+         * the parent */
+        pos = &info_cat->node;
+        vlc_list_foreach(it, head, node)
+        {
+            if (info_cat->id == it->parent_id)
+            {
+                vlc_list_remove(&it->node);
+                vlc_list_add_after(&it->node, pos);
+                pos = &it->node;
+            }
+        }
+    }
+}
+
+static void
+vlc_player_input_RemoveInfo(struct vlc_player_input* input, const void *id)
+{
+    const void *child_id = NULL;
+    info_category_t *it;
+    vlc_list_foreach(it, &input->infos, node)
+    {
+        if (it->id == id)
+        {
+            /* Remove the actual id */
+            vlc_list_remove(&it->node);
+            info_category_Release(it);
+        }
+        else if (child_id != NULL && child_id == it->parent_id)
+        {
+            /* Remove children of children (if order is important) */
+            child_id = it->id;
+            vlc_list_remove(&it->node);
+            info_category_Release(it);
+        }
+        else if (it->parent_id == id)
+        {
+            /* Remove direct children */
+            child_id = it->id;
+
+            vlc_list_remove(&it->node);
+            info_category_Release(it);
+        }
+        else
+            child_id = NULL;
+    }
+}
 
 struct vlc_player_track_priv *
 vlc_player_input_FindTrackById(struct vlc_player_input *input, vlc_es_id_t *id,
@@ -887,6 +1031,12 @@ input_thread_Events(input_thread_t *input_thread,
             vlc_player_SendEvent(player, on_teletext_transparency_changed,
                                  input->teletext_transparent);
             break;
+        case INPUT_EVENT_INFO_ADDED:
+            vlc_player_input_AddInfo(input, event->info_added);
+            break;
+        case INPUT_EVENT_INFO_REMOVED:
+            vlc_player_input_RemoveInfo(input, event->info_removed);
+            break;
         default:
             break;
     }
@@ -987,6 +1137,7 @@ vlc_player_input_New(vlc_player_t *player, input_item_t *item)
     input->ml.delay_restore = false;
     input->ml.pos = -1.f;
     input->ml.has_audio_tracks = input->ml.has_video_tracks = false;
+    vlc_list_init(&input->infos);
 
     input->thread = input_Create(player, input_thread_Events, input, item,
                                  INPUT_TYPE_NONE, player->resource,
@@ -1051,6 +1202,8 @@ vlc_player_input_Delete(struct vlc_player_input *input)
     vlc_vector_destroy(&input->video_track_vector);
     vlc_vector_destroy(&input->audio_track_vector);
     vlc_vector_destroy(&input->spu_track_vector);
+
+    assert(vlc_list_is_empty(&input->infos));
 
     input_Close(input->thread);
     free(input);

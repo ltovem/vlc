@@ -126,6 +126,8 @@ struct vlc_player_input
         bool has_video_tracks;
         bool has_audio_tracks;
     } ml;
+
+    struct vlc_list infos;
 };
 
 struct vlc_player_listener_id
@@ -451,6 +453,10 @@ vlc_player_input_HandleState(struct vlc_player_input *, enum vlc_player_state,
 
 struct vlc_player_timer_point
 vlc_player_input_GetTimerValue(struct vlc_player_input *input);
+
+const info_category_t *
+vlc_player_input_GetNextInfo(struct vlc_player_input *input,
+                             const info_category_t *prev_info, unsigned *level);
 
 /*
  * player_timer.c

@@ -1853,6 +1853,14 @@ vlc_player_GetV4l2Object(vlc_player_t *player)
            (vlc_object_t*) input->thread : NULL;
 }
 
+const info_category_t *
+vlc_player_GetNextInfo(vlc_player_t *player, const info_category_t *prev_info,
+                       unsigned *level)
+{
+    struct vlc_player_input *input = vlc_player_get_input_locked(player);
+    return vlc_player_input_GetNextInfo(input, prev_info, level);
+}
+
 static void
 vlc_player_InitLocks(vlc_player_t *player, enum vlc_player_lock_type lock_type)
 {
