@@ -854,6 +854,7 @@ static int EsOutSetRecord(  es_out_t *out, bool b_record )
             const struct vlc_input_decoder_cfg cfg = {
                 .fmt = &p_es->fmt,
                 .str_id = p_es->id.str_id,
+                .parent_info_id = p_es->id.source,
                 .clock = NULL,
                 .resource = input_priv(p_input)->p_resource,
                 .sout = p_sys->p_sout_record,
@@ -2349,6 +2350,7 @@ static void EsOutCreateDecoder( es_out_t *out, es_out_id_t *p_es )
     const struct vlc_input_decoder_cfg cfg = {
         .fmt = &p_es->fmt,
         .str_id = p_es->id.str_id,
+        .parent_info_id = p_es->id.source,
         .clock = p_es->p_clock,
         .resource = priv->p_resource,
         .sout = priv->p_sout,
@@ -2369,6 +2371,7 @@ static void EsOutCreateDecoder( es_out_t *out, es_out_id_t *p_es )
             const struct vlc_input_decoder_cfg rec_cfg = {
                 .fmt = &p_es->fmt,
                 .str_id = p_es->id.str_id,
+                .parent_info_id = p_es->id.source,
                 .clock = NULL,
                 .resource = priv->p_resource,
                 .sout = p_sys->p_sout_record,

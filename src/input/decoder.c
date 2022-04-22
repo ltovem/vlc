@@ -71,6 +71,7 @@ struct vlc_input_decoder_t
     input_resource_t*p_resource;
     vlc_clock_t     *p_clock;
     const char *psz_id;
+    const void *parent_info_id;
 
     const struct vlc_input_decoder_callbacks *cbs;
     void *cbs_userdata;
@@ -1836,6 +1837,7 @@ CreateDecoder( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
     p_dec = &p_owner->dec;
 
     p_owner->psz_id = cfg->str_id;
+    p_owner->parent_info_id = cfg->parent_info_id;
     p_owner->p_clock = cfg->clock;
     p_owner->i_preroll_end = PREROLL_NONE;
     p_owner->p_resource = cfg->resource;
@@ -2163,6 +2165,7 @@ vlc_input_decoder_Create( vlc_object_t *p_parent, const es_format_t *fmt,
     const struct vlc_input_decoder_cfg cfg = {
         .fmt = fmt,
         .str_id = NULL,
+        .parent_info_id = NULL,
         .clock = NULL,
         .resource = p_resource,
         .sout = NULL,
@@ -2425,6 +2428,7 @@ int vlc_input_decoder_SetCcState( vlc_input_decoder_t *p_owner, vlc_fourcc_t cod
         const struct vlc_input_decoder_cfg cfg = {
             .fmt = &fmt,
             .str_id = p_owner->psz_id,
+            .parent_info_id = p_dec,
             .clock = p_owner->p_clock,
             .resource = p_owner->p_resource,
             .sout = p_owner->p_sout,

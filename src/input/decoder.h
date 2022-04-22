@@ -54,6 +54,7 @@ struct vlc_input_decoder_cfg
 {
     const es_format_t *fmt;
     const char *str_id;
+    const void *parent_info_id;
     vlc_clock_t *clock;
     input_resource_t *resource;
     sout_stream_t *sout;
