@@ -24,6 +24,17 @@
 #define LIBVLC_INPUT_INFO_H 1
 
 #include "vlc_input_item.h"
+#include "../modules/modules.h"
+
+enum info_category_order {
+    INFO_CATEGORY_ORDER_MAIN_INPUT = 1,
+    INFO_CATEGORY_ORDER_SUB_INPUT,
+    INFO_CATEGORY_ORDER_VIDEO_DECODER,
+    INFO_CATEGORY_ORDER_AUDIO_DECODER,
+    INFO_CATEGORY_ORDER_SPU_DECODER,
+    INFO_CATEGORY_ORDER_VOUT,
+    INFO_CATEGORY_ORDER_AOUT,
+};
 
 static inline info_t *info_New(const char *name)
 {
@@ -43,12 +54,17 @@ static inline void info_Delete(info_t *i)
     free(i);
 }
 
-static inline info_category_t *info_category_New(const char *name)
+static inline info_category_t *info_category_New(const char *name, int order,
+                                                 const void *id,
+                                                 const void *parent_id)
 {
     info_category_t *cat = malloc(sizeof(*cat));
     if (!cat)
         return NULL;
     cat->psz_name = strdup(name);
+    cat->order = order;
+    cat->id = id;
+    cat->parent_id = parent_id;
     vlc_list_init(&cat->infos);
     vlc_atomic_rc_init(&cat->rc);
     return cat;

@@ -53,6 +53,9 @@ struct info_t
 struct info_category_t
 {
     char   *psz_name;      /**< Name of this category */
+    int order;             /**< Category display order */
+    const void *id;        /**< Used to identify the category */
+    const void *parent_id; /**< Used to identify the parent category */
     struct vlc_list infos; /**< Infos in the category */
     struct vlc_list node;  /**< node, to put this category in a list */
     vlc_atomic_rc_t rc;

@@ -720,7 +720,7 @@ static int InputItemVaAddInfo( input_item_t *p_i,
     info_category_t *p_cat = InputItemFindCat( p_i, psz_cat );
     if( !p_cat )
     {
-        p_cat = info_category_New( psz_cat );
+        p_cat = info_category_New( psz_cat, 0, NULL, NULL );
         if( !p_cat )
             return VLC_ENOMEM;
         vlc_list_append( &p_cat->node, &p_i->categories );
@@ -797,7 +797,7 @@ void input_item_ReplaceInfos( input_item_t *p_item, info_category_t *p_cat )
     {
         vlc_list_add_after( &p_cat->node, &p_old->node );
         vlc_list_remove( &p_old->node );
-        info_category_Delete( p_old );
+        info_category_Release( p_old );
     }
     else
         vlc_list_append( &p_cat->node, &p_item->categories );

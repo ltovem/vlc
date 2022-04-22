@@ -1770,7 +1770,7 @@ static void EsOutProgramMeta( es_out_t *out, input_source_t *source,
     {
         char *psz_cat = EsOutProgramGetMetaName( p_pgrm );
         if( psz_cat )
-            p_cat = info_category_New( psz_cat );
+            p_cat = info_category_New( psz_cat, 0, NULL, NULL );
         free( psz_cat );
     }
 
@@ -4222,7 +4222,7 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
     if( unlikely( !psz_cat ) )
         return;
 
-    info_category_t* p_cat = info_category_New( psz_cat );
+    info_category_t* p_cat = info_category_New( psz_cat, 0, NULL, NULL );
 
     free( psz_cat );
 
