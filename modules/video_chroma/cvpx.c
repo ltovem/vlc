@@ -662,6 +662,7 @@ Open_chain_CVPX(filter_t *filter)
     filter->vctx_out = vctx_out;
     filter->p_sys = chain;
     filter->ops = &chain_CVPX_ops;
+    filter->internal_chain_info = chain;
 
     /* Display the current conversion chain in the logs. */
     msg_Dbg(filter, "CVPX conversion chain:");
