@@ -243,4 +243,10 @@ void vout_SetSpuHighlight( vout_thread_t *p_vout, const vlc_spu_highlight_t * );
 
 void vout_GetWindowModuleDesc(vout_thread_t *vout,
                               struct vlc_module_desc *module_desc);
+
+int vout_GetDisplayModuleDesc(vout_thread_t *vout,
+                              struct vlc_module_desc *module_desc,
+                              size_t *conv_desc_count_out,
+                              struct vlc_module_desc **conv_desc_array_out);
+
 #endif // LIBVLC_VOUT_INTERNAL_H
