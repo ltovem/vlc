@@ -147,6 +147,10 @@ void vlc_aout_stream_ChangeRate(vlc_aout_stream *stream, float rate);
 void vlc_aout_stream_ChangeDelay(vlc_aout_stream *stream, vlc_tick_t delay);
 void vlc_aout_stream_Flush(vlc_aout_stream *stream);
 void vlc_aout_stream_Drain(vlc_aout_stream *stream);
+void vlc_aout_stream_GetModuleDesc(const vlc_aout_stream *stream,
+                                   size_t *filters_desc_count_out,
+                                   struct vlc_module_desc **filters_desc_array_out);
+
 /* Contrary to other vlc_aout_stream_*() functions, this function can be called from
  * any threads */
 bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream);
