@@ -405,6 +405,7 @@ libvlccore_la_SOURCES = \
 	misc/addons.c \
 	misc/filter.c \
 	misc/filter_chain.c \
+	misc/filter_chain.h \
 	misc/httpcookies.c \
 	misc/fingerprinter.c \
 	misc/text_style.c \

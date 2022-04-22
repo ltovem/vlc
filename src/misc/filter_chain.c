@@ -32,6 +32,8 @@
 #include <libvlc.h>
 #include <assert.h>
 
+#include "filter_chain.h"
+
 typedef struct chained_filter_t
 {
     /* Public part of the filter structure */
@@ -40,6 +42,7 @@ typedef struct chained_filter_t
     struct chained_filter_t *prev, *next;
     vlc_mouse_t mouse;
     vlc_picture_chain_t pending;
+    struct vlc_module_desc module_desc;
 } chained_filter_t;
 
 /* */
@@ -261,6 +264,8 @@ static filter_t *filter_chain_AppendInner( filter_chain_t *chain,
     if( filter->p_module == NULL )
         goto error;
     assert( filter->ops != NULL );
+
+    chained->module_desc = module_get_desc(filter->p_module);
 
     if( chain->last == NULL )
     {
@@ -531,4 +536,50 @@ static void FilterDeletePictures( vlc_picture_chain_t *pictures )
         picture_t *next = vlc_picture_chain_PopFront( pictures );
         picture_Release( next );
     }
+}
+
+static void copy_desc(chained_filter_t *it, size_t idx, void *ctx)
+{
+    struct vlc_module_desc *desc_array = ctx;
+    desc_array[idx] = it->module_desc;
+}
+
+static void filter_chain_IterateAll(const filter_chain_t *p_chain, size_t *count,
+                                    void (*action)(chained_filter_t *it, size_t idx, void *ctx),
+                                    void *ctx)
+{
+    chained_filter_t *it;
+    for (it = p_chain->first; it != NULL; it = it->next)
+    {
+        if (action != NULL)
+            action(it, *count, ctx);
+
+        (*count)++;
+
+        if (it->filter.internal_chain_info != NULL)
+            filter_chain_IterateAll(it->filter.internal_chain_info, count,
+                                    action, ctx);
+    }
+}
+
+void filter_chain_GetModuleDescArray(const filter_chain_t *p_chain,
+                                     size_t *desc_count_out,
+                                     struct vlc_module_desc **desc_array_out)
+{
+    *desc_count_out = 0;
+    *desc_array_out = NULL;
+
+    size_t count = 0;
+    filter_chain_IterateAll(p_chain, &count, NULL, NULL);
+
+    struct vlc_module_desc *desc_array =
+        vlc_alloc(count, sizeof(struct vlc_module_desc));
+    if (desc_array == NULL)
+        return;
+
+    count = 0;
+    filter_chain_IterateAll(p_chain, &count, copy_desc, desc_array);
+
+    *desc_count_out = count;
+    *desc_array_out = desc_array;
 }
