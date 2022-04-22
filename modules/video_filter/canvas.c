@@ -377,6 +377,7 @@ static int Activate( filter_t *p_filter )
     }
 
     p_filter->ops = &filter_ops;
+    p_filter->internal_chain_info = p_sys->p_chain;
 
     return VLC_SUCCESS;
 }
