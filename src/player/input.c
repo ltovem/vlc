@@ -28,6 +28,24 @@
 #include "player.h"
 #include "../input/info.h"
 
+static void dump(struct vlc_player_input *input, const char *reason)
+{
+    fprintf(stderr, "=========== %s ===========\n", reason);
+    const info_category_t *cat = NULL;
+    unsigned level;
+    while ((cat = vlc_player_input_GetNextInfo(input, cat, &level)) != NULL)
+    {
+        fprintf(stderr, "%*s%s\n", level * 4, "", cat->psz_name);
+        //fprintf(stderr, "%*s  id: %p, parent_id: %p, order: %u, lvl: %u\n",
+        //        level * 4, "",
+        //        cat->id, cat->parent_id, cat->order, level);
+        info_t *info;
+        info_foreach(info, &cat->infos)
+            fprintf(stderr, "%*s    '%s': '%s'\n", level * 4, "",
+                    info->psz_name, info->psz_value);
+    }
+}
+
 static const info_category_t *
 vlc_player_input_GetCategoryById(struct vlc_player_input *input, const void *id)
 {
@@ -136,6 +154,8 @@ done:
             }
         }
     }
+
+    dump(input, "added");
 }
 
 static void
@@ -169,6 +189,7 @@ vlc_player_input_RemoveInfo(struct vlc_player_input* input, const void *id)
         else
             child_id = NULL;
     }
+    dump(input, "removed");
 }
 
 struct vlc_player_track_priv *
