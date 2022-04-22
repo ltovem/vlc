@@ -133,6 +133,7 @@ static int Open( filter_t *p_filter  )
     /* Set callback function */
     p_filter->ops = &filter_ops;
     p_filter->p_sys = sys;
+    p_filter->internal_chain_info = sys;
     return VLC_SUCCESS;
 }
 
