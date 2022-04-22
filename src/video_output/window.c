@@ -37,6 +37,8 @@
 #include "inhibit.h"
 #include <libvlc.h>
 
+#include "window.h"
+
 typedef struct
 {
     vout_window_t wnd;
@@ -251,4 +253,12 @@ void vout_window_SetFullScreen(vout_window_t *window, const char *id)
 
     if (window->ops->set_fullscreen != NULL)
         window->ops->set_fullscreen(window, id);
+}
+
+void vout_window_GetModuleDesc(vout_window_t *window,
+                               struct vlc_module_desc *desc)
+{
+    window_t *w = container_of(window, window_t, wnd);
+
+    *desc = module_get_desc(w->module);
 }
