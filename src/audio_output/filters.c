@@ -857,3 +857,23 @@ void aout_FiltersChangeViewpoint (aout_filters_t *filters,
 {
     aout_FiltersPipelineChangeViewpoint (filters->tab, filters->count, vp);
 }
+
+void aout_FiltersGetModuleDesc(aout_filters_t *filters,
+                               size_t *desc_count_out,
+                               struct vlc_module_desc **desc_array_out)
+{
+    *desc_count_out = 0;
+    *desc_array_out = NULL;
+
+    struct vlc_module_desc *desc_array =
+        vlc_alloc(filters->count + 1, sizeof(struct vlc_module_desc));
+    if (desc_array == NULL)
+        return;
+
+    for (unsigned i = 0; i < filters->count; ++i)
+        desc_array[i] = module_get_desc(filters->tab[i].f->p_module);
+    desc_array[filters->count] = module_get_desc(filters->resampler.f->p_module);
+
+    *desc_count_out = filters->count + 1;
+    *desc_array_out = desc_array;
+}

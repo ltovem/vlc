@@ -30,6 +30,7 @@
 # include <vlc_list.h>
 # include <vlc_viewpoint.h>
 # include "../clock/clock.h"
+# include "../modules/modules.h"
 
 /* Max input rate factor (1/4 -> 4) */
 # define AOUT_MAX_INPUT_RATE (4)
@@ -187,5 +188,9 @@ filter_t *aout_filter_Create(vlc_object_t *obj, const filter_owner_t *restrict o
                              const audio_sample_format_t *infmt,
                              const audio_sample_format_t *outfmt,
                              config_chain_t *cfg, bool const_fmt);
+
+void aout_FiltersGetModuleDesc(aout_filters_t *filters,
+                               size_t *desc_count_out,
+                               struct vlc_module_desc **desc_array_out);
 
 #endif /* !LIBVLC_AOUT_INTERNAL_H */
