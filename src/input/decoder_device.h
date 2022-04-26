@@ -27,4 +27,7 @@ void
 vlc_decoder_device_GetModuleDesc(vlc_decoder_device *device,
                                  struct vlc_module_desc *desc);
 
+const char *
+vlc_video_context_GetStringType(const vlc_video_context *vctx);
+
 #endif

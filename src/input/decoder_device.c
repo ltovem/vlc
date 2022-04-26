@@ -147,6 +147,23 @@ enum vlc_video_context_type vlc_video_context_GetType(const vlc_video_context *v
     return vctx->private_type;
 }
 
+const char *
+vlc_video_context_GetStringType(const vlc_video_context *vctx)
+{
+    switch (vlc_video_context_GetType(vctx))
+    {
+        case VLC_VIDEO_CONTEXT_VAAPI:   return "VA-API";
+        case VLC_VIDEO_CONTEXT_VDPAU:   return "VDPAU";
+        case VLC_VIDEO_CONTEXT_DXVA2:   return "DXVA2";
+        case VLC_VIDEO_CONTEXT_D3D11VA: return "D3D11";
+        case VLC_VIDEO_CONTEXT_AWINDOW: return "ANDROID";
+        case VLC_VIDEO_CONTEXT_NVDEC:   return "NVDEC";
+        case VLC_VIDEO_CONTEXT_CVPX:    return "CVPX";
+        case VLC_VIDEO_CONTEXT_MMAL:    return "MMAL";
+    }
+    return NULL;
+}
+
 vlc_video_context *vlc_video_context_Hold(vlc_video_context *vctx)
 {
     vlc_atomic_rc_inc( &vctx->rc );
