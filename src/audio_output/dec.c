@@ -728,3 +728,15 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
     stream->sync.discontinuity = true;
     stream->original_pts = VLC_TICK_INVALID;
 }
+
+void vlc_aout_stream_GetModuleDesc(const vlc_aout_stream *stream,
+                                   size_t *filters_desc_count_out,
+                                   struct vlc_module_desc **filters_desc_array_out)
+{
+    *filters_desc_count_out = 0;
+    *filters_desc_array_out = NULL;
+
+    if (stream->filters != NULL)
+        aout_FiltersGetModuleDesc(stream->filters, filters_desc_count_out,
+                                  filters_desc_array_out);
+}

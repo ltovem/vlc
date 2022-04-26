@@ -23,6 +23,8 @@
 #ifndef LIBVLC_MODULES_H
 # define LIBVLC_MODULES_H 1
 
+# include <vlc_modules.h>
+
 # include <stdatomic.h>
 
 struct vlc_param;
@@ -102,6 +104,25 @@ struct module_t
     void *pf_activate;
     vlc_deactivate_cb deactivate;
 };
+
+struct vlc_module_desc
+{
+    const char *name;
+    const char *capability;
+    const char *shortname;
+    const char *longname;
+};
+
+static inline struct vlc_module_desc module_get_desc(module_t *mod)
+{
+    return (struct vlc_module_desc) {
+        .name = module_get_object(mod),
+        .capability = module_get_capability(mod),
+        .shortname = module_GetShortName(mod),
+        .longname = module_GetLongName(mod),
+    };
+}
+
 
 vlc_plugin_t *vlc_plugin_create(void);
 void vlc_plugin_destroy(vlc_plugin_t *);

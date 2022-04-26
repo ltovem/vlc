@@ -51,7 +51,9 @@
 #include "input_internal.h"
 #include "decoder.h"
 #include "resource.h"
+#include "info.h"
 #include "libvlc.h"
+#include "decoder_device.h"
 
 #include "../video_output/vout_internal.h"
 
@@ -71,6 +73,7 @@ struct vlc_input_decoder_t
     input_resource_t*p_resource;
     vlc_clock_t     *p_clock;
     const char *psz_id;
+    const void *parent_info_id;
 
     const struct vlc_input_decoder_callbacks *cbs;
     void *cbs_userdata;
@@ -194,10 +197,147 @@ struct vlc_input_decoder_t
     if (decoder_priv->cbs && decoder_priv->cbs->event) \
         decoder_priv->cbs->event(decoder_priv, __VA_ARGS__, \
                                  decoder_priv->cbs_userdata);
+static inline bool
+decoder_HasInfoEvent(vlc_input_decoder_t *owner)
+{
+    return owner->cbs != NULL && owner->cbs->on_info_added != NULL;
+}
 
 static inline vlc_input_decoder_t *dec_get_owner( decoder_t *p_dec )
 {
     return container_of( p_dec, vlc_input_decoder_t, dec );
+}
+
+static void
+decoder_SendAoutInfo(vlc_input_decoder_t *owner, audio_output_t *aout,
+                     vlc_aout_stream *astream)
+{
+    info_category_t *cat = info_category_New(_("Audio Output"),
+                                             INFO_CATEGORY_ORDER_AOUT, aout,
+                                             &owner->dec);
+    if (unlikely(cat == NULL))
+        return;
+
+    struct vlc_module_desc desc;
+    aout_GetModuleDesc(aout, &desc);
+    info_category_AddModuleInfo(cat, &desc);
+
+    decoder_Notify(owner, on_info_added, cat);
+
+    cat = info_category_New(_("Stream"), INFO_CATEGORY_ORDER_AOUT, astream,
+                            aout);
+
+    if (unlikely(cat == NULL))
+        return;
+
+    bool passthrough;
+    size_t filter_count;
+    struct vlc_module_desc *filters_desc_array;
+    vlc_aout_stream_GetModuleDesc(astream, &filter_count,
+                                  &filters_desc_array);
+
+    for (size_t i = 0; i < filter_count; ++i)
+        info_category_AddModuleInfo(cat, &filters_desc_array[i]);
+
+    free(filters_desc_array);
+
+    decoder_Notify(owner, on_info_added, cat);
+}
+
+static void
+decoder_SendVoutInfo(vlc_input_decoder_t *owner, vout_thread_t *vout,
+                    vlc_video_context *vctx)
+{
+    info_category_t *cat = info_category_New(_("Video Output"),
+                                             INFO_CATEGORY_ORDER_VOUT, vout,
+                                             &owner->dec);
+    if (cat == NULL)
+        return;
+
+    struct vlc_module_desc desc;
+    vout_GetWindowModuleDesc(vout, &desc);
+    info_category_AddModuleInfo(cat, &desc);
+
+    vlc_decoder_device *dec_device = vout_GetDevice(vout);
+    if (dec_device != NULL)
+    {
+        vlc_decoder_device_GetModuleDesc(dec_device, &desc);
+        vlc_decoder_device_Release(dec_device);
+
+        info_category_AddModuleInfo(cat, &desc);
+    }
+
+    if (vctx != NULL)
+    {
+        const char *vctx_type = vlc_video_context_GetStringType(vctx);
+        if (vctx_type != NULL)
+            info_category_AddInfo(cat, "hw API", vctx_type);
+    }
+
+    size_t conv_count;
+    struct vlc_module_desc *conv_desc_array;
+    if (vout_GetDisplayModuleDesc(vout, &desc,
+                                  &conv_count, &conv_desc_array) == 0)
+    {
+        info_category_AddModuleInfo(cat, &desc);
+
+        if (conv_count > 0)
+        {
+            info_category_t *conv_cat =
+                info_category_New(_("Converters"), INFO_CATEGORY_ORDER_VOUT, NULL,
+                                  vout);
+            if (conv_cat != NULL)
+            {
+                for (size_t i = 0; i < conv_count; ++i)
+                    info_category_AddModuleInfo(conv_cat, &conv_desc_array[i]);
+                decoder_Notify(owner, on_info_added, conv_cat);
+            }
+            free(conv_desc_array);
+        }
+    }
+
+    decoder_Notify(owner, on_info_added, cat);
+}
+
+static void
+decoder_info_AddModule(info_category_t *cat, const char *name, decoder_t *dec)
+{
+    info_category_AddInfo(cat, name, "%s (%s)",
+                          module_GetShortName(dec->p_module),
+                          module_GetLongName(dec->p_module));
+}
+
+static void
+decoder_SendInfo(vlc_input_decoder_t *owner)
+{
+    decoder_t *dec = &owner->dec;
+
+    int order;
+    switch (dec->fmt_in.i_cat)
+    {
+        case VIDEO_ES: order = INFO_CATEGORY_ORDER_VIDEO_DECODER; break;
+        case AUDIO_ES: order = INFO_CATEGORY_ORDER_AUDIO_DECODER; break;
+        case SPU_ES:   order = INFO_CATEGORY_ORDER_SPU_DECODER;   break;
+        default: return;
+    }
+
+    char *info_name;
+    if (asprintf(&info_name, _("Track: '%s'"), owner->psz_id) < 0)
+        return;
+
+    info_category_t *cat = info_category_New(info_name, order, dec,
+                                             owner->parent_info_id);
+    free(info_name);
+    if (cat == NULL)
+        return;
+
+    if (owner->p_packetizer != NULL)
+        decoder_info_AddModule(cat, "packetizer", owner->p_packetizer);
+
+    const char *name = owner->p_sout != NULL ? "packetizer" : "decoder";
+    decoder_info_AddModule(cat, name, dec);
+
+    decoder_Notify(owner, on_info_added, cat);
 }
 
 /**
@@ -249,6 +389,8 @@ static int DecoderThread_Reload( vlc_input_decoder_t *p_owner,
     decoder_Clean( p_dec );
     p_owner->error = false;
 
+    decoder_Notify(p_owner, on_info_removed, p_dec);
+
     if( reload == RELOAD_DECODER_AOUT )
     {
         assert( p_owner->fmt.i_cat == AUDIO_ES );
@@ -272,6 +414,16 @@ static int DecoderThread_Reload( vlc_input_decoder_t *p_owner,
         return VLC_EGENERIC;
     }
     es_format_Clean( &fmt_in );
+
+    if (decoder_HasInfoEvent(p_owner))
+    {
+        decoder_SendInfo(p_owner);
+        /* The aout info was automatically removed when removed the decoder
+         * info */
+        if (p_owner->p_aout != NULL)
+            decoder_SendAoutInfo(p_owner, p_owner->p_aout, p_owner->p_astream);
+    }
+
     return VLC_SUCCESS;
 }
 
@@ -346,6 +498,8 @@ static int ModuleThread_UpdateAudioFormat( decoder_t *p_dec )
         vlc_aout_stream_Delete( p_astream );
 
         input_resource_PutAout( p_owner->p_resource, p_aout );
+
+        decoder_Notify(p_owner, on_info_removed, p_aout);
     }
 
     /* Check if only replay gain has changed */
@@ -415,6 +569,9 @@ static int ModuleThread_UpdateAudioFormat( decoder_t *p_dec )
         vlc_fifo_Lock( p_owner->p_fifo );
         p_owner->reset_out_state = true;
         vlc_fifo_Unlock( p_owner->p_fifo );
+
+        if (decoder_HasInfoEvent(p_owner))
+            decoder_SendAoutInfo(p_owner, p_aout, p_astream);
     }
     return 0;
 }
@@ -481,8 +638,9 @@ static int ModuleThread_UpdateVideoFormat( decoder_t *p_dec, vlc_video_context *
         vlc_mutex_lock( &p_owner->lock );
         p_owner->out_pool = pool;
         vlc_mutex_unlock( &p_owner->lock );
-
     }
+
+    decoder_Notify(p_owner, on_info_removed, p_owner->p_vout);
 
     vout_configuration_t cfg = {
         .vout = p_owner->p_vout, .clock = p_owner->p_clock, .fmt = &p_dec->fmt_out.video,
@@ -507,6 +665,9 @@ static int ModuleThread_UpdateVideoFormat( decoder_t *p_dec, vlc_video_context *
             p_owner->reset_out_state = true;
             vlc_fifo_Unlock( p_owner->p_fifo );
 
+            if (decoder_HasInfoEvent(p_owner))
+                decoder_SendVoutInfo(p_owner, p_vout, vctx);
+
             decoder_Notify(p_owner, on_vout_started, p_vout, p_owner->vout_order);
         }
         return 0;
@@ -517,7 +678,10 @@ static int ModuleThread_UpdateVideoFormat( decoder_t *p_dec, vlc_video_context *
                vout_state == INPUT_RESOURCE_VOUT_STOPPED);
 
         if (vout_state == INPUT_RESOURCE_VOUT_STOPPED)
+        {
             decoder_Notify(p_owner, on_vout_stopped, p_owner->p_vout);
+            decoder_Notify(p_owner, on_info_removed, p_owner->p_vout);
+        }
     }
 
 error:
@@ -1836,6 +2000,7 @@ CreateDecoder( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
     p_dec = &p_owner->dec;
 
     p_owner->psz_id = cfg->str_id;
+    p_owner->parent_info_id = cfg->parent_info_id;
     p_owner->p_clock = cfg->clock;
     p_owner->i_preroll_end = PREROLL_NONE;
     p_owner->p_resource = cfg->resource;
@@ -2010,6 +2175,7 @@ static void DeleteDecoder( vlc_input_decoder_t *p_owner, enum es_format_category
                 assert( p_owner->p_astream );
                 vlc_aout_stream_Delete( p_owner->p_astream );
                 input_resource_PutAout( p_owner->p_resource, p_owner->p_aout );
+                decoder_Notify(p_owner, on_info_removed, p_owner->p_aout);
             }
             break;
         case VIDEO_ES: {
@@ -2024,7 +2190,10 @@ static void DeleteDecoder( vlc_input_decoder_t *p_owner, enum es_format_category
                 enum input_resource_vout_state vout_state;
                 input_resource_PutVout(p_owner->p_resource, vout, &vout_state);
                 if (vout_state == INPUT_RESOURCE_VOUT_STOPPED)
+                {
                     decoder_Notify(p_owner, on_vout_stopped, vout);
+                    decoder_Notify(p_owner, on_info_removed, vout);
+                }
 
                 vout_Release(vout);
             }
@@ -2136,6 +2305,9 @@ decoder_New( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
         return NULL;
     }
 
+    if (decoder_HasInfoEvent(p_owner))
+        decoder_SendInfo(p_owner);
+
     return p_owner;
 }
 
@@ -2163,6 +2335,7 @@ vlc_input_decoder_Create( vlc_object_t *p_parent, const es_format_t *fmt,
     const struct vlc_input_decoder_cfg cfg = {
         .fmt = fmt,
         .str_id = NULL,
+        .parent_info_id = NULL,
         .clock = NULL,
         .resource = p_resource,
         .sout = NULL,
@@ -2234,6 +2407,8 @@ void vlc_input_decoder_Delete( vlc_input_decoder_t *p_owner )
         for( int i = 0; i < MAX_CC_DECODERS; i++ )
             vlc_input_decoder_SetCcState( p_owner, VLC_CODEC_CEA608, i, false );
     }
+
+    decoder_Notify(p_owner, on_info_removed, p_dec);
 
     /* Delete decoder */
     DeleteDecoder( p_owner, p_dec->fmt_in.i_cat );
@@ -2425,6 +2600,7 @@ int vlc_input_decoder_SetCcState( vlc_input_decoder_t *p_owner, vlc_fourcc_t cod
         const struct vlc_input_decoder_cfg cfg = {
             .fmt = &fmt,
             .str_id = p_owner->psz_id,
+            .parent_info_id = p_dec,
             .clock = p_owner->p_clock,
             .resource = p_owner->p_resource,
             .sout = p_owner->p_sout,

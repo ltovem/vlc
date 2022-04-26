@@ -146,6 +146,9 @@ static stream_t *access_New(vlc_object_t *parent, input_thread_t *input,
                 free(redirv[--redirc]);
 
             assert(access->pf_control != NULL);
+
+            const struct vlc_module_desc desc = module_get_desc(priv->module);
+            vlc_stream_SetModuleDesc(access, &desc);
             return access;
         }
 
@@ -294,7 +297,7 @@ stream_t *stream_AccessNew(vlc_object_t *parent, input_thread_t *input,
     {
         struct vlc_access_stream_private *priv;
         s = vlc_stream_CustomNew(VLC_OBJECT(access), AStreamDestroy,
-                                 sizeof(*priv), "stream");
+                                 sizeof(*priv), "access");
 
         if (unlikely(s == NULL))
         {
@@ -321,6 +324,10 @@ stream_t *stream_AccessNew(vlc_object_t *parent, input_thread_t *input,
         s->pf_seek = AStreamSeek;
         s->pf_control = AStreamControl;
         s->p_sys = access;
+
+        struct vlc_module_desc desc;
+        if (vlc_stream_GetModuleDesc(access, &desc) == VLC_SUCCESS)
+            vlc_stream_SetModuleDesc(s, &desc);
 
         s = stream_FilterChainNew(s, "prefetch,cache");
     }

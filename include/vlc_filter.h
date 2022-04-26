@@ -29,6 +29,8 @@
 #include <vlc_picture.h>
 #include <vlc_codec.h>
 
+typedef struct filter_chain_t filter_chain_t;
+
 typedef struct vlc_video_context  vlc_video_context;
 struct vlc_audio_loudness;
 
@@ -235,6 +237,9 @@ struct filter_t
 
     /* Implementation of filter API */
     const struct vlc_filter_operations *ops;
+
+    /* Set for info/debug purpose when the module use an internal filter_chain */
+    const filter_chain_t *internal_chain_info;
 
     /** Private structure for the owner of the filter */
     filter_owner_t      owner;
@@ -463,8 +468,6 @@ VLC_API void filter_DeleteBlend( vlc_blender_t * );
  * The filter chain management API is used to dynamically construct filters
  * and add them in a chain.
  */
-
-typedef struct filter_chain_t filter_chain_t;
 
 /**
  * Create new filter chain

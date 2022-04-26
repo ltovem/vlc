@@ -1,9 +1,7 @@
 /*****************************************************************************
- * display.h: "vout display" management
+ * decoder_device.h: Decoder device and video context
  *****************************************************************************
- * Copyright (C) 2009 Laurent Aimar
- *
- * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
+ * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -20,12 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#include "vout_wrapper.h"
+#ifndef VLC_DECODER_DEVICE_INTERNAL_H
+#define VLC_DECODER_DEVICE_INTERNAL_H 1
+
 #include "../modules/modules.h"
 
-void vout_UpdateDisplaySourceProperties(vout_display_t *vd, const video_format_t *, const vlc_rational_t *forced_dar);
-void VoutFixFormatAR(video_format_t *);
-void vout_display_GetModuleDesc(vout_display_t *vd,
-                                struct vlc_module_desc *desc,
-                                size_t *conv_desc_count_out,
-                                struct vlc_module_desc **conv_desc_array_out);
+void
+vlc_decoder_device_GetModuleDesc(vlc_decoder_device *device,
+                                 struct vlc_module_desc *desc);
+
+const char *
+vlc_video_context_GetStringType(const vlc_video_context *vctx);
+
+#endif

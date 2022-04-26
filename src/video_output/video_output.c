@@ -54,6 +54,7 @@
 #include "vout_private.h"
 #include "vout_internal.h"
 #include "display.h"
+#include "window.h"
 #include "snapshot.h"
 #include "video_window.h"
 #include "../misc/variables.h"
@@ -2140,4 +2141,30 @@ vlc_decoder_device *vout_GetDevice(vout_thread_t *vout)
     dec_device = sys->dec_device ? vlc_decoder_device_Hold( sys->dec_device ) : NULL;
     vlc_mutex_unlock(&sys->window_lock);
     return dec_device;
+}
+
+
+void vout_GetWindowModuleDesc(vout_thread_t *vout,
+                              struct vlc_module_desc *module_desc)
+{
+    vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
+    vout_window_GetModuleDesc(sys->display_cfg.window, module_desc);
+}
+
+int vout_GetDisplayModuleDesc(vout_thread_t *vout,
+                              struct vlc_module_desc *module_desc,
+                              size_t *conv_desc_count_out,
+                              struct vlc_module_desc **conv_desc_array_out)
+{
+    vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
+    vlc_mutex_lock(&sys->display_lock);
+    if (sys->display != NULL)
+    {
+        vout_display_GetModuleDesc(sys->display, module_desc, conv_desc_count_out,
+                                   conv_desc_array_out);
+        vlc_mutex_unlock(&sys->display_lock);
+        return VLC_SUCCESS;
+    }
+    vlc_mutex_unlock(&sys->display_lock);
+    return VLC_EGENERIC;
 }

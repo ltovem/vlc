@@ -264,6 +264,8 @@ libvlccore_la_SOURCES = \
 	clock/input_clock.c \
 	clock/clock.c \
 	input/decoder.c \
+	input/decoder_device.c \
+	input/decoder_device.h \
 	input/decoder_helpers.c \
 	input/demux.c \
 	input/demux_chained.c \
@@ -339,6 +341,7 @@ libvlccore_la_SOURCES = \
 	video_output/video_window.c \
 	video_output/video_window.h \
 	video_output/window.c \
+	video_output/window.h \
 	video_output/opengl.c \
 	video_output/vout_intf.c \
 	video_output/vout_internal.h \
@@ -403,6 +406,7 @@ libvlccore_la_SOURCES = \
 	misc/addons.c \
 	misc/filter.c \
 	misc/filter_chain.c \
+	misc/filter_chain.h \
 	misc/httpcookies.c \
 	misc/fingerprinter.c \
 	misc/text_style.c \

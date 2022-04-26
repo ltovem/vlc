@@ -443,6 +443,32 @@ decoder_on_new_audio_stats(vlc_input_decoder_t *decoder, unsigned decoded, unsig
                               memory_order_relaxed);
 }
 
+static void
+decoder_on_info_added(vlc_input_decoder_t *decoder, info_category_t *info_cat,
+                      void *userdata)
+{
+    (void) decoder;
+    es_out_id_t *id = userdata;
+    es_out_t *out = id->out;
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+
+    if (sys->p_input)
+        input_SendEventInfoAdded(sys->p_input, info_cat);
+}
+
+static void
+decoder_on_info_removed(vlc_input_decoder_t *decoder, const void *info_id,
+                        void *userdata)
+{
+    (void) decoder;
+    es_out_id_t *id = userdata;
+    es_out_t *out = id->out;
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+
+    if (sys->p_input)
+        input_SendEventInfoRemoved(sys->p_input, info_id);
+}
+
 static int
 decoder_get_attachments(vlc_input_decoder_t *decoder,
                         input_attachment_t ***ppp_attachment,
@@ -466,6 +492,8 @@ static const struct vlc_input_decoder_callbacks decoder_cbs = {
     .on_thumbnail_ready = decoder_on_thumbnail_ready,
     .on_new_video_stats = decoder_on_new_video_stats,
     .on_new_audio_stats = decoder_on_new_audio_stats,
+    .on_info_added = decoder_on_info_added,
+    .on_info_removed = decoder_on_info_removed,
     .get_attachments = decoder_get_attachments,
 };
 
@@ -854,6 +882,7 @@ static int EsOutSetRecord(  es_out_t *out, bool b_record )
             const struct vlc_input_decoder_cfg cfg = {
                 .fmt = &p_es->fmt,
                 .str_id = p_es->id.str_id,
+                .parent_info_id = p_es->id.source,
                 .clock = NULL,
                 .resource = input_priv(p_input)->p_resource,
                 .sout = p_sys->p_sout_record,
@@ -1770,7 +1799,7 @@ static void EsOutProgramMeta( es_out_t *out, input_source_t *source,
     {
         char *psz_cat = EsOutProgramGetMetaName( p_pgrm );
         if( psz_cat )
-            p_cat = info_category_New( psz_cat );
+            p_cat = info_category_New( psz_cat, 0, NULL, NULL );
         free( psz_cat );
     }
 
@@ -2349,6 +2378,7 @@ static void EsOutCreateDecoder( es_out_t *out, es_out_id_t *p_es )
     const struct vlc_input_decoder_cfg cfg = {
         .fmt = &p_es->fmt,
         .str_id = p_es->id.str_id,
+        .parent_info_id = p_es->id.source,
         .clock = p_es->p_clock,
         .resource = priv->p_resource,
         .sout = priv->p_sout,
@@ -2369,6 +2399,7 @@ static void EsOutCreateDecoder( es_out_t *out, es_out_id_t *p_es )
             const struct vlc_input_decoder_cfg rec_cfg = {
                 .fmt = &p_es->fmt,
                 .str_id = p_es->id.str_id,
+                .parent_info_id = p_es->id.source,
                 .clock = NULL,
                 .resource = priv->p_resource,
                 .sout = p_sys->p_sout_record,
@@ -4222,7 +4253,7 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
     if( unlikely( !psz_cat ) )
         return;
 
-    info_category_t* p_cat = info_category_New( psz_cat );
+    info_category_t* p_cat = info_category_New( psz_cat, 0, NULL, NULL );
 
     free( psz_cat );
 

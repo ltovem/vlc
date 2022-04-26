@@ -1,9 +1,7 @@
 /*****************************************************************************
- * display.h: "vout display" management
+ * window.h : Internal window definitions
  *****************************************************************************
- * Copyright (C) 2009 Laurent Aimar
- *
- * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
+ * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -20,12 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#include "vout_wrapper.h"
+#ifndef VOUT_WINDOW_H
+#define VOUT_WINDOW_H 1
+
 #include "../modules/modules.h"
 
-void vout_UpdateDisplaySourceProperties(vout_display_t *vd, const video_format_t *, const vlc_rational_t *forced_dar);
-void VoutFixFormatAR(video_format_t *);
-void vout_display_GetModuleDesc(vout_display_t *vd,
-                                struct vlc_module_desc *desc,
-                                size_t *conv_desc_count_out,
-                                struct vlc_module_desc **conv_desc_array_out);
+void vout_window_GetModuleDesc(vout_window_t *window,
+                               struct vlc_module_desc *desc);
+
+#endif // VOUT_WINDOW_H

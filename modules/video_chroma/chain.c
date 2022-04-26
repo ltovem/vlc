@@ -216,6 +216,7 @@ static int Activate( filter_t *p_filter, int (*pf_build)(filter_t *) )
     assert(p_filter->vctx_out == filter_chain_GetVideoCtxOut( p_sys->p_chain ));
     /* */
     p_filter->ops = &filter_ops;
+    p_filter->internal_chain_info = p_sys->p_chain;
     return VLC_SUCCESS;
 }
 

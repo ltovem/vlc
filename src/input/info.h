@@ -24,6 +24,17 @@
 #define LIBVLC_INPUT_INFO_H 1
 
 #include "vlc_input_item.h"
+#include "../modules/modules.h"
+
+enum info_category_order {
+    INFO_CATEGORY_ORDER_MAIN_INPUT = 1,
+    INFO_CATEGORY_ORDER_SUB_INPUT,
+    INFO_CATEGORY_ORDER_VIDEO_DECODER,
+    INFO_CATEGORY_ORDER_AUDIO_DECODER,
+    INFO_CATEGORY_ORDER_SPU_DECODER,
+    INFO_CATEGORY_ORDER_VOUT,
+    INFO_CATEGORY_ORDER_AOUT,
+};
 
 static inline info_t *info_New(const char *name)
 {
@@ -43,13 +54,19 @@ static inline void info_Delete(info_t *i)
     free(i);
 }
 
-static inline info_category_t *info_category_New(const char *name)
+static inline info_category_t *info_category_New(const char *name, int order,
+                                                 const void *id,
+                                                 const void *parent_id)
 {
     info_category_t *cat = malloc(sizeof(*cat));
     if (!cat)
         return NULL;
     cat->psz_name = strdup(name);
+    cat->order = order;
+    cat->id = id;
+    cat->parent_id = parent_id;
     vlc_list_init(&cat->infos);
+    vlc_atomic_rc_init(&cat->rc);
     return cat;
 }
 
@@ -105,6 +122,34 @@ static inline info_t *info_category_AddInfo(info_category_t *cat,
     return info;
 }
 
+static inline info_t *info_category_AddModuleInfo(info_category_t *cat,
+                                                  const struct vlc_module_desc *desc)
+{
+    info_t *info;
+    unsigned index = 0;
+    char *name_buf = NULL;
+    const char *name = desc->capability;
+    assert(desc->name != NULL && desc->capability != NULL
+        && desc->shortname != NULL && desc->longname != NULL);
+
+
+    /* Append an index if there is already the same module cap in this category
+     * (might happen with * filters) */
+    while ((info = info_category_FindInfo(cat, name)) != NULL)
+    {
+        index++;
+        free(name_buf);
+        if (asprintf(&name_buf, "%s(%u)", desc->capability, index) < 0)
+            return NULL;
+        name = name_buf;
+    }
+
+    info = info_category_AddInfo(cat, name, "[%s] %s (%s)",
+                                 desc->name, desc->shortname, desc->longname);
+    free(name_buf);
+    return info;
+}
+
 static inline int info_category_DeleteInfo(info_category_t *cat, const char *name)
 {
     info_t *info = info_category_FindInfo(cat, name);
@@ -116,9 +161,18 @@ static inline int info_category_DeleteInfo(info_category_t *cat, const char *nam
     return VLC_EGENERIC;
 }
 
-static inline void info_category_Delete(info_category_t *cat)
+static inline info_category_t *info_category_Hold(info_category_t *cat)
+{
+    vlc_atomic_rc_inc(&cat->rc);
+    return cat;
+}
+
+static inline void info_category_Release(info_category_t *cat)
 {
     info_t *info;
+
+    if (!vlc_atomic_rc_dec(&cat->rc))
+        return;
 
     while ((info = vlc_list_first_entry_or_null(&cat->infos, info_t, node))) {
         vlc_list_remove(&info->node);

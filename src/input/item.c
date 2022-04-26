@@ -485,7 +485,7 @@ void input_item_Release( input_item_t *p_item )
 
     info_category_t *cat;
     vlc_list_foreach( cat, &p_item->categories, node )
-        info_category_Delete( cat );
+        info_category_Release( cat );
 
     for( int i = 0; i < p_item->i_slaves; i++ )
         input_item_slave_Delete( p_item->pp_slaves[i] );
@@ -720,7 +720,7 @@ static int InputItemVaAddInfo( input_item_t *p_i,
     info_category_t *p_cat = InputItemFindCat( p_i, psz_cat );
     if( !p_cat )
     {
-        p_cat = info_category_New( psz_cat );
+        p_cat = info_category_New( psz_cat, 0, NULL, NULL );
         if( !p_cat )
             return VLC_ENOMEM;
         vlc_list_append( &p_cat->node, &p_i->categories );
@@ -780,7 +780,7 @@ int input_item_DelInfo( input_item_t *p_i,
     {
         /* Remove the complete categorie */
         vlc_list_remove( &p_cat->node );
-        info_category_Delete( p_cat );
+        info_category_Release( p_cat );
     }
     vlc_mutex_unlock( &p_i->lock );
 
@@ -797,7 +797,7 @@ void input_item_ReplaceInfos( input_item_t *p_item, info_category_t *p_cat )
     {
         vlc_list_add_after( &p_cat->node, &p_old->node );
         vlc_list_remove( &p_old->node );
-        info_category_Delete( p_old );
+        info_category_Release( p_old );
     }
     else
         vlc_list_append( &p_cat->node, &p_item->categories );
@@ -818,7 +818,7 @@ void input_item_MergeInfos( input_item_t *p_item, info_category_t *p_cat )
         info_foreach(info, &p_cat->infos)
             info_category_ReplaceInfo( p_old, info );
         vlc_list_init( &p_cat->infos );
-        info_category_Delete( p_cat );
+        info_category_Release( p_cat );
     }
     else
         vlc_list_append( &p_cat->node, &p_item->categories );

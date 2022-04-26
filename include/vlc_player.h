@@ -219,6 +219,18 @@ vlc_player_SetStartPaused(vlc_player_t *player, bool start_paused);
 VLC_API void
 vlc_player_SetPauseOnCork(vlc_player_t *player, bool enabled);
 
+/**
+ * Get the next category info
+ *
+ * @param player locked player instance
+ * @param prev_info NULL or the last info returned by this function, if not
+ * NULL, the returned info will be the next one.
+ * @param level indentation level (for display)
+ */
+VLC_API const info_category_t *
+vlc_player_GetNextInfo(vlc_player_t *player,
+                       const info_category_t *prev_info, unsigned *level);
+
 /** @} vlc_player__instance */
 
 /**

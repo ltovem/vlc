@@ -26,6 +26,8 @@
 
 #include <vlc_vout_display.h>
 
+#include "../modules/modules.h"
+
 typedef struct input_thread_t input_thread_t;
 typedef struct vlc_clock_t vlc_clock_t;
 
@@ -238,5 +240,13 @@ void vout_DisplayTitle( vout_thread_t *p_vout, const char *psz_title );
 bool vout_IsEmpty( vout_thread_t *p_vout );
 
 void vout_SetSpuHighlight( vout_thread_t *p_vout, const vlc_spu_highlight_t * );
+
+void vout_GetWindowModuleDesc(vout_thread_t *vout,
+                              struct vlc_module_desc *module_desc);
+
+int vout_GetDisplayModuleDesc(vout_thread_t *vout,
+                              struct vlc_module_desc *module_desc,
+                              size_t *conv_desc_count_out,
+                              struct vlc_module_desc **conv_desc_array_out);
 
 #endif // LIBVLC_VOUT_INTERNAL_H

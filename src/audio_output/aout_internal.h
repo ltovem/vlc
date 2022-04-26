@@ -30,6 +30,7 @@
 # include <vlc_list.h>
 # include <vlc_viewpoint.h>
 # include "../clock/clock.h"
+# include "../modules/modules.h"
 
 /* Max input rate factor (1/4 -> 4) */
 # define AOUT_MAX_INPUT_RATE (4)
@@ -120,6 +121,8 @@ aout_AddMeterPlugin(audio_output_t *aout, const char *chain,
 void
 aout_RemoveMeterPlugin(audio_output_t *aout, vlc_audio_meter_plugin *plugin);
 
+void aout_GetModuleDesc(audio_output_t *aout, struct vlc_module_desc *desc);
+
 /* From common.c : */
 void aout_FormatsPrint(vlc_object_t *, const char *,
                        const audio_sample_format_t *,
@@ -144,6 +147,10 @@ void vlc_aout_stream_ChangeRate(vlc_aout_stream *stream, float rate);
 void vlc_aout_stream_ChangeDelay(vlc_aout_stream *stream, vlc_tick_t delay);
 void vlc_aout_stream_Flush(vlc_aout_stream *stream);
 void vlc_aout_stream_Drain(vlc_aout_stream *stream);
+void vlc_aout_stream_GetModuleDesc(const vlc_aout_stream *stream,
+                                   size_t *filters_desc_count_out,
+                                   struct vlc_module_desc **filters_desc_array_out);
+
 /* Contrary to other vlc_aout_stream_*() functions, this function can be called from
  * any threads */
 bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream);
@@ -187,5 +194,9 @@ filter_t *aout_filter_Create(vlc_object_t *obj, const filter_owner_t *restrict o
                              const audio_sample_format_t *infmt,
                              const audio_sample_format_t *outfmt,
                              config_chain_t *cfg, bool const_fmt);
+
+void aout_FiltersGetModuleDesc(aout_filters_t *filters,
+                               size_t *desc_count_out,
+                               struct vlc_module_desc **desc_array_out);
 
 #endif /* !LIBVLC_AOUT_INTERNAL_H */
