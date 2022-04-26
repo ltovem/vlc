@@ -7,6 +7,11 @@ ifeq ($(call need_pkg,"libpng >= 1.5.4"),)
 PKGS_FOUND += png
 endif
 
+PNG_CFLAGS := $(CFLAGS)
+ifdef HAVE_EMSCRIPTEN
+PNG_CFLAGS += "-pthread"
+endif
+
 $(TARBALLS)/libpng-$(PNG_VERSION).tar.xz:
 	$(call download_pkg,$(PNG_URL),png)
 
@@ -24,6 +29,6 @@ DEPS_png = zlib $(DEPS_zlib)
 
 .png: png
 	$(RECONF)
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
+	cd $< && $(HOSTVARS) CFLAGS="$(PNG_CFLAGS)" ./configure $(HOSTCONF)
 	cd $< && $(MAKE) install
 	touch $@
