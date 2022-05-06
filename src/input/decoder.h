@@ -102,6 +102,9 @@ void vlc_input_decoder_Wait( vlc_input_decoder_t * );
  */
 void vlc_input_decoder_StopWait( vlc_input_decoder_t * );
 
+void vlc_input_decoder_SignalGaplessStatus(vlc_input_decoder_t *,
+                                           enum input_gapless_status status);
+
 /**
  * This function returns true if the decoder fifo is empty and false otherwise.
  */

@@ -58,6 +58,14 @@ enum input_type {
     INPUT_TYPE_NONE,
     INPUT_TYPE_PREPARSING,
     INPUT_TYPE_THUMBNAILING,
+    INPUT_TYPE_GAPLESS,
+};
+
+enum input_gapless_status
+{
+    INPUT_GAPLESS_STATUS_NONE,
+    INPUT_GAPLESS_STATUS_WAITING,
+    INPUT_GAPLESS_STATUS_ABORTED,
 };
 
 /**
@@ -149,6 +157,10 @@ typedef enum input_event_type_e
 
     /* Thumbnail generation */
     INPUT_EVENT_THUMBNAIL_READY,
+
+    /* 'gapless_next' has changed, if true, a next input can be loaded in
+     * gapless mode */
+    INPUT_EVENT_GAPLESS_NEXT,
 } input_event_type_e;
 
 #define VLC_INPUT_CAPABILITIES_SEEKABLE (1<<0)
@@ -307,6 +319,8 @@ struct vlc_input_event
         float subs_fps;
         /* INPUT_EVENT_THUMBNAIL_READY */
         picture_t *thumbnail;
+        /* INPUT_EVENT_GAPLESS_NEXT */
+        bool gapless_next;
     };
 };
 
@@ -512,6 +526,10 @@ typedef struct input_thread_private_t
     size_t i_control;
     input_control_t control[INPUT_CONTROL_FIFO_SIZE];
 
+    vlc_mutex_t lock_gapless;
+    vlc_cond_t  wait_gapless;
+    enum input_gapless_status gapless_status;
+
     vlc_thread_t thread;
     vlc_interrupt_t interrupt;
 } input_thread_private_t;
@@ -581,6 +599,9 @@ enum input_control_e
     INPUT_CONTROL_SET_VBI_PAGE,
     INPUT_CONTROL_SET_VBI_TRANSPARENCY,
 };
+
+enum input_gapless_status input_WaitGapless(input_thread_t *);
+void input_WakeGapless(input_thread_t *);
 
 /* Internal helpers */
 

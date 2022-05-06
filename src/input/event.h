@@ -275,6 +275,15 @@ static inline void input_SendEventVbiTransparency(input_thread_t *p_input,
     });
 }
 
+static inline void input_SendEventGaplessNext(input_thread_t *p_input,
+                                              bool gapless_next)
+{
+    input_SendEvent(p_input, &(struct vlc_input_event) {
+        .type = INPUT_EVENT_GAPLESS_NEXT,
+        .gapless_next = gapless_next,
+    });
+}
+
 /*****************************************************************************
  * Event for resource.c
  *****************************************************************************/

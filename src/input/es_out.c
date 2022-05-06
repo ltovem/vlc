@@ -213,6 +213,7 @@ typedef struct
 
     /* */
     bool        b_paused;
+    bool        b_gapless_next;
     vlc_tick_t  i_pause_date;
 
     /* Current preroll */
@@ -571,6 +572,7 @@ es_out_t *input_EsOutNew( input_thread_t *p_input, input_source_t *main_source, 
 
     p_sys->user_clock_source = clock_source_Inherit( VLC_OBJECT(p_input) );
 
+    p_sys->b_gapless_next = false;
     p_sys->i_pause_date = -1;
 
     p_sys->rate = rate;
@@ -670,6 +672,50 @@ static void ProgramDelete( es_out_pgrm_t *p_pgrm )
     input_source_Release( p_pgrm->source );
 
     free( p_pgrm );
+}
+
+static bool EsOutHasOnlyOneMasterAudioEs( es_out_t *out )
+{
+    es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
+    es_out_id_t *es;
+    bool has_audio = false;
+
+    foreach_es_then_es_slaves(es)
+    {
+        if( EsIsSelected( es ) )
+        {
+            if( es->fmt.i_cat == AUDIO_ES && !has_audio
+             && es->p_pgrm->active_clock_source == VLC_CLOCK_MASTER_AUDIO )
+                has_audio = true;
+            else
+                return false;
+        }
+    }
+
+    return has_audio;
+}
+
+static void EsOutGaplessEventTimeChanged( es_out_t *out, vlc_tick_t time,
+                                          vlc_tick_t length )
+{
+    es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
+    input_thread_t *p_input = p_sys->p_input;
+
+    /* Gapless is possible only if one AUDIO ES is selected and is the master
+     * source and if the input can be paced. */
+    bool b_gapless_next = false;
+    if( p_sys->input_type == INPUT_TYPE_NONE
+     && input_CanPaceControl( p_input )
+     && time != VLC_TICK_INVALID && length != VLC_TICK_INVALID
+     && length - time <= AOUT_MAX_ADVANCE_TIME
+     && EsOutHasOnlyOneMasterAudioEs( out ) )
+        b_gapless_next = true;
+
+    if( b_gapless_next != p_sys->b_gapless_next )
+    {
+        p_sys->b_gapless_next = b_gapless_next;
+        input_SendEventGaplessNext( p_input, p_sys->b_gapless_next );
+    }
 }
 
 static void EsOutTerminate( es_out_t *out )
@@ -1041,6 +1087,23 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
     {
         /* FIXME wrong ? */
         return;
+    }
+
+    if (p_sys->input_type == INPUT_TYPE_GAPLESS)
+    {
+        enum input_gapless_status status =
+            input_WaitGapless(p_sys->p_input);
+
+        /* Don't wait when re-buffering again */
+        if (status == INPUT_GAPLESS_STATUS_NONE)
+            p_sys->input_type = INPUT_TYPE_NONE;
+
+        foreach_es_then_es_slaves(p_es)
+        {
+            if (!p_es->p_dec)
+                continue;
+            vlc_input_decoder_SignalGaplessStatus(p_es->p_dec, status);
+        }
     }
 
     const vlc_tick_t i_decoder_buffering_start = vlc_tick_now();
@@ -3641,7 +3704,6 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
         input_thread_t *input = p_sys->p_input;
         input_item_node_t *node = va_arg(args, input_item_node_t *);
         input_SendEventParsing(input, node);
-        input_item_node_Delete(node);
 
         return VLC_SUCCESS;
     }
@@ -3911,10 +3973,15 @@ static int EsOutVaPrivControlLocked( es_out_t *out, int query, va_list args )
 
             input_SendEventTimes( p_sys->p_input, f_position, i_time,
                                   i_normal_time, i_length );
+
+            EsOutGaplessEventTimeChanged( out, i_time, i_length );
         }
         else
+        {
             input_SendEventTimes( p_sys->p_input, 0.0, VLC_TICK_INVALID,
                                   i_normal_time, i_length );
+            EsOutGaplessEventTimeChanged( out, VLC_TICK_0, i_length );
+        }
         return VLC_SUCCESS;
     }
     case ES_OUT_PRIV_SET_JITTER:
