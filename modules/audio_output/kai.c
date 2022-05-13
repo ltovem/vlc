@@ -162,6 +162,7 @@ static int Start ( audio_output_t *p_aout, audio_sample_format_t *fmt )
 
     /* Support S16 only */
     format.i_format = VLC_CODEC_S16N;
+    format.emphasis = AUDIO_EMPHASIS_NONE;
 
     aout_FormatPrepare( &format );
 

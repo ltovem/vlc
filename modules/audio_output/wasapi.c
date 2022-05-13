@@ -504,6 +504,7 @@ static int vlc_FromWave(const WAVEFORMATEX *restrict wf,
 {
     audio->i_rate = wf->nSamplesPerSec;
     audio->i_physical_channels = 0;
+    audio->emphasis = AUDIO_EMPHASIS_NONE;
 
     if (wf->wFormatTag == WAVE_FORMAT_EXTENSIBLE)
     {

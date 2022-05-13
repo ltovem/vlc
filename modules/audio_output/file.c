@@ -204,6 +204,10 @@ static int Start( audio_output_t *p_aout, audio_sample_format_t *restrict fmt )
         fmt->i_bytes_per_frame = AOUT_SPDIF_SIZE;
         fmt->i_frame_length = A52_FRAME_NB;
     }
+    else
+    {
+        fmt->emphasis = AUDIO_EMPHASIS_NONE;
+    }
 
     /* Channels number */
     i_channels = var_InheritInteger( p_aout, "audiofile-channels" );

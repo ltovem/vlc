@@ -390,7 +390,8 @@ vcddev_toc_t * ioctl_GetTOC( vlc_object_t *p_this, const vcddev_t *p_vcddev )
                                           (unsigned)cdrom_toc.TrackData[i].Address[1] << 16 |
                                           (unsigned)cdrom_toc.TrackData[i].Address[2] << 8 |
                                           (unsigned)cdrom_toc.TrackData[i].Address[3];
-            msg_Dbg( p_this, "p_sectors: %i, %i", i, p_toc->p_sectors[i].i_lba);
+            msg_Dbg( p_this, "p_sectors: %i, %i ctrl %02x", i, p_toc->p_sectors[i].i_lba,
+                                                            p_toc->p_sectors[ i ].i_control);
         }
 
 #elif defined( __OS2__ )

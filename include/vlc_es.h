@@ -75,6 +75,22 @@ typedef enum audio_channel_type_t
 } audio_channel_type_t;
 
 /**
+ * Audio pre-emphasis type
+ */
+typedef enum audio_emphasis_type_t
+{
+    AUDIO_EMPHASIS_NONE,
+    // pre-emphasis value
+    AUDIO_EMPHASIS_CD_50_DIV_15_uS,
+    AUDIO_EMPHASIS_CCITT_J17,
+    AUDIO_EMPHASIS_PHONO_RIAA,
+    AUDIO_EMPHASIS_FM_50_uS,
+    AUDIO_EMPHASIS_FM_75_uS,
+    AUDIO_EMPHASIS_SAT_50_uS,
+    AUDIO_EMPHASIS_SAT_75_uS,
+} audio_emphasis_type_t;
+
+/**
  * audio format description
  */
 struct audio_format_t
@@ -105,6 +121,8 @@ struct audio_format_t
      * just here for the division :
      * buffer_size = i_nb_samples * i_bytes_per_frame / i_frame_length
      */
+
+    audio_emphasis_type_t emphasis;
 
     /* FIXME ? (used by the codecs) */
     unsigned     i_bitspersample;

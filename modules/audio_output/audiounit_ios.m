@@ -659,6 +659,7 @@ Start(audio_output_t *p_aout, audio_sample_format_t *restrict fmt)
 
     free(layout);
     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
     p_aout->pause = Pause;
 
     aout_SoftVolumeStart( p_aout );

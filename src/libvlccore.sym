@@ -12,6 +12,7 @@ aout_filter_GetVout
 aout_FormatPrepare
 aout_FormatPrint
 aout_FormatPrintChannels
+aout_FormatPrintEmphasis
 aout_VolumeGet
 aout_VolumeSet
 aout_VolumeUpdate

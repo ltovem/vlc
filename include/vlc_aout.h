@@ -488,6 +488,8 @@ VLC_API void aout_FormatPrint(vlc_object_t *, const char *,
 
 VLC_API const char * aout_FormatPrintChannels( const audio_sample_format_t * ) VLC_USED;
 
+VLC_API const char *aout_FormatPrintEmphasis( const audio_sample_format_t * ) VLC_USED;
+
 /** @} */
 
 #define AOUT_VOLUME_DEFAULT             256

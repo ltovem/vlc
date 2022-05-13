@@ -2632,6 +2632,26 @@ AS_IF([test "${enable_avformat}" != "no"], [
 AM_CONDITIONAL([HAVE_AVFORMAT], [test "${enable_avformat}" != "no"])
 
 dnl
+dnl  avfilter audio/video filter plugins
+dnl
+
+AC_ARG_ENABLE([avfilter],
+AS_HELP_STRING([--enable-avfilter], [libavfilter filters (default enabled)]))
+have_avfilter="no"
+AS_IF([test "${enable_avfilter}" != "no"], [
+  PKG_CHECK_MODULES(AVFILTER,[libavfilter >= 6.20.100 libavutil], [
+    have_avfilter="yes"
+    ], [
+    AS_IF([test "${enable_avfilter}" = "yes"],[
+        AC_MSG_ERROR([${AVFORMAT_PKG_ERRORS}. Pass --disable-avfilter to ignore this error.])
+    ],[
+        AC_MSG_WARN([${SPEEXDSP_PKG_ERRORS} libavfilter not found.])
+    ])])
+])
+AM_CONDITIONAL([HAVE_AVFILTER], [test "${have_avfilter}" != "no"])
+
+
+dnl
 dnl  swscale image scaling and conversion plugin
 dnl
 

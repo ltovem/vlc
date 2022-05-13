@@ -150,6 +150,7 @@ static int Start( audio_output_t *p_aout, audio_sample_format_t *restrict fmt )
 
     /* JACK only supports fl32 format */
     fmt->i_format = VLC_CODEC_FL32;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
     // TODO add buffer size callback
     p_sys->i_rate = fmt->i_rate = jack_get_sample_rate( p_sys->p_jack_client );
 

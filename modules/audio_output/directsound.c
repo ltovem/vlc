@@ -640,6 +640,8 @@ static HRESULT Start( vlc_object_t *obj, aout_stream_sys_t *sys,
     vlc_mutex_init(&sys->lock);
     vlc_cond_init(&sys->cond);
 
+    fmt.emphasis = AUDIO_EMPHASIS_NONE;
+
     if( AOUT_FMT_SPDIF( &fmt ) )
     {
         if( var_InheritBool( obj, "spdif" ) )

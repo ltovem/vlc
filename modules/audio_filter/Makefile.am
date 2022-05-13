@@ -158,3 +158,13 @@ librnnoise_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(audio_filterdir)'
 
 audio_filter_LTLIBRARIES += $(LTLIBrnnoise)
 EXTRA_LTLIBRARIES += librnnoise_plugin.la
+
+libavfilter_emphasis_plugin_la_SOURCES = \
+    audio_filter/emphasis/avfilter.c audio_filter/emphasis/avfilter.h
+libavfilter_emphasis_plugin_la_CFLAGS = $(AM_CFLAGS) $(AVFILTER_CFLAGS) $(AVUTIL_CFLAGS)
+libavfilter_emphasis_plugin_la_LIBADD = $(AVFILTER_LIBS) $(AVUTIL_LIBS) $(LIBM)
+if HAVE_AVFILTER
+if !MERGE_FFMPEG
+audio_filter_LTLIBRARIES += libavfilter_emphasis_plugin.la
+endif
+endif

@@ -2804,7 +2804,7 @@ static void EsOutSelectListFromProps( es_out_t *out, enum es_format_category_e c
 
         /* EsOutIdMatchStrIds will modify str_ids */
         strcpy( buffer, esprops->str_ids );
-        if( !EsOutIdMatchStrIds( other, buffer ) && EsIsSelected( other ) ) 
+        if( !EsOutIdMatchStrIds( other, buffer ) && EsIsSelected( other ) )
             EsOutUnselectEs( out, other, other->p_pgrm == p_sys->p_pgrm );
     }
 
@@ -4254,6 +4254,10 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
             info_category_AddInfo( p_cat, _("Channels"), "%s",
                 vlc_gettext( aout_FormatPrintChannels( &p_fmt_es->audio ) ) );
 
+        if ( p_fmt_es->audio.emphasis != AUDIO_EMPHASIS_NONE )
+            info_category_AddInfo( p_cat, _("Emphasis"), "%s",
+                aout_FormatPrintEmphasis( &p_fmt_es->audio ) );
+
         if( p_fmt_es->audio.i_rate )
             info_category_AddInfo( p_cat, _("Sample rate"), _("%u Hz"),
                                    p_fmt_es->audio.i_rate );
@@ -4279,6 +4283,10 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
             fmt->audio.i_physical_channels != p_fmt_es->audio.i_physical_channels )
             info_category_AddInfo( p_cat, _("Decoded channels"), "%s",
                 vlc_gettext( aout_FormatPrintChannels( &fmt->audio ) ) );
+
+        if ( fmt->audio.emphasis != AUDIO_EMPHASIS_NONE )
+            info_category_AddInfo( p_cat, _("Decoded Emphasis"), "%s",
+                aout_FormatPrintEmphasis( &fmt->audio ) );
 
         if( fmt->audio.i_rate &&
             fmt->audio.i_rate != p_fmt_es->audio.i_rate )

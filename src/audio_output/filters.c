@@ -243,6 +243,26 @@ static int aout_FiltersPipelineCreate(vlc_object_t *obj, struct aout_filter *tab
         aout_filter_Init(&tab[n++], f);
     }
 
+    /* Emphasis */
+    if (input.emphasis != outfmt->emphasis)
+    {
+        if (n == max)
+            goto overflow;
+
+        audio_sample_format_t output = input;
+        output.emphasis = outfmt->emphasis;
+
+        filter_t *f = aout_filter_Create(obj, NULL, "audio converter", NULL,
+                                         &input, &output, NULL, true);
+        if (f == NULL)
+        {
+            msg_Warn(obj, "cannot find emphasis converter, audio will sound bright");
+        }
+
+        input = output;
+        filters[n++] = f;
+    }
+
     /* Resample */
     if (input.i_rate != outfmt->i_rate)
     {   /* Resampling works with any linear format, but may be ugly. */

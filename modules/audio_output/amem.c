@@ -329,6 +329,7 @@ static int Start (audio_output_t *aout, audio_sample_format_t *fmt)
     }
 
     fmt->channel_type = AUDIO_CHANNEL_TYPE_BITMAP;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
     return VLC_SUCCESS;
 }
 

@@ -924,6 +924,7 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
     fmt->i_bitspersample = 16;
     fmt->i_blockalign = fmt->i_channels * fmt->i_bitspersample /8 ;
     fmt->i_frame_length  = FRAME_SIZE;
+    fmt->emphasis = AUDIO_EMPHASIS_NONE;
 
     return VLC_SUCCESS;
 }

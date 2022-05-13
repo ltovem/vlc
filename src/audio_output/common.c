@@ -221,13 +221,30 @@ const char * aout_FormatPrintChannels( const audio_sample_format_t * p_format )
     return "Unknown-chan-mask";
 }
 
+const char *aout_FormatPrintEmphasis(const audio_sample_format_t *p_fmt)
+{
+    static const char *emphasis_names [] =
+    {
+        [AUDIO_EMPHASIS_NONE]            ="no_emph",
+        [AUDIO_EMPHASIS_CD_50_DIV_15_uS] ="cd_emph",
+        [AUDIO_EMPHASIS_CCITT_J17]       ="ccitt_j17",
+        [AUDIO_EMPHASIS_PHONO_RIAA]      ="phono_riaa",
+        [AUDIO_EMPHASIS_FM_50_uS]        ="fm_50us",
+        [AUDIO_EMPHASIS_FM_75_uS]        ="fm_75us",
+        [AUDIO_EMPHASIS_SAT_50_uS]       ="sat_50us",
+        [AUDIO_EMPHASIS_SAT_75_uS]       ="sat_75us",
+    };
+    return emphasis_names[p_fmt->emphasis];
+}
+
 #undef aout_FormatPrint
 void aout_FormatPrint( vlc_object_t *obj, const char *psz_text,
                        const audio_sample_format_t *p_format )
 {
-    msg_Dbg( obj, "%s '%4.4s' %d Hz %s frame=%u samples/%u bytes", psz_text,
+    msg_Dbg( obj, "%s '%4.4s' %d Hz %s %s frame=%u samples/%u bytes", psz_text,
              (char *)&p_format->i_format, p_format->i_rate,
              aout_FormatPrintChannels( p_format ),
+             aout_FormatPrintEmphasis( p_format ),
              p_format->i_frame_length, p_format->i_bytes_per_frame );
 }
 
@@ -239,12 +256,14 @@ void aout_FormatsPrint( vlc_object_t *obj, const char * psz_text,
                         const audio_sample_format_t * p_format1,
                         const audio_sample_format_t * p_format2 )
 {
-    msg_Dbg( obj, "%s '%4.4s'->'%4.4s' %u Hz->%u Hz %s->%s",
+    msg_Dbg( obj, "%s '%4.4s'->'%4.4s' %u Hz->%u Hz %s->%s %s->%s",
              psz_text,
              (char *)&p_format1->i_format, (char *)&p_format2->i_format,
              p_format1->i_rate, p_format2->i_rate,
              aout_FormatPrintChannels( p_format1 ),
-             aout_FormatPrintChannels( p_format2 ) );
+             aout_FormatPrintChannels( p_format2 ),
+             aout_FormatPrintEmphasis( p_format1 ),
+             aout_FormatPrintEmphasis( p_format2 ) );
 }
 
 /*****************************************************************************

@@ -18,15 +18,14 @@ FFMPEGCONF = \
 	--disable-debug \
 	--disable-avdevice \
 	--disable-devices \
-	--disable-avfilter \
 	--disable-filters \
+	--enable-filter=aemphasis,aformat,aresample \
 	--disable-protocol=concat \
 	--disable-bsfs \
 	--disable-bzlib \
 	--disable-libvpx \
 	--disable-avresample \
 	--enable-bsf=vp9_superframe \
-	--disable-swresample \
 	--disable-iconv \
 	--disable-avisynth \
 	--disable-nvenc \
