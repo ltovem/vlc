@@ -1420,10 +1420,7 @@ void CaptureOpenPanel::advancedDialog()
 
             tempMRL += (i ? " :" : ":");
 
-            int ctrl_type = control->getType();
-            assert(ctrl_type != -1);
-
-            ctrl_type = CONFIG_CLASS(ctrl_type);
+            int ctrl_type = CONFIG_CLASS( control->getType() );
 
             if( ctrl_type == CONFIG_ITEM_BOOL )
                 if( !(qobject_cast<VIntConfigControl *>(control)->getValue() ) )

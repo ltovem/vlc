@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>Lyndon Brown</author>
+ <class>SPrefsHotkeys</class>
+ <widget class="QWidget" name="SPrefsHotkeys">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>351</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="3">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Action hotkey mappings.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="HotkeyEditor" name="hotkeyEditor" native="true">
+     <layout class="QGridLayout" name="layout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="searchLabel">
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="SearchLineEdit" name="searchBox"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="searchOptionLabel">
+        <property name="text">
+         <string>in</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QComboBox" name="searchField"/>
+      </item>
+      <item row="1" column="0" colspan="4">
+       <widget class="QTreeWidget" name="table">
+        <property name="styleSheet">
+         <string notr="true">QTreeView::item { padding: 5px 0; }</string>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>Action</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Hotkey</string>
+         </property>
+         <property name="toolTip">
+          <string>Application level hotkey</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Global</string>
+         </property>
+         <property name="toolTip">
+          <string>Desktop level hotkey</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="wheelLabelY">
+     <property name="toolTip">
+      <string>The mouse wheel vertical (up/down) axis can control volume, position or be ignored.</string>
+     </property>
+     <property name="text">
+      <string>Mouse wheel vertical axis control</string>
+     </property>
+     <property name="buddy">
+      <cstring>wheelComboBoxY</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <spacer name="wheelSpacerY">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="2">
+    <widget class="QComboBox" name="wheelComboBoxY"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="wheelLabelX">
+     <property name="toolTip">
+      <string>The mouse wheel horizontal (left/right) axis can control volume, position or be ignored.</string>
+     </property>
+     <property name="text">
+      <string>Mouse wheel horizontal axis control</string>
+     </property>
+     <property name="buddy">
+      <cstring>wheelComboBoxX</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <spacer name="wheelSpacerX">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="3" column="2">
+    <widget class="QComboBox" name="wheelComboBoxX"/>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <widget class="QCheckBox" name="disableVolKeys">
+     <property name="toolTip">
+      <string>With this option checked, the volume up, volume down and mute buttons on your keyboard will always change your system volume. With this option unchecked, the volume buttons will change VLC's volume when VLC is selected and change the system volume when VLC is not selected.</string>
+     </property>
+     <property name="text">
+      <string>Ignore keyboard volume buttons</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets/native/searchlineedit.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>HotkeyEditor</class>
+   <extends>QWidget</extends>
+   <header>dialogs/preferences/hotkey_editor.hpp</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

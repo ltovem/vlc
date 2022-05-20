@@ -35,7 +35,10 @@
 #include "ui_sprefs_video.h"
 #include "ui_sprefs_subtitles.h"
 #include "ui_sprefs_interface.h"
+#include "ui_sprefs_hotkeys.h"
 #include "ui_sprefs_medialibrary.h"
+
+#include "hotkey_editor.hpp"
 
 #include <vlc_media_library.h>
 

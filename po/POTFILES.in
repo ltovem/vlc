@@ -1425,6 +1425,7 @@ share/vlc.appdata.xml.in.in
 #modules/gui/qt/dialogs/preferences/ui_sprefs_interface.h
 #modules/gui/qt/dialogs/preferences/ui_sprefs_subtitles.h
 #modules/gui/qt/dialogs/preferences/ui_sprefs_video.h
+#modules/gui/qt/dialogs/preferences/ui_sprefs_hotkeys.h
 #modules/gui/qt/dialogs/help/ui_update.h
 #modules/gui/qt/dialogs/extended/ui_video_effects.h
 #modules/gui/qt/dialogs/vlm/ui_vlm.h
