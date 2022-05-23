@@ -198,6 +198,9 @@ demux_t *demux_NewAdvanced( vlc_object_t *p_obj, input_thread_t *p_input,
     if (priv->module == NULL)
         goto error;
 
+    var_Create(p_demux, "module-name", VLC_VAR_STRING);
+    var_SetString(p_demux, "module-name", module_get_object(priv->module));
+
     return p_demux;
 error:
     free( p_demux->psz_filepath );
@@ -403,6 +406,9 @@ decoder_t *demux_PacketizerNew( vlc_object_t *p_demux, es_format_t *p_fmt, const
         msg_Err( p_demux, "cannot find packetizer for %s", psz_msg );
         return NULL;
     }
+
+    var_Create(p_packetizer, "module-name", VLC_VAR_STRING);
+    var_SetString(p_packetizer, "module-name", module_get_object(p_packetizer->p_module));
 
     return p_packetizer;
 }
