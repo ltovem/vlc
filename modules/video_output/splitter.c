@@ -234,7 +234,7 @@ static const struct vlc_display_operations ops = {
 };
 
 static int vlc_vidsplit_Open(vout_display_t *vd,
-                             video_format_t *fmtp, vlc_video_context *ctx)
+                             video_format_t *fmtp, vlc_video_context **vctx)
 {
     vlc_object_t *obj = VLC_OBJECT(vd);
 
@@ -308,7 +308,7 @@ static int vlc_vidsplit_Open(vout_display_t *vd,
         vdcfg.display.width = part->width;
         vdcfg.display.height = part->height;
 
-        vout_display_t *display = vout_display_New(obj, &output->fmt, ctx, &vdcfg,
+        vout_display_t *display = vout_display_New(obj, &output->fmt, *vctx, &vdcfg,
                                                    modname, NULL);
         if (display == NULL) {
             vlc_sem_post(&part->lock);

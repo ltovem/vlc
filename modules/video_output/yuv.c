@@ -49,8 +49,7 @@
 
 #define CFG_PREFIX "yuv-"
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+static int Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin()
@@ -93,7 +92,7 @@ static const struct vlc_display_operations ops = {
 
 /* */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
 
@@ -156,7 +155,7 @@ static int Open(vout_display_t *vd,
     *fmtp = fmt;
     vd->ops = &ops;
 
-    (void) context;
+    (void) vctx;
     return VLC_SUCCESS;
 }
 

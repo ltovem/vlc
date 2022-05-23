@@ -312,7 +312,7 @@ static const struct vlc_display_operations ops = {
  * Probe the X server.
  */
 static int Open (vout_display_t *vd,
-                 video_format_t *fmtp, vlc_video_context *context)
+                 video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys = malloc (sizeof (*sys));
     if (unlikely(sys == NULL))
@@ -399,7 +399,7 @@ static int Open (vout_display_t *vd,
     /* Setup vout_display_t once everything is fine */
     vd->ops = &ops;
 
-    (void) context;
+    (void) vctx;
     return VLC_SUCCESS;
 
 error:

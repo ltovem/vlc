@@ -71,8 +71,7 @@
 #define CHROMA_TEXT N_("Image format (default RGB)")
 #define CHROMA_LONGTEXT N_("Chroma fourcc used by the framebuffer. Default is RGB since the fb device has no way to report its chroma.")
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+static int Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin ()
@@ -168,7 +167,7 @@ static const struct vlc_display_operations ops = {
  * This function allocates and initializes a FB vout method.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
 
@@ -297,7 +296,7 @@ static int Open(vout_display_t *vd,
     *fmtp = fmt;
     vd->ops = &ops;
 
-    (void) context;
+    (void) vctx;
     return VLC_SUCCESS;
 }
 

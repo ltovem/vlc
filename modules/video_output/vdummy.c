@@ -39,9 +39,9 @@
     "efficient one.")
 
 static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context);
+                     video_format_t *fmtp, vlc_video_context **);
 static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context);
+                     video_format_t *fmtp, vlc_video_context **);
 
 vlc_module_begin ()
     set_shortname( N_("Dummy") )
@@ -95,9 +95,9 @@ static const struct vlc_display_operations ops_dummy = {
 };
 
 static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context)
+                     video_format_t *fmtp, vlc_video_context **vctx)
 {
-    (void) context;
+    (void) vctx;
     Open(vd, fmtp);
     vd->ops = &ops_dummy;
     return VLC_SUCCESS;
@@ -109,9 +109,9 @@ static const struct vlc_display_operations ops_stats = {
 };
 
 static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context)
+                     video_format_t *fmtp, vlc_video_context **vctx)
 {
-    (void) context;
+    (void) vctx;
     Open(vd, fmtp);
     vd->ops = &ops_stats;
     return VLC_SUCCESS;

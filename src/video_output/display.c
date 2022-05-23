@@ -667,7 +667,7 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
         video_format_Copy(&osys->display_fmt, vd->source);
         vd->obj.force = i < (ssize_t)strict; /* TODO: pass to cb() instead? */
 
-        int ret = cb(vd, &osys->display_fmt, vctx);
+        int ret = cb(vd, &osys->display_fmt, &osys->src_vctx);
         if (ret == VLC_SUCCESS) {
             assert(vd->ops->prepare != NULL || vd->ops->display != NULL);
             if (VoutDisplayCreateRender(vd) == 0) {

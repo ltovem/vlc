@@ -67,8 +67,7 @@
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
-static int  Open(vout_display_t *,
-                 video_format_t *, vlc_video_context *);
+static int  Open(vout_display_t *, video_format_t *, vlc_video_context **);
 static void Close(vout_display_t *);
 
 #define DESKTOP_LONGTEXT N_(\
@@ -1762,7 +1761,7 @@ static const struct vlc_display_operations ops = {
  * It creates a Direct3D vout display.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
 
@@ -1807,7 +1806,7 @@ static int Open(vout_display_t *vd,
         sys->startEndRenderingCb = NULL;
     }
 
-    sys->dec_device = context ? vlc_video_context_HoldDevice(context) : NULL;
+    sys->dec_device = *vctx ? vlc_video_context_HoldDevice(*vctx) : NULL;
     sys->d3d9_device = GetD3D9OpaqueDevice(sys->dec_device);
     if ( sys->d3d9_device == NULL )
     {
@@ -1848,7 +1847,7 @@ static int Open(vout_display_t *vd,
 
     /* */
     video_format_t fmt;
-    if (Direct3D9Open(vd, &fmt, context)) {
+    if (Direct3D9Open(vd, &fmt, *vctx)) {
         msg_Err(vd, "Direct3D9 could not be opened");
         goto error;
     }
