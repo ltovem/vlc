@@ -786,7 +786,6 @@ static const struct vlc_display_operations ops = {
 static int OpenVideo(vout_display_t *vd,
                      video_format_t *fmtp, vlc_video_context **vctx)
 {
-    VLC_UNUSED(vctx);
     decklink_sys_t *sys = HoldDLSys(VLC_OBJECT(vd), VIDEO_ES);
     if(!sys)
         return VLC_ENOMEM;
@@ -821,6 +820,11 @@ static int OpenVideo(vout_display_t *vd,
     }
 
     vd->ops = &ops;
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
+    }
 
     vd->sys = (void *) sys;
 

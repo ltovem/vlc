@@ -240,6 +240,8 @@ typedef struct {
     video_format_t source;
     video_format_t display_fmt;
     vlc_video_context *src_vctx;
+    vlc_video_context *dst_vctx;
+
      /* filters to convert the vout source to fmt, NULL means no conversion
       * can be done and nothing will be displayed */
     filter_chain_t *converters;
@@ -251,7 +253,9 @@ static vlc_decoder_device * DisplayHoldDecoderDevice(vlc_object_t *o, void *sys)
     VLC_UNUSED(o);
     vout_display_t *vd = sys;
     vout_display_priv_t *osys = container_of(vd, vout_display_priv_t, display);
-    return osys->src_vctx ? vlc_video_context_HoldDevice(osys->src_vctx) : NULL;
+    if (osys->dst_vctx)
+        return vlc_video_context_HoldDevice(osys->dst_vctx);
+    return NULL;
 }
 
 static const struct filter_video_callbacks vout_display_filter_cbs = {
@@ -635,6 +639,7 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
     osys->crop.mode = VOUT_CROP_NONE;
 
     osys->src_vctx = vctx ? vlc_video_context_Hold( vctx ) : NULL;
+    osys->dst_vctx = vctx ? vlc_video_context_Hold( vctx ) : NULL;
 
     /* */
     vout_display_t *vd = &osys->display;
@@ -667,7 +672,7 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
         video_format_Copy(&osys->display_fmt, vd->source);
         vd->obj.force = i < (ssize_t)strict; /* TODO: pass to cb() instead? */
 
-        int ret = cb(vd, &osys->display_fmt, &osys->src_vctx);
+        int ret = cb(vd, &osys->display_fmt, &osys->dst_vctx);
         if (ret == VLC_SUCCESS) {
             assert(vd->ops->prepare != NULL || vd->ops->display != NULL);
             if (VoutDisplayCreateRender(vd) == 0) {
@@ -700,6 +705,11 @@ void vout_display_Delete(vout_display_t *vd)
     {
         vlc_video_context_Release( osys->src_vctx );
         osys->src_vctx = NULL;
+    }
+    if (osys->dst_vctx)
+    {
+        vlc_video_context_Release( osys->dst_vctx );
+        osys->dst_vctx = NULL;
     }
 
     if (osys->converters != NULL)

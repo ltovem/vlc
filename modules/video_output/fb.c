@@ -294,9 +294,13 @@ static int Open(vout_display_t *vd,
 
     /* */
     *fmtp = fmt;
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
+    }
     vd->ops = &ops;
 
-    (void) vctx;
     return VLC_SUCCESS;
 }
 

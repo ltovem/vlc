@@ -386,8 +386,6 @@ static int Open(vout_display_t *vd,
 {
     vout_display_sys_t *sys;
 
-    (void) vctx;
-
     if (vout_display_cfg_IsWindowed(vd->cfg))
         return VLC_EGENERIC;
 #if !defined(__APPLE__) && !defined(_WIN32)
@@ -489,6 +487,11 @@ static int Open(vout_display_t *vd,
         fmtp->i_rmask = 0x00ff0000;
         fmtp->i_gmask = 0x0000ff00;
         fmtp->i_bmask = 0x000000ff;
+    }
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
     }
 
     /* Setup vout_display now that everything is fine */

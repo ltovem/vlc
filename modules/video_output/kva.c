@@ -317,7 +317,6 @@ static int Open ( vout_display_t *vd,
         .vd   = vd,
         .fmtp = fmtp,
     };
-    VLC_UNUSED(vctx);
 
     vd->sys = sys = calloc( 1, sizeof( *sys ));
     if( !sys )
@@ -343,6 +342,11 @@ static int Open ( vout_display_t *vd,
         free( sys );
 
         return VLC_EGENERIC;
+    }
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
     }
 
     /* Sometimes WinSetWindowPos() causes locking. To avoid this,

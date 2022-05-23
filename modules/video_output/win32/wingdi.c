@@ -129,11 +129,16 @@ static int Open(vout_display_t *vd,
     if (Init(vd, fmtp))
         goto error;
 
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
+    }
+
     vlc_window_SetTitle(vd->cfg->window, VOUT_TITLE " (WinGDI output)");
 
     /* */
     vd->ops = &ops;
-    assert(*vctx==NULL);
     return VLC_SUCCESS;
 
 error:
