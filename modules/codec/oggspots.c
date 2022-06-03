@@ -379,7 +379,7 @@ static picture_t* DecodePacket(decoder_t* p_dec, block_t* p_block)
         return NULL;
     }
 
-    p_pic->b_force = true;
+    p_pic->b_eos = true;
     p_dec->fmt_out.i_codec = p_dec->fmt_out.video.i_chroma;
     decoder_UpdateVideoFormat(p_dec);
 

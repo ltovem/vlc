@@ -403,8 +403,7 @@ static picture_t *Render(filter_t *filter, picture_t *src)
     vlc_vdp_output_surface_t *p_sys = dst->p_sys;
     assert(p_sys != NULL && p_sys->vctx == filter->vctx_out);
     dst->date = pic_f->date;
-    dst->b_force = pic_f->b_force;
-    dst->b_still = pic_f->b_still;
+    dst->b_eos = pic_f->b_eos;
 
     /* Enable/Disable features */
     vlc_vdp_video_field_t *f = VDPAU_FIELD_FROM_PICCTX(pic_f->context);

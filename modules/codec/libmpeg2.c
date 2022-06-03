@@ -546,7 +546,7 @@ static picture_t *DecodeBlock( decoder_t *p_dec, block_t **pp_block )
             if( p_pic )
             {
                 if( state == STATE_END )
-                    p_pic->b_force = true; /* For still frames */
+                    p_pic->b_eos = true; /* For still frames */
 
                 /* Avoid frames with identical timestamps.
                  * Especially needed for still frames in DVD menus. */

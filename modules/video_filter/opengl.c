@@ -75,8 +75,7 @@ static picture_t *Filter(filter_t *filter, picture_t *input)
         goto end;
 
     output->date = input->date;
-    output->b_force = input->b_force;
-    output->b_still = input->b_still;
+    output->b_eos = input->b_eos;
 
     output->format.i_frame_rate =
         filter->fmt_out.video.i_frame_rate;

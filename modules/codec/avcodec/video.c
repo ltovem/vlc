@@ -96,9 +96,6 @@ typedef struct
     bool        b_direct_rendering;
     bool        b_dr_failure; /* Protected by lock */
 
-    /* Hack to force display of still pictures */
-    bool b_first_frame;
-
 
     /* */
     bool palette_sent;
@@ -561,7 +558,6 @@ int InitVideoDec( vlc_object_t *obj )
 
     /* ***** misc init ***** */
     date_Init(&p_sys->pts, 1, 30001);
-    p_sys->b_first_frame = true;
     p_sys->i_late_frames = 0;
     p_sys->b_from_preroll = false;
     p_sys->i_last_output_frame = -1;
@@ -1124,8 +1120,6 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
         }
 
         struct frame_info_s *p_frame_info = &p_sys->frame_info[frame->reordered_opaque % FRAME_INFO_DEPTH];
-        if( p_frame_info->b_eos )
-            p_sys->b_first_frame = true;
 
         vlc_mutex_lock(&p_sys->lock);
 
@@ -1259,7 +1253,6 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
 
         p_pic->date = i_pts;
         /* Hack to force display of still pictures */
-        p_pic->b_force = p_sys->b_first_frame;
         p_pic->i_nb_fields = 2 + frame->repeat_pict;
         p_pic->b_progressive = !frame->interlaced_frame;
         p_pic->b_top_field_first = frame->top_field_first;
@@ -1273,8 +1266,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
         if (i_pts != VLC_TICK_INVALID)
         {
             if(p_frame_info->b_eos)
-                p_pic->b_still = true;
-            p_sys->b_first_frame = false;
+                p_pic->b_eos = true;
             vlc_mutex_unlock(&p_sys->lock);
             decoder_QueueVideo( p_dec, p_pic );
         }

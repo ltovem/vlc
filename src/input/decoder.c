@@ -1089,14 +1089,13 @@ static int ModuleThread_PlayVideo( vlc_input_decoder_t *p_owner, picture_t *p_pi
         msg_Dbg( p_dec, "end of video preroll" );
 
         if( p_vout )
-            vout_FlushAll( p_vout );
+            vout_Flush( p_vout );
     }
 
     if( p_owner->b_first && p_owner->b_waiting )
     {
         msg_Dbg( p_dec, "Received first picture" );
         p_owner->b_first = false;
-        p_picture->b_force = true;
     }
     else
         DecoderWaitUnblock( p_owner );
@@ -1117,11 +1116,6 @@ static int ModuleThread_PlayVideo( vlc_input_decoder_t *p_owner, picture_t *p_pi
         return VLC_EGENERIC;
     }
 
-    if( p_picture->b_still )
-    {
-        /* Ensure no earlier higher pts breaks still state */
-        vout_Flush( p_vout, p_picture->date );
-    }
     vout_PutPicture( p_vout, p_picture );
 
     return VLC_SUCCESS;
@@ -1534,7 +1528,7 @@ static void DecoderThread_Flush( vlc_input_decoder_t *p_owner )
     else if( p_dec->fmt_in.i_cat == VIDEO_ES )
     {
         if( p_owner->p_vout && p_owner->vout_started )
-            vout_FlushAll( p_owner->p_vout );
+            vout_Flush( p_owner->p_vout );
 
         /* Reset the pool cancel state, previously set by
          * vlc_input_decoder_Flush() */
@@ -2224,7 +2218,7 @@ void vlc_input_decoder_Delete( vlc_input_decoder_t *p_owner )
             * flushed again since the module could be outputting more buffers just
             * after being unstuck. */
 
-            vout_FlushAll( p_owner->p_vout );
+            vout_Flush( p_owner->p_vout );
         }
     }
     vlc_mutex_unlock( &p_owner->lock );
@@ -2403,7 +2397,7 @@ void vlc_input_decoder_Flush( vlc_input_decoder_t *p_owner )
 
         vlc_mutex_lock( &p_owner->lock );
         if( cat == VIDEO_ES && p_owner->p_vout && p_owner->vout_started )
-            vout_FlushAll( p_owner->p_vout );
+            vout_Flush( p_owner->p_vout );
         vlc_mutex_unlock( &p_owner->lock );
     }
 }

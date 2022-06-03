@@ -850,7 +850,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
                  * very thorough job of inventing timestamps.  The
                  * following is just a very rough fall back in case packetizer
                  * is missing. */
-                /* maybe it would be better to set p_pic->b_force ? */
+                /* maybe it would be better to set p_pic->b_eos ? */
                 p_pic->date = p_sys->i_lastpts + p_sys->i_frame_pts_delta;
             }
             p_sys->i_lastpts = p_pic->date;

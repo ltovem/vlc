@@ -394,7 +394,7 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_in_buf )
 static void Flush( filter_t *p_filter )
 {
     filter_sys_t *p_sys = p_filter->p_sys;
-    vout_FlushAll( p_sys->p_vout );
+    vout_Flush( p_sys->p_vout );
 }
 
 /*****************************************************************************

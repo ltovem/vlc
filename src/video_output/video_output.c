@@ -899,10 +899,11 @@ static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
 /* */
 VLC_USED
 static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
-                                 bool frame_by_frame)
+                                 bool allow_dropping)
 {
     vout_thread_sys_t *sys = vout;
-    bool is_late_dropped = sys->is_late_dropped && !frame_by_frame;
+    bool is_late_dropped = sys->is_late_dropped && allow_dropping;
+    bool first = !sys->displayed.current;
 
     vlc_mutex_lock(&sys->filter.lock);
 
@@ -917,7 +918,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
             decoded = picture_fifo_Pop(sys->decoder_fifo);
 
             if (decoded) {
-                if (is_late_dropped && !decoded->b_force)
+                if (is_late_dropped && !(first || decoded->b_eos))
                 {
                     const vlc_tick_t system_now = vlc_tick_now();
                     const vlc_tick_t system_pts =
@@ -1347,7 +1348,7 @@ static int DisplayNextFrame(vout_thread_sys_t *sys)
 {
     UpdateDeinterlaceFilter(sys);
 
-    picture_t *next = PreparePicture(sys, !sys->displayed.current, true);
+    picture_t *next = PreparePicture(sys, !sys->displayed.current, false);
 
     if (next)
     {
@@ -1371,28 +1372,14 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
 
     UpdateDeinterlaceFilter(sys);
 
-    bool render_now = true;
     const vlc_tick_t system_now = vlc_tick_now();
     const vlc_tick_t render_delay = vout_chrono_GetHigh(&sys->chrono.render) + VOUT_MWAIT_TOLERANCE;
     const bool first = !sys->displayed.current;
 
-    /* FIXME/XXX we must redisplay the last decoded picture (because
-    * of potential vout updated, or filters update or SPU update)
-    * For now a high update period is needed but it could be removed
-    * if and only if:
-    * - vout module emits events from themselves.
-    * - *and* SPU is modified to emit an event or a deadline when needed.
-    *
-    * So it will be done later.
-    */
-    bool refresh = false;
-
     picture_t *next = NULL;
     if (first)
     {
-        next = PreparePicture(vout, true, false);
-        if (!next)
-            return vlc_tick_now() + VOUT_REDISPLAY_DELAY; /* Unknown deadline */
+        next = PreparePicture(vout, true, true);
     }
     else if (!paused)
     {
@@ -1405,51 +1392,48 @@ static vlc_tick_t DisplayPicture(vout_thread_sys_t *vout)
             if (system_prepare_current <= system_now)
             {
                 // the current frame will be late, look for the next not late one
-                next = PreparePicture(vout, false, false);
+                next = PreparePicture(vout, false, true);
             }
         }
     }
 
-    vlc_tick_t date_refresh = VLC_TICK_MAX;
-
     if (next != NULL)
     {
-        const vlc_tick_t swap_next_pts =
-            vlc_clock_ConvertToSystem(sys->clock, vlc_tick_now(),
-                                        next->date, sys->rate);
-        if (likely(swap_next_pts != VLC_TICK_MAX))
-            date_refresh = swap_next_pts - render_delay;
-
-        // next frame will still need some waiting before display
-        render_now = false;
-
         if (likely(sys->displayed.current != NULL))
             picture_Release(sys->displayed.current);
         sys->displayed.current = next;
+
+        // next frame will still need some waiting before display, we don't need
+        // to render now
+        // display forced picture immediately
+
+        RenderPicture(vout, first);
+        if (!first)
+            /* Prepare the next picture immediately without waiting */
+            return VLC_TICK_INVALID;
     }
     else if (likely(sys->displayed.date != VLC_TICK_INVALID))
     {
         // next date we need to display again the current picture
-        date_refresh = sys->displayed.date + VOUT_REDISPLAY_DELAY - render_delay;
-        refresh = date_refresh <= system_now;
-        render_now = refresh;
+        vlc_tick_t system_prepare_deadline = sys->displayed.date + VOUT_REDISPLAY_DELAY - render_delay;
+        /* FIXME/XXX we must redisplay the last decoded picture (because
+        * of potential vout updated, or filters update or SPU update)
+        * For now a high update period is needed but it could be removed
+        * if and only if:
+        * - vout module emits events from themselves.
+        * - *and* SPU is modified to emit an event or a deadline when needed.
+        *
+        * So it will be done later.
+        */
+        if (system_prepare_deadline > system_now) {
+            // too early to redisplay, wait until the proper deadline
+            return system_prepare_deadline;
+        }
+        RenderPicture(vout, true);
     }
 
-    if (!first && !refresh && next == NULL) {
-        // nothing changed, wait until the next deadline or a control
-        vlc_tick_t max_deadline = vlc_tick_now() + VOUT_REDISPLAY_DELAY;
-        return __MIN(date_refresh, max_deadline);
-    }
-
-    /* display the picture immediately */
-    render_now |= sys->displayed.current->b_force;
-
-    RenderPicture(vout, render_now);
-    if (render_now)
-        return vlc_tick_now() + VOUT_REDISPLAY_DELAY;
-
-    /* Prepare the next picture immediately without waiting */
-    return VLC_TICK_INVALID;
+    // wait until the next deadline or a control
+    return vlc_tick_now() + VOUT_REDISPLAY_DELAY;
 }
 
 void vout_ChangePause(vout_thread_t *vout, bool is_paused, vlc_tick_t date)
@@ -1519,13 +1503,13 @@ static void vout_FlushUnlocked(vout_thread_sys_t *vout, bool below,
     }
 }
 
-void vout_Flush(vout_thread_t *vout, vlc_tick_t date)
+void vout_Flush(vout_thread_t *vout)
 {
     vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
     assert(!sys->dummy);
 
     vout_control_Hold(&sys->control);
-    vout_FlushUnlocked(sys, false, date);
+    vout_FlushUnlocked(sys, false, VLC_TICK_INVALID);
     vout_control_Release(&sys->control);
 
     struct vlc_tracer *tracer = GetTracer(sys);
