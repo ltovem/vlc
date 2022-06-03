@@ -39,9 +39,9 @@
     "efficient one.")
 
 static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context);
+                     video_format_t *fmtp, vlc_video_context **);
 static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context);
+                     video_format_t *fmtp, vlc_video_context **);
 
 vlc_module_begin ()
     set_shortname( N_("Dummy") )
@@ -68,7 +68,7 @@ static int             Control(vout_display_t *, int);
 /*****************************************************************************
  * OpenVideo: activates dummy vout display method
  *****************************************************************************/
-static void Open(vout_display_t *vd, video_format_t *fmt)
+static void Open(vout_display_t *vd, video_format_t *fmt, vlc_video_context **vctx)
 {
     /* p_vd->info is not modified */
 
@@ -78,6 +78,11 @@ static void Open(vout_display_t *vd, video_format_t *fmt)
         if (fcc != 0) {
             msg_Dbg(vd, "forcing chroma 0x%.8x (%4.4s)", fcc, (char*)&fcc);
             fmt->i_chroma = fcc;
+            if (unlikely(*vctx!=NULL))
+            {
+                vlc_video_context_Release(*vctx);
+                *vctx = NULL;
+            }
         }
         free(chroma);
     }
@@ -95,10 +100,9 @@ static const struct vlc_display_operations ops_dummy = {
 };
 
 static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context)
+                     video_format_t *fmtp, vlc_video_context **vctx)
 {
-    (void) context;
-    Open(vd, fmtp);
+    Open(vd, fmtp, vctx);
     vd->ops = &ops_dummy;
     return VLC_SUCCESS;
 }
@@ -109,10 +113,9 @@ static const struct vlc_display_operations ops_stats = {
 };
 
 static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context)
+                     video_format_t *fmtp, vlc_video_context **vctx)
 {
-    (void) context;
-    Open(vd, fmtp);
+    Open(vd, fmtp, vctx);
     vd->ops = &ops_stats;
     return VLC_SUCCESS;
 }

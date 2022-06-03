@@ -49,7 +49,7 @@
 /*****************************************************************************
  * Vout interface
  *****************************************************************************/
-static int Open(vout_display_t *vd, video_format_t *fmt, vlc_video_context *context);
+static int Open(vout_display_t *vd, video_format_t *fmt, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 static void PictureRender   (vout_display_t *vd, picture_t *pic, subpicture_t *subpicture,
@@ -272,7 +272,7 @@ static void *gl_cb_GetProcAddress(vlc_gl_t *vlc_gl, const char *name)
  * Open: This function allocates and initializes the OpenGL vout method.
  *****************************************************************************/
 static int Open (vout_display_t *vd,
-                 video_format_t *fmt, vlc_video_context *context)
+                 video_format_t *fmt, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
     if (vd->cfg->window->type != VLC_WINDOW_TYPE_NSOBJECT)
@@ -305,7 +305,7 @@ static int Open (vout_display_t *vd,
 
         // Retain container, released in Close
         sys->container = [container retain];
-    
+
         // Create the CGL context
         CGLContextObj cgl_ctx = vlc_CreateCGLContext();
         if (cgl_ctx == NULL) {
@@ -381,7 +381,7 @@ static int Open (vout_display_t *vd,
             goto error;
 
         sys->vgl = vout_display_opengl_New(fmt, &spu_chromas, sys->gl,
-                                           &vd->cfg->viewpoint, context);
+                                           &vd->cfg->viewpoint, *vctx);
         vlc_gl_ReleaseCurrent(sys->gl);
 
         if (sys->vgl == NULL) {
@@ -848,7 +848,7 @@ shouldInheritContentsScale:(CGFloat)newScale
 - (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask
 {
     CGLPixelFormatObj fmt = CGLGetPixelFormat(_glContext);
-    
+
     return (fmt) ? CGLRetainPixelFormat(fmt) : NULL;
 }
 

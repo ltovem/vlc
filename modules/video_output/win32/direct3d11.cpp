@@ -54,7 +54,7 @@
 using Microsoft::WRL::ComPtr;
 
 static int  Open(vout_display_t *,
-                 video_format_t *, vlc_video_context *);
+                 video_format_t *, vlc_video_context **);
 static void Close(vout_display_t *);
 
 #define D3D11_HELP N_("Recommended video output for Windows 8 and later versions")
@@ -91,7 +91,7 @@ typedef struct vout_display_sys_t
     display_info_t           display = {};
 
     d3d11_device_t           *d3d_dev = NULL;
-    d3d11_decoder_device_t   *local_d3d_dev = NULL; // when opened without a video context
+    vlc_decoder_device       *local_d3d_dev = nullptr; // when opened without a video context
     d3d_shader_compiler_t    *shaders = nullptr;
     d3d11_quad_t             picQuad;
 
@@ -130,10 +130,10 @@ typedef struct vout_display_sys_t
 static void Prepare(vout_display_t *, picture_t *, subpicture_t *subpicture, vlc_tick_t);
 static void Display(vout_display_t *, picture_t *);
 
-static int  Direct3D11Open (vout_display_t *, video_format_t *, vlc_video_context *);
+static int  Direct3D11Open (vout_display_t *, video_format_t *, vlc_video_context **);
 static void Direct3D11Close(vout_display_t *);
 
-static int SetupOutputFormat(vout_display_t *, video_format_t *, vlc_video_context *);
+static int SetupOutputFormat(vout_display_t *, video_format_t *, vlc_video_context **);
 static int  Direct3D11CreateFormatResources (vout_display_t *, const video_format_t *);
 static int  Direct3D11CreateGenericResources(vout_display_t *);
 static void Direct3D11DestroyResources(vout_display_t *);
@@ -350,7 +350,7 @@ static const auto ops = []{
 }();
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys = new (std::nothrow) vout_display_sys_t();
     if (!sys)
@@ -372,16 +372,19 @@ static int Open(vout_display_t *vd,
     sys->sendMetadataCb      = (libvlc_video_frameMetadata_cb)var_InheritAddress( vd, "vout-cb-metadata" );
     sys->selectPlaneCb       = (libvlc_video_output_select_plane_cb)var_InheritAddress( vd, "vout-cb-select-plane" );
 
-    dev_sys = GetD3D11OpaqueContext( context );
+    dev_sys = GetD3D11OpaqueContext( *vctx );
     if ( dev_sys == NULL )
     {
         // No d3d11 device, we create one
-        sys->local_d3d_dev = D3D11_CreateDevice(vd, NULL, false, vd->obj.force);
-        if (sys->local_d3d_dev == NULL) {
+        var_Create(vd, "dec-dev", VLC_VAR_STRING);
+        var_SetString(vd, "dec-dev", "d3d11");
+        sys->local_d3d_dev = vlc_decoder_device_Create(VLC_OBJECT(vd), vd->cfg->window);
+        if (unlikely(sys->local_d3d_dev == nullptr))
+        {
             msg_Err(vd, "Could not Create the D3D11 device.");
             goto error;
         }
-        dev_sys = sys->local_d3d_dev;
+        dev_sys = GetD3D11OpaqueDevice(sys->local_d3d_dev);
     }
     sys->d3d_dev = &dev_sys->d3d_dev;
 
@@ -421,7 +424,7 @@ static int Open(vout_display_t *vd,
         sys->p_sensors = HookWindowsSensors(vd, sys->sys.hvideownd);
 #endif // !VLC_WINSTORE_APP
 
-    if (Direct3D11Open(vd, fmtp, context)) {
+    if (Direct3D11Open(vd, fmtp, vctx)) {
         msg_Err(vd, "Direct3D11 could not be opened");
         goto error;
     }
@@ -754,12 +757,13 @@ static const d3d_format_t *GetBlendableFormat(vout_display_t *vd, vlc_fourcc_t i
     return FindD3D11Format( vd, sys->d3d_dev, i_src_chroma, DXGI_RGB_FORMAT|DXGI_YUV_FORMAT, 0, 0, 0, DXGI_CHROMA_CPU, supportFlags );
 }
 
-static int Direct3D11Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context *vctx)
+static int Direct3D11Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys = static_cast<vout_display_sys_t *>(vd->sys);
     video_format_t fmt;
+    vlc_video_context *out_vctx = *vctx;
     video_format_Copy(&fmt, vd->source);
-    int err = SetupOutputFormat(vd, &fmt, vctx);
+    int err = SetupOutputFormat(vd, &fmt, &out_vctx);
     if (err != VLC_SUCCESS)
     {
         if (!is_d3d11_opaque(vd->source->i_chroma)
@@ -768,6 +772,7 @@ static int Direct3D11Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_co
 #endif
                 )
         {
+            out_vctx = nullptr;
             const vlc_fourcc_t *list = vlc_fourcc_IsYUV(vd->source->i_chroma) ?
                         vlc_fourcc_GetYUVFallback(vd->source->i_chroma) :
                         vlc_fourcc_GetRGBFallback(vd->source->i_chroma);
@@ -775,7 +780,7 @@ static int Direct3D11Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_co
                 fmt.i_chroma = list[i];
                 if (fmt.i_chroma == vd->source->i_chroma)
                     continue;
-                err = SetupOutputFormat(vd, &fmt, NULL);
+                err = SetupOutputFormat(vd, &fmt, &out_vctx);
                 if (err == VLC_SUCCESS)
                     break;
             }
@@ -815,17 +820,23 @@ static int Direct3D11Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_co
 
     video_format_Clean(fmtp);
     *fmtp = fmt;
+    if (*vctx != out_vctx)
+    {
+        if (*vctx)
+            vlc_video_context_Release(*vctx);
+        *vctx = out_vctx;
+    }
 
     sys->log_level = var_InheritInteger(vd, "verbose");
 
     return VLC_SUCCESS;
 }
 
-static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_context *vctx)
+static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys = static_cast<vout_display_sys_t *>(vd->sys);
 
-    d3d11_video_context_t *vtcx_sys = GetD3D11ContextPrivate(vctx);
+    d3d11_video_context_t *vtcx_sys = GetD3D11ContextPrivate(*vctx);
     if (vtcx_sys != NULL &&
         D3D11_DeviceSupportsFormat( sys->d3d_dev, vtcx_sys->format, D3D11_FORMAT_SUPPORT_SHADER_LOAD ))
     {
@@ -938,6 +949,16 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
 
     fmt->i_chroma = decoder_format ? decoder_format->fourcc : sys->picQuad.generic.textureFormat->fourcc;
     DxgiFormatMask( sys->picQuad.generic.textureFormat->formatTexture, fmt );
+    if (sys->local_d3d_dev)
+    {
+        auto new_vctx = D3D11CreateVideoContext(sys->local_d3d_dev, sys->picQuad.generic.textureFormat->formatTexture);
+        if (unlikely(!new_vctx))
+        {
+            msg_Err(vd, "Failed to create the input video context");
+            return VLC_EGENERIC;
+        }
+        *vctx = new_vctx;
+    }
 
     /* check the region pixel format */
     sys->regionQuad.generic.textureFormat = GetBlendableFormat(vd, VLC_CODEC_RGBA);
@@ -956,8 +977,8 @@ static void Direct3D11Close(vout_display_t *vd)
     if ( sys->swapCb == D3D11_LocalSwapchainSwap )
         D3D11_LocalSwapchainCleanupDevice( sys->outside_opaque );
 
-    if (sys->d3d_dev && sys->d3d_dev == &sys->local_d3d_dev->d3d_dev)
-        D3D11_ReleaseDevice( sys->local_d3d_dev );
+    if (sys->local_d3d_dev)
+        vlc_decoder_device_Release(sys->local_d3d_dev);
 
     msg_Dbg(vd, "Direct3D11 display adapter closed");
 }

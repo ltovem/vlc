@@ -37,7 +37,7 @@
 #include "vlc_vdpau.h"
 #include "events.h"
 
-static int Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context *context);
+static int Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin()
@@ -294,7 +294,7 @@ static const struct vlc_display_operations ops = {
 };
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     if (fmtp->i_chroma != VLC_CODEC_VDPAU_VIDEO)
         return VLC_ENOTSUP;
@@ -312,7 +312,7 @@ static int Open(vout_display_t *vd,
         return ret;
     }
 
-    vlc_decoder_device *dec_device = context ? vlc_video_context_HoldDevice(context) : NULL;
+    vlc_decoder_device *dec_device = *vctx ? vlc_video_context_HoldDevice(*vctx) : NULL;
     if (dec_device == NULL)
         goto error;
 

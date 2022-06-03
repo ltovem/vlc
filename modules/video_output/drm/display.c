@@ -153,7 +153,7 @@ static const struct vlc_display_operations ops = {
  * This function allocates and initializes a KMS vout method.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vlc_window_t *wnd = vd->cfg->window;
     uint_fast32_t drm_fourcc = 0;
@@ -201,7 +201,7 @@ static int Open(vout_display_t *vd,
 
     if (drm_fourcc == 0) {
         drm_fourcc = vlc_drm_find_best_format(fd, sys->plane_id, nfmt,
-                                              vd->fmt->i_chroma);
+                                              vd->source->i_chroma);
         if (drm_fourcc == 0) {
             msg_Err(vd, "DRM plane format error: %s", vlc_strerror_c(errno));
             return -errno;
@@ -231,10 +231,14 @@ static int Open(vout_display_t *vd,
 
     sys->front_buf = 0;
     *fmtp = fmt;
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
+    }
     vd->sys = sys;
     vd->ops = &ops;
 
-    (void) context;
     return VLC_SUCCESS;
 }
 

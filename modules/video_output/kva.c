@@ -43,7 +43,7 @@
  * Module descriptor
  *****************************************************************************/
 static int  Open ( vout_display_t *,
-                   video_format_t *, vlc_video_context * );
+                   video_format_t *, vlc_video_context ** );
 static void Close( vout_display_t * );
 
 #define KVA_FIXT23_TEXT N_( \
@@ -310,14 +310,13 @@ exit_frame :
  * This function initializes KVA vout method.
  */
 static int Open ( vout_display_t *vd,
-                  video_format_t *fmtp, vlc_video_context *context )
+                  video_format_t *fmtp, vlc_video_context **vctx )
 {
     vout_display_sys_t *sys;
     struct open_init init = {
         .vd   = vd,
         .fmtp = fmtp,
     };
-    VLC_UNUSED(context);
 
     vd->sys = sys = calloc( 1, sizeof( *sys ));
     if( !sys )
@@ -343,6 +342,11 @@ static int Open ( vout_display_t *vd,
         free( sys );
 
         return VLC_EGENERIC;
+    }
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
     }
 
     /* Sometimes WinSetWindowPos() causes locking. To avoid this,

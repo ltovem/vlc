@@ -55,7 +55,7 @@
 #define LT_HEIGHT NULL
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+                video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin ()
@@ -90,7 +90,7 @@ static const struct vlc_display_operations ops = {
  * Open: activates flaschen vout display method
  *****************************************************************************/
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
     int fd;
@@ -142,10 +142,14 @@ static int Open(vout_display_t *vd,
 
 
     *fmtp = fmt;
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
+    }
 
     vd->ops = &ops;
 
-    (void) context;
     return VLC_SUCCESS;
 }
 

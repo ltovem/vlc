@@ -52,7 +52,7 @@
                       "string, eg. \"RV32\".")
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+                video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin()
@@ -114,7 +114,7 @@ static const struct vlc_display_operations ops = {
  * This function allocates and initializes a vout method.
  *****************************************************************************/
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys = malloc(sizeof(*sys));
     if (unlikely(!sys))
@@ -217,11 +217,15 @@ static int Open(vout_display_t *vd,
 
     /* */
     *fmtp = fmt;
+            if (unlikely(*vctx!=NULL))
+            {
+                vlc_video_context_Release(*vctx);
+                *vctx = NULL;
+            }
 
     vd->sys     = sys;
     vd->ops     = &ops;
 
-    (void) context;
     return VLC_SUCCESS;
 }
 

@@ -42,8 +42,7 @@
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
-static int  Open (vout_display_t *,
-                  video_format_t *, vlc_video_context *);
+static int  Open (vout_display_t *, video_format_t *, vlc_video_context **);
 static void Close(vout_display_t *);
 
 vlc_module_begin()
@@ -118,7 +117,7 @@ static const struct vlc_display_operations ops = {
  * It creates an OpenGL vout display.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
 
@@ -162,7 +161,7 @@ static int Open(vout_display_t *vd,
     if (vlc_gl_MakeCurrent (sys->gl))
         goto error;
     sys->vgl = vout_display_opengl_New(fmtp, &subpicture_chromas, sys->gl,
-                                       &vd->cfg->viewpoint, context);
+                                       &vd->cfg->viewpoint, *vctx);
     vlc_gl_ReleaseCurrent (sys->gl);
     if (!sys->vgl)
         goto error;

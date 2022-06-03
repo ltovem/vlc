@@ -383,11 +383,9 @@ static const struct vlc_display_operations ops = {
  * This function initializes libcaca vout method.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
-
-    (void) context;
 
     if (vout_display_cfg_IsWindowed(vd->cfg))
         return VLC_EGENERIC;
@@ -490,6 +488,11 @@ static int Open(vout_display_t *vd,
         fmtp->i_rmask = 0x00ff0000;
         fmtp->i_gmask = 0x0000ff00;
         fmtp->i_bmask = 0x000000ff;
+    }
+    if (unlikely(*vctx!=NULL))
+    {
+        vlc_video_context_Release(*vctx);
+        *vctx = NULL;
     }
 
     /* Setup vout_display now that everything is fine */

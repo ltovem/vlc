@@ -50,8 +50,7 @@
     "Force use of a specific chroma for output. Default is RGB32."
 
 #define CFG_PREFIX "android-display-"
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+static int Open(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **);
 static void Close(vout_display_t *vd);
 static void SubpicturePrepare(vout_display_t *vd, subpicture_t *subpicture);
 
@@ -482,7 +481,7 @@ static const struct vlc_display_operations ops = {
 };
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **vctx)
 {
     vout_display_sys_t *sys;
     video_format_t fmt, sub_fmt;
@@ -533,9 +532,9 @@ static int Open(vout_display_t *vd,
     }
     else
     {
-        if (!context)
+        if (!*vctx)
             goto error;
-        sys->avctx = vlc_video_context_GetPrivate(context, VLC_VIDEO_CONTEXT_AWINDOW);
+        sys->avctx = vlc_video_context_GetPrivate(*vctx, VLC_VIDEO_CONTEXT_AWINDOW);
         assert(sys->avctx);
         if (sys->avctx->texture != NULL)
         {
