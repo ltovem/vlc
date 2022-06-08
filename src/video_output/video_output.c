@@ -910,42 +910,39 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
 
     while (!picture) {
         picture_t *decoded;
-        if (unlikely(reuse_decoded && sys->displayed.decoded)) {
+        if (unlikely(reuse_decoded && sys->displayed.decoded))
             decoded = picture_Hold(sys->displayed.decoded);
-        } else {
+        else
             decoded = picture_fifo_Pop(sys->decoder_fifo);
-
-            if (decoded) {
-                    if (drop_policy && drop_policy(opaque, decoded))
-                    {
-                        picture_Release(decoded);
-                        vout_statistic_AddLost(&sys->statistic, 1);
-
-                        /* A picture dropped means discontinuity for the
-                         * filters and we need to notify eg. deinterlacer. */
-                        filter_chain_VideoFlush(sys->filter.chain_static);
-                        continue;
-                    }
-
-                vlc_video_context *pic_vctx = picture_GetVideoContext(decoded);
-                if (!VideoFormatIsCropArEqual(&decoded->format, &sys->filter.src_fmt))
-                {
-                    // we received an aspect ratio change
-                    // Update the filters with the filter source format with the new aspect ratio
-                    video_format_Clean(&sys->filter.src_fmt);
-                    video_format_Copy(&sys->filter.src_fmt, &decoded->format);
-                    if (sys->filter.src_vctx)
-                        vlc_video_context_Release(sys->filter.src_vctx);
-                    sys->filter.src_vctx = pic_vctx ? vlc_video_context_Hold(pic_vctx) : NULL;
-
-                    ChangeFilters(vout);
-                }
-            }
-        }
 
         if (!decoded)
             break;
         reuse_decoded = false;
+
+        if (drop_policy && drop_policy(opaque, decoded))
+        {
+            picture_Release(decoded);
+            vout_statistic_AddLost(&sys->statistic, 1);
+
+            /* A picture dropped means discontinuity for the
+                * filters and we need to notify eg. deinterlacer. */
+            filter_chain_VideoFlush(sys->filter.chain_static);
+            continue;
+        }
+
+        vlc_video_context *pic_vctx = picture_GetVideoContext(decoded);
+        if (!VideoFormatIsCropArEqual(&decoded->format, &sys->filter.src_fmt))
+        {
+            // we received an aspect ratio change
+            // Update the filters with the filter source format with the new aspect ratio
+            video_format_Clean(&sys->filter.src_fmt);
+            video_format_Copy(&sys->filter.src_fmt, &decoded->format);
+            if (sys->filter.src_vctx)
+                vlc_video_context_Release(sys->filter.src_vctx);
+            sys->filter.src_vctx = pic_vctx ? vlc_video_context_Hold(pic_vctx) : NULL;
+
+            ChangeFilters(vout);
+        }
 
         if (sys->displayed.decoded)
             picture_Release(sys->displayed.decoded);
