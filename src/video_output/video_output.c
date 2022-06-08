@@ -870,7 +870,7 @@ static void ChangeFilters(vout_thread_sys_t *vout)
     sys->filter.changed = false;
 }
 
-static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
+static bool IsPictureLate(vout_thread_sys_t *vout, const picture_t *decoded,
                           vlc_tick_t system_now, vlc_tick_t system_pts)
 {
     vout_thread_sys_t *sys = vout;
@@ -899,10 +899,9 @@ static bool IsPictureLate(vout_thread_sys_t *vout, picture_t *decoded,
 /* */
 VLC_USED
 static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
-                                 bool frame_by_frame)
+                                 bool (*drop_policy)(void*, const picture_t*), void *opaque)
 {
     vout_thread_sys_t *sys = vout;
-    bool is_late_dropped = sys->is_late_dropped && !frame_by_frame;
 
     vlc_mutex_lock(&sys->filter.lock);
 
@@ -917,15 +916,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
             decoded = picture_fifo_Pop(sys->decoder_fifo);
 
             if (decoded) {
-                if (is_late_dropped && !decoded->b_force)
-                {
-                    const vlc_tick_t system_now = vlc_tick_now();
-                    const vlc_tick_t system_pts =
-                        vlc_clock_ConvertToSystem(sys->clock, system_now,
-                                                  decoded->date, sys->rate);
-
-                    if (system_pts != VLC_TICK_MAX &&
-                        IsPictureLate(vout, decoded, system_now, system_pts))
+                    if (drop_policy && drop_policy(opaque, decoded))
                     {
                         picture_Release(decoded);
                         vout_statistic_AddLost(&sys->statistic, 1);
@@ -935,7 +926,7 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
                         filter_chain_VideoFlush(sys->filter.chain_static);
                         continue;
                     }
-                }
+
                 vlc_video_context *pic_vctx = picture_GetVideoContext(decoded);
                 if (!VideoFormatIsCropArEqual(&decoded->format, &sys->filter.src_fmt))
                 {
@@ -1347,7 +1338,7 @@ static int DisplayNextFrame(vout_thread_sys_t *sys)
 {
     UpdateDeinterlaceFilter(sys);
 
-    picture_t *next = PreparePicture(sys, !sys->displayed.current, true);
+    picture_t *next = PreparePicture(sys, !sys->displayed.current, NULL, NULL);
 
     if (next)
     {
@@ -1362,13 +1353,25 @@ static int DisplayNextFrame(vout_thread_sys_t *sys)
     return RenderPicture(sys, true);
 }
 
+static bool DropLatePic(void *opaque, const picture_t *decoded)
+{
+    vout_thread_sys_t *sys = opaque;
+    const vlc_tick_t system_now = vlc_tick_now();
+    const vlc_tick_t system_pts =
+        vlc_clock_ConvertToSystem(sys->clock, system_now,
+                                  decoded->date, sys->rate);
+
+    return system_pts != VLC_TICK_MAX &&
+           IsPictureLate(sys, decoded, system_now, system_pts);
+}
+
 static bool UpdateCurrentPicture(vout_thread_sys_t *sys)
 {
     assert(sys->clock);
 
     if (sys->displayed.current == NULL)
     {
-        sys->displayed.current = PreparePicture(sys, true, false);
+        sys->displayed.current = PreparePicture(sys, true, NULL, NULL);
         return sys->displayed.current != NULL;
     }
 
@@ -1391,7 +1394,8 @@ static bool UpdateCurrentPicture(vout_thread_sys_t *sys)
         return true;
 
     // the current frame will be late, look for the next not late one
-    picture_t *next = PreparePicture(sys, false, false);
+    picture_t *next = PreparePicture(sys, false,
+                                     sys->is_late_dropped ? DropLatePic : NULL, sys);
     if (next == NULL)
         return false;
 
