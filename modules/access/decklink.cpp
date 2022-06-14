@@ -52,14 +52,14 @@
 #include "sdi.h"
 
 #include <atomic>
+#include <limits.h>
 
 static int  Open (vlc_object_t *);
 static void Close(vlc_object_t *);
 
 #define CARD_INDEX_TEXT N_("Input card to use")
 #define CARD_INDEX_LONGTEXT N_( \
-    "DeckLink capture card to use, if multiple exist. " \
-    "The cards are numbered from 0.")
+    "DeckLink capture card to use, if multiple exist. " )
 
 #define MODE_TEXT N_("Desired input video mode. Leave empty for autodetection.")
 #define MODE_LONGTEXT N_( \
@@ -80,8 +80,11 @@ static void Close(vlc_object_t *);
 
 #define CHANNELS_TEXT N_("Number of audio channels")
 #define CHANNELS_LONGTEXT N_( \
-    "Number of input audio channels for DeckLink captures. " \
-    "Must be 2, 8 or 16. 0 disables audio input.")
+    "Number of input audio channels for DeckLink captures.")
+static const int pi_audio_channels_values[] = { 0, 2, 8, 16 };
+static const char *const ppsz_audio_channels_descriptions[] =
+{ N_("Disable"), N_("2"), N_("8"), N_("16") };
+
 
 #define VIDEO_CONNECTION_TEXT N_("Video connection")
 #define VIDEO_CONNECTION_LONGTEXT N_( \
@@ -115,6 +118,7 @@ vlc_module_begin ()
 
     add_integer("decklink-card-index", 0,
                  CARD_INDEX_TEXT, CARD_INDEX_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
     add_string("decklink-mode", NULL,
                  MODE_TEXT, MODE_LONGTEXT)
     add_string("decklink-audio-connection", 0,
@@ -122,8 +126,10 @@ vlc_module_begin ()
         change_string_list(ppsz_audioconns, ppsz_audioconns_text)
     add_integer("decklink-audio-rate", 48000,
                  RATE_TEXT, RATE_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
     add_integer("decklink-audio-channels", 2,
                  CHANNELS_TEXT, CHANNELS_LONGTEXT)
+        change_integer_list( pi_audio_channels_values, ppsz_audio_channels_descriptions )
     add_string("decklink-video-connection", 0,
                  VIDEO_CONNECTION_TEXT, VIDEO_CONNECTION_LONGTEXT)
         change_string_list(ppsz_videoconns, ppsz_videoconns_text)
@@ -568,10 +574,6 @@ static int Open(vlc_object_t *p_this)
     }
 
     card_index = var_InheritInteger(demux, "decklink-card-index");
-    if (card_index < 0) {
-        msg_Err(demux, "Invalid card index %d", card_index);
-        goto finish;
-    }
 
     for (int i = 0; i <= card_index; i++) {
         if (sys->card)

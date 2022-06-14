@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <float.h>
 #ifdef HAVE_SYS_SHM_H
 # include <sys/ipc.h>
 # include <sys/shm.h>
@@ -87,6 +88,7 @@ vlc_module_begin ()
     set_callbacks (Open, Close)
 
     add_float ("shm-fps", 10.0, FPS_TEXT, FPS_LONGTEXT)
+        change_float_range( 0.0, FLT_MAX )
     add_integer ("shm-depth", 0, DEPTH_TEXT, DEPTH_LONGTEXT)
         change_integer_list (depths, depth_texts)
         change_safe ()

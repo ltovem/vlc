@@ -35,6 +35,7 @@
 #include <sys/eventfd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -92,6 +93,7 @@ vlc_module_begin()
 
     add_integer( "linsys-hdsdi-link", 0,
         LINK_TEXT, LINK_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_integer( "linsys-hdsdi-id-video", 0,
         VIDEO_TEXT, VIDEO_LONGTEXT )
