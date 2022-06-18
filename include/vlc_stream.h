@@ -496,6 +496,43 @@ VLC_API stream_t* vlc_stream_FilterNew( stream_t *p_source, const char *psz_stre
  * @}
  */
 
+struct vlc_stream_guessType_Entry
+{
+    int type;
+    bool net;
+};
+
+typedef const struct vlc_stream_guessType_Entry* (*vlc_guesstype_activate_cb)();
+
+/**
+ * Adds a submodule with the "guesstype" capability in order to be able to
+ * provide a input item type and 'net' boolean for an input_item
+ * The cb parameter is the name provided to the VLC_STREAM_GUESSTYPE_CB
+ * macro.
+ */
+#define VLC_STREAM_GUESSTYPE_SUBMODULE(cb, shortcut) \
+    add_submodule() \
+        set_capability( "guesstype", 100 ) \
+        add_shortcut(shortcut) \
+        { \
+            vlc_guesstype_activate_cb cb_cast = cb; \
+            (void)cb_cast; \
+            set_callback(cb) \
+        }
+
+/**
+ * Defines the guess type callback used by the above macro.
+ * This will make the module guesstype submodule return the provided type & net
+ * when probed for the item type
+ */
+#define VLC_STREAM_GUESSTYPE_CB(cb, type, net) \
+    static const struct vlc_stream_guessType_Entry* \
+    cb(void) \
+    { \
+        static const struct vlc_stream_guessType_Entry entry = { type, net }; \
+        return &entry; \
+    }
+
 # ifdef __cplusplus
 }
 # endif

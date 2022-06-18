@@ -46,6 +46,7 @@
 #include "media_internal.h"
 #include "media_list_internal.h"
 #include "picture_internal.h"
+#include "../src/input/guess_type.h"
 
 static const vlc_meta_type_t libvlc_to_vlc_meta[] =
 {
@@ -526,6 +527,9 @@ libvlc_media_t *libvlc_media_new_location( libvlc_instance_t *p_instance,
     }
 
     p_md = libvlc_media_new_from_input_item( p_instance, p_input_item );
+    if (p_input_item->i_type == ITEM_TYPE_UNKNOWN)
+        input_item_GuessType(VLC_OBJECT(p_instance->p_libvlc_int),
+                             p_input_item);
 
     /* The p_input_item is retained in libvlc_media_new_from_input_item */
     input_item_Release( p_input_item );
