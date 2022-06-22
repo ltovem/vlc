@@ -225,6 +225,11 @@ static void ShowDialog   ( intf_thread_t *, int, int, intf_dialog_args_t * );
 #define SMOOTH_SCROLLING_TEXT N_( "Use smooth scrolling in Flickable based views" )
 #define SMOOTH_SCROLLING_LONGTEXT N_( "Deactivating this option will disable smooth scrolling in Flickable based views (such as the Playqueue)" )
 
+#define QT_MSAA "qt-msaa"
+#define QT_MSAA_TEXT N_( "Enable MSAA" )
+#define QT_MSAA_LONGTEXT N_( "Enabling multisample anti-aliasing may increase the rendering performance.\n" \
+                             "If MSAA is not enabled, Vertex AA is used when possible." )
+
 static const int initial_prefs_view_list[] = { 0, 1, 2 };
 static const char *const initial_prefs_view_list_texts[] =
     { N_("Simple"), N_("Advanced"), N_("Expert") };
@@ -390,6 +395,8 @@ vlc_module_begin ()
             change_integer_list( i_raise_list, psz_raise_list_text )
 
     add_bool( "qt-smooth-scrolling", true, SMOOTH_SCROLLING_TEXT, SMOOTH_SCROLLING_LONGTEXT )
+
+    add_bool( QT_MSAA, false, QT_MSAA_TEXT, QT_MSAA_LONGTEXT )
 
     cannot_unload_broken_library()
 
@@ -684,6 +691,13 @@ static void *Thread( void *obj )
     // at the moment, the vout is created in another thread than the rendering thread
     QApplication::setAttribute( Qt::AA_DontCheckOpenGLContextThreadAffinity );
     QQuickWindow::setDefaultAlphaBuffer(true);
+
+    if (var_InheritBool(p_intf, QT_MSAA))
+    {
+        QSurfaceFormat surfaceFormat;
+        surfaceFormat.setSamples(4);
+        QSurfaceFormat::setDefaultFormat(surfaceFormat);
+    }
 
     /* Start the QApplication here */
     QVLCApp app( argc, argv );
