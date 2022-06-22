@@ -86,7 +86,7 @@ ssize_t vlc_https_chunked_write(struct vlc_tls *, const void *base, size_t len,
  * however be sent with the TLS False Start. This is handled by the TLS stack
  * and does not require a combined function call.
  *
- * \param ctx logger pointer for the HTTP connection
+ * \param logger logger pointer for the HTTP connection
  * \param hostname HTTP server or proxy hostname to connect to
  * \param port TCP port number to connect to
  * \param proxy true of the hostname and port correspond to an HTTP proxy,
@@ -101,7 +101,7 @@ ssize_t vlc_https_chunked_write(struct vlc_tls *, const void *base, size_t len,
  * \return an HTTP stream on success, NULL on error
  * \note *connp is undefined on error.
  */
-struct vlc_http_stream *vlc_h1_request(struct vlc_logger *ctx, const char *hostname,
+struct vlc_http_stream *vlc_h1_request(struct vlc_logger *logger, const char *hostname,
                                        unsigned port, bool proxy,
                                        const struct vlc_http_msg *req,
                                        bool idempotent, bool has_data,

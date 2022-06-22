@@ -867,7 +867,7 @@ static const struct vlc_http_conn_cbs vlc_h2_conn_callbacks =
     vlc_h2_conn_release,
 };
 
-struct vlc_http_conn *vlc_h2_conn_create(struct vlc_logger *ctx, struct vlc_tls *tls)
+struct vlc_http_conn *vlc_h2_conn_create(struct vlc_logger *logger, struct vlc_tls *tls)
 {
     struct vlc_h2_conn *conn = malloc(sizeof (*conn));
     if (unlikely(conn == NULL))
@@ -876,7 +876,7 @@ struct vlc_http_conn *vlc_h2_conn_create(struct vlc_logger *ctx, struct vlc_tls 
     conn->conn.cbs = &vlc_h2_conn_callbacks;
     conn->conn.tls = tls;
     conn->out = vlc_h2_output_create(tls, true);
-    conn->logger = ctx;
+    conn->logger = logger;
     conn->streams = NULL;
     conn->next_id = 1; /* TODO: server side */
     conn->released = false;
