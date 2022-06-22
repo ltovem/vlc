@@ -41,12 +41,13 @@ static char *const CTX = &dummy;
 static unsigned settings;
 
 /* Callbacks */
-void vlc_http_dbg(void *stream, const char *fmt, ...)
+void vlc_http_dbg(struct vlc_logger *logger, const char *fmt, ...)
 {
+    (void) logger;
     va_list ap;
 
     va_start(ap, fmt);
-    vfprintf(stream, fmt, ap);
+    vfprintf(stderr, fmt, ap);
     va_end(ap);
 }
 
