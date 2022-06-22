@@ -298,7 +298,10 @@ struct vlc_http_mgr *vlc_http_mgr_create(vlc_object_t *obj,
     if (unlikely(mgr == NULL))
         return NULL;
 
-    mgr->logger = obj->logger;
+    if (var_InheritInteger(obj, "verbose") >= 4)
+        mgr->logger = obj->logger;
+    else
+        mgr->logger = NULL;
     mgr->obj = obj;
     mgr->creds = NULL;
     mgr->jar = jar;
