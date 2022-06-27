@@ -498,7 +498,11 @@ ssize_t vlc_stream_Read(stream_t *s, void *buf, size_t len)
     {
         ssize_t ret = vlc_stream_ReadPartial(s, buf, len);
         if (ret < 0)
+        {
+            if (vlc_killed())
+                break;
             continue;
+        }
         if (ret == 0)
             break;
 
