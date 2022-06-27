@@ -501,7 +501,9 @@ ssize_t vlc_stream_Read(stream_t *s, void *buf, size_t len)
         {
             if (vlc_killed())
                 break;
-            continue;
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+            break;
         }
         if (ret == 0)
             break;
