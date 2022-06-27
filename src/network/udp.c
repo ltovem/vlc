@@ -296,14 +296,8 @@ static int net_SetMcastOut (vlc_object_t *p_this, int fd, int family,
         }
 #endif
         default:
-            errno = EAFNOSUPPORT;
-            msg_Err (p_this, "cannot force multicast interface %s: %s", iface,
-#ifdef _WIN32
-                    vlc_strerror_c(EAFNOSUPPORT));
-#else
-                    vlc_strerror_c(WSAEAFNOSUPPORT));
-#endif
-            return -1;
+            vlc_net_set_errno(EAFNOSUPPORT);
+            break;
     }
     msg_Err (p_this, "cannot force multicast interface %s: %s", iface,
              vlc_net_strerror_c());
@@ -357,7 +351,7 @@ net_SourceSubscribe (vlc_object_t *obj, int fd,
             level = SOL_IP;
             break;
         default:
-            errno = EAFNOSUPPORT;
+            vlc_net_set_errno(EAFNOSUPPORT);
             return -1;
     }
 
@@ -386,7 +380,7 @@ net_SourceSubscribe (vlc_object_t *obj, int fd,
 #else
     if (src->sa_family != grp->sa_family)
     {
-        errno = EAFNOSUPPORT;
+        vlc_net_set_errno(EAFNOSUPPORT);
         return -1;
     }
 
@@ -410,7 +404,8 @@ net_SourceSubscribe (vlc_object_t *obj, int fd,
         }
 # endif
         default:
-            errno = EAFNOSUPPORT;
+            vlc_net_set_errno(EAFNOSUPPORT);
+            break;
     }
 
 #endif
@@ -445,7 +440,7 @@ static int net_Subscribe(vlc_object_t *obj, int fd,
             level = SOL_IP;
             break;
         default:
-            errno = EAFNOSUPPORT;
+            vlc_net_set_errno(EAFNOSUPPORT);
             return -1;
     }
 
@@ -502,7 +497,8 @@ static int net_Subscribe(vlc_object_t *obj, int fd,
         }
 # endif
         default:
-            errno = EAFNOSUPPORT;
+            vlc_net_set_errno(EAFNOSUPPORT);
+            break;
     }
 
 #endif
@@ -541,9 +537,7 @@ static int net_SetDSCP( int fd, uint8_t dscp )
             break;
 
         default:
-#ifdef ENOPROTOOPT
-            errno = ENOPROTOOPT;
-#endif
+            vlc_net_set_errno(EAFNOSUPPORT);
             return -1;
     }
 
