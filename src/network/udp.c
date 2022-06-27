@@ -237,7 +237,11 @@ static int net_SetMcastHopLimit( vlc_object_t *p_this,
 #endif
 
         default:
+#ifdef _WIN32
+            msg_Warn( p_this, "%s", vlc_strerror_c(WSAEAFNOSUPPORT) );
+#else
             msg_Warn( p_this, "%s", vlc_strerror_c(EAFNOSUPPORT) );
+#endif
             return VLC_EGENERIC;
     }
 
@@ -293,6 +297,13 @@ static int net_SetMcastOut (vlc_object_t *p_this, int fd, int family,
 #endif
         default:
             errno = EAFNOSUPPORT;
+            msg_Err (p_this, "cannot force multicast interface %s: %s", iface,
+#ifdef _WIN32
+                    vlc_strerror_c(EAFNOSUPPORT));
+#else
+                    vlc_strerror_c(WSAEAFNOSUPPORT));
+#endif
+            return -1;
     }
     msg_Err (p_this, "cannot force multicast interface %s: %s", iface,
              vlc_net_strerror_c());
