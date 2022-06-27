@@ -44,6 +44,24 @@
 #   include <winsock2.h>
 #   include <ws2tcpip.h>
 
+static inline bool vlc_net_is_errno(int err)
+{
+    int wsErr = WSAGetLastError();
+    switch (err)
+    {
+        case EAFNOSUPPORT: return wsErr == WSAEAFNOSUPPORT;
+        case EWOULDBLOCK:  return wsErr == WSAEWOULDBLOCK;
+        case EAGAIN:       return wsErr == WSAEWOULDBLOCK;
+        case ENOBUFS:      return wsErr == WSAENOBUFS;
+        case ENOMEM:       return wsErr == WSA_NOT_ENOUGH_MEMORY || errno == ENOMEM;
+        case EINPROGRESS:  return wsErr == WSAEINPROGRESS;
+        case ENETUNREACH:  return wsErr == WSAENETUNREACH;
+        case EMSGSIZE:     return wsErr == WSAEMSGSIZE;
+        case ENOPROTOOPT:  return wsErr == WSAENOPROTOOPT;
+    }
+    return false;
+}
+
 static inline void vlc_net_set_errno(int err)
 {
     switch (err)
@@ -68,6 +86,11 @@ static inline void vlc_net_set_errno(int err)
 #   include <netdb.h>
 #   define net_errno errno
 #   define net_Close(fd) ((void)vlc_close(fd))
+
+static inline bool vlc_net_is_errno(int err)
+{
+    return errno == err;
+}
 
 static inline void vlc_net_set_errno(int err)
 {
