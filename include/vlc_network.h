@@ -43,6 +43,20 @@
 #   define _NO_OLDNAMES 1
 #   include <winsock2.h>
 #   include <ws2tcpip.h>
+
+static inline void vlc_net_set_errno(int err)
+{
+    switch (err)
+    {
+        case EAFNOSUPPORT:
+            WSASetLastError(WSAEAFNOSUPPORT);
+            break;
+        case EINTR:
+            WSASetLastError(WSAEINTR);
+            break;
+    }
+}
+
 #   define net_errno (WSAGetLastError())
 #   define net_Close(fd) ((void)closesocket((SOCKET)fd))
 #   ifndef IPV6_V6ONLY
@@ -54,6 +68,12 @@
 #   include <netdb.h>
 #   define net_errno errno
 #   define net_Close(fd) ((void)vlc_close(fd))
+
+static inline void vlc_net_set_errno(int err)
+{
+    errno = err;
+}
+
 #endif
 
 static inline const char *vlc_net_strerror_c(void)
