@@ -346,10 +346,10 @@ static ssize_t vlc_tls_Connect(vlc_tls_t *tls)
     if (connect(sock->fd, sock->peer, sock->peerlen) == 0)
         return 0;
 #ifndef _WIN32
-    if (errno != EINPROGRESS)
+    if ( !vlc_net_is_errno(EINPROGRESS) )
         return -1;
 #else
-    if (WSAGetLastError() != WSAEWOULDBLOCK)
+    if ( !vlc_net_is_errno(EAGAIN) )
         return -1;
 #endif
     return vlc_tls_WaitConnect(tls);
