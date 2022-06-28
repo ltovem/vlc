@@ -50,12 +50,6 @@
 #include <vlc_common.h>
 #include <vlc_network.h>
 #include <vlc_interrupt.h>
-#if defined (_WIN32)
-#   undef EWOULDBLOCK
-#   define EWOULDBLOCK WSAEWOULDBLOCK
-#   undef EAGAIN
-#   define EAGAIN WSAEWOULDBLOCK
-#endif
 
 extern int rootwrap_bind (int family, int socktype, int protocol,
                           const struct sockaddr *addr, size_t alen);
@@ -334,10 +328,7 @@ int net_Accept(vlc_object_t *obj, int *fds)
             int fd = vlc_accept(sfd, NULL, NULL, true);
             if (fd == -1)
             {
-                if (net_errno != EAGAIN)
-#if (EAGAIN != EWOULDBLOCK)
-                if (net_errno != EWOULDBLOCK)
-#endif
+                if (!vlc_net_is_errno(EAGAIN) && !vlc_net_is_errno(EWOULDBLOCK))
                     msg_Err(obj, "accept failed (from socket %d): %s", sfd,
                             vlc_net_strerror_c());
                 continue;
