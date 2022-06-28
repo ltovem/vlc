@@ -51,8 +51,6 @@
 #include <vlc_network.h>
 #include <vlc_interrupt.h>
 #if defined (_WIN32)
-#   undef EINPROGRESS
-#   define EINPROGRESS WSAEWOULDBLOCK
 #   undef EWOULDBLOCK
 #   define EWOULDBLOCK WSAEWOULDBLOCK
 #   undef EAGAIN
@@ -148,7 +146,7 @@ int (net_Connect)(vlc_object_t *obj, const char *host, int serv,
 
         if (connect(fd, ptr->ai_addr, ptr->ai_addrlen))
         {
-            if (net_errno != EINPROGRESS && errno != EINTR)
+            if (!vlc_net_is_errno(EINPROGRESS) && errno != EINTR)
             {
                 msg_Err(obj, "connection failed: %s", vlc_net_strerror_c());
                 goto next_ai;
