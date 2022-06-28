@@ -66,7 +66,7 @@ int net_Socket (vlc_object_t *p_this, int family, int socktype,
     int fd = vlc_socket (family, socktype, protocol, true);
     if (fd == -1)
     {
-        if (net_errno != EAFNOSUPPORT)
+        if (!vlc_net_is_errno(EAFNOSUPPORT))
             msg_Err (p_this, "cannot create socket: %s", vlc_net_strerror_c());
         return -1;
     }
