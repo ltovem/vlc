@@ -377,7 +377,7 @@ ssize_t (net_Read)(vlc_object_t *restrict obj, int fd,
 #endif
             else
             {
-                msg_Err(obj, "read error: %s", vlc_strerror_c(errno));
+                msg_Err(obj, "read error: %s", vlc_net_strerror_c());
                 return rd ? (ssize_t)rd : -1;
             }
         }
@@ -415,7 +415,7 @@ ssize_t (net_Write)(vlc_object_t *obj, int fd, const void *buf, size_t len)
             if (errno == EINTR || errno == EAGAIN)
                 continue;
 
-            msg_Err(obj, "write error: %s", vlc_strerror_c(errno));
+            msg_Err(obj, "write error: %s", vlc_net_strerror_c());
             return written ? (ssize_t)written : -1;
         }
 
