@@ -605,11 +605,7 @@ int net_ConnectDgram( vlc_object_t *p_this, const char *psz_host, unsigned i_por
             break;
         }
 
-#if defined( _WIN32 )
-        if( WSAGetLastError () == WSAENETUNREACH )
-#else
-        if( errno == ENETUNREACH )
-#endif
+        if( vlc_net_is_errno(ENETUNREACH) )
             b_unreach = true;
         else
             msg_Warn( p_this, "%s port %u : %s", psz_host, i_port,
