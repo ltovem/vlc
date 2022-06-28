@@ -369,7 +369,7 @@ ssize_t (net_Read)(vlc_object_t *restrict obj, int fd,
             if (errno == EINTR || errno == EAGAIN)
                 continue;
 #ifdef _WIN32
-            else if (WSAGetLastError() == WSAEMSGSIZE) /* datagram too big */
+            else if (vlc_net_is_errno(EMSGSIZE)) /* datagram too big */
             {
                 msg_Warn(obj, "read truncated to %zu bytes", len);
                 val = len;
