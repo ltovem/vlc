@@ -237,7 +237,6 @@ static int net_SetMcastHopLimit( vlc_object_t *p_this,
 #endif
 
         default:
-            errno = EAFNOSUPPORT;
             msg_Warn( p_this, "%s", vlc_strerror_c(EAFNOSUPPORT) );
             return VLC_EGENERIC;
     }
