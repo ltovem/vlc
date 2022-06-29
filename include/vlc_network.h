@@ -43,6 +43,38 @@
 #   define _NO_OLDNAMES 1
 #   include <winsock2.h>
 #   include <ws2tcpip.h>
+
+static inline bool vlc_net_is_errno(int err)
+{
+    int wsErr = WSAGetLastError();
+    switch (err)
+    {
+        case EAFNOSUPPORT: return wsErr == WSAEAFNOSUPPORT;
+        case EWOULDBLOCK:  return wsErr == WSAEWOULDBLOCK;
+        case EAGAIN:       return wsErr == WSAEWOULDBLOCK;
+        case ENOBUFS:      return wsErr == WSAENOBUFS;
+        case ENOMEM:       return wsErr == WSA_NOT_ENOUGH_MEMORY || errno == ENOMEM;
+        case EINPROGRESS:  return wsErr == WSAEINPROGRESS;
+        case ENETUNREACH:  return wsErr == WSAENETUNREACH;
+        case EMSGSIZE:     return wsErr == WSAEMSGSIZE;
+        case ENOPROTOOPT:  return wsErr == WSAENOPROTOOPT;
+    }
+    return false;
+}
+
+static inline void vlc_net_set_errno(int err)
+{
+    switch (err)
+    {
+        case EAFNOSUPPORT:
+            WSASetLastError(WSAEAFNOSUPPORT);
+            break;
+        case EINTR:
+            WSASetLastError(WSAEINTR);
+            break;
+    }
+}
+
 #   define net_errno (WSAGetLastError())
 #   define net_Close(fd) ((void)closesocket((SOCKET)fd))
 #   ifndef IPV6_V6ONLY
@@ -54,7 +86,23 @@
 #   include <netdb.h>
 #   define net_errno errno
 #   define net_Close(fd) ((void)vlc_close(fd))
+
+static inline bool vlc_net_is_errno(int err)
+{
+    return errno == err;
+}
+
+static inline void vlc_net_set_errno(int err)
+{
+    errno = err;
+}
+
 #endif
+
+static inline const char *vlc_net_strerror_c(void)
+{
+    return vlc_strerror_c(net_errno);
+}
 
 /**
  * Creates a socket file descriptor.
