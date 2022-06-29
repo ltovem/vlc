@@ -56,6 +56,11 @@
 #   define net_Close(fd) ((void)vlc_close(fd))
 #endif
 
+static inline const char *vlc_net_strerror_c(void)
+{
+    return vlc_strerror_c(net_errno);
+}
+
 /**
  * Creates a socket file descriptor.
  *
