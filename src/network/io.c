@@ -248,7 +248,7 @@ int *net_Listen (vlc_object_t *p_this, const char *psz_host,
         /* Bind the socket */
         if (bind (fd, ptr->ai_addr, ptr->ai_addrlen))
         {
-            int err = net_errno;
+            msg_Err (p_this, "socket bind error: %s", vlc_strerror_c(net_errno));
             net_Close (fd);
 #if !defined(_WIN32)
             fd = rootwrap_bind (ptr->ai_family, ptr->ai_socktype,
@@ -261,7 +261,6 @@ int *net_Listen (vlc_object_t *p_this, const char *psz_host,
             else
 #endif
             {
-                msg_Err (p_this, "socket bind error: %s", vlc_strerror_c(err));
                 continue;
             }
         }
