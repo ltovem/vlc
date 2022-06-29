@@ -69,8 +69,7 @@ int net_Socket (vlc_object_t *p_this, int family, int socktype,
     if (fd == -1)
     {
         if (net_errno != EAFNOSUPPORT)
-            msg_Err (p_this, "cannot create socket: %s",
-                     vlc_strerror_c(net_errno));
+            msg_Err (p_this, "cannot create socket: %s", vlc_net_strerror_c());
         return -1;
     }
 
@@ -143,7 +142,7 @@ int (net_Connect)(vlc_object_t *obj, const char *host, int serv,
                             ptr->ai_socktype, ptr->ai_protocol);
         if (fd == -1)
         {
-            msg_Dbg(obj, "socket error: %s", vlc_strerror_c(net_errno));
+            msg_Dbg(obj, "socket error: %s", vlc_net_strerror_c());
             continue;
         }
 
@@ -151,8 +150,7 @@ int (net_Connect)(vlc_object_t *obj, const char *host, int serv,
         {
             if (net_errno != EINPROGRESS && errno != EINTR)
             {
-                msg_Err(obj, "connection failed: %s",
-                        vlc_strerror_c(net_errno));
+                msg_Err(obj, "connection failed: %s", vlc_net_strerror_c());
                 goto next_ai;
             }
 
@@ -241,14 +239,14 @@ int *net_Listen (vlc_object_t *p_this, const char *psz_host,
                              ptr->ai_protocol);
         if (fd == -1)
         {
-            msg_Dbg (p_this, "socket error: %s", vlc_strerror_c(net_errno));
+            msg_Dbg (p_this, "socket error: %s", vlc_net_strerror_c());
             continue;
         }
 
         /* Bind the socket */
         if (bind (fd, ptr->ai_addr, ptr->ai_addrlen))
         {
-            msg_Err (p_this, "socket bind error: %s", vlc_strerror_c(net_errno));
+            msg_Err (p_this, "socket bind error: %s", vlc_net_strerror_c());
             net_Close (fd);
 #if !defined(_WIN32)
             fd = rootwrap_bind (ptr->ai_family, ptr->ai_socktype,
@@ -268,8 +266,7 @@ int *net_Listen (vlc_object_t *p_this, const char *psz_host,
         /* Listen */
         if (listen(fd, INT_MAX))
         {
-            msg_Err(p_this, "socket listen error: %s",
-                    vlc_strerror_c(net_errno));
+            msg_Err(p_this, "socket listen error: %s", vlc_net_strerror_c());
             net_Close(fd);
             continue;
         }
@@ -345,7 +342,7 @@ int net_Accept(vlc_object_t *obj, int *fds)
                 if (net_errno != EWOULDBLOCK)
 #endif
                     msg_Err(obj, "accept failed (from socket %d): %s", sfd,
-                            vlc_strerror_c(net_errno));
+                            vlc_net_strerror_c());
                 continue;
             }
 
