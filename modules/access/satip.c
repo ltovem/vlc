@@ -601,7 +601,10 @@ static int satip_bind_ports(stream_t *access)
                 0, IPPROTO_UDP);
         if (sys->udp_sock < 0) {
             if (sys->udp_port == 65534)
-                break;
+            {
+                msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
+                return VLC_EGENERIC;
+            }
 
             sys->udp_port += 2;
             continue;
@@ -615,11 +618,6 @@ static int satip_bind_ports(stream_t *access)
             continue;
         }
         break;
-    }
-
-    if (sys->udp_sock < 0) {
-        msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
-        return VLC_EGENERIC;
     }
 
     return 0;
