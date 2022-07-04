@@ -230,7 +230,7 @@ static char *net_readln_timeout(vlc_object_t *obj, int fd, int timeout, bool *in
         ssize_t val = 0;
         if (!intr) {
             val = vlc_recv_i11e(fd, buf + len, size - len, MSG_PEEK);
-            if (val <= 0 && errno == EINTR) {
+            if (val < 0 && errno == EINTR) {
                 intr = true;
                 if (interrupted)
                     *interrupted = true;
