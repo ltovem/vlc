@@ -373,7 +373,6 @@ static int check_rtp_seq(stream_t *access, block_t *block)
 static void satip_teardown(void *data) {
     stream_t *access = data;
     access_sys_t *sys = access->p_sys;
-    int ret;
 
     if (sys->tcp_sock > 0) {
         if (sys->session_id[0] > 0) {
@@ -400,7 +399,7 @@ static void satip_teardown(void *data) {
 #endif
 
             for (int sent = 0; sent < len;) {
-                ret = poll(&pfd, 1, 5000);
+                int ret = poll(&pfd, 1, 5000);
                 if (ret == 0) {
                     msg_Err(access, "Timed out sending RTSP teardown\n");
                     free(msg);
