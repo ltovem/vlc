@@ -48,7 +48,7 @@ typedef struct
 } access_sys_t;
 
 /* Wait for data */
-static int AccessPoll(stream_t *access)
+static bool AccessPoll(stream_t *access)
 {
     access_sys_t *sys = access->p_sys;
     struct pollfd ufd;
@@ -56,7 +56,7 @@ static int AccessPoll(stream_t *access)
     ufd.fd = sys->fd;
     ufd.events = POLLIN;
 
-    return vlc_poll_i11e(&ufd, 1, -1);
+    return vlc_poll_i11e(&ufd, 1, -1) > 0;
 }
 
 static block_t *MMapBlock(stream_t *access, bool *restrict eof)
