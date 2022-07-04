@@ -596,7 +596,7 @@ static int satip_bind_ports(stream_t *access)
 
     vlc_rand_bytes(&rnd, 1);
     sys->udp_port = 9000 + (rnd * 2); /* randomly chosen, even start point */
-    while (sys->udp_sock < 0) {
+    for (;;) {
         sys->udp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port, NULL,
                 0, IPPROTO_UDP);
         if (sys->udp_sock < 0) {
@@ -614,6 +614,7 @@ static int satip_bind_ports(stream_t *access)
             sys->udp_port += 2;
             continue;
         }
+        break;
     }
 
     if (sys->udp_sock < 0) {
