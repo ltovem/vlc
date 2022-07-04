@@ -596,10 +596,11 @@ static int satip_bind_ports(stream_t *access)
 
     vlc_rand_bytes(&rnd, 1);
     sys->udp_port = 9000 + (rnd * 2); /* randomly chosen, even start point */
+    int udp_sock, rtcp_sock;
     for (;;) {
-        sys->udp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port, NULL,
+        udp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port, NULL,
                 0, IPPROTO_UDP);
-        if (sys->udp_sock < 0) {
+        if (udp_sock < 0) {
             if (sys->udp_port == 65534)
             {
                 msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
@@ -610,15 +611,18 @@ static int satip_bind_ports(stream_t *access)
             continue;
         }
 
-        sys->rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
+        rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
                 0, IPPROTO_UDP);
-        if (sys->rtcp_sock < 0) {
-            close(sys->udp_sock);
+        if (rtcp_sock < 0) {
+            close(udp_sock);
             sys->udp_port += 2;
             continue;
         }
         break;
     }
+
+    sys->udp_sock = udp_sock;
+    sys->rtcp_sock = rtcp_sock;
 
     return 0;
 }
