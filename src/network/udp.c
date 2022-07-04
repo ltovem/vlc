@@ -609,7 +609,7 @@ int net_ConnectDgram( vlc_object_t *p_this, const char *psz_host, unsigned i_por
             b_unreach = true;
         else
             msg_Warn( p_this, "%s port %u : %s", psz_host, i_port,
-                      vlc_strerror_c(errno) );
+                      vlc_strerror_c(net_errno) );
         net_Close( fd );
     }
 
