@@ -606,19 +606,14 @@ static int satip_bind_ports(stream_t *access)
                 msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
                 return VLC_EGENERIC;
             }
-
-            sys->udp_port += 2;
-            continue;
-        }
-
-        rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
-                0, IPPROTO_UDP);
-        if (rtcp_sock < 0) {
+        } else {
+            rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
+                    0, IPPROTO_UDP);
+            if (rtcp_sock >= 0)
+                break;
             close(udp_sock);
-            sys->udp_port += 2;
-            continue;
         }
-        break;
+        sys->udp_port += 2;
     }
 
     sys->udp_sock = udp_sock;
