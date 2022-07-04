@@ -334,6 +334,8 @@ static enum rtsp_result rtsp_handle(stream_t *access, bool *interrupted) {
     while (content_length > 0)
     {
         read = net_Read(access, sys->tcp_sock, buffer, __MIN(sizeof(buffer), content_length));
+        if (read < 0)
+            continue;
         if (read == 0)
             break;
         content_length -= read;
