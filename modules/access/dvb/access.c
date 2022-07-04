@@ -304,14 +304,15 @@ static int ScanReadCallback( scan_t *p_scan, void *p_privdata,
         do
         {
             vlc_tick_t i_poll_timeout = i_scan_start - vlc_tick_now() + i_timeout;
+            if( i_poll_timeout < 0 )
+                return VLC_ENOENT;
 
             i_ret = 0;
 
             if( vlc_killed() || scan_IsCancelled( p_scan ) )
                 break;
 
-            if( i_poll_timeout >= 0 )
-                i_ret = vlc_poll_i11e( ufds, 2, i_poll_timeout / 1000 );
+            i_ret = vlc_poll_i11e( ufds, 2, i_poll_timeout / 1000 );
         }
         while( i_ret < 0 && errno == EINTR );
 
