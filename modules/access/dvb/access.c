@@ -312,7 +312,7 @@ static int ScanReadCallback( scan_t *p_scan, void *p_privdata,
             if( scan_IsCancelled( p_scan ) )
                 return VLC_ENOENT;
 
-            i_ret = vlc_poll_i11e( ufds, 2, i_poll_timeout / 1000 );
+            i_ret = vlc_poll_i11e( ufds, 2, MS_FROM_VLC_TICK(i_poll_timeout) );
         }
         while( i_ret < 0 && errno == EINTR );
 
