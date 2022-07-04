@@ -239,7 +239,7 @@ static int net_SetMcastHopLimit( vlc_object_t *p_this,
 
         default:
             errno = EAFNOSUPPORT;
-            msg_Warn( p_this, "%s", vlc_strerror_c(EAFNOSUPPORT) );
+            msg_Warn( p_this, "%s", vlc_strerror_c(vlc_net_error(EAFNOSUPPORT)) );
             return VLC_EGENERIC;
     }
 
@@ -601,11 +601,7 @@ int net_ConnectDgram( vlc_object_t *p_this, const char *psz_host, unsigned i_por
             break;
         }
 
-#if defined( _WIN32 )
-        if( WSAGetLastError () == WSAENETUNREACH )
-#else
-        if( errno == ENETUNREACH )
-#endif
+        if( net_errno == vlc_net_error(ENETUNREACH) )
             b_unreach = true;
         else
             msg_Warn( p_this, "%s port %u : %s", psz_host, i_port,
