@@ -330,7 +330,7 @@ static inline int net_GetSockAddress( int fd, char *address, int *port )
     return getsockname( fd, (struct sockaddr *)&addr, &addrlen )
         || vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
                             NI_MAXNUMERICHOST, port, NI_NUMERICHOST )
-        ? VLC_EGENERIC : 0;
+        ? VLC_EGENERIC : VLC_SUCCESS;
 }
 
 static inline int net_GetPeerAddress( int fd, char *address, int *port )
@@ -341,7 +341,7 @@ static inline int net_GetPeerAddress( int fd, char *address, int *port )
     return getpeername( fd, (struct sockaddr *)&addr, &addrlen )
         || vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
                             NI_MAXNUMERICHOST, port, NI_NUMERICHOST )
-        ? VLC_EGENERIC : 0;
+        ? VLC_EGENERIC : VLC_SUCCESS;
 }
 
 VLC_API char *vlc_getProxyUrl(const char *);
