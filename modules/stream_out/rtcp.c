@@ -121,7 +121,7 @@ rtcp_sender_t *OpenRTCP (vlc_object_t *obj, int rtp_fd, int proto,
         return NULL;
 
     rtcp = malloc (sizeof (*rtcp));
-    if (rtcp == NULL)
+    if (unlikely(rtcp == NULL))
     {
         net_Close (fd);
         return NULL;
