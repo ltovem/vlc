@@ -615,13 +615,8 @@ int net_ConnectDgram( vlc_object_t *p_this, const char *psz_host, unsigned i_por
 
     freeaddrinfo( res );
 
-    if( i_handle == -1 )
-    {
-        if( b_unreach )
-            msg_Err( p_this, "Host %s port %u is unreachable", psz_host,
-                     i_port );
-        return -1;
-    }
+    if( i_handle == -1 && b_unreach )
+        msg_Err( p_this, "Host %s port %u is unreachable", psz_host, i_port );
 
     return i_handle;
 }
