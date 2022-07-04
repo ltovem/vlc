@@ -331,9 +331,13 @@ static enum rtsp_result rtsp_handle(stream_t *access, bool *interrupted) {
     }
 
     /* Discard further content */
-    while (content_length > 0 &&
-            (read = net_Read(access, sys->tcp_sock, buffer, __MIN(sizeof(buffer), content_length))))
+    while (content_length > 0)
+    {
+        read = net_Read(access, sys->tcp_sock, buffer, __MIN(sizeof(buffer), content_length));
+        if (read == 0)
+            break;
         content_length -= read;
+    }
 
     return rtsp_result;
 }
