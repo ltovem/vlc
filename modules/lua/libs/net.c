@@ -333,7 +333,7 @@ static int vlclua_net_poll( lua_State *L )
             break;
         val = vlc_poll_i11e( p_fds, i_fds, -1 );
     }
-    while( val == -1 && errno == EINTR );
+    while( val < 0 && errno == EINTR );
 
     vlc_interrupt_set( oint );
 
@@ -343,12 +343,15 @@ static int vlclua_net_poll( lua_State *L )
         lua_pushinteger( L, (val >= 0) ? p_fds[i].revents : 0 );
         lua_settable( L, 1 );
     }
-    lua_pushinteger( L, val );
+    if (val < 0)
+        lua_pushinteger( L, -1 );
+    else
+        lua_pushinteger( L, val );
 
     free( luafds );
     free( p_fds );
 
-    if( val == -1 )
+    if( val < 0 )
         return luaL_error( L, "Interrupted." );
     return 1;
 }
