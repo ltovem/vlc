@@ -611,7 +611,7 @@ static int satip_bind_ports(stream_t *access)
                     0, IPPROTO_UDP);
             if (rtcp_sock >= 0)
                 break;
-            close(udp_sock);
+            net_Close(udp_sock);
         }
         sys->udp_port += 2;
     }
