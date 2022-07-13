@@ -29,18 +29,20 @@
 #include <vlc_strings.h>
 #include <vlc_interrupt.h>
 #include <vlc_memstream.h>
+#include <vlc_vector.h>
 
-#include <dbus/dbus.h>
+#include SDBUS_HEADER
 
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdint.h>
 #include <poll.h>
 #include <errno.h>
 #include <assert.h>
 
+typedef struct VLC_VECTOR(vlc_keystore_entry) keystore_vector_t;
 static int Open( vlc_object_t * );
 static void Close( vlc_object_t * );
 
@@ -73,33 +75,13 @@ static const char* psz_kwallet_interface = "org.kde.KWallet";
 #define DBUS_INSTANCE_PREFIX "instance"
 #define KWALLET_APP_ID "org.videolan.kwallet"
 
-/*
- * There are two kwallet services :
- * kwallet and kwallet5 */
+#define KWALLET_SERVICE "org.kde.kwalletd5"
 
-/* These services have the same interfaces and methods *
- * but not the same addresses and paths */
-
-enum serviceId
-{
-    KWALLET5 = 0,
-    KWALLET,
-    SERVICE_MAX
-};
-
-static const char *ppsz_sAddr[SERVICE_MAX] = {
-    "org.kde.kwalletd5",
-    "org.kde.kwalletd"
-};
-
-static const char *ppsz_sPath[SERVICE_MAX] = {
-    "/modules/kwalletd5",
-    "/modules/kwalletd"
-};
+#define KWALLET_PATH "/modules/kwalletd5"
 
 typedef struct vlc_keystore_sys
 {
-    DBusConnection* connection;
+    sd_bus* bus;
     int i_sid; /* service ID */
     int i_handle;
     char* psz_app_id;
@@ -109,11 +91,11 @@ typedef struct vlc_keystore_sys
 /* takes all values in the values of vlc_keystore_entry *
  * and formats them in a url key */
 static char*
-values2key( const char* const* ppsz_values, bool b_search )
+values2key( const char* const* ppsz_values, int b_search )
 {
     char* psz_b64_realm = NULL;
     char* psz_b64_auth = NULL;
-    bool b_state = false;
+    int b_state = 0;
 
     if ( ( !ppsz_values[KEY_PROTOCOL] || !ppsz_values[KEY_SERVER] )
          && !b_search )
@@ -294,301 +276,88 @@ end:
     return i_ret;
 }
 
-static DBusMessage*
-vlc_dbus_new_method( vlc_keystore* p_keystore, const char* psz_method )
-{
-    vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg;
-
-    msg = dbus_message_new_method_call( ppsz_sAddr[p_sys->i_sid],
-                                        ppsz_sPath[p_sys->i_sid],
-                                        psz_kwallet_interface,
-                                        psz_method );
-    if ( !msg )
-    {
-        msg_Err( p_keystore, "vlc_dbus_new_method : Failed to create message" );
-        return NULL;
-    }
-
-    return msg;
-}
-
-#define MAX_WATCHES 2
-struct vlc_dbus_watch_data
-{
-    struct pollfd pollfd;
-    DBusWatch *p_watch;
-};
-
-static short
-vlc_dbus_watch_get_poll_events( DBusWatch *p_watch )
-{
-    unsigned int i_flags = dbus_watch_get_flags( p_watch );
-    short i_events = 0;
-
-    if( i_flags & DBUS_WATCH_READABLE )
-        i_events |= POLLIN;
-    if( i_flags & DBUS_WATCH_WRITABLE )
-        i_events |= POLLOUT;
-    return i_events;
-}
-
-static struct vlc_dbus_watch_data *
-vlc_dbus_watch_get_data( DBusWatch *p_watch,
-                         struct vlc_dbus_watch_data *p_ctx )
-{
-    for( unsigned i = 0; i < MAX_WATCHES; ++i )
-    {
-        if( p_ctx[i].p_watch == NULL || p_ctx[i].p_watch == p_watch )
-            return &p_ctx[i];
-    }
-    return NULL;
-}
-
-static dbus_bool_t
-vlc_dbus_watch_add_function( DBusWatch *p_watch, void *p_data )
-{
-    struct vlc_dbus_watch_data *p_ctx = vlc_dbus_watch_get_data( p_watch, p_data );
-
-    if( p_ctx == NULL )
-        return FALSE;
-
-    short i_events = POLLHUP | POLLERR;
-
-    i_events |= vlc_dbus_watch_get_poll_events( p_watch );
-
-    p_ctx->pollfd.fd = dbus_watch_get_unix_fd( p_watch );
-    p_ctx->pollfd.events = i_events;
-    p_ctx->p_watch = p_watch;
-    return TRUE;
-}
-
-static void
-vlc_dbus_watch_toggled_function( DBusWatch *p_watch, void *p_data )
-{
-    struct vlc_dbus_watch_data *p_ctx = vlc_dbus_watch_get_data( p_watch, p_data );
-    short i_events = vlc_dbus_watch_get_poll_events( p_watch );
-
-    if( dbus_watch_get_enabled( p_watch ) )
-        p_ctx->pollfd.events |= i_events;
-    else
-        p_ctx->pollfd.events &= ~i_events;
-}
-
-static void
-vlc_dbus_pending_call_notify( DBusPendingCall *p_pending_call, void *p_data )
-{
-    DBusMessage **pp_repmsg = p_data;
-    *pp_repmsg = dbus_pending_call_steal_reply( p_pending_call );
-}
-
-static DBusMessage*
-vlc_dbus_send_message( vlc_keystore* p_keystore, DBusMessage* p_msg )
-{
-    vlc_keystore_sys *p_sys = p_keystore->p_sys;
-    DBusMessage *p_repmsg = NULL;
-    DBusPendingCall *p_pending_call = NULL;
-
-    struct vlc_dbus_watch_data watch_ctx[MAX_WATCHES] = {};
-
-    for( unsigned i = 0; i < MAX_WATCHES; ++i )
-        watch_ctx[i].pollfd.fd = -1;
-
-    if( !dbus_connection_set_watch_functions( p_sys->connection,
-                                              vlc_dbus_watch_add_function,
-                                              NULL,
-                                              vlc_dbus_watch_toggled_function,
-                                              watch_ctx, NULL ) )
-        return NULL;
-
-    if( !dbus_connection_send_with_reply( p_sys->connection, p_msg,
-                                          &p_pending_call,
-                                          DBUS_TIMEOUT_INFINITE ) )
-        goto end;
-
-    if( !dbus_pending_call_set_notify( p_pending_call,
-                                       vlc_dbus_pending_call_notify,
-                                       &p_repmsg, NULL ) )
-        goto end;
-
-    while( p_repmsg == NULL )
-    {
-        errno = 0;
-        struct pollfd pollfds[MAX_WATCHES];
-        int nfds = 0;
-        for( unsigned i = 0; i < MAX_WATCHES; ++i )
-        {
-            if( watch_ctx[i].pollfd.fd == -1 )
-                break;
-            pollfds[i].fd = watch_ctx[i].pollfd.fd;
-            pollfds[i].events = watch_ctx[i].pollfd.events;
-            pollfds[i].revents = 0;
-            nfds++;
-        }
-        if( nfds == 0 )
-        {
-            msg_Err( p_keystore, "vlc_dbus_send_message: watch functions not called" );
-            goto end;
-        }
-        if( vlc_poll_i11e( pollfds, nfds, -1 ) <= 0 )
-        {
-            if( errno == EINTR )
-                msg_Dbg( p_keystore, "vlc_dbus_send_message: poll was interrupted" );
-            else
-                msg_Err( p_keystore, "vlc_dbus_send_message: poll failed" );
-            goto end;
-        }
-        for( int i = 0; i < nfds; ++ i )
-        {
-            short i_events = pollfds[i].revents;
-            if( !i_events )
-                continue;
-            unsigned i_flags = 0;
-            if( i_events & POLLIN )
-                i_flags |= DBUS_WATCH_READABLE;
-            if( i_events & POLLOUT )
-                i_flags |= DBUS_WATCH_WRITABLE;
-            if( i_events & POLLHUP )
-                i_flags |= DBUS_WATCH_HANGUP;
-            if( i_events & POLLERR )
-                i_flags |= DBUS_WATCH_ERROR;
-            if( !dbus_watch_handle( watch_ctx[i].p_watch, i_flags ) )
-                goto end;
-        }
-
-        DBusDispatchStatus status;
-        while( ( status = dbus_connection_dispatch( p_sys->connection ) )
-                == DBUS_DISPATCH_DATA_REMAINS );
-        if( status == DBUS_DISPATCH_NEED_MEMORY )
-            goto end;
-    }
-
-end:
-    dbus_connection_set_watch_functions( p_sys->connection, NULL, NULL,
-                                         NULL, NULL, NULL );
-    if( p_pending_call != NULL )
-    {
-        if( p_repmsg != NULL )
-            dbus_pending_call_cancel( p_pending_call );
-        dbus_pending_call_unref( p_pending_call );
-    }
-    return p_repmsg;
-
-}
-
 static int
 kwallet_network_wallet( vlc_keystore* p_keystore )
 {
+    int i_ret;
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    char* psz_reply;
-    int i_ret = VLC_EGENERIC;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
+    char *psz_reply = NULL ;
 
-    /* init */
-    msg = vlc_dbus_new_method( p_keystore, "networkWallet" );
-    if ( !msg )
+    i_ret = sd_bus_call_method( bus,
+                               KWALLET_SERVICE,
+                               KWALLET_PATH,
+                               psz_kwallet_interface,
+                               "networkWallet",
+                               &err,
+                               &msg,
+                               "");
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_network_wallet : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
-    }
-
-    /* sending message */
-    repmsg = vlc_dbus_send_message( p_keystore, msg );
-    if ( !repmsg )
-    {
-        msg_Err( p_keystore, "kwallet_network_wallet : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_network_wallet : Failed to issue methode call: error (%s)", err.message );
         goto end;
     }
 
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_STRING,
-                                 &psz_reply, DBUS_TYPE_INVALID ) )
+    i_ret = sd_bus_message_read_basic( msg, 's', &psz_reply );
+    if( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_network_wallet : "
-                 "dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Dbg( p_keystore, "kwallet_network_wallet: Failed to parse response message: %s\n", strerror( -i_ret ) );
         goto end;
     }
-
     p_sys->psz_wallet = strdup( psz_reply );
+
     if ( !p_sys->psz_wallet )
     {
         i_ret = VLC_ENOMEM;
         goto end;
     }
 
-    i_ret = VLC_SUCCESS;
-
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
-
+    sd_bus_error_free(&err);
+    if(msg)
+        sd_bus_message_unref(msg);
     return i_ret;
 }
 
 static int
-kwallet_is_enabled( vlc_keystore* p_keystore, int i_sid, bool* b_is_enabled )
+kwallet_is_enabled( vlc_keystore* p_keystore, int *i_is_enabled )
 {
-    VLC_UNUSED( p_keystore );
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusMessageIter args;
-    DBusError error;
-    dbus_bool_t b_reply;
-    int i_ret = VLC_EGENERIC;
+    int i_ret;
+    vlc_keystore_sys* p_sys = p_keystore->p_sys;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
 
-    /* init */
-    msg = dbus_message_new_method_call( "org.freedesktop.DBus",
-                                        "/",
-                                        "org.freedesktop.DBus",
-                                        "NameHasOwner" );
-    if ( !msg )
+    i_ret = sd_bus_call_method( bus,
+                               "org.freedesktop.DBus",
+                               "/org/freedesktop/DBus",
+                               "org.freedesktop.DBus",
+                               "NameHasOwner",
+                               &err,
+                               &msg,
+                               "s",
+                               psz_kwallet_interface);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "vlc_dbus_new_method : Failed to create message" );
+        msg_Err( p_keystore, "kwallet_is_enabled: Failed to issue methode call: error (%s)", err.message );
         goto end;
     }
 
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &ppsz_sAddr[i_sid] ) )
-        goto end;
-
-    /* sending message */
-    repmsg = vlc_dbus_send_message( p_keystore, msg );
-    if ( !repmsg )
+    i_ret = sd_bus_message_read_basic( msg, 'b', i_is_enabled );
+    if( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_is_enabled : vlc_dbus_send_message failed");
+        msg_Dbg( p_keystore, "kwallet_is_enabled: Failed to parse response message: %s\n", strerror( -i_ret ) );
         goto end;
     }
-
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_BOOLEAN,
-                                 &b_reply, DBUS_TYPE_INVALID ) )
-    {
-        msg_Err( p_keystore, "kwallet_is_enabled : "
-                 "dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
-        goto end;
-    }
-
-    *b_is_enabled = b_reply;
 
     i_ret = VLC_SUCCESS;
 
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
-
+    sd_bus_error_free(&err);
+    if(msg)
+        sd_bus_message_unref(msg);
     return i_ret;
 }
 
@@ -596,76 +365,61 @@ static int
 vlc_dbus_init( vlc_keystore* p_keystore )
 {
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
+    sd_bus *bus = p_sys->bus;
     int i_ret;
-    DBusError error;
-
-    dbus_error_init( &error );
 
     /* DBus Connection */
-    p_sys->connection = dbus_bus_get_private( DBUS_BUS_SESSION, &error );
-    if ( dbus_error_is_set( &error ) )
+    i_ret = sd_bus_open_user( &p_sys->bus );
+    if ( i_ret < 0 )
     {
         msg_Dbg( p_keystore, "vlc_dbus_init : "
-                 "Connection error to session bus (%s)", error.message );
-        dbus_error_free( &error );
-    }
-    if ( !p_sys->connection )
-    {
-        msg_Dbg( p_keystore, "vlc_dbus_init : connection is NULL");
+                 "Connection error to session bus (%s)", strerror(-i_ret));
         return VLC_EGENERIC;
     }
 
     /* requesting name */
-    for( unsigned i = 0; i <= 99 && p_sys->psz_app_id == NULL; ++i )
+    for( unsigned i = 0; i <= 99; ++i )
     {
         char psz_dbus_name[strlen( KWALLET_APP_ID ) + strlen( DBUS_INSTANCE_PREFIX ) + 5];
 
         sprintf( psz_dbus_name, "%s.%s_%02u", KWALLET_APP_ID, DBUS_INSTANCE_PREFIX, i );
-        i_ret = dbus_bus_request_name( p_sys->connection, psz_dbus_name, 0,
-                                       &error );
-        if ( dbus_error_is_set( &error ) )
+        i_ret = sd_bus_request_name( p_sys->bus, psz_dbus_name, 0);
+        if ( i_ret < 0 )
         {
-            msg_Dbg( p_keystore, "vlc_dbus_init : dbus_bus_request_name :"
-                     " error (%s)", error.message );
-            dbus_error_free( &error );
+            msg_Dbg( p_keystore, "vlc_dbus_init : dbus_bus_request_name :" " error (%s)", strerror(-i_ret) );
         }
-        if ( i_ret == DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER )
+        else
         {
             p_sys->psz_app_id = strdup( psz_dbus_name );
             if ( !p_sys->psz_app_id )
                 goto error;
+            break;
         }
+
     }
     if ( p_sys->psz_app_id == NULL )
     {
-        msg_Dbg( p_keystore, "vlc_dbus_init : Too many kwallet instances" );
+        msg_Dbg( p_keystore, "vlc_dbus_init: Too many kwallet instances" );
         goto error;
     }
 
+    int i_is_enabled;
     /* check to see if any kwallet service is enabled */
-    unsigned int i = 0;
-    for ( ; i < SERVICE_MAX ; ++i )
+    if ( kwallet_is_enabled( p_keystore, &i_is_enabled ) )
     {
-        bool b_is_enabled = false;
-        if ( kwallet_is_enabled( p_keystore, i, &b_is_enabled ) )
-        {
-            msg_Dbg( p_keystore, "vlc_dbus_init : kwallet_is_enabled failed" );
-            goto error;
-        }
-        if ( b_is_enabled == true )
-            break;
-    }
-    if ( i == SERVICE_MAX )
-    {
-        msg_Dbg( p_keystore, "vlc_dbus_init : No kwallet service enabled" );
+        msg_Dbg( p_keystore, "vlc_dbus_init: error while checking if kwallet is enabled" );
         goto error;
     }
-    p_sys->i_sid = i;
+
+    if ( !i_is_enabled )
+    {
+        msg_Dbg( p_keystore, "vlc_dbus_init: kwallet is not running" );
+    }
 
     /* getting the name of the wallet assigned to network passwords */
-    if ( kwallet_network_wallet( p_keystore ) )
+    if ( kwallet_network_wallet( p_keystore ) < 0 )
     {
-        msg_Dbg(p_keystore, "vlc_dbus_init : kwallet_network_wallet has failed");
+        msg_Dbg(p_keystore, "vlc_dbus_init: kwallet_network_wallet has failed");
         goto error;
     }
 
@@ -673,189 +427,137 @@ vlc_dbus_init( vlc_keystore* p_keystore )
 
 error:
     FREENULL( p_sys->psz_app_id );
-    dbus_connection_close( p_sys->connection );
-    dbus_connection_unref( p_sys->connection );
+    sd_bus_flush( bus );
+    sd_bus_close( bus );
     return VLC_EGENERIC;
 }
 
 static int
-kwallet_has_folder( vlc_keystore* p_keystore, const char* psz_folder_name, bool *b_has_folder )
+kwallet_has_folder( vlc_keystore* p_keystore, const char* psz_folder_name, int *b_has_folder )
 {
+    int i_ret;
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    DBusMessageIter args;
-    dbus_bool_t b_reply;
-    int i_ret = VLC_EGENERIC;
+    sd_bus *bus = p_sys->bus;
+    sd_bus_message *msg;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
 
-    /* init */
-    msg = vlc_dbus_new_method( p_keystore, "hasFolder" );
-    if ( !msg )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "hasFolder",
+                                &err,
+                                &msg,
+                                "iss",
+                                p_sys->i_handle,
+                                psz_folder_name,
+                                p_sys->psz_app_id);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_has_folder : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
-    }
-
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-    repmsg = vlc_dbus_send_message( p_keystore, msg );
-    if ( !repmsg )
-    {
-        msg_Err( p_keystore, "kwallet_has_folder : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_has_folder : Failed to issue methode call: error (%s)", err.message );
         goto end;
     }
 
-    /* handling reply */
-
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_BOOLEAN,
-                                 &b_reply, DBUS_TYPE_INVALID ) )
-    {
-        msg_Err( p_keystore, "kwallet_has_folder :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
-        goto end;
-    }
-
-    *b_has_folder = b_reply;
-
-    i_ret = VLC_SUCCESS;
+    i_ret = sd_bus_message_read_basic(msg, 'b', b_has_folder);
+    if( i_ret < 0 )
+        msg_Err( p_keystore, "kwallet_has_folder: Failed to parse response message: %s\n", strerror(-i_ret) );
 
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg);
-
+    sd_bus_error_free(&err);
+    if(msg)
+        sd_bus_message_unref(msg);
     return i_ret;
 }
 
 static int
 kwallet_create_folder( vlc_keystore* p_keystore, const char* psz_folder_name )
 {
+    int i_ret;
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    DBusMessageIter args;
-    dbus_bool_t b_reply;
-    int i_ret = VLC_EGENERIC;
+    sd_bus *bus = p_sys->bus;
+    sd_bus_message *msg;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
+    int b_reply;
 
-    /* init */
-    msg = vlc_dbus_new_method( p_keystore, "createFolder" );
-    if ( !msg )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "createFolder",
+                                &err,
+                                &msg,
+                                "iss",
+                                p_sys->i_handle,
+                                psz_folder_name,
+                                p_sys->psz_app_id );
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_create_folder : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
-    }
-
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-    repmsg = vlc_dbus_send_message( p_keystore, msg );
-    if ( !repmsg )
-    {
-        msg_Err( p_keystore, "kwallet_create_folder : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_create_folder : Failed to issue methode call: error (%s)", err.message );
         goto end;
     }
 
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_BOOLEAN,
-                                 &b_reply, DBUS_TYPE_INVALID ) )
+    i_ret = sd_bus_message_read_basic( msg, 'b', &b_reply );
+    if( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_create_folder :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Err( p_keystore, "kwallet_create_folder: Failed to parse response message: %s\n", strerror(-i_ret));
         goto end;
     }
 
-    if ( !b_reply )
+    if( !b_reply )
     {
         msg_Err( p_keystore, "kwallet_create_folder : Could not create folder" );
         goto end;
     }
 
-
-    i_ret = VLC_SUCCESS;
-
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
-
+    sd_bus_error_free(&err);
+    if(msg)
+        sd_bus_message_unref(msg);
     return i_ret;
 }
 
 static int
 kwallet_open( vlc_keystore* p_keystore )
 {
+    int i_ret;
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusMessageIter args;
-    DBusError error;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
+
     unsigned long long ull_win_id = 0;
-    unsigned int ui_reply = 1;
-    bool b_has_folder;
-    int i_ret = VLC_EGENERIC;
+    int b_has_folder;
 
-    /* init */
-    msg = vlc_dbus_new_method( p_keystore, "open" );
-    if ( !msg )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "open",
+                                &err,
+                                &msg,
+                                "sxs",
+                                p_sys->psz_wallet,
+                                ull_win_id,
+                                p_sys->psz_app_id );
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_open : vlc_dbus_new_method failed");
-        return VLC_EGENERIC;
-    }
-
-    /* Init args */
-    dbus_message_iter_init_append(msg, &args);
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_wallet ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT64, &ull_win_id ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-    repmsg = vlc_dbus_send_message( p_keystore, msg );
-    if ( !repmsg )
-    {
-        msg_Err( p_keystore, "kwallet_open : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_open : Failed to issue new method call: error (%s)", err.message);
         goto end;
     }
 
-    /* reply arguments */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_INT32,
-                                 &ui_reply, DBUS_TYPE_INVALID ) )
+    sd_bus_message_read_basic( msg, 'i', &p_sys->i_handle);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_open :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Err( p_keystore, "kwallet_open: Failed to parse response message: %s\n", strerror(-i_ret) );
         goto end;
     }
-    p_sys->i_handle = ui_reply;
 
     /* opening the vlc password folder == VLC_KEYSTORE_NAME */
-    if ( kwallet_has_folder( p_keystore, psz_folder, &b_has_folder ) )
+    if ( kwallet_has_folder( p_keystore, psz_folder, &b_has_folder ) < 0 )
         goto end;
     if ( !b_has_folder )
     {
-        if ( kwallet_create_folder( p_keystore, psz_folder ) )
+        if ( kwallet_create_folder( p_keystore, psz_folder ) < 0 )
         {
             msg_Err( p_keystore, "kwallet_open : could not create folder %s",
                      psz_folder );
@@ -863,72 +565,53 @@ kwallet_open( vlc_keystore* p_keystore )
         }
     }
 
-    i_ret = VLC_SUCCESS;
-
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
 
     return i_ret;
 }
 
 static int
-kwallet_has_entry( vlc_keystore* p_keystore, char* psz_entry_name, bool *b_has_entry )
+kwallet_has_entry( vlc_keystore* p_keystore, char* psz_entry_name, int *b_has_entry )
 {
+    int i_ret;
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    DBusMessageIter args;
-    dbus_bool_t b_reply;
-    int i_ret = VLC_EGENERIC;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
 
-    /* init */
-    if ( !( msg = vlc_dbus_new_method(p_keystore, "hasEntry" ) ) )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "hasEntry",
+                                &err,
+                                &msg,
+                                "iss",
+                                p_sys->i_handle,
+                                psz_folder,
+                                psz_entry_name,
+                                p_sys->psz_app_id );
+
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_has_entry : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
-    }
-
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_entry_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-
-    if ( !( repmsg = vlc_dbus_send_message( p_keystore, msg ) ) )
-    {
-        msg_Err( p_keystore, "kwallet_has_entry : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_has_entry : Failed to issue new method call: error (%s)", err.message);
         goto end;
     }
 
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_BOOLEAN,
-                                 &b_reply, DBUS_TYPE_INVALID ) )
+    sd_bus_message_read_basic( msg, 'b', b_has_entry);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_has_entry :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Err( p_keystore, "kwallet_has_entry: Failed to parse response message: %s\n", strerror(-i_ret) );
         goto end;
     }
-    *b_has_entry = b_reply;
-
-    i_ret = VLC_SUCCESS;
 
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
 
     return i_ret;
 }
@@ -936,56 +619,47 @@ end:
 static int
 kwallet_write_password( vlc_keystore* p_keystore, char* psz_entry_name, const char* psz_secret )
 {
-    vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    DBusMessageIter args;
+    int i_ret;
     int i_reply;
-    int i_ret = VLC_EGENERIC;
+    vlc_keystore_sys* p_sys = p_keystore->p_sys;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
 
-    /* init */
-    if ( !( msg = vlc_dbus_new_method( p_keystore, "writePassword" ) ) )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "writePassword",
+                                &err,
+                                &msg,
+                                "issss",
+                                p_sys->i_handle,
+                                psz_folder,
+                                psz_entry_name,
+                                psz_secret,
+                                p_sys->psz_app_id );
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_write_password : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
+        msg_Err( p_keystore, "kwallet_write_password : Failed to issue new method call: error (%s)", err.message);
+        goto end;
     }
 
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_entry_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_secret ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-    if ( !( repmsg = vlc_dbus_send_message( p_keystore, msg ) ) )
+    sd_bus_message_read_basic( msg, 'b', &i_reply);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_write_password : vlc_dbus_send_message failed" );
-        goto end;
-    }
-
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_INT32,
-                                 &i_reply, DBUS_TYPE_INVALID ) )
-    {
-        msg_Err( p_keystore, "kwallet_write_password :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Err( p_keystore, "kwallet_write_password: Failed to parse response message: %s\n", strerror(-i_ret) );
         goto end;
     }
 
     i_ret = VLC_SUCCESS;
+    if ( !i_reply )
+        i_ret = VLC_EGENERIC;
 
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
 
     return i_ret;
 }
@@ -993,16 +667,16 @@ end:
 static int
 kwallet_remove_entry( vlc_keystore* p_keystore, char* psz_entry_name )
 {
-    vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusError error;
-    DBusMessageIter args;
+    int i_ret;
     int i_reply;
-    bool b_has_entry = false;
-    int i_ret = VLC_EGENERIC;
+    int b_has_entry = 0;
 
-    if ( kwallet_has_entry( p_keystore, psz_entry_name, &b_has_entry ) )
+    vlc_keystore_sys* p_sys = p_keystore->p_sys;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
+
+    if ( kwallet_has_entry( p_keystore, psz_entry_name, &b_has_entry ) < 0 )
     {
         msg_Err( p_keystore, "kwallet_remove_entry : kwallet_has_entry failed" );
         return VLC_EGENERIC;
@@ -1014,47 +688,39 @@ kwallet_remove_entry( vlc_keystore* p_keystore, char* psz_entry_name )
         return VLC_EGENERIC;
     }
 
-    /* init */
-    if ( !( msg = vlc_dbus_new_method( p_keystore, "removeEntry" ) ) )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "removeEntry",
+                                &err,
+                                &msg,
+                                "isss",
+                                p_sys->i_handle,
+                                psz_folder,
+                                psz_entry_name,
+                                p_sys->psz_app_id );
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_remove_entry : vlc_dbus_new_method failed" );
-        return VLC_EGENERIC;
-    }
-
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_entry_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
-        goto end;
-
-    /* sending message */
-    if ( !( repmsg = vlc_dbus_send_message( p_keystore, msg ) ) )
-    {
-        msg_Err( p_keystore, "kwallet_remove_entry : vlc_dbus_send_message failed" );
+        msg_Err( p_keystore, "kwallet_remove_entry : Failed to issue new method call: error (%s)", err.message);
         goto end;
     }
 
-    /* handling reply */
-    dbus_error_init( &error );
-    if ( !dbus_message_get_args( repmsg, &error, DBUS_TYPE_INT32,
-                                 &i_reply, DBUS_TYPE_INVALID ) )
+    sd_bus_message_read_basic( msg, 'b', &i_reply);
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_remove entry :"
-                 " dbus_message_get_args failed\n%s", error.message );
-        dbus_error_free( &error );
+        msg_Err( p_keystore, "kwallet_remove_entry: Failed to parse response message: %s\n", strerror(-i_ret) );
         goto end;
     }
 
     i_ret = VLC_SUCCESS;
+    if ( !i_reply )
+        i_ret = VLC_EGENERIC;
 
 end:
-
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
 
     return i_ret;
 }
@@ -1063,131 +729,101 @@ static vlc_keystore_entry*
 kwallet_read_password_list( vlc_keystore* p_keystore, char* psz_entry_name,
                             unsigned int* pi_count )
 {
+    int i_ret;
+
     vlc_keystore_sys* p_sys = p_keystore->p_sys;
-    DBusMessage* msg = NULL;
-    DBusMessage* repmsg = NULL;
-    DBusMessageIter args;
-    DBusMessageIter sub_iter;
-    DBusMessageIter dict_iter;
-    DBusMessageIter var_iter;
+    sd_bus* bus = p_sys->bus;
+    sd_bus_message* msg = NULL;
+    sd_bus_error err = SD_BUS_ERROR_NULL;
     vlc_keystore_entry* p_entries = NULL;
     size_t i_size;
     uint8_t* p_secret_decoded = NULL;
     char* p_reply;
     char* p_secret;
-    int i = 0;
+    keystore_vector_t vec;
+    vlc_vector_init(&vec);
 
-    /* init */
     *pi_count = 0;
-    if ( !( msg = vlc_dbus_new_method( p_keystore, "readPasswordList" ) ) )
+    i_ret = sd_bus_call_method( bus,
+                                KWALLET_SERVICE,
+                                KWALLET_PATH,
+                                psz_kwallet_interface,
+                                "readPasswordList",
+                                &err,
+                                &msg,
+                                "isss",
+                                p_sys->i_handle,
+                                psz_folder,
+                                psz_entry_name,
+                                p_sys->psz_app_id );
+    if ( i_ret < 0 )
     {
-        msg_Err( p_keystore, "kwallet_read_password_list : vlc_dbus_new_method failed" );
+        msg_Err( p_keystore, "readPasswordList : Failed to issue new method call: error (%s)", err.message );
         goto error;
     }
 
-    /* argument init */
-    dbus_message_iter_init_append( msg, &args );
-    if ( !dbus_message_iter_append_basic( &args, DBUS_TYPE_INT32, &p_sys->i_handle ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_folder ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &psz_entry_name ) ||
-         !dbus_message_iter_append_basic( &args, DBUS_TYPE_STRING, &p_sys->psz_app_id ) )
+    i_ret = sd_bus_message_enter_container( msg, 'a', "{sv}" );
+    if ( i_ret < 0 )
         goto error;
 
-    /* sending message */
-    if ( !( repmsg = vlc_dbus_send_message( p_keystore, msg ) ) )
+    for( ;; )
     {
-        msg_Err( p_keystore, "kwallet_read_password_list : vlc_dbus_send_message failed" );
-        goto error;
-    }
-
-    /* handling reply */
-    if ( !dbus_message_iter_init( repmsg, &args ) )
-    {
-        msg_Err( p_keystore, "kwallet_read_password_list : Message has no arguments" );
-        goto error;
-    }
-    else if ( dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_ARRAY )
-    {
-        msg_Err( p_keystore, "kwallet_read_password_list : Wrong reply type" );
-        goto error;
-    }
-    else
-    {
-        /* calculating p_entries's size */
-        dbus_message_iter_recurse( &args, &sub_iter );
-        do
-        {
-            if ( dbus_message_iter_get_arg_type( &sub_iter ) != DBUS_TYPE_DICT_ENTRY )
-                continue;
-            dbus_message_iter_recurse( &sub_iter, &dict_iter );
-            if ( dbus_message_iter_get_arg_type( &dict_iter ) != DBUS_TYPE_STRING )
-                continue;
-            dbus_message_iter_next(&dict_iter);
-            if ( dbus_message_iter_get_arg_type( &dict_iter ) != DBUS_TYPE_VARIANT )
-                continue;
-            ++( *pi_count );
-       } while ( dbus_message_iter_next( &sub_iter ) );
-
-        if ( *pi_count == 0 )
+        vlc_keystore_entry entry;
+        i_ret = sd_bus_message_enter_container( msg, 'e', "sv" );
+        if( i_ret < 0 )
             goto error;
-        if ( !( p_entries = calloc( *pi_count, sizeof( vlc_keystore_entry ) ) ) )
+        if ( i_ret == 0 )
+            break;
+        i_ret = sd_bus_message_read( msg, "s", &p_reply );
+        if( i_ret < 0 )
             goto error;
-
-        dbus_message_iter_init( repmsg, &args );
-        /* recurse into the reply array */
-        dbus_message_iter_recurse( &args, &sub_iter );
-        do
-        {
-            if ( dbus_message_iter_get_arg_type( &sub_iter ) != DBUS_TYPE_DICT_ENTRY )
-            {
-                msg_Err( p_keystore, "Wrong type not DBUS_TYPE_DICT_ENTRY" );
-                continue;
-            }
-            /* recurse into the dict-entry in the array */
-            dbus_message_iter_recurse( &sub_iter, &dict_iter );
-            if ( dbus_message_iter_get_arg_type( &dict_iter ) != DBUS_TYPE_STRING )
-            {
-                msg_Err( p_keystore, "First type of Dict-Entry is not a string" );
-                continue;
-            }
-            dbus_message_iter_get_basic( &dict_iter, &p_reply );
-            dbus_message_iter_next(&dict_iter);
-            if ( dbus_message_iter_get_arg_type( &dict_iter ) != DBUS_TYPE_VARIANT )
-            {
-                msg_Err( p_keystore, "Second type of Dict-Entry is not a variant" );
-                continue;
-            }
-            /* recurse into the variant in the dict-entry */
-            dbus_message_iter_recurse( &dict_iter, &var_iter );
-            dbus_message_iter_get_basic( &var_iter, &p_secret );
-
-            i_size = vlc_b64_decode_binary( &p_secret_decoded, p_secret);
-            if ( key2values( p_reply, &p_entries[i] ) )
-                goto error;
-            if ( ( vlc_keystore_entry_set_secret( &p_entries[i],
-                                                  p_secret_decoded,
-                                                  i_size ) ) )
-                goto error;
-
-            free(p_secret_decoded);
-            i += 1;
-        } while ( dbus_message_iter_next( &sub_iter ) );
+        i_ret = sd_bus_message_enter_container(msg, 'v', "s" );
+        if( i_ret < 0 )
+            goto error;
+        i_ret = sd_bus_message_read( msg, "s", &p_secret );
+        if( i_ret < 0 )
+            goto error;
+        i_size = vlc_b64_decode_binary( &p_secret_decoded, p_secret);
+        if ( key2values( p_reply, &entry ) )
+            goto error;
+        if ( ( vlc_keystore_entry_set_secret( &entry,
+                                              p_secret_decoded,
+                                              i_size ) ) )
+            goto error;
+        i_ret = sd_bus_message_exit_container(msg);
+        if (i_ret < 0)
+            goto error;
+        i_ret = sd_bus_message_exit_container(msg);
+        if (i_ret < 0)
+            goto error;
+        if(!vlc_vector_push(&vec, entry))
+            goto error;
+        free(p_secret_decoded);
     }
 
-    dbus_message_unref( msg );
-    dbus_message_unref( repmsg );
+    p_entries = malloc(vec.size * sizeof(vlc_keystore_entry));
+    if(!p_entries)
+        goto error;
+    memcpy(p_entries, vec.data, vec.size * sizeof(vlc_keystore_entry));
+    if(!p_entries)
+        goto error;
+    *pi_count = vec.size;
+    vlc_vector_destroy( &vec );
+
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
 
     return p_entries;
 
 error:
+    vlc_vector_destroy( &vec );
+    free( p_entries );
     free( p_secret_decoded );
     *pi_count = 0;
-    if ( p_entries )
-        vlc_keystore_release_entries( p_entries, i );
-    if ( msg )
-        dbus_message_unref( msg );
-    if ( repmsg )
-        dbus_message_unref( repmsg );
+    sd_bus_error_free( &err );
+    if(msg)
+        sd_bus_message_unref( msg );
     return NULL;
 }
 
@@ -1228,19 +864,20 @@ Find( vlc_keystore* p_keystore, const char *const ppsz_values[KEY_MAX],
 {
     char* psz_key;
     unsigned int i_count = 0;
+    vlc_keystore_entry* p_entries;
 
     psz_key = values2key( ppsz_values, true );
     if ( !psz_key )
         return i_count;
-    *pp_entries = kwallet_read_password_list( p_keystore, psz_key, &i_count );
-    if ( !*pp_entries )
+    p_entries = kwallet_read_password_list( p_keystore, psz_key, &i_count );
+    if ( !p_entries )
     {
         free( psz_key );
-        return i_count;
+        return 0;
     }
 
+    *pp_entries = p_entries;
     free( psz_key );
-
     return i_count;
 }
 
@@ -1294,9 +931,11 @@ static void
 Close( vlc_object_t* p_this )
 {
     vlc_keystore *p_keystore = ( vlc_keystore* )p_this;
+    vlc_keystore_sys* p_sys = p_keystore->p_sys;
+    sd_bus *bus = p_sys->bus;
 
-    dbus_connection_close( p_keystore->p_sys->connection );
-    dbus_connection_unref( p_keystore->p_sys->connection );
+    sd_bus_flush( bus );
+    sd_bus_close( bus );
     free( p_keystore->p_sys->psz_app_id );
     free( p_keystore->p_sys->psz_wallet );
     free( p_keystore->p_sys );
@@ -1306,33 +945,27 @@ static int
 Open( vlc_object_t* p_this )
 {
     vlc_keystore *p_keystore = ( vlc_keystore* )p_this;
-    int i_ret;
 
     p_keystore->p_sys = calloc( 1, sizeof( vlc_keystore_sys ) );
     if ( !p_keystore->p_sys)
         return VLC_ENOMEM;
 
-    i_ret = vlc_dbus_init( p_keystore );
-    if ( i_ret )
+    if ( vlc_dbus_init( p_keystore ) < 0 )
     {
         msg_Dbg( p_keystore, "vlc_dbus_init failed" );
-        goto error;
+        return VLC_EGENERIC;
     }
 
-    i_ret = kwallet_open( p_keystore );
-    if ( i_ret )
+    if ( kwallet_open( p_keystore ) < 0 )
     {
         msg_Dbg( p_keystore, "kwallet_open failed" );
-        goto error;
+        free( p_keystore->p_sys );
+        return VLC_EGENERIC;
     }
 
     p_keystore->pf_store = Store;
     p_keystore->pf_find = Find;
     p_keystore->pf_remove = Remove;
 
-    return i_ret;
-
-error:
-    free( p_keystore->p_sys );
-    return i_ret;
+    return VLC_SUCCESS;
 }
