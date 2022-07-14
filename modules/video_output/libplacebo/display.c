@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <limits.h>
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -705,6 +706,7 @@ vlc_module_begin ()
     add_bool("pl-debanding", false, DEBAND_TEXT, DEBAND_LONGTEXT)
     add_integer("pl-iterations", pl_deband_default_params.iterations,
             DEBAND_ITER_TEXT, DEBAND_ITER_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
     add_float("pl-threshold", pl_deband_default_params.threshold,
             DEBAND_THRESH_TEXT, DEBAND_THRESH_LONGTEXT)
     add_float("pl-radius", pl_deband_default_params.radius,
