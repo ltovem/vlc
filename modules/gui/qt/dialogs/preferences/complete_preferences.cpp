@@ -25,7 +25,6 @@
 
 #include <QApplication>
 #include <QLabel>
-#include <QTreeWidget>
 #include <QString>
 #include <QFont>
 #include <QGroupBox>
@@ -33,28 +32,24 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 
-#include "dialogs/preferences/complete_preferences.hpp"
-#include "dialogs/preferences/preferences_widgets.hpp"
+#include "complete_preferences.hpp"
+#include "preferences_widgets.hpp"
 
 #include <vlc_modules.h>
 #include <assert.h>
 
-#define ITEM_HEIGHT 25
-
 /*********************************************************************
  * The Tree
  *********************************************************************/
-PrefsTree::PrefsTree( qt_intf_t *_p_intf, QWidget *_parent,
-                      module_t **p_list, size_t count ) :
-                            QTreeWidget( _parent ), p_intf( _p_intf )
+void PrefsTree::init( qt_intf_t *intf, module_t **p_list, size_t count )
 {
-    b_show_only_loaded = false;
-    /* General Qt options */
-    setAlternatingRowColors( true );
-    setHeaderHidden( true );
+    assert( !initialised );
+    initialised = true;
 
-    setIconSize( QSize( ITEM_HEIGHT, ITEM_HEIGHT ) );
-    setTextElideMode( Qt::ElideNone );
+    p_intf = intf;
+    b_show_only_loaded = false;
+
+    setHeaderHidden( true );
 
     setUniformRowHeights( true );
     connect( this, &PrefsTree::itemExpanded, this, &PrefsTree::resizeColumns );
@@ -207,7 +202,6 @@ QTreeWidgetItem *PrefsTree::createCatNode( enum vlc_config_cat cat )
 
     item->setText( 0, qfu( vlc_config_cat_GetName( cat ) ) );
     item->setIcon( 0, icon );
-    //current_item->setSizeHint( 0, QSize( -1, ITEM_HEIGHT ) );
 
     int cat_index = (int) vlc_config_cat_IndexOf( cat );
     int general_subcat_index = (int) vlc_config_subcat_IndexOf( general_subcat );
@@ -233,7 +227,6 @@ QTreeWidgetItem *PrefsTree::createSubcatNode( QTreeWidgetItem * cat, enum vlc_co
     item->help = qfu( vlc_config_subcat_GetHelp( subcat ) );
 
     item->setText( 0, item->name );
-    //item->setSizeHint( 0, QSize( -1, ITEM_HEIGHT ) );
 
     int subcat_index = (int) vlc_config_subcat_IndexOf( subcat );
     this->subcatMap[subcat_index] = item;
@@ -261,7 +254,6 @@ void PrefsTree::createPluginNode( QTreeWidgetItem * parent, module_t *mod )
         item->help.clear();
 
     item->setText( 0, item->name );
-    //item->setSizeHint( 0, QSize( -1, ITEM_HEIGHT ) );
 
     parent->addChild( item );
 }

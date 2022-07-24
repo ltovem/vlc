@@ -75,20 +75,6 @@ class QString;
 class QTreeWidgetItem;
 #endif
 
-class SPrefsCatList : public QWidget
-{
-    Q_OBJECT
-public:
-    SPrefsCatList( qt_intf_t *, QWidget * );
-    virtual ~SPrefsCatList() {};
-private:
-    qt_intf_t *p_intf;
-signals:
-    void currentItemChanged( int );
-public slots:
-    void switchPanel( int );
-};
-
 class SPrefsPanel : public QWidget
 {
     Q_OBJECT

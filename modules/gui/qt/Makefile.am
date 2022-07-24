@@ -508,6 +508,7 @@ nodist_libqt_plugin_la_SOURCES += \
 	gui/qt/dialogs/open/ui_open_file.h \
 	gui/qt/dialogs/open/ui_open_net.h \
 	gui/qt/dialogs/podcast/ui_podcast_configuration.h \
+	gui/qt/dialogs/preferences/ui_preferences.h \
 	gui/qt/dialogs/preferences/ui_sprefs_audio.h \
 	gui/qt/dialogs/preferences/ui_sprefs_input.h \
 	gui/qt/dialogs/preferences/ui_sprefs_interface.h \
@@ -549,6 +550,7 @@ libqt_plugin_la_UI = \
 	gui/qt/dialogs/open/open_file.ui \
 	gui/qt/dialogs/open/open_net.ui \
 	gui/qt/dialogs/podcast/podcast_configuration.ui \
+	gui/qt/dialogs/preferences/preferences.ui \
 	gui/qt/dialogs/preferences/sprefs_audio.ui \
 	gui/qt/dialogs/preferences/sprefs_input.ui \
 	gui/qt/dialogs/preferences/sprefs_interface.ui \

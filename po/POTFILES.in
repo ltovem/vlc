@@ -1416,6 +1416,7 @@ share/vlc.appdata.xml.in.in
 #modules/gui/qt/dialogs/podcast/ui_podcast_configuration.h
 #modules/gui/qt/dialogs/sout/ui_profiles.h
 #modules/gui/qt/dialogs/sout/ui_sout.h
+#modules/gui/qt/dialogs/preferences/ui_preferences.h
 #modules/gui/qt/dialogs/preferences/ui_sprefs_audio.h
 #modules/gui/qt/dialogs/preferences/ui_sprefs_input.h
 #modules/gui/qt/dialogs/preferences/ui_sprefs_interface.h
