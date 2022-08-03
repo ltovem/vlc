@@ -91,13 +91,12 @@ VLC_USED static char *filename_trim_inplace(char *str)
                 continue;
             }
 
-            c = ' ';
             consecutive = true;
+            *writehead++ = ' ';
         } else {
             consecutive = false;
+            *writehead++ = tolower(c);
         }
-
-        *writehead++ = tolower(c);
         str++;
     }
     *writehead = '\0';
@@ -139,285 +138,333 @@ static int slave_strcmp( const void *a, const void *b )
 }
 
 /*
- * Check if a file ends with a subtitle extension
+ * Check if a file should be filtered (skipped) as a non-subtitle file.
+ *
+ * Returns true if it does not end with a known subtitle extension.
  */
-int subtitles_Filter( const char *psz_dir_content )
+bool subtitles_Filter( const char *file )
 {
-    const char *tmp = strrchr( psz_dir_content, '.');
+    const char *ext = strrchr( file, '.' );
+    if( !ext )
+        return true;
+    ext++;
 
-    if( !tmp )
-        return 0;
-    tmp++;
-
-    for( int i = 0; sub_exts[i][0]; i++ )
-        if( strcasecmp( sub_exts[i], tmp ) == 0 )
-            return 1;
-    return 0;
+    for( size_t i = 0; sub_exts[i][0] != '\0'; i++ )
+        if( strcasecmp( sub_exts[i], ext ) == 0 )
+            return false;
+    return true;
 }
 
 
 /**
  * Convert a list of paths separated by ',' to a char**
  */
-static char **paths_to_list( const char *psz_dir, char *psz_path )
+static char **paths_to_list( const char *basedir, char *pathlist )
 {
-    unsigned int i, k, i_nb_subdirs;
+    size_t i, num_subdirs;
     char **subdirs; /* list of subdirectories to look in */
-    char *psz_parser = psz_path;
+    char *parser = pathlist;
 
-    if( !psz_dir || !psz_path )
+    if( !basedir || !pathlist )
         return NULL;
 
-    for( k = 0, i_nb_subdirs = 1; psz_path[k] != '\0'; k++ )
+    for( i = 0, num_subdirs = 1; pathlist[i] != '\0'; i++ )
     {
-        if( psz_path[k] == ',' )
-            i_nb_subdirs++;
+        if( pathlist[i] == ',' )
+            num_subdirs++;
     }
+    i = 0;
 
-    subdirs = calloc( i_nb_subdirs + 1, sizeof(char*) );
+    subdirs = calloc( num_subdirs + 1, sizeof(char*) );
     if( !subdirs )
         return NULL;
 
-    for( i = 0; psz_parser && *psz_parser != '\0' ; )
+    for( i = 0; parser && *parser != '\0' ; )
     {
-        char *psz_subdir = psz_parser;
-        psz_parser = strchr( psz_subdir, ',' );
-        if( psz_parser )
+        while( *parser == ' ' )
+            parser++;
+        char *subdir = parser;
+        char *subdir_end = subdir;
+        char ch;
+        while( ( ch = *parser ) != '\0' )
         {
-            *psz_parser++ = '\0';
-            while( *psz_parser == ' ' )
-                psz_parser++;
+            if( ch != ' ' && ch != ',' )
+            {
+                subdir_end = parser;
+                subdir_end++;
+            }
+            parser++;
+            if( ch == ',' )
+                break;
         }
+        *subdir_end = '\0';
+        if( *subdir == '\0' )
+            continue;
 
-        if( asprintf( &subdirs[i], "%s%s",
-                  psz_subdir[0] == '.' ? psz_dir : "",
-                  psz_subdir ) == -1 )
+        bool rel = ( subdir[0] == '.' );
+        if( rel )
+        {
+            if( subdir[1] == DIR_SEP_CHAR )
+                subdir += 2;
+            else if( subdir[1] == '\0' )
+                subdir += 1;
+        }
+        bool has_sep = ( subdir_end == subdir || *--subdir_end == DIR_SEP_CHAR );
+
+        if( asprintf( &subdirs[i], "%s%s%c", rel ? basedir : "",
+                  subdir, has_sep ? '\0' : DIR_SEP_CHAR ) == -1 )
             break;
         i++;
     }
+    if( i == 0 )
+    {
+        free( subdirs );
+        return NULL;
+    }
+    assert(i <= num_subdirs);
     subdirs[i] = NULL;
 
     return subdirs;
 }
 
 /**
+ * Search a given directory for subtitle files.
+ *
+ * \param this the calling \ref input_thread_t
+ * \param search_dir the subdirectory to search, or NULL to search the video directory itself
+ * \param fuzzy indication of how strict the filename match must be
+ * \param video_path the full filepath of the video
+ * \param video_dir the directory of the video
+ * \param video_file the filename of the video, excluding extension
+ * \param slaves_ref list to append items to
+ * \param slaves_count_ref length of list
+ */
+static void search_directory( input_thread_t *this, const char *search_dir,
+                              int fuzzy, const char* video_path,
+                              const char *video_dir, const char *video_file,
+                              input_item_slave_t ***slaves_ref,
+                              int *slaves_count_ref )
+{
+    input_item_slave_t **slaves = *slaves_ref;
+    int slaves_count = *slaves_count_ref;
+
+    bool subdir_search = (search_dir != NULL);
+    if( !subdir_search )
+        search_dir = video_dir;
+
+    DIR *dir_listing = vlc_opendir( search_dir );
+    if( dir_listing == NULL )
+        return;
+
+    msg_Dbg( this, "looking for a subtitle file in %s", search_dir );
+
+    const char *entry;
+    while( (entry = vlc_readdir( dir_listing ) ) )
+    {
+        if( entry[0] == '.' || subtitles_Filter( entry ) )
+            continue;
+
+        char *entry_tmp = strdup(entry);
+        if (!entry_tmp)
+            break;
+
+        /* retrieve various parts of the filename */
+        filename_strip_ext_inplace(entry_tmp);
+        const char *entry_tmp_trim = filename_trim_inplace(entry_tmp);
+
+        const char *tmp;
+        int priority = 0;
+        if( strcmp( entry_tmp_trim, video_file ) == 0 )
+        {
+            /* matches the movie name exactly */
+            priority = SLAVE_PRIORITY_MATCH_ALL;
+        }
+        else if( (tmp = strstr( entry_tmp_trim, video_file ) ) != NULL )
+        {
+            /* contains the movie name */
+            tmp += strlen( video_file );
+            if( whiteonly( tmp ) )
+            {
+                /* no chars after the movie name */
+                priority = SLAVE_PRIORITY_MATCH_RIGHT;
+            }
+            else
+            {
+                /* chars after (and possibly in front of) the movie name */
+                priority = SLAVE_PRIORITY_MATCH_LEFT;
+            }
+        }
+        else if( !subdir_search )
+        {
+            /* doesn't contain the movie name, prefer files in video_dir over subdirs */
+            priority = SLAVE_PRIORITY_MATCH_NONE;
+        }
+        free(entry_tmp);
+        entry_tmp_trim = NULL;
+
+        if( priority >= fuzzy )
+        {
+            char *path;
+            if( asprintf( &path, "%s%s", search_dir, entry ) < 0 )
+                continue;
+
+            struct stat st;
+            if( strcmp( path, video_path ) != 0
+             && vlc_stat( path, &st ) == 0
+             && S_ISREG( st.st_mode ) )
+            {
+                msg_Dbg( this, "autodetected subtitle: %s with priority %d",
+                         path, priority );
+                char *uri = vlc_path2uri( path, NULL );
+                input_item_slave_t *sub = (uri == NULL) ? NULL :
+                    input_item_slave_New( uri, SLAVE_TYPE_SPU, priority );
+                if( sub != NULL )
+                {
+                    sub->b_forced = true;
+                    TAB_APPEND(slaves_count, slaves, sub);
+                }
+                free( uri );
+            }
+            free( path );
+        }
+    }
+    closedir( dir_listing );
+
+    *slaves_ref = slaves; /* in case of realloc */
+    *slaves_count_ref = slaves_count;
+}
+
+/**
  * Detect subtitle files.
  *
- * When called this function will split up the psz_name string into a
+ * When called this function will split up the fileuri string into a
  * directory, filename and extension. It then opens the directory
  * in which the file resides and tries to find possible matches of
  * subtitles files.
  *
  * \ingroup Demux
- * \param p_this the calling \ref input_thread_t
- * \param psz_path a list of subdirectories (separated by a ',') to look in.
- * \param psz_name_org the complete filename to base the search on.
- * \param pp_slaves an initialized input item slave list to append detected subtitles to
- * \param p_slaves pointer to the size of the slave list
+ * \param this the calling \ref input_thread_t
+ * \param extra_paths a list of subdirectories (separated by a ',') to look in.
+ * \param fileuri the complete filename to base the search on.
+ * \param slaves_ref an initialized input item slave list to append detected subtitles to
+ * \param slaves_count_ref pointer to the size of the slave list
  * \return VLC_SUCCESS if ok
  */
-int subtitles_Detect( input_thread_t *p_this, char *psz_path, const char *psz_name_org,
-                      input_item_slave_t ***ppp_slaves, int *p_slaves )
+int subtitles_Detect( input_thread_t *this, char *extra_paths, const char *fileuri,
+                      input_item_slave_t ***slaves_ref, int *slaves_count_ref )
 {
-    int i_fuzzy = var_GetInteger( p_this, "sub-autodetect-fuzzy" );
-    if ( i_fuzzy == 0 )
-        return VLC_EGENERIC;
-    input_item_slave_t **pp_slaves = *ppp_slaves;
-    int i_slaves = *p_slaves;
-    char **subdirs; /* list of subdirectories to look in */
+    input_item_slave_t **slaves = *slaves_ref;
+    int slaves_count = *slaves_count_ref;
 
-    if( !psz_name_org )
+    if( !fileuri )
         return VLC_EGENERIC;
 
-    char *psz_fname = vlc_uri2path( psz_name_org );
-    if( !psz_fname )
+    int fuzzy = var_GetInteger( this, "sub-autodetect-fuzzy" );
+    if ( fuzzy == 0 )
         return VLC_EGENERIC;
 
-    /* extract filename & dirname from psz_fname */
-    char *f_dir = strdup( psz_fname );
-    if( f_dir == 0 )
+    char *filepath = vlc_uri2path( fileuri );
+    if( !filepath )
+        return VLC_EGENERIC;
+
+    /* extract filename & directory from filepath */
+    char *basedir = strdup( filepath );
+    if( basedir == NULL )
     {
-        free( psz_fname );
+        free( filepath );
         return VLC_ENOMEM;
     }
-
-    char *f_fname_trim = strrchr( psz_fname, DIR_SEP_CHAR );
-    if( !f_fname_trim )
+    char *filename = strrchr( filepath, DIR_SEP_CHAR );
+    if( !filename )
     {
-        free( f_dir );
-        free( psz_fname );
+        free( basedir );
+        free( filepath );
         return VLC_EGENERIC;
     }
-    f_fname_trim++; /* Skip the '/' */
-    f_dir[f_fname_trim - psz_fname] = 0; /* keep dir separator in f_dir */
+    filename++; /* Skip the '/' */
+    basedir[filename - filepath] = '\0'; /* keep dir separator in basedir */
 
-    filename_strip_ext_inplace(f_fname_trim);
-    f_fname_trim = filename_trim_inplace(f_fname_trim);
+    filename_strip_ext_inplace(filename);
+    filename = filename_trim_inplace(filename);
 
-    subdirs = paths_to_list( f_dir, psz_path );
-    for( int j = -1; (j == -1) || ( j >= 0 && subdirs != NULL && subdirs[j] != NULL ); j++ )
-    {
-        const char *psz_dir = (j < 0) ? f_dir : subdirs[j];
-        if( psz_dir == NULL || ( j >= 0 && !strcmp( psz_dir, f_dir ) ) )
-            continue;
+    /* Split the list of additional subdirectories to look in */
+    char **subdirs = paths_to_list( basedir, extra_paths );
 
-        /* parse psz_src dir */
-        DIR *dir = vlc_opendir( psz_dir );
-        if( dir == NULL )
-            continue;
+    /* Search the same directory */
+    search_directory(this, NULL, fuzzy, filepath,
+                     basedir, filename, slaves_ref, slaves_count_ref);
 
-        msg_Dbg( p_this, "looking for a subtitle file in %s", psz_dir );
-
-        const char *psz_name;
-        while( (psz_name = vlc_readdir( dir )) )
-        {
-            if( psz_name[0] == '.' || !subtitles_Filter( psz_name ) )
-                continue;
-
-            char *tmp_fname = strdup(psz_name);
-            if (!tmp_fname)
-                break;
-
-            const char *tmp;
-            int i_prio = 0;
-
-            /* retrieve various parts of the filename */
-            filename_strip_ext_inplace(tmp_fname);
-            char *tmp_fname_trim = filename_trim_inplace(tmp_fname);
-
-            if( !strcmp( tmp_fname_trim, f_fname_trim ) )
-            {
-                /* matches the movie name exactly */
-                i_prio = SLAVE_PRIORITY_MATCH_ALL;
-            }
-            else if( (tmp = strstr( tmp_fname_trim, f_fname_trim )) )
-            {
-                /* contains the movie name */
-                tmp += strlen( f_fname_trim );
-                if( whiteonly( tmp ) )
-                {
-                    /* chars in front of the movie name */
-                    i_prio = SLAVE_PRIORITY_MATCH_RIGHT;
-                }
-                else
-                {
-                    /* chars after (and possibly in front of)
-                     * the movie name */
-                    i_prio = SLAVE_PRIORITY_MATCH_LEFT;
-                }
-            }
-            else if( j == -1 )
-            {
-                /* doesn't contain the movie name, prefer files in f_dir over subdirs */
-                i_prio = SLAVE_PRIORITY_MATCH_NONE;
-            }
-            free(tmp_fname);
-            tmp_fname_trim = NULL;
-
-            if( i_prio >= i_fuzzy )
-            {
-                struct stat st;
-                char *path;
-
-                size_t i_len = strlen( psz_dir );
-                const char *psz_format;
-                if ( i_len == 0 )
-                    continue;
-                if( psz_dir[i_len - 1] == DIR_SEP_CHAR )
-                    psz_format = "%s%s";
-                else
-                    psz_format = "%s"DIR_SEP"%s";
-
-                if( asprintf( &path, psz_format, psz_dir, psz_name ) < 0 )
-                    continue;
-
-                if( strcmp( path, psz_fname )
-                 && vlc_stat( path, &st ) == 0
-                 && S_ISREG( st.st_mode ) )
-                {
-                    msg_Dbg( p_this,
-                            "autodetected subtitle: %s with priority %d",
-                            path, i_prio );
-                    char *psz_uri = vlc_path2uri( path, NULL );
-                    input_item_slave_t *p_sub = psz_uri != NULL ?
-                        input_item_slave_New( psz_uri, SLAVE_TYPE_SPU, i_prio )
-                        : NULL;
-                    if( p_sub )
-                    {
-                        p_sub->b_forced = true;
-                        TAB_APPEND(i_slaves, pp_slaves, p_sub);
-                    }
-                    free( psz_uri );
-                }
-                free( path );
-            }
-        }
-        closedir( dir );
-    }
-    if( subdirs )
+    /* Search subdirectories */
+    if( subdirs != NULL )
     {
         for( size_t j = 0; subdirs[j] != NULL; j++ )
+        {
+            if( strcmp( subdirs[j], basedir ) == 0 )
+                continue;
+            search_directory(this, subdirs[j], fuzzy, filepath,
+                             basedir, filename, slaves_ref, slaves_count_ref);
             free( subdirs[j] );
+        }
         free( subdirs );
     }
-    free( f_dir );
-    free( psz_fname );
 
-    for( int i = 0; i < i_slaves; i++ )
+    free( basedir );
+    free( filepath );
+
+    /* Reject some in special cases */
+    for( int i = 0; i < slaves_count; i++ )
     {
-        input_item_slave_t *p_sub = pp_slaves[i];
+        input_item_slave_t *sub = slaves[i];
 
-        bool b_reject = false;
-        char *psz_ext = strrchr( p_sub->psz_uri, '.' );
-        if( !psz_ext )
+        bool reject = false;
+        char *ext = strrchr( sub->psz_uri, '.' );
+        if( !ext )
             continue;
-        psz_ext++;
+        ext++;
 
-        if( !strcasecmp( psz_ext, "sub" ) )
+        if( !strcasecmp( ext, "sub" ) )
         {
-            for( int j = 0; j < i_slaves; j++ )
+            for( int j = 0; j < slaves_count; j++ )
             {
-                input_item_slave_t *p_sub_inner = pp_slaves[j];
+                input_item_slave_t *sub_inner = slaves[j];
 
                 /* A slave can be null if it's already rejected */
-                if( p_sub_inner == NULL )
+                if( sub_inner == NULL )
                     continue;
 
                 /* check that the filenames without extension match */
-                if( strncasecmp( p_sub->psz_uri, p_sub_inner->psz_uri,
-                    strlen( p_sub->psz_uri ) - 3 ) )
+                if( strncasecmp( sub->psz_uri, sub_inner->psz_uri,
+                    strlen( sub->psz_uri ) - 3 ) )
                     continue;
 
-                char *psz_ext_inner = strrchr( p_sub_inner->psz_uri, '.' );
-                if( !psz_ext_inner )
+                char *ext_inner = strrchr( sub_inner->psz_uri, '.' );
+                if( !ext_inner )
                     continue;
-                psz_ext_inner++;
+                ext_inner++;
 
                 /* check that we have an idx file */
-                if( !strcasecmp( psz_ext_inner, "idx" ) )
+                if( !strcasecmp( ext_inner, "idx" ) )
                 {
-                    b_reject = true;
+                    reject = true;
                     break;
                 }
             }
         }
-        else if( !strcasecmp( psz_ext, "cdg" ) )
+        else if( !strcasecmp( ext, "cdg" ) )
         {
-            if( p_sub->i_priority < SLAVE_PRIORITY_MATCH_ALL )
-                b_reject = true;
+            if( sub->i_priority < SLAVE_PRIORITY_MATCH_ALL )
+                reject = true;
         }
-        if( b_reject )
+        if( reject )
         {
-            pp_slaves[i] = NULL;
-            input_item_slave_Delete( p_sub );
+            slaves[i] = NULL;
+            input_item_slave_Delete( sub );
         }
     }
 
     /* Sort alphabetically */
-    if( i_slaves > 0 )
-        qsort( pp_slaves, i_slaves, sizeof (input_item_slave_t*), slave_strcmp );
+    if( slaves_count > 0 )
+        qsort( slaves, slaves_count, sizeof (input_item_slave_t*), slave_strcmp );
 
-    *ppp_slaves = pp_slaves; /* in case of realloc */
-    *p_slaves = i_slaves;
     return VLC_SUCCESS;
 }
