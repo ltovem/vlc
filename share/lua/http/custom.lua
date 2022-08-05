@@ -27,3 +27,12 @@ _G.get_renderer_discovery = function()
     return _rd
 end
 
+
+local _sd = nil
+
+_G.get_service_discovery = function()
+    if not _sd then
+        _sd = vlc.sd.create("mdns")
+    end
+    return _sd
+end

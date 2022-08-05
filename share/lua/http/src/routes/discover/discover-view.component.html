@@ -1,0 +1,42 @@
+<script type="text/x-template" id="discover-view-template">
+    <div class="discover-view h-100 pt-4">
+        <div class="fixed-top secondary-navbar">
+            <div class="container-fluid d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                <div class="d-flex align-items-center flex-1 justify-content-start">
+                    <button v-on:click="" class="btn btn-circle"><svg-icon name="format_list_bulleted"></svg-icon></button>
+                    <button v-on:click="" class="btn btn-circle ml-2 disabled"><svg-icon name="sort"></svg-icon></button>
+                </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <router-link to="/discover/home" active-class="active" class="btn btn-link">Home</router-link>
+                    <router-link to="/discover/services" active-class="active" class="btn btn-link">Services</router-link>
+                    <router-link to="/discover/url" active-class="active" class="btn btn-link">URL</router-link>
+                </div>
+                <div class="d-flex flex-1 justify-content-end h-100">
+                    <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                        <svg-icon name="playlist_play"></svg-icon>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0 h-100" :class="'push'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col container-view">
+                    <router-view v-slot="{ Component, route }">
+                        <transition name="fade" mode="out-in">
+                            <component
+                                :is="Component"
+                                :key="route.meta.usePathKey ? route.path : undefined"
+                            />
+                        </transition>
+                    </router-view>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>

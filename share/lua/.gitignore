@@ -1,1 +1,3 @@
 *.luac
+/http/dist/*
+.sass-cache/

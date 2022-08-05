@@ -1,0 +1,17 @@
+.artist-item-grid-template.grid-item {
+    margin-bottom: 16px;
+}
+
+.svg-icon {
+    &.placeholder-artist-icon > svg {
+        width: 5rem;
+        height: 5rem;
+        margin-top: 1.8rem;
+    }
+}
+
+.artist-item {
+    display: block;
+    text-decoration: none;
+    color: var(--primary-text-color);
+}

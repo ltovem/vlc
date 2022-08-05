@@ -1,0 +1,24 @@
+.albums-view {
+    ul > li {
+        display: inline-block;
+        list-style: none;
+    }
+    .expander {
+        top: auto;
+        position: absolute;
+        visibility: hidden;
+        left: 0;
+        margin-top: 20px;
+        transition: height 0.35s ease;
+        width: 100%;
+    }
+}
+.album-collapse-container {
+    .album-collapse-detail {
+        img.item-img,
+        .item-img svg {
+            width: 171px;
+            height: 171px;
+        }
+    }
+}

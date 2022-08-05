@@ -1,0 +1,17 @@
+.album-item-grid-template.grid-item {
+    margin-bottom: 16px;
+}
+
+.album-item-list-template.list-item {
+    margin-bottom: 16px;
+    .item-img {
+        width: 90px;
+    }
+}
+
+.svg-icon {
+    &.placeholder-album-icon > svg {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+}

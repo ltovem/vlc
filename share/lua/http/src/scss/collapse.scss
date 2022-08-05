@@ -1,0 +1,38 @@
+
+.collapse-item {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+}
+
+.collapse-detail {
+    display: block;
+    float: left;
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: var(--collapse-detail-bg-color);
+    padding: 16px;
+    position: relative;
+    .title {
+        font-size: 20px;
+        font-weight: normal;
+    }
+
+    .subtitle {
+        font-size: 12px;
+    }
+
+    .caption {
+        font-size: 12px;
+    }
+
+    .close {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        .svg-icon {
+            transform: rotate(45deg);
+        }
+    }
+}

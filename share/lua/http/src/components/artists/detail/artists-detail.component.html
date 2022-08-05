@@ -1,0 +1,21 @@
+<script type="text/x-template" id="artists-detail-template">
+    <div class="artits-detail-view container-fluid">
+        <div class="row">
+            <div class="col-2 artists-sidebar pt-2">
+                <h5 class="font-weight-normal">Artists</h5>
+                <ul class="list-unstyled h-100">
+                    <li v-for="(artist, index) in music.artists" class="artist-list-item">
+                        <router-link :to="'/music/artists/' + artist.id" exact-active-class="active">
+                            <img v-if="artist.src" class="embed-responsive-item artist-img" :src="artist.src">
+                            <svg-icon v-if="!artist.src" name="placeholder-artist" class="placeholder-artist-icon artist-img"></svg-icon>
+                            <span class="flex-1">{{ artist.name }}</span>
+                        </router-link>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-10 pt-4">
+                <albums :artistId="$route.params.id"></albums>
+            </div>
+        </div>
+    </div>
+</script>

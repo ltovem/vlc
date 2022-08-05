@@ -1,0 +1,36 @@
+<script type="text/x-template" id="watch-view-template">
+    <div class="watch-view h-100">
+        <div>
+            <div class="container-fluid fixed-top primary-navbar">
+                <div class="d-flex h-100 position-relative show collapse justify-content-between align-items-center">
+                    <div class="d-flex align-items-center flex-1 justify-content-start">
+                        <router-link to="/">
+                            <button class="btn btn-circle">
+                                <svg-icon name="keyboard_arrow_left"></svg-icon>
+                            </button>
+                        </router-link>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center"></div>
+                    <div class="d-flex flex-1 justify-content-end h-100">
+                        <a data-toggle="collapse" href="#" data-target=".collapse" role="button" class="text-white toggler px-2 d-flex align-items-center">
+                            <svg-icon name="playlist_play"></svg-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid px-0" :class="'overlay'">
+            <div class="row collapse show no-gutters d-flex h-100 position-relative">
+                <div class="col">
+                    <media-player></media-player>
+                </div>
+                <div class="col-3 p-0 h-100 w-sidebar navbar-collapse collapse d-flex sidebar show">
+                    <!-- fixed sidebar -->
+                    <div class="navbar-dark align-self-start w-sidebar w-sidebar-content">
+                        <playlist></playlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>

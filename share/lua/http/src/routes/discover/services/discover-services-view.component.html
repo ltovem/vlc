@@ -1,0 +1,15 @@
+<script type="text/x-template" id="discover-services-view-template">
+    <div class="discover-services-view">
+        <div class="row">
+            <grid-item :item="addService"></grid-item>
+            <template v-for="service in mainServices" :key="service">
+                <grid-item :item="service"></grid-item>
+            </template>
+        </div>
+        <div class="row">
+            <template v-for="service in secondaryServices" :key="service">
+                <grid-item :item="service"></grid-item>
+            </template>
+        </div>
+    </div>
+</script>

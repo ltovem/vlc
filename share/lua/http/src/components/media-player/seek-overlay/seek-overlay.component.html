@@ -1,0 +1,13 @@
+<script type="text/x-template" id="seek-overlay-template">
+    <teleport to="#seek-overlay">
+        <div>
+            <div class="seek-forward" v-if="value > 0">
+                <p class="icon-control">+{{ value }} <svg-icon name="forward"></svg-icon></p>
+            </div>
+
+            <div class="seek-backward" v-if="value < 0">
+                <p class="icon-control"><svg-icon name="backward"></svg-icon> {{ value }}</p>
+            </div>
+        </div>
+    </teleport>
+</script>

@@ -1,0 +1,29 @@
+<script type="text/x-template" id="track-item-list-template">
+    <div class="row align-items-center list-table-item">
+      <div class="d-flex justify-content-between col-1">
+        <div class="item-img img-16by9 d-flex" :style="{'background-image': `url(${item.src})`}">
+          <player-button v-bind:type="'primary'" class="item-primary-action item-action m-auto" :item="item"></player-button>
+        </div>
+      </div>
+      <div class="col-6">
+        <span>{{ item.title }}</span>
+      </div>
+      <div class="col-1">
+        <span><router-link to="">{{ item.artist }}</router-link></span>
+      </div>
+      <div class="col-1">
+        <span><router-link to="">{{ item.album }}</router-link></span>
+      </div>
+      <div class="col-1 text-center">{{ $filters.formatDuration(item.duration) }}</div>
+      <div class="col-1 text-center">
+        <span class="text-muted">{{ index + 1 }}</span>
+      </div>
+      <div class="text-muted col-1">
+        <div class="d-flex justify-content-between">
+          <div class="disabled item-action">
+            <svg-icon name="more-horizontal"></svg-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+</script>

@@ -1,0 +1,25 @@
+.playlist-video-item {
+    text-align: center;
+    border: 0;
+    border-radius: 0;
+    margin-bottom: 8px;
+    width: 100%;
+    &.current {
+        // font-weight: bold;
+    }
+    &.active {
+        background-color: var(--playlist-active-bg-color);
+        color: var(--playlist-active-color);
+    }
+    &:focus,
+    &:hover {
+        text-decoration: none;
+        color: #fff;
+    }
+    .item-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+}

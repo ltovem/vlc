@@ -1,0 +1,10 @@
+.playlist-actions {
+    padding: 5px 8px;
+    background-color: var(--playlist-action-bg-color);
+    .disabled {
+        color: var(--playlist-action-text-color);
+        .svg-icon {
+            color: var(--playlist-action-text-color);
+        }
+    }
+}

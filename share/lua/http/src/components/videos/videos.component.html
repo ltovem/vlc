@@ -1,0 +1,94 @@
+<script type="text/x-template" id="videos-template">
+    <div class="videos-view container-fluid">
+        <!-- <div v-if="displayMode === 'list'" class="row">
+            <album-item-list v-for="(item, index) in items" :item="item" :key="index"></album-item-list>
+        </div> -->
+        <!-- <h5 class="separator-title d-flex align-items-center">
+            <span>Videos</span>
+        </h5> -->
+        <template v-if="!videos.length">
+            <h4 class="title">No media was found</h4>
+        </template>
+        <div id="collapse-group-grid" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'grid'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <template v-for="(item, index) in videos" :key="item">
+                <video-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="col-12 col-sm-6 col-md-4 col-lg-3 collapse-item" :item="item">
+                </video-item-grid>
+                <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-grid">
+                    <div class="d-flex ml-2">
+                        <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                            <svg-icon name="add"></svg-icon>
+                        </button>
+                        <div>
+                            <img width="260" class="embed-responsive-item" :src="item.src">
+                            <div class="mt-2 d-flex">
+                                <player-button v-bind:type="'secondary'" :item="item"></player-button>
+                                <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                            </div>
+                        </div>
+                        <div class="ml-2">
+                            <h4 class="title mb-0">{{ item.title }}</h4>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                            <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
+                            <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <div id="collapse-group-list" class="position-relative collapse-container" v-if="videos.length && layout.itemLayout === 'list'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <div class="tracks-view container-fluid list-table-view">
+                <!-- <div v-if="displayMode === 'list'" class="row">
+                    <artist-item-list v-for="item in items" :item="item"></artist-item-list>
+                </div> -->
+                <div class="d-flex list-header row">
+                    <span class="col-2 text-muted track-img">
+                        <svg-icon name="Icon-Vinyl"></svg-icon>
+                    </span>
+                    <span class="col-6 text-muted">Title</span>
+                    <span class="col-2 text-muted text-center">
+                        <svg-icon name="Icon-Time"></svg-icon>
+                    </span>
+                </div>
+                <template v-for="(item, index) in videos" :key="item">
+                    <video-item-list data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item"></video-item-list>
+                    <div class="collapse collapse-detail" v-bind:id="'collapse-' + item.id" data-parent="#collapse-group-list">
+                        <div class="d-flex ml-2">
+                            <button data-toggle="collapse" v-bind:data-target="'#collapse-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                                <svg-icon name="add"></svg-icon>
+                            </button>
+                            <div>
+                                <img width="260" class="embed-responsive-item" :src="item.src">
+                                <div class="mt-2 d-flex">
+                                    <player-button v-bind:type="'secondary'" :item="item"></player-button>
+                                    <enqueue-button class="ml-2" :item="item"></enqueue-button>
+                                </div>
+                            </div>
+                            <div class="ml-2">
+                                <h4 class="title mb-0">{{ item.title }}</h4>
+                                <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                                <div class="subtitle"><span class="font-weight-bold">File name:</span>{{ item.filename }}</div>
+                                <div class="subtitle"><span class="font-weight-bold">Path:</span>{{ item.mrl }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+        <div class="row position-relative" v-if="layout.itemLayout === 'poster'">
+            <!-- <div class="carousel-navigation d-flex align-items-center">
+                <svg-icon class="muted-opacity" name="keyboard_arrow_left"></svg-icon>
+                <svg-icon name="keyboard_arrow_right"></svg-icon>
+            </div> -->
+            <video-item-poster class="col-12 col-sm-6 col-md-4 col-lg-2" v-for="(item, index) in videos" :item="item" :key="index"></video-item-poster>
+        </div>
+    </div>
+</script>

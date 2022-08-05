@@ -1,0 +1,13 @@
+<script type="text/x-template" id="playlists-template">
+    <div class="playlists-view container-fluid">
+        <div class="row">
+            <div class="playlists-item grid-item col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                <div class="create-item">
+                    Create a playlist
+                    <svg-icon name="add"></svg-icon>
+                </div>
+            </div>
+            <playlists-item v-for="item in items" :item="item"></playlists-item>
+        </div>
+    </div>
+</script>

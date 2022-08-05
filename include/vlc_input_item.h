@@ -88,6 +88,7 @@ struct input_item_t
 {
     char       *psz_name;            /**< text describing this item */
     char       *psz_uri;             /**< mrl of this item */
+    int64_t    i_mediaID;           /**< media ID of this item */
 
     int        i_options;            /**< Number of input options */
     char       **ppsz_options;       /**< Array of input options */

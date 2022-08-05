@@ -1,0 +1,66 @@
+.playlistNav {
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+.btn-circle {
+    text-align: center;
+    padding: 0;
+    border-radius: 15px;
+    border: 0;
+    background-color: transparent;
+    line-height: 0;
+    .svg-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+.btn-circle.btn-lg {
+    width: 50px;
+    height: 50px;
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 25px;
+}
+
+.btn-circle.btn-xl {
+    width: 70px;
+    height: 70px;
+    padding: 10px 16px;
+    font-size: 24px;
+    border-radius: 35px;
+}
+
+#playlistNav {
+    background-color: var(--sidenav-bg-color);
+}
+
+#playlist {
+    // max-height: calc(100% - 120px);
+    height: calc(100% - 160px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.playlist-header {
+    margin: 8px 8px;
+    font-size: 13px;
+}
+
+@media screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    .playlistNav {
+        width: 0%;
+    }
+
+    .playlistNavMobile {
+        visibility: visible;
+        height: 10%;
+        top: 50%;
+    }
+
+    #playlist {
+        width: 95%;
+        height: 90%;
+    }
+}

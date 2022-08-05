@@ -1,0 +1,33 @@
+<script type="text/x-template" id="video-item-grid-template">
+    <div class="video-item grid-item video-item-grid-template">
+        <div class="item-img embed-responsive embed-responsive-16by10">
+            <img class="embed-responsive-item" :src="item.src">
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" :item="item" class="item-primary-action"></player-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+            <div v-if="item.quality" class="quality">
+                <span class="quality-tag">{{ item.quality }}</span>
+            </div>
+            <div v-if="item.user" class="user">
+                <img src="">
+            </div>
+            <div v-if="item.progress" class="item-progress-bar-container">
+                <div class="item-progress-bar" :style="{width: item.progress}"></div>
+            </div>
+        </div>
+        <div class="item-body px-2">
+            <span class="d-flex align-items-center justify-content-between">
+                <router-link to="/album" class="item-title text-truncate">
+                    <span>{{ item.title }}</span>
+                </router-link>
+                <span class="item-subtitle">{{ $filters.formatDuration(item.duration) }}</span>
+            </span>
+            <router-link to="/" class="item-subtitle text-truncate text-left">{{ item.subtitle }}</router-link>
+        </div>
+    </div>
+</script>

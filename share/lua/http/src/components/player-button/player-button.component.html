@@ -1,0 +1,5 @@
+<script type="text/x-template" id="player-button-template">
+    <c-button v-on:click="play()" v-bind:classname="classname">
+        <svg-icon name="play_arrow"></svg-icon> {{ type === 'secondary' ? 'Play' : '' }}
+    </c-button>
+</script>

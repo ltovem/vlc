@@ -1,0 +1,23 @@
+<!-- Templates -->
+<!-- Playlist Template -->
+<script type="text/x-template" id="playlist-template">
+    <div id="playlistNav" class="playlistNav h-100">
+        <h6 class="playlist-header">Playlist &bull; <span class="text-muted">{{ ' ' + items.length }}{{ items.length ? ' elements' : ''}}</span></h6>
+        <div class="dropdown-divider"></div>
+        <div id="playlist">
+            <div v-for="(item, index) in items" :key="index">
+                <playlist-video-item
+                    v-if="item.type === 'leaf' || item.type === 'video'"
+                    :item="item"
+                    :index="index">
+                </playlist-video-item>
+                <playlist-audio-item
+                    v-if="item.type === 'audio'"
+                    :item="item"
+                    :index="index">
+                </playlist-audio-item>
+            </div>
+        </div>
+        <playlist-buttons></playlist-buttons>
+    </div>
+</script>

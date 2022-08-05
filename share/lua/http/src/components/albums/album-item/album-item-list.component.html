@@ -1,0 +1,27 @@
+<script type="text/x-template" id="album-item-list-template">
+    <div class="album-item list-item album-item-list-template col-12 col-sm-6 col-md-6 col-lg-4">
+        <div class="item-img item-border-radius">
+            <img :src="item.src">
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action item-action"></player-button>
+            </div>
+        </div>
+        <div class="item-body">
+            <router-link to="/album" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link to="/artist" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
+            <div class="item-secondary-action">
+                <div v-on:click="toggleLiked()">
+                    <div v-if="!liked" class="disabled icon-wrapper item-action">
+                        <svg-icon name="favorite_outline"></svg-icon>
+                    </div>
+                    <div v-if="liked" class="disabled icon-wrapper item-action active">
+                        <svg-icon name="favorite"></svg-icon>
+                    </div>
+                </div>
+                <div class="icon-wrapper disabled item-action">
+                    <svg-icon name="more-horizontal"></svg-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>

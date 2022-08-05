@@ -1,0 +1,67 @@
+<script type="text/x-template" id="albums-template">
+    <div class="albums-view container-fluid">
+        <div v-if="layout.itemLayout === 'list'" class="row">
+            <!-- <album-item-list v-for="(item, index) in music.albums" :item="item" :key="index"></album-item-list> -->
+        </div>
+        <div id="album-collapse-group" class="position-relative collapse-container album-collapse-container" v-if="layout.itemLayout === 'grid'">
+            <template v-for="(item, index) in getAlbums()" :key="item">
+                <album-item-grid data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" :item="item" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 collapse-item"></album-item-grid>
+                <div class="collapse album-collapse-detail collapse-detail" v-bind:id="'collapse-album-' + item.id" data-parent="#album-collapse-group">
+                    <div class="d-flex ml-2">
+                        <!-- <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                            <svg-icon name="add"></svg-icon>
+                        </button> -->
+                        <div>
+                            <img v-if="item.src" width="171" height="171" class="embed-responsive-item item-img" :src="item.src">
+                            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon item-img"></svg-icon>
+                            <div class="mt-2 d-flex">
+                                <player-button v-bind:type="'secondary'" :items="music.albumTracks[item.id]"></player-button>
+                                <enqueue-button class="ml-2" :items="music.albumTracks[item.id]"></enqueue-button>
+                            </div>
+                        </div>
+                        <div class="ml-2 w-100">
+                            <button data-toggle="collapse" v-bind:data-target="'#collapse-album-' + item.id" aria-expanded="false" aria-controls="collapse" class="close">
+                                <svg-icon name="add"></svg-icon>
+                            </button>
+                            <h4 class="title mb-0">{{ item.title }}</h4>
+                            <span class="caption">{{ $filters.formatDuration(item.duration) }}</span>
+                            <table class="table table-hover table-item">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col"></th>
+                                    <th scope="col"><svg-icon name="Icon-Time"></svg-icon></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(track, index) in music.albumTracks[item.id]">
+                                        <th scope="row" class="d-flex justify-content-between">
+                                            <div class="item-img">
+                                                <span>{{ index + 1 }}</span>
+                                                <player-button v-bind:type="'primary'" class="item-primary-action item-action" :item="track"></player-button>
+                                            </div>
+                                          </th>
+                                        <td>
+                                            {{ track.title }}
+                                        </td>
+                                        <td class="text-muted">
+                                          <div class="d-flex justify-content-between">
+                                            <div class="disabled item-action">
+                                              <svg-icon name="more-horizontal"></svg-icon>
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td>
+                                            {{ $filters.formatDuration(track.duration) }}
+                                        </td>
+                                      </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</script>

@@ -430,10 +430,12 @@ httpd_HandlerCallBack(httpd_callback_sys_t *p_sys, httpd_client_t *cl,
         *psz_remote_addr = '\0';
 
     uint8_t *psz_args = query->psz_args;
-    handler->pf_fill(handler->p_sys, handler, query->psz_url, psz_args,
-                      query->i_type, query->p_body, query->i_body,
-                      psz_remote_addr, NULL,
-                      &answer->p_body, &answer->i_body);
+    if ( handler->pf_fill(handler->p_sys, handler, query->psz_url, psz_args,
+                          query->i_type, query->p_body, query->i_body,
+                          psz_remote_addr, NULL,
+                          &answer->p_body, &answer->i_body) != VLC_SUCCESS)
+        return VLC_EGENERIC;
+
 
     if (!answer->p_body) {
         const char* psz_result = "Internal Server Error";

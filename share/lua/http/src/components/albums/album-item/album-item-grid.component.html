@@ -1,0 +1,20 @@
+<script type="text/x-template" id="album-item-grid-template">
+    <div v-on:click="toggleAlbumTracks(item.id)" class="album-item grid-item album-item-grid-template">
+        <div class="item-img embed-responsive embed-responsive-1by1">
+            <img v-if="item.src" class="embed-responsive-item" :src="item.src">
+            <svg-icon v-if="!item.src" name="placeholder-album" class="placeholder-album-icon"></svg-icon>
+            <div class="overlay">
+                <player-button v-bind:type="'primary'" class="item-primary-action"></player-button>
+                <div class="item-secondary-action">
+                    <div class="icon-wrapper">
+                        <svg-icon name="more-horizontal"></svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item-body">
+            <router-link to="" class="item-title text-truncate">{{ item.title }}</router-link>
+            <router-link to="" class="item-subtitle text-truncate">{{ item.artist }}</router-link>
+        </div>
+    </div>
+</script>
