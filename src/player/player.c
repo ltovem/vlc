@@ -37,6 +37,11 @@
 #include "input/resource.h"
 #include "audio_output/aout_internal.h"
 
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#include "darwin/runloop.h"
+#endif
+
 static_assert(VLC_PLAYER_CAP_SEEK == VLC_INPUT_CAPABILITIES_SEEKABLE &&
               VLC_PLAYER_CAP_PAUSE == VLC_INPUT_CAPABILITIES_PAUSEABLE &&
               VLC_PLAYER_CAP_CHANGE_RATE == VLC_INPUT_CAPABILITIES_CHANGE_RATE &&
@@ -253,6 +258,16 @@ vlc_player_destructor_Thread(void *data)
             vlc_player_Lock(player);
         }
     }
+
+    /* Running here means that there are no inputs anymore and we get the
+     * player lock back, after the call to vlc_player_Delete requested the
+     * end of the input. On Darwin, we'll be waiting for CFRunLoopStop. */
+#ifdef  __APPLE__
+    CFRunLoopRef runloop = CFRunLoopGetMain();
+    vlc_darwin_runloop_PerformBlock(runloop, ^{
+        CFRunLoopStop(runloop);
+    });
+#endif
     vlc_mutex_unlock(&player->lock);
     return NULL;
 }
@@ -1890,7 +1905,28 @@ vlc_player_Delete(vlc_player_t *player)
     assert(vlc_list_is_empty(&player->vout_listeners));
     assert(vlc_list_is_empty(&player->aout_listeners));
 
+#ifdef  __APPLE__
+    /* Wait for potential clients that might conflict with this wait. */
+    /* We just set deleting to true, so the destructor thread won't have
+     * returned yet. */
+    CFRunLoopRef runloop = CFRunLoopGetMain();
+    if (CFRunLoopGetCurrent() == runloop)
+    {
+        vlc_darwin_runloop_PerformBlock(runloop, ^{
+            vlc_mutex_unlock(&player->lock);
+        });
+        vlc_darwin_runloop_RunUntilStopped(runloop);
+    }
+    else
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            vlc_darwin_runloop_RunUntilStopped(runloop);
+        });
+        vlc_mutex_unlock(&player->lock);
+    }
+#else
     vlc_mutex_unlock(&player->lock);
+#endif
 
     vlc_join(player->destructor.thread, NULL);
 

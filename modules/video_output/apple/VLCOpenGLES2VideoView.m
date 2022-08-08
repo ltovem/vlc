@@ -50,6 +50,8 @@
 #import "../opengl/vout_helper.h"
 #import "../opengl/gl_api.h"
 
+#import "../../../src/darwin/runloop.h"
+
 @interface VLCOpenGLES2VideoView : UIView {
     vlc_gl_t *_gl;
 
@@ -503,7 +505,8 @@ static int Open(vlc_gl_t *gl, unsigned width, unsigned height)
         /* NOTE: we're using CFRunLoopPerformBlock with the "vlc_runloop" tag
          * to avoid deadlocks between the window module (main thread) and the
          * display module, which would happen when using dispatch_sycn here. */
-        vlc_dispatch_sync(^{
+        CFRunLoopRef runloop = CFRunLoopGetMain();
+        vlc_darwin_DispatchSync(runloop, ^{
             gl->sys = (__bridge_retained void*)[[VLCOpenGLES2VideoView alloc]
                initWithFrame:CGRectMake(0.,0.,width,height) gl:gl];
         });

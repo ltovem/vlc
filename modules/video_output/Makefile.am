@@ -79,11 +79,13 @@ libvout_ios_plugin_la_CFLAGS = $(AM_CFLAGS) $(OPENGL_COMMONCFLAGS) -DUSE_OPENGL_
 libvout_ios_plugin_la_LIBADD = libvlc_opengles.la
 
 libuiview_window_plugin_la_SOURCES = video_output/apple/VLCVideoUIView.m
+libuiview_window_plugin_la_LIBADD = ../src/libvlc_darwin.la
 libuiview_window_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	-Wl,-framework,Foundation,-framework,QuartzCore,-framework,UIKit
 libuiview_window_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc
 
 libcaeagl_ios_plugin_la_SOURCES = video_output/apple/VLCOpenGLES2VideoView.m
+libcaeagl_ios_plugin_la_LIBADD = ../src/libvlc_darwin.la
 libcaeagl_ios_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	-Wl,-framework,Foundation,-framework,OpenGLES,-framework,QuartzCore,-framework,UIKit
 libcaeagl_ios_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) -fobjc-arc

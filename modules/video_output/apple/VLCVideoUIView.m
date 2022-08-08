@@ -68,6 +68,9 @@
 #import <vlc_mouse.h>
 #import <vlc_window.h>
 
+#import <assert.h>
+#import "../../../src/darwin/runloop.h"
+
 @interface VLCVideoUIView : UIView {
     /* VLC window object, set to NULL under _mutex lock when closing. */
     vlc_window_t *_wnd;
@@ -173,48 +176,24 @@
 
 - (void)reportEvent:(void(^)())eventBlock
 {
-    CFStringRef mode = CFSTR("org.videolan.vlccore.window");
     CFRunLoopRef runloop = CFRunLoopGetCurrent();
 
-    /* Callback hell right below, we need to execute the call
-     * to CFRunLoopStop inside the CFRunLoopRunInMode context
-     * since the CFRunLoopRunInMode might have already returned
-     * otherwise, which means more callback wrapping. */
-    CFRunLoopPerformBlock(runloop, mode, ^{
+    vlc_darwin_runloop_PerformBlock(runloop, ^{
         /* Execute the event in a different thread, we don't
          * want to block the main CFRunLoop since the vout
          * display module typically needs it to Open(). */
         dispatch_async(_eventq, ^{
-            (eventBlock)();
-            CFRunLoopPerformBlock(runloop, mode, ^{
-                /* Signal that we can end the ReportEvent call */
-                CFRunLoopStop(runloop);
-            });
-            CFRunLoopWakeUp(runloop);
+            /* We need to lock to ensure _wnd is still valid,
+             * see detachFromParent. */
+            vlc_mutex_lock(&_mutex);
+            if (_wnd != NULL)
+                (eventBlock)();
+            vlc_darwin_runloop_Stop(runloop);
+            vlc_mutex_unlock(&_mutex);
         });
     });
-    /* Above and here, the CFRunLoopWakeUp call is necessary to
-     * signal to the event loop that it will need to process the
-     * blocks. They don't act like CFRunLoopSource so they won't
-     * wake up the loop otherwise. */
-    CFRunLoopWakeUp(runloop);
-    for (;;)
-    {
-        /* We need a timeout here, otherwise the CFRunLoopInMode
-         * call will check the events (if woken up), and since
-         * we might have no event, it would return a timeout
-         * result code, and loop again, creating a busy loop.
-         * INFINITY is more than enough, and we'll interrupt
-         * anyway. */
-        CFRunLoopRunResult ret = CFRunLoopRunInMode(mode, INFINITY, YES);
 
-        /* Usual CFRunLoop are typically checking result code
-         * like kCFRunLoopRunFinished too, but we really want
-         * to receive the Stop signal from above to leave the
-         * loop in the correct state. */
-        if (ret == kCFRunLoopRunStopped)
-            break;
-    }
+    vlc_darwin_runloop_RunUntilStopped(runloop);
 }
 
 - (void)detachFromParent
@@ -323,20 +302,11 @@
     CGSize viewSize = [self bounds].size;
     CGFloat scaleFactor = self.contentScaleFactor;
 
-    /* We need to lock to ensure _wnd is still valid, see detachFromParent. */
-    vlc_mutex_lock(&_mutex);
-    if (_wnd == NULL)
-    {
-        vlc_mutex_unlock(&_mutex);
-        return;
-    }
-
     [self reportEvent:^{
         vlc_window_ReportSize(_wnd,
                 viewSize.width * scaleFactor,
                 viewSize.height * scaleFactor);
     }];
-    vlc_mutex_unlock(&_mutex);
 }
 
 - (void)tapRecognized:(UITapGestureRecognizer *)tapRecognizer
@@ -345,21 +315,12 @@
     CGPoint touchPoint = [tapRecognizer locationInView:self];
     CGFloat scaleFactor = self.contentScaleFactor;
 
-    /* We need to lock to ensure _wnd is still valid, see detachFromParent. */
-    vlc_mutex_lock(&_mutex);
-    if (_wnd == NULL)
-    {
-        vlc_mutex_unlock(&_mutex);
-        return;
-    }
-
     [self reportEvent:^{
         vlc_window_ReportMouseMoved(_wnd,
                 (int)touchPoint.x * scaleFactor, (int)touchPoint.y * scaleFactor);
         vlc_window_ReportMousePressed(_wnd, MOUSE_BUTTON_LEFT);
         vlc_window_ReportMouseReleased(_wnd, MOUSE_BUTTON_LEFT);
     }];
-    vlc_mutex_unlock(&_mutex);
 }
 
 - (void)updateConstraints
