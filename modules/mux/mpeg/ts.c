@@ -413,10 +413,9 @@ static int GetNextFreePID( sout_mux_t *p_mux, int i_pid_start )
 }
 
 /* Reserve a pid and return it */
-static int  AllocatePID( sout_mux_t *p_mux, int i_cat )
+static int  AllocatePID( sout_mux_t *p_mux, int i_cat, bool b_save )
 {
     sout_mux_sys_t *p_sys = p_mux->p_sys;
-    int i_pid;
     int *pi_candidate_pid = NULL;
 
     switch( i_cat )
@@ -436,9 +435,8 @@ static int  AllocatePID( sout_mux_t *p_mux, int i_cat )
     }
 
     *pi_candidate_pid = GetNextFreePID( p_mux, *pi_candidate_pid );
-    i_pid = (*pi_candidate_pid)++;
 
-    return i_pid;
+    return (b_save) ? ++(*pi_candidate_pid) : *pi_candidate_pid + 1;
 }
 
 static int pmtcompare( const void *pa, const void *pb )
@@ -885,10 +883,12 @@ static int AddStream( sout_mux_t *p_mux, sout_input_t *p_input )
     if( !p_stream )
         goto oom;
 
+    int i_pid;
+
     if ( p_sys->b_es_id_pid )
-        p_stream->ts.i_pid = p_input->fmt.i_id & 0x1fff;
+        i_pid = p_input->fmt.i_id & 0x1fff;
     else
-        p_stream->ts.i_pid = AllocatePID( p_mux, p_input->p_fmt->i_cat );
+        i_pid = AllocatePID( p_mux, p_input->p_fmt->i_cat, false );
 
     tsmux_stream_t  tmpts = {0};
     pesmux_stream_t tmppes = {0};
@@ -900,6 +900,12 @@ static int AddStream( sout_mux_t *p_mux, sout_input_t *p_input )
         free( p_stream );
         return VLC_EGENERIC;
     }
+
+    p_stream->ts.i_pid = i_pid;
+
+    if ( !p_sys->b_es_id_pid )
+        i_pid = AllocatePID( p_mux, p_input->p_fmt->i_cat, true );
+    assert(i_pid == p_stream->ts.i_pid);
 
     p_stream->ts.i_stream_type = tmpts.i_stream_type;
     p_stream->pes.i_stream_id = tmppes.i_stream_id;
