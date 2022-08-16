@@ -890,14 +890,20 @@ static int AddStream( sout_mux_t *p_mux, sout_input_t *p_input )
     else
         p_stream->ts.i_pid = AllocatePID( p_mux, p_input->p_fmt->i_cat );
 
+    tsmux_stream_t  tmpts = {0};
+    pesmux_stream_t tmppes = {0};
     if( FillPMTESParams( p_sys->standard, p_input->p_fmt,
-                        &p_stream->ts, &p_stream->pes ) != VLC_SUCCESS )
+                         p_stream->ts.i_pid, &tmpts, &tmppes ) != VLC_SUCCESS )
     {
         msg_Warn( p_mux, "rejecting stream with unsupported codec %4.4s",
                   (char*)&p_input->p_fmt->i_codec );
         free( p_stream );
         return VLC_EGENERIC;
     }
+
+    p_stream->ts.i_stream_type = tmpts.i_stream_type;
+    p_stream->pes.i_stream_id = tmppes.i_stream_id;
+    p_stream->pes.i_es_id = tmppes.i_es_id;
 
     p_stream->pes.i_langs = 1 + p_input->p_fmt->i_extra_languages;
     p_stream->pes.lang = calloc(1, p_stream->pes.i_langs * 4);
