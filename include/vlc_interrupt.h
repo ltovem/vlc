@@ -28,7 +28,6 @@
 # endif
 
 struct pollfd;
-struct iovec;
 struct sockaddr;
 struct msghdr;
 
@@ -115,11 +114,6 @@ VLC_API int vlc_poll_i11e(struct pollfd *, unsigned, int);
  * @warning This function ignores the non-blocking file flag.
  */
 VLC_API int vlc_poll_file_i11e(int fd, unsigned int mask);
-
-VLC_API ssize_t vlc_readv_i11e(int fd, struct iovec *, int);
-VLC_API ssize_t vlc_writev_i11e(int fd, const struct iovec *, int);
-VLC_API ssize_t vlc_read_i11e(int fd, void *, size_t);
-VLC_API ssize_t vlc_write_i11e(int fd, const void *, size_t);
 
 VLC_API ssize_t vlc_recvmsg_i11e(int fd, struct msghdr *, int flags);
 VLC_API ssize_t vlc_sendmsg_i11e(int fd, const struct msghdr *, int flags);
