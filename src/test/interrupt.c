@@ -89,11 +89,11 @@ static void test_context_simple(vlc_interrupt_t *ctx)
     assert(errno == EINTR);
 
     c = 12;
-    assert(vlc_write_i11e(fds[0], &c, 1) == 1);
+    assert(vlc_send_i11e(fds[0], &c, 1, 0) == 1);
     c = 0;
-    assert(vlc_read_i11e(fds[1], &c, 1) == 1 && c == 12);
+    assert(vlc_recv_i11e(fds[1], &c, 1, 0) == 1 && c == 12);
     vlc_interrupt_raise(ctx);
-    assert(vlc_read_i11e(fds[1], &c, 1) == -1);
+    assert(vlc_recv_i11e(fds[1], &c, 1, 0) == -1);
     assert(errno == EINTR);
 
     c = 42;
