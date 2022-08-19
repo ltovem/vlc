@@ -37,6 +37,9 @@
 #include <vlc_plugin.h>
 #include <vlc_spawn.h>
 #include <vlc_interrupt.h>
+#ifdef HAVE_POLL_H
+ #include <poll.h>
+#endif
 
 struct ytdl_json {
     struct vlc_logger *logger;
@@ -55,7 +58,11 @@ size_t json_read(void *data, void *buf, size_t size)
     struct ytdl_json *sys = data;
 
     while (!vlc_killed()) {
-        ssize_t val = vlc_read_i11e(sys->fd, buf, size);
+        ssize_t val;
+        if (vlc_poll_file_i11e(sys->fd, POLLIN) < 0)
+            val = -1;
+        else
+            val = read(sys->fd, buf, size);
 
         if (val >= 0)
             return val;
