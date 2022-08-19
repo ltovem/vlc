@@ -398,7 +398,7 @@ int vlc_poll_i11e(struct pollfd *fds, unsigned nfds, int timeout)
     return ret;
 }
 
-static int vlc_poll_file(int fd, unsigned int mask)
+int vlc_poll_file_i11e(int fd, unsigned int mask)
 {
     struct pollfd ufd;
 
@@ -409,7 +409,7 @@ static int vlc_poll_file(int fd, unsigned int mask)
 
 static int vlc_poll_sock(int sock, unsigned int mask)
 {
-    return vlc_poll_file(sock, mask);
+    return vlc_poll_file_i11e(sock, mask);
 }
 
 #else /* !_WIN32 */
@@ -466,7 +466,7 @@ int vlc_poll_i11e(struct pollfd *fds, unsigned nfds, int timeout)
     return ret;
 }
 
-static int vlc_poll_file(int fd, unsigned int mask)
+int vlc_poll_file_i11e(int fd, unsigned int mask)
 {
     (void) fd; (void) mask;
     return 1;
@@ -496,7 +496,7 @@ static int vlc_poll_sock(int sock, unsigned int mask)
  */
 ssize_t vlc_readv_i11e(int fd, struct iovec *iov, int count)
 {
-    if (vlc_poll_file(fd, POLLIN) < 0)
+    if (vlc_poll_file_i11e(fd, POLLIN) < 0)
         return -1;
     return readv(fd, iov, count);
 }
@@ -510,7 +510,7 @@ ssize_t vlc_readv_i11e(int fd, struct iovec *iov, int count)
  */
 ssize_t vlc_writev_i11e(int fd, const struct iovec *iov, int count)
 {
-    if (vlc_poll_file(fd, POLLOUT) < 0)
+    if (vlc_poll_file_i11e(fd, POLLOUT) < 0)
         return -1;
     return vlc_writev(fd, iov, count);
 }
