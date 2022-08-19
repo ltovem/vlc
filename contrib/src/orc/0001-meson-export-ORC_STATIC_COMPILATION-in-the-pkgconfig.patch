@@ -1,0 +1,45 @@
+From 5e906cda39407766be618b32260f0a55fe213ff2 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Fri, 19 Aug 2022 11:02:15 +0200
+Subject: [PATCH] meson: export ORC_STATIC_COMPILATION in the pkgconfig file
+
+If the library is compiled statically the define also needs to be set in the
+orc-0.4.pc file so that users of the library (in a UNIX toolchain cross
+compiling to Windows) will not import the functions as DLL imports.
+---
+ meson.build | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/meson.build b/meson.build
+index 4054c1d..0c4ac28 100644
+--- a/meson.build
++++ b/meson.build
+@@ -88,6 +88,7 @@ if cc.has_header_symbol('android/log.h', '__android_log_print')
+   liblog = [cc.find_library('log', required : true)]
+ endif
+ 
++orc_extra_cflags = []
+ host_os = host_machine.system()
+ if host_os == 'windows'
+   cdata.set('HAVE_CODEMEM_VIRTUALALLOC', true)
+@@ -107,6 +108,9 @@ else
+   cdata.set('HAVE_CODEMEM_MMAP', true)
+   cdata.set('HAVE_THREAD_PTHREAD', true)
+ endif
++if get_option('default_library') == 'static'
++  orc_extra_cflags += '-DORC_STATIC_COMPILATION'
++endif
+ 
+ monotonic_test = '''
+ #include <time.h>
+@@ -184,6 +188,7 @@ pkg.generate (orc_lib,
+   subdirs : 'orc-' + orc_api,
+   description : 'Library of Optimized Inner Loops Runtime Compiler',
+   variables : tools_variables,
++  extra_cflags: orc_extra_cflags,
+   libraries_private : orc_dependencies)
+ 
+ # Install m4 macro that other projects use
+-- 
+2.27.0.windows.1
+

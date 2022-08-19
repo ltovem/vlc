@@ -1,24 +1,24 @@
 # orc
 
-ORC_VERSION := 0.4.18
-ORC_URL := $(CONTRIB_VIDEOLAN)/orc/orc-$(ORC_VERSION).tar.gz
+ORC_VERSION := 0.4.32
+ORC_URL := https://gitlab.freedesktop.org/gstreamer/orc/-/archive/$(ORC_VERSION)/orc-$(ORC_VERSION).tar.bz2
 
 ifeq ($(call need_pkg,"orc-0.4"),)
 PKGS_FOUND += orc
 endif
 
-$(TARBALLS)/orc-$(ORC_VERSION).tar.gz:
+$(TARBALLS)/orc-$(ORC_VERSION).tar.bz2:
 	$(call download_pkg,$(ORC_URL),orc)
 
-.sum-orc: orc-$(ORC_VERSION).tar.gz
+.sum-orc: orc-$(ORC_VERSION).tar.bz2
 
-orc: orc-$(ORC_VERSION).tar.gz .sum-orc
+orc: orc-$(ORC_VERSION).tar.bz2 .sum-orc
 	$(UNPACK)
-	$(APPLY) $(SRC)/orc/use-proper-func-detection.patch
-	$(UPDATE_AUTOCONFIG)
+	$(APPLY) $(SRC)/orc/0001-meson-export-ORC_STATIC_COMPILATION-in-the-pkgconfig.patch
 	$(MOVE)
 
 .orc: orc
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
-	cd $< && $(MAKE) install
+	cd $< && rm -rf ./build
+	cd $< && $(HOSTVARS_MESON) $(MESON) -Dauto_features=disabled build
+	cd $< && cd build && ninja install
 	touch $@
