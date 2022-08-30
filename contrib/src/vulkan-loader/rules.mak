@@ -37,6 +37,10 @@ ifndef HAVE_VISUALSTUDIO
 VULKAN_LOADER_CONF += -DUSE_MASM=OFF
 endif
 
+ifdef HAVE_MACOSX
+VULKAN_LOADER_CONF += -DBUILD_STATIC_LOADER=ON
+endif
+
 $(TARBALLS)/Vulkan-Loader-$(VULKAN_LOADER_VERSION).tar.gz:
 	$(call download_pkg,$(VULKAN_LOADER_URL),vulkan-loader)
 
@@ -57,8 +61,9 @@ VULKAN_LOADER_ENV_CONF = \
 	$(CMAKECLEAN)
 	$(VULKAN_LOADER_ENV_CONF) $(HOSTVARS) $(CMAKE) $(VULKAN_LOADER_CONF)
 	+$(CMAKEBUILD)
-
+ifdef HAVE_MACOSX
 	$(call pkg_static,"build/loader/vulkan.pc")
+endif
 	+$(CMAKEBUILD)
 	+$(CMAKEBUILD) --target install
 	touch $@
