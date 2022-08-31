@@ -779,6 +779,7 @@ static block_t *ParseMPEGBlock( decoder_t *p_dec, block_t *p_frag )
         p_sys->p_frame = NULL;
         p_sys->pp_last = &p_sys->p_frame;
         p_sys->b_frame_slice = false;
+        cc_Flush( &p_sys->cc );
 
     }
     else if( p_sys->b_frame_slice &&
