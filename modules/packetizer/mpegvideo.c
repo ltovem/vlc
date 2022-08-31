@@ -133,7 +133,7 @@ typedef struct
     vlc_tick_t i_dts;
 
     date_t  dts;
-    date_t  prev_iframe_dts;
+    date_t  gop_start_dts;
 
     /* Sequence properties */
     uint16_t i_h_size_value;
@@ -256,7 +256,7 @@ static int Open( vlc_object_t *p_this )
         den = 1001;
     }
     date_Init( &p_sys->dts, 2 * num, den ); /* fields / den */
-    date_Init( &p_sys->prev_iframe_dts, 2 * num, den );
+    date_Init( &p_sys->gop_start_dts, 2 * num, den );
 
     p_sys->i_h_size_value = 0;
     p_sys->i_v_size_value = 0;
@@ -428,7 +428,7 @@ static void ProcessSequenceParameters( decoder_t *p_dec )
         if( num && den ) /* fields / den */
         {
             date_Change( &p_sys->dts, num, den );
-            date_Change( &p_sys->prev_iframe_dts, num, den );
+            date_Change( &p_sys->gop_start_dts, num, den );
         }
     }
 
@@ -443,6 +443,25 @@ static void ProcessSequenceParameters( decoder_t *p_dec )
              fmt->i_width, fmt->i_height,
              fmt->i_frame_rate, fmt->i_frame_rate_base);
     }
+}
+
+static vlc_tick_t ComputePTSFromPOC( const decoder_sys_t *p_sys,
+                                     bool b_first_field )
+{
+    /* Compute pts from poc */
+    date_t datepts = p_sys->gop_start_dts;
+    date_Increment( &datepts, (1 + p_sys->i_temporal_ref) * 2 );
+    /* Field picture second field case */
+    if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
+    {
+        /* first sent is not the first in display order */
+        if( (p_sys->e_picture_structure >> 1) != !p_sys->i_top_field_first &&
+                b_first_field )
+        {
+            date_Increment( &datepts, 2 );
+        }
+    }
+    return date_Get( &datepts );
 }
 
 /*****************************************************************************
@@ -529,59 +548,36 @@ static block_t *OutputFrame( decoder_t *p_dec )
         }
     }
 
+    const bool b_first_field = (p_sys->i_prev_temporal_ref != p_sys->i_temporal_ref );
+    if( p_sys->i_temporal_ref == 0 && b_first_field )
+    {
+        if( date_Get( &p_sys->gop_start_dts ) == VLC_TICK_INVALID )
+        {
+            if( p_sys->i_dts != VLC_TICK_INVALID )
+            {
+                date_Set( &p_sys->dts, p_sys->i_dts );
+            }
+            else
+            {
+                if( date_Get( &p_sys->dts ) == VLC_TICK_INVALID )
+                {
+                    date_Set( &p_sys->dts, VLC_TICK_0 );
+                }
+            }
+        }
+        p_sys->gop_start_dts = p_sys->dts;
+    }
+
     /* Special case for DVR-MS where we need to fully build pts from scratch
      * and only use first dts as it does not monotonically increase
      * This will NOT work with frame repeats and such, as we would need to fully
      * fill the DPB to get accurate pts timings. */
     if( unlikely( p_dec->fmt_in.i_original_fourcc == VLC_FOURCC( 'D','V','R',' ') ) )
     {
-        const bool b_first_xmited = (p_sys->i_prev_temporal_ref != p_sys->i_temporal_ref );
-
-        if( ( p_pic->i_flags & BLOCK_FLAG_TYPE_I ) && b_first_xmited )
-        {
-            if( date_Get( &p_sys->prev_iframe_dts ) == VLC_TICK_INVALID )
-            {
-                if( p_sys->i_dts != VLC_TICK_INVALID )
-                {
-                    date_Set( &p_sys->dts, p_sys->i_dts );
-                }
-                else
-                {
-                    if( date_Get( &p_sys->dts ) == VLC_TICK_INVALID )
-                    {
-                        date_Set( &p_sys->dts, VLC_TICK_0 );
-                    }
-                }
-            }
-            p_sys->prev_iframe_dts = p_sys->dts;
-        }
-
         p_pic->i_dts = date_Get( &p_sys->dts );
-
-        /* Compute pts from poc */
-        date_t datepts = p_sys->prev_iframe_dts;
-        date_Increment( &datepts, (1 + p_sys->i_temporal_ref) * 2 );
-
-        /* Field picture second field case */
-        if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
-        {
-            /* first sent is not the first in display order */
-            if( (p_sys->e_picture_structure >> 1) != !p_sys->i_top_field_first &&
-                    b_first_xmited )
-            {
-                date_Increment( &datepts, 2 );
-            }
-        }
-
-        p_pic->i_pts = date_Get( &datepts );
-
-        if( date_Get( &p_sys->dts ) != VLC_TICK_INVALID )
-        {
-            date_Increment( &p_sys->dts,  i_num_fields );
-
-            p_pic->i_length = date_Get( &p_sys->dts ) - p_pic->i_dts;
-        }
-        p_sys->i_prev_temporal_ref = p_sys->i_temporal_ref;
+        p_pic->i_pts = ComputePTSFromPOC( p_sys, b_first_field );
+        if( p_pic->i_pts != VLC_TICK_INVALID && p_pic->i_pts < p_pic->i_dts )
+            p_pic->i_pts = p_pic->i_dts;
     }
     else /* General case, use demuxer's dts/pts when set or interpolate */
     {
@@ -619,15 +615,17 @@ static block_t *OutputFrame( decoder_t *p_dec )
         }
         else
         {
-            p_pic->i_pts = VLC_TICK_INVALID;
+            p_pic->i_pts = ComputePTSFromPOC( p_sys, b_first_field );
+            if( p_pic->i_pts != VLC_TICK_INVALID && p_pic->i_pts < p_pic->i_dts )
+                p_pic->i_pts = p_pic->i_dts;
         }
+    }
 
-        if( date_Get( &p_sys->dts ) != VLC_TICK_INVALID )
-        {
-            date_Increment( &p_sys->dts,  i_num_fields );
+    if( date_Get( &p_sys->dts ) != VLC_TICK_INVALID )
+    {
+        date_Increment( &p_sys->dts,  i_num_fields );
 
-            p_pic->i_length = date_Get( &p_sys->dts ) - p_pic->i_dts;
-        }
+        p_pic->i_length = date_Get( &p_sys->dts ) - p_pic->i_dts;
     }
 
 #if 0
@@ -642,6 +640,8 @@ static block_t *OutputFrame( decoder_t *p_dec )
     p_sys->p_frame = NULL;
     p_sys->pp_last = &p_sys->p_frame;
     p_sys->b_frame_slice = false;
+
+    p_sys->i_prev_temporal_ref = p_sys->i_temporal_ref;
 
     if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
     {
@@ -679,7 +679,7 @@ static void PacketizeReset( void *p_private, bool b_flush )
         p_sys->b_frame_slice = false;
     }
     date_Set( &p_sys->dts, VLC_TICK_INVALID );
-    date_Set( &p_sys->prev_iframe_dts, VLC_TICK_INVALID );
+    date_Set( &p_sys->gop_start_dts, VLC_TICK_INVALID );
     p_sys->i_dts =
     p_sys->i_pts =
     p_sys->i_last_ref_pts = VLC_TICK_INVALID;
