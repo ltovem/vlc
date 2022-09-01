@@ -629,12 +629,13 @@ static block_t *OutputFrame( decoder_t *p_dec )
     }
 
 #if 0
-    msg_Dbg( p_dec, "pic: type=%d struct=%d ref=%d nf=%d tff=%d dts=%"PRId64" ptsdiff=%"PRId64" len=%"PRId64,
-             p_sys->e_picture_type, p_sys->e_picture_structure, p_sys->i_temporal_ref, i_num_fields,
-             p_sys->i_top_field_first,
-             p_pic->i_dts , (p_pic->i_pts != VLC_TICK_INVALID) ? p_pic->i_pts - p_pic->i_dts : 0, p_pic->i_length );
+    const char pictypes[] = "xIPBD567", picstructs[] = "xtbF";
+    msg_Dbg( p_dec, "pic: type=%c struct=%c ref=%d nf=%d tff=%d dts=%"PRId64" ptsdiff=%"PRId64" len=%"PRId64,
+             pictypes[p_sys->e_picture_type], picstructs[p_sys->e_picture_structure],
+             p_sys->i_temporal_ref, i_num_fields, p_sys->i_top_field_first,
+             p_pic->i_dts , (p_pic->i_pts != VLC_TICK_INVALID) ? p_pic->i_pts - p_pic->i_dts : 0,
+             p_pic->i_length );
 #endif
-
 
     /* Reset context */
     p_sys->p_frame = NULL;
