@@ -153,8 +153,24 @@ typedef struct
     /* Picture properties */
     int i_temporal_ref;
     int i_prev_temporal_ref;
-    int i_picture_type;
-    int i_picture_structure;
+    enum
+    {
+        PICTURE_TYPE_FORBIDDEN = 0,
+        PICTURE_TYPE_I,
+        PICTURE_TYPE_P,
+        PICTURE_TYPE_B,
+        PICTURE_TYPE_MPEG1_DCI,
+        PICTURE_TYPE_RESERVED_5,
+        PICTURE_TYPE_RESERVED_6,
+        PICTURE_TYPE_RESERVED_7,
+    } e_picture_type; /* picture coding type */
+    enum
+    {
+        PICTURE_STRUCT_RESERVED = 0,
+        PICTURE_STRUCT_TOP_FIELD,
+        PICTURE_STRUCT_BOTTOM_FIELD,
+        PICTURE_STRUCT_FRAME,
+    } e_picture_structure;
     int i_top_field_first;
     int i_repeat_first_field;
     int i_progressive_frame;
@@ -258,8 +274,8 @@ static int Open( vlc_object_t *p_this )
 
     p_sys->i_temporal_ref = 0;
     p_sys->i_prev_temporal_ref = 2048;
-    p_sys->i_picture_type = 0;
-    p_sys->i_picture_structure = 0x03; /* frame */
+    p_sys->e_picture_type = PICTURE_TYPE_FORBIDDEN;
+    p_sys->e_picture_structure = PICTURE_STRUCT_FRAME;
     p_sys->i_top_field_first = 0;
     p_sys->i_repeat_first_field = 0;
     p_sys->i_progressive_frame = 0;
@@ -453,7 +469,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
 
     unsigned i_num_fields;
 
-    if( !p_sys->b_seq_progressive && p_sys->i_picture_structure != 0x03 /* Field Picture */ )
+    if( !p_sys->b_seq_progressive && p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
         i_num_fields = 1;
     else
         i_num_fields = 2;
@@ -473,7 +489,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
     }
     else
     {
-        if( p_sys->i_picture_structure == 0x03 /* Frame Picture */ )
+        if( p_sys->e_picture_structure == PICTURE_STRUCT_FRAME )
         {
             if( p_sys->i_progressive_frame && p_sys->i_repeat_first_field )
             {
@@ -482,26 +498,29 @@ static block_t *OutputFrame( decoder_t *p_dec )
         }
     }
 
-    switch ( p_sys->i_picture_type )
+    switch ( p_sys->e_picture_type )
     {
-    case 0x01:
+    case PICTURE_TYPE_I:
         p_pic->i_flags |= BLOCK_FLAG_TYPE_I;
         break;
-    case 0x02:
+    case PICTURE_TYPE_P:
         p_pic->i_flags |= BLOCK_FLAG_TYPE_P;
         break;
-    case 0x03:
+    case PICTURE_TYPE_B:
         p_pic->i_flags |= BLOCK_FLAG_TYPE_B;
+        break;
+    default:
         break;
     }
 
     if( !p_sys->b_seq_progressive )
     {
-        if( p_sys->i_picture_structure < 0x03 )
+        if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
         {
             p_pic->i_flags |= BLOCK_FLAG_SINGLE_FIELD;
-            p_pic->i_flags |= (p_sys->i_picture_structure == 0x01) ? BLOCK_FLAG_TOP_FIELD_FIRST
-                                                                   : BLOCK_FLAG_BOTTOM_FIELD_FIRST;
+            p_pic->i_flags |= (p_sys->e_picture_structure == PICTURE_STRUCT_TOP_FIELD)
+                              ? BLOCK_FLAG_TOP_FIELD_FIRST
+                              : BLOCK_FLAG_BOTTOM_FIELD_FIRST;
         }
         else /* if( p_sys->i_picture_structure == 0x03 ) */
         {
@@ -544,10 +563,10 @@ static block_t *OutputFrame( decoder_t *p_dec )
         date_Increment( &datepts, (1 + p_sys->i_temporal_ref) * 2 );
 
         /* Field picture second field case */
-        if( p_sys->i_picture_structure != 0x03 )
+        if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
         {
             /* first sent is not the first in display order */
-            if( (p_sys->i_picture_structure >> 1) != !p_sys->i_top_field_first &&
+            if( (p_sys->e_picture_structure >> 1) != !p_sys->i_top_field_first &&
                     b_first_xmited )
             {
                 date_Increment( &datepts, 2 );
@@ -566,7 +585,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
     }
     else /* General case, use demuxer's dts/pts when set or interpolate */
     {
-        if( p_sys->b_low_delay || p_sys->i_picture_type == 0x03 )
+        if( p_sys->b_low_delay || p_sys->e_picture_type == PICTURE_TYPE_B )
         {
             /* Trivial case (DTS == PTS) */
             /* Correct interpolated dts when we receive a new pts/dts */
@@ -594,7 +613,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
         {
             p_pic->i_pts = p_sys->i_pts;
         }
-        else if( p_sys->i_picture_type == 0x03 )
+        else if( p_sys->e_picture_type == PICTURE_TYPE_B )
         {
             p_pic->i_pts = p_pic->i_dts;
         }
@@ -613,7 +632,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
 
 #if 0
     msg_Dbg( p_dec, "pic: type=%d struct=%d ref=%d nf=%d tff=%d dts=%"PRId64" ptsdiff=%"PRId64" len=%"PRId64,
-             p_sys->i_picture_type, p_sys->i_picture_structure, p_sys->i_temporal_ref, i_num_fields,
+             p_sys->e_picture_type, p_sys->e_picture_structure, p_sys->i_temporal_ref, i_num_fields,
              p_sys->i_top_field_first,
              p_pic->i_dts , (p_pic->i_pts != VLC_TICK_INVALID) ? p_pic->i_pts - p_pic->i_dts : 0, p_pic->i_length );
 #endif
@@ -624,7 +643,7 @@ static block_t *OutputFrame( decoder_t *p_dec )
     p_sys->pp_last = &p_sys->p_frame;
     p_sys->b_frame_slice = false;
 
-    if( p_sys->i_picture_structure != 0x03 )
+    if( p_sys->e_picture_structure != PICTURE_STRUCT_FRAME )
     {
         p_sys->b_second_field = !p_sys->b_second_field;
     }
@@ -932,7 +951,7 @@ static block_t *ParseMPEGBlock( decoder_t *p_dec, block_t *p_frag )
         else if( extid == PICTURE_CODING_EXTENSION_ID && p_frag->i_buffer > 8 )
         {
             /* picture extension */
-            p_sys->i_picture_structure = p_frag->p_buffer[6]&0x03;
+            p_sys->e_picture_structure = p_frag->p_buffer[6]&0x03;
             p_sys->i_top_field_first   = p_frag->p_buffer[7] >> 7;
             p_sys->i_repeat_first_field= (p_frag->p_buffer[7]>>1)&0x01;
             p_sys->i_progressive_frame = p_frag->p_buffer[8] >> 7;
@@ -988,7 +1007,7 @@ static block_t *ParseMPEGBlock( decoder_t *p_dec, block_t *p_frag )
         {
             p_sys->i_temporal_ref =
                 ( p_frag->p_buffer[4] << 2 )|(p_frag->p_buffer[5] >> 6);
-            p_sys->i_picture_type = ( p_frag->p_buffer[5] >> 3 ) & 0x03;
+            p_sys->e_picture_type = ( p_frag->p_buffer[5] >> 3 ) & 0x07;
         }
 
         /* Check if we can use timestamps */
