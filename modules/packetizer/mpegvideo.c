@@ -161,9 +161,6 @@ typedef struct
 
     vlc_tick_t i_last_ref_pts;
 
-    vlc_tick_t i_last_frame_pts;
-    uint16_t i_last_frame_refid;
-
     bool b_second_field;
 
     /* Number of pictures since last sequence header */
@@ -271,8 +268,6 @@ static int Open( vlc_object_t *p_this )
     p_sys->b_second_field = 0;
 
     p_sys->i_next_block_flags = 0;
-
-    p_sys->i_last_frame_refid = 0;
 
     p_sys->b_waiting_iframe =
     p_sys->b_sync_on_intra_frame = var_CreateGetBool( p_dec, "packetizer-mpegvideo-sync-iframe" );
