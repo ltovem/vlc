@@ -144,7 +144,7 @@ Submit(input_fetcher_t *fetcher, vlc_executor_t *executor, input_item_t *item,
     return VLC_SUCCESS;
 }
 
-static char* CreateCacheKey( input_item_t* item )
+static char* CreateCacheKey( input_item_t* item, enum artType atype )
 {
     vlc_mutex_lock( &item->lock );
 
@@ -154,21 +154,39 @@ static char* CreateCacheKey( input_item_t* item )
         return NULL;
     }
 
-    char const* artist = vlc_meta_Get( item->p_meta, vlc_meta_Artist );
-    char const* album = vlc_meta_Get( item->p_meta, vlc_meta_Album );
-    char const *date = vlc_meta_Get( item->p_meta, vlc_meta_Date );
     char* key;
 
     /**
      * Simple concatenation of artist and album can lead to the same key
      * for entities that should not have such. Imagine { dogs, tick } and
      * { dog, stick } */
-    if( !artist || !album || asprintf( &key, "%s:%zu:%s:%zu:%s",
+    if( atype == ARTTYPE_ALBUM )
+    {
+        char const* artist = vlc_meta_Get( item->p_meta, vlc_meta_Artist );
+        char const* album = vlc_meta_Get( item->p_meta, vlc_meta_Album );
+        char const *date = vlc_meta_Get( item->p_meta, vlc_meta_Date );
+
+        if( !artist || !album || asprintf( &key, "%s:%zu:%s:%zu:%s",
           artist, strlen( artist ), album, strlen( album ),
           date ? date : "0000" ) < 0 )
-    {
-        key = NULL;
+        {
+            key = NULL;
+        }
     }
+    else
+    {
+        char const *arturl = vlc_meta_Get( item->p_meta, vlc_meta_ArtworkURL );
+        char const *title = vlc_meta_Get( item->p_meta, vlc_meta_Title );
+        if( !title )
+            title = item->psz_name;
+
+        if( !arturl || asprintf( &key, "%s:%zu:%s:%zu",
+          arturl, strlen( arturl ), title, strlen( title ) ) < 0 )
+        {
+            key = NULL;
+        }
+    }
+
     vlc_mutex_unlock( &item->lock );
 
     return key;
@@ -180,9 +198,9 @@ static void FreeCacheEntry( void* data, void* obj )
     VLC_UNUSED( obj );
 }
 
-static int ReadAlbumCache( input_fetcher_t* fetcher, input_item_t* item )
+static int ReadCache( input_fetcher_t* fetcher, input_item_t* item, enum artType atype )
 {
-    char* key = CreateCacheKey( item );
+    char* key = CreateCacheKey( item, atype );
 
     if( key == NULL )
         return VLC_EGENERIC;
@@ -198,11 +216,11 @@ static int ReadAlbumCache( input_fetcher_t* fetcher, input_item_t* item )
     return art ? VLC_SUCCESS : VLC_EGENERIC;
 }
 
-static void AddAlbumCache( input_fetcher_t* fetcher, input_item_t* item,
-                           bool overwrite )
+static void AddCache( input_fetcher_t* fetcher, input_item_t* item,
+                           enum artType atype, bool overwrite )
 {
     char* art = input_item_GetArtURL( item );
-    char* key = CreateCacheKey( item );
+    char* key = CreateCacheKey( item, atype );
 
     if( key && art && strncasecmp( art, "attachment://", 13 ) )
     {
@@ -278,12 +296,14 @@ static int SearchByScope(struct task *task, int scope)
     }
 
     if( ! CheckArt( item )                         ||
-        ! ReadAlbumCache( fetcher, item )          ||
+        ! ReadCache( fetcher, item, ARTTYPE_ALBUM )        ||
++       ! ReadCache( fetcher, item, ARTTYPE_SONG )         ||
         ! input_FindArtInCacheUsingItemUID( item ) ||
         ! input_FindArtInCache( item )             ||
         ! SearchArt( fetcher, item, scope ) )
     {
-        AddAlbumCache( fetcher, task->item, false );
+        AddCache( fetcher, task->item, ARTTYPE_SONG, false );
+        AddCache( fetcher, task->item, ARTTYPE_ALBUM, false );
         int ret = Submit(fetcher, fetcher->executor_downloader, item,
                          task->options, task->cbs, task->userdata);
         if (ret == VLC_SUCCESS)
@@ -308,7 +328,8 @@ static void RunDownloader(void *userdata)
 
     vlc_interrupt_set(&task->interrupt);
 
-    ReadAlbumCache( fetcher, task->item );
+    if ( ReadCache( fetcher, task->item, ARTTYPE_SONG ) != VLC_SUCCESS )
+        ReadCache( fetcher, task->item, ARTTYPE_ALBUM );
 
     char *psz_arturl = input_item_GetArtURL( task->item );
     if( !psz_arturl )
@@ -353,7 +374,8 @@ static void RunDownloader(void *userdata)
                    output_stream.length, NULL );
 
     free( output_stream.ptr );
-    AddAlbumCache( fetcher, task->item, true );
+    AddCache( fetcher, task->item, ARTTYPE_SONG, true );
+    AddCache( fetcher, task->item, ARTTYPE_ALBUM, true );
 
 out:
     vlc_interrupt_set(NULL);

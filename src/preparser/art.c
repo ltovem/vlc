@@ -56,12 +56,12 @@ static void ArtCacheCreateDir( char *psz_dir )
 
 static char* ArtCacheGetDirPath( const char *psz_arturl, const char *psz_artist,
                                  const char *psz_album,  const char *psz_date,
-                                 const char *psz_title )
+                                 const char *psz_title,  enum artType atype )
 {
     char *psz_dir;
     char *psz_cachedir = config_GetUserDir(VLC_CACHE_DIR);
 
-    if( !EMPTY_STR(psz_artist) && !EMPTY_STR(psz_album) )
+    if( !EMPTY_STR(psz_artist) && !EMPTY_STR(psz_album) && atype == ARTTYPE_ALBUM )
     {
         char *psz_album_sanitized = strdup( psz_album );
         if (!psz_album_sanitized)
@@ -108,6 +108,11 @@ static char* ArtCacheGetDirPath( const char *psz_arturl, const char *psz_artist,
 
         vlc_hash_md5_t md5;
         vlc_hash_md5_Init( &md5 );
+        if (!psz_arturl)
+        {
+            free( psz_cachedir );
+            return NULL;
+        }
         vlc_hash_md5_Update( &md5, psz_arturl, strlen( psz_arturl ) );
         if( !strncmp( psz_arturl, "attachment://", 13 ) )
             vlc_hash_md5_Update( &md5, psz_title, strlen( psz_title ) );
@@ -120,7 +125,7 @@ static char* ArtCacheGetDirPath( const char *psz_arturl, const char *psz_artist,
     return psz_dir;
 }
 
-static char *ArtCachePath( input_item_t *p_item )
+static char *ArtCachePath( input_item_t *p_item, enum artType atype )
 {
     char* psz_path = NULL;
     const char *psz_artist;
@@ -147,16 +152,16 @@ static char *ArtCachePath( input_item_t *p_item )
     if( (EMPTY_STR(psz_artist) || EMPTY_STR(psz_album) ) && !psz_arturl )
         goto end;
 
-    psz_path = ArtCacheGetDirPath( psz_arturl, psz_artist, psz_album, psz_date, psz_title );
+    psz_path = ArtCacheGetDirPath( psz_arturl, psz_artist, psz_album, psz_date, psz_title, atype );
 
 end:
     vlc_mutex_unlock( &p_item->lock );
     return psz_path;
 }
 
-static char *ArtCacheName( input_item_t *p_item, const char *psz_type )
+static char *ArtCacheName( input_item_t *p_item, const char *psz_type, enum artType atype )
 {
-    char *psz_path = ArtCachePath( p_item );
+    char *psz_path = ArtCachePath( p_item, atype );
     char *psz_ext = strdup( psz_type ? psz_type : "" );
     char *psz_filename = NULL;
 
@@ -177,9 +182,9 @@ end:
 }
 
 /* */
-int input_FindArtInCache( input_item_t *p_item )
+static int input_FindInCache( input_item_t *p_item, enum artType atype )
 {
-    char *psz_path = ArtCachePath( p_item );
+    char *psz_path = ArtCachePath( p_item, atype );
 
     if( !psz_path )
         return VLC_EGENERIC;
@@ -219,6 +224,13 @@ int input_FindArtInCache( input_item_t *p_item )
     vlc_closedir( p_dir );
     free( psz_path );
     return b_found ? VLC_SUCCESS : VLC_EGENERIC;
+}
+
+int input_FindArtInCache( input_item_t *p_item )
+{
+    return (input_FindInCache(p_item, ARTTYPE_SONG) == VLC_SUCCESS ||
+           input_FindInCache(p_item, ARTTYPE_ALBUM) == VLC_SUCCESS)
+           ? VLC_SUCCESS : VLC_EGENERIC;
 }
 
 static char * GetDirByItemUIDs( char *psz_uid )
@@ -282,11 +294,49 @@ int input_FindArtInCacheUsingItemUID( input_item_t *p_item )
     return VLC_EGENERIC;
 }
 
+/*
+ * Returns VLC_EGENERIC on error
+ * Returns VLC_SUCCESS on dump
+ * Returns 1 if file existed
+ */
+static int DumpIt( vlc_object_t *obj, const void *data, size_t length,
+                   char *psz_filename )
+{
+    FILE *f = vlc_fopen( psz_filename, "axb" );
+    if( f )
+    {
+        if( fwrite( data, 1, length, f ) != length )
+        {
+            msg_Err( obj, "%s: %s", psz_filename, vlc_strerror_c(errno) );
+            fclose( f );
+            return VLC_EGENERIC;
+        }
+        else
+        {
+            msg_Dbg( obj, "album art saved to %s", psz_filename );
+            fclose( f );
+            return VLC_SUCCESS;
+        }
+    }
+    else
+        return 1;
+}
+
 /* */
 int input_SaveArt( vlc_object_t *obj, input_item_t *p_item,
                    const void *data, size_t length, const char *psz_type )
 {
-    char *psz_filename = ArtCacheName( p_item, psz_type );
+    // save album
+    char *psz_album_filename = ArtCacheName( p_item, psz_type, ARTTYPE_ALBUM );
+
+    if( psz_album_filename )
+    {
+        DumpIt( obj, data, length, psz_album_filename );
+    }
+    free( psz_album_filename );
+
+    // now save unique
+    char *psz_filename = ArtCacheName( p_item, psz_type, ARTTYPE_SONG );
 
     if( !psz_filename )
         return VLC_EGENERIC;
@@ -298,9 +348,9 @@ int input_SaveArt( vlc_object_t *obj, input_item_t *p_item,
         return VLC_EGENERIC;
     }
 
-    /* Check if we already dumped it */
-    struct stat s;
-    if( !vlc_stat( psz_filename, &s ) )
+    int *art = DumpIt( obj, data, length, psz_filename );
+    /* If we already dumped it */
+    if( art == 1 )
     {
         input_item_SetArtURL( p_item, psz_uri );
         free( psz_filename );
@@ -309,20 +359,8 @@ int input_SaveArt( vlc_object_t *obj, input_item_t *p_item,
     }
 
     /* Dump it otherwise */
-    FILE *f = vlc_fopen( psz_filename, "wb" );
-    if( f )
-    {
-        if( fwrite( data, 1, length, f ) != length )
-        {
-            msg_Err( obj, "%s: %s", psz_filename, vlc_strerror_c(errno) );
-        }
-        else
-        {
-            msg_Dbg( obj, "album art saved to %s", psz_filename );
-            input_item_SetArtURL( p_item, psz_uri );
-        }
-        fclose( f );
-    }
+    if ( art == VLC_SUCCESS )
+        input_item_SetArtURL( p_item, psz_uri );
     free( psz_uri );
 
     /* save uid info */
@@ -340,13 +378,13 @@ int input_SaveArt( vlc_object_t *obj, input_item_t *p_item,
 
     if ( psz_byuidfile )
     {
-        f = vlc_fopen( psz_byuidfile, "wb" );
-        if ( f )
+        FILE *f_uidfile = vlc_fopen( psz_byuidfile, "wb" );
+        if ( f_uidfile )
         {
-            if( fputs( "file://", f ) < 0 || fputs( psz_filename, f ) < 0 )
+            if( fputs( "file://", f_uidfile ) < 0 || fputs( psz_filename, f_uidfile ) < 0 )
                 msg_Err( obj, "Error writing %s: %s", psz_byuidfile,
                          vlc_strerror_c(errno) );
-            fclose( f );
+            fclose( f_uidfile );
         }
         free( psz_byuidfile );
     }
