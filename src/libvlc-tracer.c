@@ -32,6 +32,7 @@
 
 #include <vlc_common.h>
 #include <vlc_tracer.h>
+#include <vlc_interface.h>
 
 #include "../lib/libvlc_internal.h"
 #include "libvlc.h"
@@ -79,7 +80,7 @@ static void vlc_TraceSwitch(struct vlc_tracer *tracer,
     if (old_tracer == new_tracer || old_tracer == NULL)
         return;
 
-    if (old_tracer->ops->destroy != NULL)
+    if (old_tracer->ops != NULL && old_tracer->ops->destroy != NULL)
         old_tracer->ops->destroy(old_tracer->opaque);
 }
 
@@ -132,9 +133,18 @@ int vlc_TracerInit(libvlc_int_t *libvlc)
 {
     libvlc_priv_t *priv = libvlc_priv(libvlc);
 
+    /* Pre-allocate the libvlc tracer to avoid allocating it when enabling. */
+    priv->libvlc_tracer = malloc(sizeof(*priv->libvlc_tracer));
+    if (priv->libvlc_tracer == NULL)
+        return VLC_ENOMEM;
+    (*priv->libvlc_tracer) = (struct vlc_tracer){};
+
     struct vlc_tracer *tracerswitch = vlc_tracer_switch_Create();
     if (unlikely(tracerswitch == NULL))
+    {
+        FREENULL(priv->libvlc_tracer);
         return VLC_ENOMEM;
+    }
     priv->tracer = tracerswitch;
 
     char *tracer_name = var_InheritString(libvlc, "tracer");
@@ -143,4 +153,32 @@ int vlc_TracerInit(libvlc_int_t *libvlc)
     vlc_TraceSwitch(tracerswitch, tracer);
 
     return VLC_SUCCESS;
+}
+
+void vlc_TracerDestroy(libvlc_int_t *libvlc)
+{
+    libvlc_priv_t *priv = libvlc_priv(libvlc);
+    if (priv->tracer)
+        vlc_tracer_Destroy(priv->tracer);
+
+    if (priv->libvlc_tracer)
+        vlc_tracer_Destroy(priv->libvlc_tracer);
+    free(priv->libvlc_tracer);
+
+
+}
+
+void vlc_TraceSet(libvlc_int_t *vlc, const struct vlc_tracer_operations *ops,
+                  void *opaque)
+{
+    libvlc_priv_t *priv = libvlc_priv(vlc);
+    struct vlc_tracer *tracer = priv->tracer;
+
+    assert(tracer != NULL);
+    assert(priv->libvlc_tracer != NULL);
+    priv->libvlc_tracer->ops = ops;
+    priv->libvlc_tracer->opaque = opaque;
+    vlc_TraceSwitch(tracer, priv->libvlc_tracer);
+    atomic_store_explicit(&priv->tracer_enabled, ops != NULL,
+                          memory_order_release);
 }

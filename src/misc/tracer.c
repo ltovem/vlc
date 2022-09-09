@@ -120,6 +120,6 @@ struct vlc_tracer *vlc_tracer_Create(vlc_object_t *parent, const char *module_na
 
 void vlc_tracer_Destroy(struct vlc_tracer *tracer)
 {
-    if (tracer->ops->destroy != NULL)
+    if (tracer->ops != NULL && tracer->ops->destroy != NULL)
         tracer->ops->destroy(tracer->opaque);
 }

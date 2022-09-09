@@ -98,6 +98,7 @@ libvlc_int_t * libvlc_InternalCreate( void )
     priv->media_source_provider = NULL;
 
     atomic_init(&priv->tracer_enabled, false);
+    priv->libvlc_tracer = NULL;
     priv->tracer = NULL;
 
     vlc_ExitInit( &priv->exit );
@@ -400,8 +401,7 @@ void libvlc_InternalCleanup( libvlc_int_t *p_libvlc )
         config_AutoSaveConfigFile( p_libvlc );
 
     vlc_LogDestroy(p_libvlc->obj.logger);
-    if (priv->tracer != NULL)
-        vlc_tracer_Destroy(priv->tracer);
+    vlc_TracerDestroy(p_libvlc);
     /* Free module bank. It is refcounted, so we call this each time  */
     module_EndBank (true);
 #if defined(_WIN32) || defined(__OS2__)
