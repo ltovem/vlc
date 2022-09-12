@@ -111,9 +111,13 @@ int decoder_UpdateVideoOutput( decoder_t *dec, vlc_video_context *vctx_out )
         dec->fmt_out.video.i_sar_num = 1;
         dec->fmt_out.video.i_sar_den = 1;
     }
-
-    vlc_ureduce( &dec->fmt_out.video.i_sar_num, &dec->fmt_out.video.i_sar_den,
-                    dec->fmt_out.video.i_sar_num, dec->fmt_out.video.i_sar_den, 50000 );
+    else
+    {
+        vlc_ureduce( &dec->fmt_out.video.i_sar_num,
+                     &dec->fmt_out.video.i_sar_den,
+                     dec->fmt_out.video.i_sar_num,
+                     dec->fmt_out.video.i_sar_den, 50000 );
+    }
 
     if( vlc_fourcc_IsYUV( dec->fmt_out.video.i_chroma ) )
     {
