@@ -1,4 +1,4 @@
-VULKAN_LOADER_VERSION := 1.3.211
+VULKAN_LOADER_VERSION := 1.3.227
 VULKAN_LOADER_URL := $(GITHUB)/KhronosGroup/Vulkan-Loader/archive/v$(VULKAN_LOADER_VERSION).tar.gz
 
 DEPS_vulkan-loader = vulkan-headers $(DEPS_vulkan-headers)
@@ -44,10 +44,6 @@ $(TARBALLS)/Vulkan-Loader-$(VULKAN_LOADER_VERSION).tar.gz:
 
 vulkan-loader: Vulkan-Loader-$(VULKAN_LOADER_VERSION).tar.gz .sum-vulkan-loader
 	$(UNPACK)
-# Patches are from msys2 package system
-# https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-vulkan-loader
-	$(APPLY) $(SRC)/vulkan-loader/002-proper-def-files-for-32bit.patch
-	$(APPLY) $(SRC)/vulkan-loader/004-disable-suffix-in-static-lib.patch
 ifeq ($(HOST),i686-w64-mingw32)
 	cp -v $(SRC)/vulkan-loader/libvulkan-32.def $(UNPACK_DIR)/loader/vulkan-1.def
 endif
@@ -61,12 +57,6 @@ VULKAN_LOADER_ENV_CONF = \
 	$(CMAKECLEAN)
 	$(VULKAN_LOADER_ENV_CONF) $(HOSTVARS) $(CMAKE) $(VULKAN_LOADER_CONF)
 	+$(CMAKEBUILD)
-
-ifdef HAVE_WIN32
-# CMake will generate a .pc file with -lvulkan even if the static library
-# generated is libvulkan.dll.a. It also forget to link with libcfgmgr32.
-	cd $< && sed -i.orig -e "s,-lvulkan,-lvulkan.dll -lcfgmgr32," build/loader/vulkan.pc
-endif
 
 	$(call pkg_static,"build/loader/vulkan.pc")
 	+$(CMAKEBUILD)
