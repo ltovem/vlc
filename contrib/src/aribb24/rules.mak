@@ -25,10 +25,15 @@ aribb24: aribb24-$(ARIBB24_VERSION).tar.gz .sum-aribb24
 
 DEPS_aribb24 = png $(DEPS_png)
 
+ARIBB24_CFLAGS := $(CFLAGS)
+ifdef HAVE_EMSCRIPTEN
+ARIBB24_CFLAGS += "-pthread"
+endif
+
 .aribb24: aribb24
 	$(REQUIRE_GPL)
 	$(REQUIRE_GNUV3)
 	cd $< && $(SHELL) ./bootstrap
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF)
+	cd $< && $(HOSTVARS) CFLAGS="$(ARIBB24_CFLAGS)" ./configure $(HOSTCONF)
 	cd $< && $(MAKE) && $(MAKE) install
 	touch $@
