@@ -565,8 +565,8 @@ AS_IF([test -n "${CONTRIB_DIR}"], [
 
   AS_IF([test -z "$PROTOC"], [
     AC_MSG_CHECKING([if contribs provide protoc])
-    AS_IF([test -x "${CONTRIB_DIR}/../bin/${host_alias}-protoc${BUILDEXEEXT}"], [
-      PROTOC="${CONTRIB_DIR}/../bin/${host_alias}-protoc${BUILDEXEEXT}"
+    AS_IF([test -x "${CONTRIB_DIR}/../bin/protoc${BUILDEXEEXT}"], [
+      PROTOC="${CONTRIB_DIR}/../bin/protoc${BUILDEXEEXT}"
       AC_MSG_RESULT([yes])
     ],[
       AC_MSG_RESULT([no])
