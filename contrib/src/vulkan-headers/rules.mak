@@ -1,4 +1,4 @@
-VULKAN_HEADERS_VERSION := 1.3.219
+VULKAN_HEADERS_VERSION := 1.3.227
 VULKAN_HEADERS_URL := $(GITHUB)/KhronosGroup/Vulkan-Headers/archive/v$(VULKAN_HEADERS_VERSION).tar.gz
 
 DEPS_vulkan-headers =
