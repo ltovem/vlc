@@ -155,6 +155,19 @@ struct vlc_playlist_sort_criterion
 };
 
 /**
+ * Playlist resource scope flags.
+ *
+ * Used for media preparsing scope restrictions as well as
+ * media metadata source scope restrictions.
+ */
+#define VLC_PLAYLIST_SCOPE_FLAG_NONE           (0)
+#define VLC_PLAYLIST_SCOPE_FLAG_LOCAL          (1 << 0)
+#define VLC_PLAYLIST_SCOPE_FLAG_NETWORK        (1 << 1)
+#define VLC_PLAYLIST_SCOPE_FLAG_ANY            (VLC_PLAYLIST_SCOPE_FLAG_LOCAL|\
+                                                VLC_PLAYLIST_SCOPE_FLAG_NETWORK)
+#define VLC_PLAYLIST_SCOPE_FLAG_INTERACTIVE    (1 << 2)
+
+/**
  * Playlist callbacks.
  *
  * A client may register a listener using vlc_playlist_AddListener() to listen
@@ -862,9 +875,12 @@ vlc_playlist_PlayAt(vlc_playlist_t *playlist, size_t index)
  *
  * \param playlist the playlist (not necessarily locked)
  * \param media the media to preparse
+ * \param msflags media preparse scope as VLC_PLAYLIST_SCOPE_FLAG
+ * \param mmflags media metadata fetcher scope as VLC_PLAYLIST_SCOPE_FLAG
  */
 VLC_API void
-vlc_playlist_Preparse(vlc_playlist_t *playlist, input_item_t *media);
+vlc_playlist_Preparse(vlc_playlist_t *playlist, input_item_t *media,
+                      int msflags, int mmflags);
 
 /**
  * Export the playlist to a file.
