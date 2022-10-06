@@ -112,17 +112,28 @@ static const input_preparser_callbacks_t input_preparser_callbacks = {
 };
 
 void
-vlc_playlist_Preparse(vlc_playlist_t *playlist, input_item_t *input)
+vlc_playlist_Preparse(vlc_playlist_t *playlist, input_item_t *input,
+                      unsigned flags)
 {
 #ifdef TEST_PLAYLIST
     VLC_UNUSED(playlist);
     VLC_UNUSED(input);
     VLC_UNUSED(input_preparser_callbacks);
+    VLC_UNUSED(flags);
 #else
+    input_item_meta_request_option_t oflags = 0;
+    if(flags & VLC_PLAYLIST_SCOPE_FLAG_LOCAL)
+        oflags |= META_REQUEST_OPTION_SCOPE_LOCAL;
+    if(flags & VLC_PLAYLIST_SCOPE_FLAG_NETWORK)
+        oflags |= META_REQUEST_OPTION_SCOPE_NETWORK;
+    if(flags & VLC_PLAYLIST_SCOPE_FLAG_LOCAL)
+        oflags |= META_REQUEST_OPTION_FETCH_LOCAL;
+    if(flags & VLC_PLAYLIST_SCOPE_FLAG_NETWORK)
+        oflags |= META_REQUEST_OPTION_FETCH_NETWORK;
+    if(flags & VLC_PLAYLIST_SCOPE_FLAG_INTERACTIVE)
+        oflags |= META_REQUEST_OPTION_DO_INTERACT;
     /* vlc_MetadataRequest is not exported */
-    vlc_MetadataRequest(playlist->libvlc, input,
-                        META_REQUEST_OPTION_SCOPE_LOCAL |
-                        META_REQUEST_OPTION_FETCH_LOCAL,
+    vlc_MetadataRequest(playlist->libvlc, input, oflags,
                         &input_preparser_callbacks, playlist, -1, NULL);
 #endif
 }
@@ -131,5 +142,5 @@ void
 vlc_playlist_AutoPreparse(vlc_playlist_t *playlist, input_item_t *input)
 {
     if (playlist->auto_preparse && !input_item_IsPreparsed(input))
-        vlc_playlist_Preparse(playlist, input);
+        vlc_playlist_Preparse(playlist, input, VLC_PLAYLIST_SCOPE_FLAG_LOCAL);
 }
