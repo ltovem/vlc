@@ -147,25 +147,25 @@ typedef enum libvlc_media_parse_flag_t
     /**
      * Parse media if it's a local file
      */
-    libvlc_media_parse_local    = 0x00,
+    libvlc_media_parse_local    = (1 << 0),
     /**
      * Parse media even if it's a network file
      */
-    libvlc_media_parse_network  = 0x01,
+    libvlc_media_parse_network  = (1 << 1),
     /**
      * Fetch meta and cover art using local resources
      */
-    libvlc_media_fetch_local    = 0x02,
+    libvlc_media_fetch_local    = (1 << 2),
     /**
      * Fetch meta and cover art using network resources
      */
-    libvlc_media_fetch_network  = 0x04,
+    libvlc_media_fetch_network  = (1 << 3),
     /**
      * Interact with the user (via libvlc_dialog_cbs) when preparsing this item
      * (and not its sub items). Set this flag in order to receive a callback
      * when the input is asking for credentials.
      */
-    libvlc_media_do_interact    = 0x08,
+    libvlc_media_do_interact    = (1 << 4),
 } libvlc_media_parse_flag_t;
 
 /**
