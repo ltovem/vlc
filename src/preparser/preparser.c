@@ -329,7 +329,9 @@ int input_preparser_Push( input_preparser_t *preparser,
         case ITEM_TYPE_FILE:
         case ITEM_TYPE_DIRECTORY:
         case ITEM_TYPE_PLAYLIST:
-            if( !b_net || i_options & META_REQUEST_OPTION_SCOPE_NETWORK )
+            if( b_net && (i_options & META_REQUEST_OPTION_SCOPE_NETWORK) )
+                break;
+            if( !b_net && (i_options & META_REQUEST_OPTION_SCOPE_LOCAL) )
                 break;
             /* fallthrough */
         default:
