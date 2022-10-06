@@ -23,7 +23,9 @@ $(TARBALLS)/rav1e-$(RAV1E_VERSION).tar.gz:
 
 RAV1E_FEATURES=--features=asm
 
-rav1e: rav1e-$(RAV1E_VERSION).tar.gz .sum-rav1e .rav1e-vendor
+DEPS_rav1e = rav1e-vendor $(DEPS_rav1e-vendor)
+
+rav1e: rav1e-$(RAV1E_VERSION).tar.gz .sum-rav1e
 	$(UNPACK)
 ifdef HAVE_WIN32
 ifndef HAVE_WIN64
