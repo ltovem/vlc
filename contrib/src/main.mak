@@ -530,6 +530,7 @@ include $(SRC)/main-rust.mak
 # Per-package build rules
 #
 PKGS_FOUND :=
+include $(SRC)/*/unpack.mak
 include $(SRC)/*/rules.mak
 
 ifeq ($(PKGS_DISABLE), all)

@@ -5,8 +5,6 @@ ifeq ($(call need_pkg,"libchromaprint"),)
 PKGS_FOUND += chromaprint
 endif
 
-include $(SRC)/chromaprint/unpack.mak
-
 chromaprint: $(SRC)/chromaprint/unpack.mak
 
 DEPS_chromaprint = ffmpeg $(DEPS_ffmpeg)

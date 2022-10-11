@@ -50,8 +50,6 @@ ifeq ($(shell $(HOST)-luac -v 2>/dev/null | head -1 | sed  -E 's/Lua ([0-9]+).([
 PKGS_FOUND += luac
 endif
 
-include $(SRC)/lua/unpack.mak
-
 lua: $(SRC)/lua/unpack.mak
 luac: $(SRC)/lua/unpack.mak
 

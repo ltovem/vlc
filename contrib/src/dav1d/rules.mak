@@ -5,8 +5,6 @@ ifeq ($(call need_pkg,"dav1d"),)
 PKGS_FOUND += dav1d
 endif
 
-include $(SRC)/dav1d/unpack.mak
-
 dav1d: $(SRC)/dav1d/unpack.mak
 
 DAV1D_CONF = -D enable_tests=false -D enable_tools=false

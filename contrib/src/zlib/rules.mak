@@ -5,8 +5,6 @@ ifeq ($(call need_pkg,"zlib"),)
 PKGS_FOUND += zlib
 endif
 
-include $(SRC)/zlib/unpack.mak
-
 zlib: $(SRC)/zlib/unpack.mak
 
 ZLIB_CONF = -DINSTALL_PKGCONFIG_DIR:STRING=$(PREFIX)/lib/pkgconfig -DBUILD_EXAMPLES=OFF

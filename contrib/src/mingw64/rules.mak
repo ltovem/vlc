@@ -36,8 +36,6 @@ endif # HAVE_WIN32
 
 PKGS_ALL += winpthreads winrt_headers d3d9 dxva dxvahd dcomp
 
-include $(SRC)/mingw64/unpack.mak
-
 mingw64: $(SRC)/mingw64/unpack.mak
 
 .winpthreads: mingw64

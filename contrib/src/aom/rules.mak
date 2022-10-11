@@ -5,8 +5,6 @@ ifeq ($(call need_pkg,"aom"),)
 PKGS_FOUND += aom
 endif
 
-include $(SRC)/aom/unpack.mak
-
 aom: $(SRC)/aom/unpack.mak
 
 DEPS_aom =

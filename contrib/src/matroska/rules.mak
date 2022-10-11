@@ -8,8 +8,6 @@ endif
 
 DEPS_matroska = ebml $(DEPS_ebml)
 
-include $(SRC)/matroska/unpack.mak
-
 matroska: $(SRC)/matroska/unpack.mak
 
 .matroska: matroska toolchain.cmake
