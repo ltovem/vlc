@@ -1,27 +1,11 @@
 # aom
-AOM_VERSION := 3.5.0
-AOM_URL := https://storage.googleapis.com/aom-releases/libaom-$(AOM_VERSION).tar.gz
 
 PKGS += aom
 ifeq ($(call need_pkg,"aom"),)
 PKGS_FOUND += aom
 endif
 
-$(TARBALLS)/libaom-$(AOM_VERSION).tar.gz:
-	$(call download_pkg,$(AOM_URL),aom)
-
-.sum-aom: libaom-$(AOM_VERSION).tar.gz
-
-aom: libaom-$(AOM_VERSION).tar.gz .sum-aom
-	$(UNPACK)
-ifdef HAVE_ANDROID
-	$(APPLY) $(SRC)/aom/aom-android-pthreads.patch
-	$(APPLY) $(SRC)/aom/aom-android-cpufeatures.patch
-endif
-	$(MOVE)
-ifdef HAVE_ANDROID
-	cp $(ANDROID_NDK)/sources/android/cpufeatures/cpu-features.c $(ANDROID_NDK)/sources/android/cpufeatures/cpu-features.h aom/aom_ports/
-endif
+aom: $(SRC)/aom/unpack.mak
 
 DEPS_aom =
 ifdef HAVE_WIN32
