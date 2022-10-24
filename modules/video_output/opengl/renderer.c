@@ -396,7 +396,8 @@ RequestOutputSize(struct vlc_gl_filter *filter,
 }
 
 static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *nbVertices,
-                       GLushort **indices, unsigned *nbIndices)
+                       GLushort **indices, unsigned *nbIndices,
+                       float leftbound, float topbound, float rightbound, float bottombound)
 {
     unsigned nbLatBands = 128;
     unsigned nbLonBands = 128;
@@ -421,14 +422,28 @@ static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *
         return VLC_ENOMEM;
     }
 
+    /* Sanity check for values */
+    leftbound = VLC_CLIP(leftbound, 0.0, 0.5);
+    topbound = VLC_CLIP(topbound, 0.0, 0.5);
+    rightbound = VLC_CLIP(rightbound, 0.0, 0.5);
+    bottombound = VLC_CLIP(bottombound, 0.0, 0.5);
+
+    /* Restricted aperture in % of 360 */
+    const float twoPi = 2.f * M_PI;
+    const float aperturePhiPi = twoPi * (SPHERE_RADIUS - leftbound - rightbound);
+    const float aperturePhiPiCenteringoffset = twoPi * (leftbound + rightbound) * 0.5;
+    /* Restricted aperture in % of 180 */
+    const float apertureThethaPi = M_PI * (SPHERE_RADIUS - topbound - bottombound);
+    const float apertureThethaPiCenteringOffset = M_PI * bottombound;
+
     for (unsigned lat = 0; lat <= nbLatBands; lat++) {
-        float theta = lat * (float) M_PI / nbLatBands;
+        float theta = lat * apertureThethaPi / nbLatBands + apertureThethaPiCenteringOffset;
         float sinTheta, cosTheta;
 
         sincosf(theta, &sinTheta, &cosTheta);
 
         for (unsigned int lon = 0; lon <= nbLonBands; lon++) {
-            float phi =  2.f * (float)M_PI * (float)lon / nbLonBands;
+            float phi =  aperturePhiPi * (float)lon / nbLonBands + aperturePhiPiCenteringoffset;
             float sinPhi, cosPhi;
 
             sincosf(phi, &sinPhi, &cosPhi);
@@ -661,7 +676,11 @@ static int SetupCoords(struct vlc_gl_renderer *renderer,
         break;
     case PROJECTION_MODE_EQUIRECTANGULAR:
         i_ret = BuildSphere(&vertexCoord, &textureCoord, &nbVertices,
-                            &indices, &nbIndices);
+                            &indices, &nbIndices,
+                            fmt->projection.equirect.left,
+                            fmt->projection.equirect.top,
+                            fmt->projection.equirect.right,
+                            fmt->projection.equirect.bottom);
         break;
     case PROJECTION_MODE_CUBEMAP:
         if(fmt->projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
