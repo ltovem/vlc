@@ -14,6 +14,7 @@ pub mod es_out;
 pub mod fourcc;
 pub mod input_item;
 pub mod messages;
+pub mod module;
 pub mod object;
 pub mod rational;
 pub mod sout;
