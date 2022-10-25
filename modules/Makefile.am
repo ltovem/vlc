@@ -13,6 +13,29 @@ TESTS =
 dist_noinst_SCRIPTS = module.rc.in
 EXTRA_LTLIBRARIES =
 
+LIBTOOL_CARGO_EXE = $(srcdir)/libtool_cargo.sh
+
+CARGO_BUILD_ARGS = --target=@RUST_TARGET@ --release \
+	--crate-type=staticlib
+
+LIBTOOL_CARGO = \
+	TARGET_CC=$(CC) TARGET_AR=$(AR) \
+	TARGET_CFLAGS="$(CFLAGS)" \
+	RUSTTARGET="@RUST_TARGET@" \
+	RUSTFLAGS="-C panic=abort -C opt-level=z" \
+	CARGO_TARGET_DIR="target-rust" \
+	$(LIBTOOL_CARGO_EXE) $(CARGO) rustc $(CARGO_BUILD_ARGS)
+
+CARGO_PLUGINS_INV = ${LTLIBRARIES:%_rs_plugin.la=%_rs_plugin}
+CARGO_PLUGINS_CUT = ${CARGO_PLUGINS_INV:%.la=}
+CARGO_PLUGINS = ${CARGO_PLUGINS_CUT:%=%.la}
+
+CARGO_DEPS = ${CARGO_PLUGINS:%_plugin.la=${top_builddir}/modules/.libs/%.d}
+
+if HAVE_RUST
+-include $(CARGO_DEPS)
+endif
+
 include common.am
 include access/Makefile.am
 include access/http/Makefile.am
