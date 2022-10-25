@@ -15,6 +15,18 @@ stream_filter_LTLIBRARIES += libdecomp_plugin.la
 endif
 endif
 
+libinflate_rs.la:
+	@$(LIBTOOL_CARGO) $(srcdir)/stream_filter/inflate-rs/ $@
+
+libinflate_rs_plugin_la_SOURCES = \
+        stream_filter/inflate-rs/Cargo.toml \
+        stream_filter/inflate-rs/src/lib.rs
+libinflate_rs_plugin_la_LIBADD = libinflate_rs.la
+
+if HAVE_RUST
+stream_filter_LTLIBRARIES += libinflate_rs_plugin.la
+endif
+
 libinflate_plugin_la_SOURCES = stream_filter/inflate.c
 libinflate_plugin_la_LIBADD = -lz
 if HAVE_ZLIB

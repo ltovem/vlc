@@ -1,5 +1,5 @@
 [workspace]
-members = []
+members = ["stream_filter/inflate-rs"]
 
 [workspace.dependencies]
 vlcrs-core = { path = "vlcrs-core/" }

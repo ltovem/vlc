@@ -49,3 +49,9 @@ vlc_modules += {
     'name' : 'skiptags',
     'sources' : files('skiptags.c')
 }
+
+vlc_rust_modules += {
+    'name' : 'inflate_rs',
+    'sources' : files('inflate-rs/src/lib.rs'),
+    'cargo_toml' : files('inflate-rs/Cargo.toml')
+}
