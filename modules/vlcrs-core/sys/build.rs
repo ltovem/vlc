@@ -101,6 +101,7 @@ fn main() {
     cc::Build::new()
          .include(Path::new("../../../include/"))
          .include(Path::new("."))
+         .flag("-DWITHOUT_CONSTS")
          .file(extern_path)
          .warnings(false)
          .flag_if_supported("-Wno-deprecated-declarations")
