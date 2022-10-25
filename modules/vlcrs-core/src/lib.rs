@@ -11,6 +11,7 @@
 pub mod error;
 pub mod es;
 pub mod fourcc;
+pub mod input_item;
 pub mod messages;
 pub mod object;
 pub mod rational;
