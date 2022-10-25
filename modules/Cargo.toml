@@ -3,3 +3,4 @@ members = []
 
 [workspace.dependencies]
 vlcrs-core = { path = "vlcrs-core/" }
+vlcrs-core-macros = { path = "vlcrs-core/macros/" }
