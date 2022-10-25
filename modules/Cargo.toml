@@ -1,2 +1,5 @@
 [workspace]
 members = []
+
+[workspace.dependencies]
+vlcrs-core = { path = "vlcrs-core/" }
