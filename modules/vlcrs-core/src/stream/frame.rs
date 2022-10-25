@@ -7,6 +7,8 @@ use vlcrs_core_sys::{vlc_frame_Alloc, vlc_frame_Realloc, vlc_frame_Release, vlc_
 use crate::error::{cvp, Result};
 use crate::tick::Tick;
 
+use super::block::NativeBlock;
+
 /// A frame
 #[doc(alias = "vlc_frame_t")]
 #[derive(Debug)]
@@ -37,6 +39,13 @@ impl Drop for Frame {
         // SAFETY: We owned the frame, the pointer is non-null and the pointer points to a valid
         // vlc_frame_t
         unsafe { vlc_frame_Release(self.0.as_ptr()) }
+    }
+}
+
+impl From<NativeBlock> for Frame {
+    fn from(value: NativeBlock) -> Self {
+        let me = ManuallyDrop::new(value);
+        Frame(me.0)
     }
 }
 
