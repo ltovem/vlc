@@ -596,13 +596,13 @@ void matroska_segment_c::ParseTrackEntry( const KaxTrackEntry *m )
             switch (static_cast<uint8>( fint ))
             {
             case 0:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_RECTANGULAR;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_RECTANGULAR;
                 break;
             case 1:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_EQUIRECTANGULAR;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_EQUIRECTANGULAR;
                 break;
             case 2:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_CUBEMAP;
                 break;
             default:
                 debug( vars, "Track Video Projection %u not supported", static_cast<uint8>( fint ) ) ;
@@ -612,17 +612,17 @@ void matroska_segment_c::ParseTrackEntry( const KaxTrackEntry *m )
         E_CASE( KaxVideoProjectionPoseYaw, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.yaw = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.yaw = static_cast<float>( pose );
         }
         E_CASE( KaxVideoProjectionPosePitch, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.pitch = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.pitch = static_cast<float>( pose );
         }
         E_CASE( KaxVideoProjectionPoseRoll, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.roll = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.roll = static_cast<float>( pose );
         }
 #endif
         E_CASE( KaxVideoFlagInterlaced, fint ) // UNUSED

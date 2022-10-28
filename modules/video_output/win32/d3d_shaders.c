@@ -1023,10 +1023,14 @@ bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mo
         quad->vertexCount = (SPHERE_SLICES + 1) * (SPHERE_SLICES + 1);
         quad->indexCount = nbLatBands * nbLonBands * 2 * 3;
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        quad->vertexCount = 4 * 6;
-        quad->indexCount = 6 * 2 * 3;
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            quad->vertexCount = 4 * 6;
+            quad->indexCount = 6 * 2 * 3;
+            break;
+        }
+        /* fallthrough */
     default:
         msg_Warn(o, "Projection mode %d not handled", projection);
         return false;
@@ -1049,9 +1053,13 @@ bool D3D_SetupQuadData(vlc_object_t *o, d3d_quad_t *quad, const RECT *output, d3
     case PROJECTION_MODE_EQUIRECTANGULAR:
         SetupQuadSphere(dst_data, output, quad, pData);
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        SetupQuadCube(dst_data, output, quad, pData);
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(quad->projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            SetupQuadCube(dst_data, output, quad, pData);
+            break;
+        }
+        /* fallthrough */
     default:
         msg_Warn(o, "Projection mode %d not handled", quad->projection);
         return false;

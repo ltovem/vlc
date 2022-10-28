@@ -134,10 +134,10 @@ static int Open(vout_display_t *vd,
     /* */
     CommonInit(&sys->area);
     if (CommonWindowInit(vd, &sys->area, &sys->sys,
-                   vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR))
+                   vd->source->projection.mode != PROJECTION_MODE_RECTANGULAR))
         goto error;
 
-    if (vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR)
+    if (vd->source->projection.mode != PROJECTION_MODE_RECTANGULAR)
         sys->p_sensors = HookWindowsSensors(vd, sys->sys.hvideownd);
 
     vlc_window_SetTitle(vd->cfg->window, VOUT_TITLE " (OpenGL output)");

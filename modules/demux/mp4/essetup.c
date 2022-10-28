@@ -338,7 +338,7 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
     }
 
     /* Set 360 video mode */
-    p_fmt->video.projection_mode = PROJECTION_MODE_RECTANGULAR;
+    p_fmt->video.projection.mode = PROJECTION_MODE_RECTANGULAR;
     const MP4_Box_t *p_uuid = MP4_BoxGet( p_track->p_track, "uuid" );
     for( ; p_uuid; p_uuid = p_uuid->p_next)
     {
@@ -346,7 +346,7 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
             && !CmpUUID( &p_uuid->i_uuid, &XML360BoxUUID )
             && p_uuid->data.p_360 )
         {
-            p_fmt->video.projection_mode = p_uuid->data.p_360->i_projection_mode;
+            p_fmt->video.projection.mode = p_uuid->data.p_360->i_projection_mode;
             switch (p_uuid->data.p_360->e_stereo_mode)
             {
             case XML360_STEREOSCOPIC_TOP_BOTTOM:
@@ -401,17 +401,17 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
     const MP4_Box_t *p_prhd = MP4_BoxGet( p_sample, "sv3d/proj/prhd" );
     if (p_prhd && BOXDATA(p_prhd))
     {
-        p_fmt->video.pose.yaw = BOXDATA(p_prhd)->f_pose_yaw_degrees;
-        p_fmt->video.pose.pitch = BOXDATA(p_prhd)->f_pose_pitch_degrees;
-        p_fmt->video.pose.roll = BOXDATA(p_prhd)->f_pose_roll_degrees;
+        p_fmt->video.projection.pose.yaw = BOXDATA(p_prhd)->f_pose_yaw_degrees;
+        p_fmt->video.projection.pose.pitch = BOXDATA(p_prhd)->f_pose_pitch_degrees;
+        p_fmt->video.projection.pose.roll = BOXDATA(p_prhd)->f_pose_roll_degrees;
     }
 
     const MP4_Box_t *p_equi = MP4_BoxGet( p_sample, "sv3d/proj/equi" );
     const MP4_Box_t *p_cbmp = MP4_BoxGet( p_sample, "sv3d/proj/cbmp" );
     if (p_equi && BOXDATA(p_equi))
-        p_fmt->video.projection_mode = PROJECTION_MODE_EQUIRECTANGULAR;
+        p_fmt->video.projection.mode = PROJECTION_MODE_EQUIRECTANGULAR;
     else if (p_cbmp && BOXDATA(p_cbmp))
-        p_fmt->video.projection_mode = PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD;
+        p_fmt->video.projection.mode = PROJECTION_MODE_CUBEMAP;
 
     /* It's a little ugly but .. there are special cases */
     switch( i_sample_type )

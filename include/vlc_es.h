@@ -256,9 +256,31 @@ typedef enum video_projection_mode_t
 {
     PROJECTION_MODE_RECTANGULAR = 0,
     PROJECTION_MODE_EQUIRECTANGULAR,
-
-    PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD = 0x100,
+    PROJECTION_MODE_CUBEMAP,
 } video_projection_mode_t;
+
+typedef struct video_projection_t
+{
+    video_projection_mode_t mode; /**< projection mode */
+    vlc_viewpoint_t pose;
+    union
+    {
+        struct
+        {
+            float top;
+            float bottom;
+            float left;
+            float right;
+        } equirect;
+        struct
+        {
+            uint32_t layout;
+            uint32_t padding; /**< padding in pixels of the cube map faces */
+        } cubemap;
+    };
+} video_projection_t;
+
+#define PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD 0x00
 
 /**
  * Video color primaries (a.k.a. chromacities)
@@ -378,8 +400,8 @@ struct video_format_t
     video_multiview_mode_t multiview_mode;        /** Multiview mode, 2D, 3D */
     bool b_multiview_right_eye_first;   /** Multiview left or right eye first*/
 
-    video_projection_mode_t projection_mode;            /**< projection mode */
-    vlc_viewpoint_t pose;
+    video_projection_t projection; /** Spatial projection information */
+
     struct {
         /* similar to SMPTE ST 2086 mastering display color volume */
         uint16_t primaries[3*2]; /* G,B,R / x,y */
@@ -401,7 +423,6 @@ struct video_format_t
         unsigned el_present : 1;
         unsigned bl_present : 1;
     } dovi;
-    uint32_t i_cubemap_padding; /**< padding in pixels of the cube map faces */
 };
 
 /**
@@ -413,7 +434,7 @@ static inline void video_format_Init( video_format_t *p_src, vlc_fourcc_t i_chro
 {
     memset( p_src, 0, sizeof( video_format_t ) );
     p_src->i_chroma = i_chroma;
-    vlc_viewpoint_init( &p_src->pose );
+    vlc_viewpoint_init( &p_src->projection.pose );
 }
 
 /**

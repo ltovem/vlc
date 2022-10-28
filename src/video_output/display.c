@@ -109,7 +109,7 @@ void vout_display_PlacePicture(vout_display_place_t *restrict place,
     /* And the same but switching width/height */
     const int64_t scaled_width  = (int64_t)width  * display_height * dp->sar.den * source->i_sar_num / (height * source->i_sar_den * dp->sar.num);
 
-    if (source->projection_mode == PROJECTION_MODE_RECTANGULAR) {
+    if (source->projection.mode == PROJECTION_MODE_RECTANGULAR) {
         bool fit_height;
 
         switch (dp->fitting) {

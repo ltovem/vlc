@@ -4461,10 +4461,10 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
                                   vlc_gettext(fmt->video.b_multiview_right_eye_first ?
                                       N_("Right") : N_("Left")) );
        }
-       if( fmt->video.projection_mode != PROJECTION_MODE_RECTANGULAR )
+       if( fmt->video.projection.mode != PROJECTION_MODE_RECTANGULAR )
        {
            const char *psz_loc_name = NULL;
-           switch (fmt->video.projection_mode)
+           switch (fmt->video.projection.mode)
            {
            case PROJECTION_MODE_RECTANGULAR:
                psz_loc_name = N_("Rectangular");
@@ -4472,7 +4472,7 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
            case PROJECTION_MODE_EQUIRECTANGULAR:
                psz_loc_name = N_("Equirectangular");
                break;
-           case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
+           case PROJECTION_MODE_CUBEMAP:
                psz_loc_name = N_("Cubemap");
                break;
            default:
@@ -4483,14 +4483,14 @@ static void EsOutUpdateInfo( es_out_t *out, es_out_id_t *es, const vlc_meta_t *p
                                   vlc_gettext(psz_loc_name) );
 
            info_category_AddInfo( p_cat, vlc_pgettext("ViewPoint", "Yaw"),
-                                  "%.2f", fmt->video.pose.yaw );
+                                  "%.2f", fmt->video.projection.pose.yaw );
            info_category_AddInfo( p_cat, vlc_pgettext("ViewPoint", "Pitch"),
-                                  "%.2f", fmt->video.pose.pitch );
+                                  "%.2f", fmt->video.projection.pose.pitch );
            info_category_AddInfo( p_cat, vlc_pgettext("ViewPoint", "Roll"),
-                                  "%.2f", fmt->video.pose.roll );
+                                  "%.2f", fmt->video.projection.pose.roll );
            info_category_AddInfo( p_cat,
                                   vlc_pgettext("ViewPoint", "Field of view"),
-                                  "%.2f", fmt->video.pose.fov );
+                                  "%.2f", fmt->video.projection.pose.fov );
        }
        if ( fmt->video.mastering.max_luminance )
        {

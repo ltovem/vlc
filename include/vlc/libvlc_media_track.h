@@ -69,6 +69,7 @@ typedef enum libvlc_video_projection_t
 {
     libvlc_video_projection_rectangular,
     libvlc_video_projection_equirectangular, /**< 360 spherical */
+    libvlc_video_projection_cubemap,
 
     libvlc_video_projection_cubemap_layout_standard = 0x100,
 } libvlc_video_projection_t;

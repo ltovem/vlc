@@ -80,15 +80,19 @@ libvlc_media_trackpriv_from_es( libvlc_media_trackpriv_t *trackpriv,
                 es->video.orientation <= ORIENT_RIGHT_BOTTOM );
         track->video->i_orientation = (int) es->video.orientation;
 
-        assert( ( es->video.projection_mode >= PROJECTION_MODE_RECTANGULAR &&
-                es->video.projection_mode <= PROJECTION_MODE_EQUIRECTANGULAR ) ||
-                ( es->video.projection_mode == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD ) );
-        track->video->i_projection = (int) es->video.projection_mode;
+        assert( ( es->video.projection.mode >= PROJECTION_MODE_RECTANGULAR &&
+                es->video.projection.mode <= PROJECTION_MODE_EQUIRECTANGULAR ) ||
+                ( es->video.projection.mode == PROJECTION_MODE_CUBEMAP ) );
+        if( es->video.projection.mode == PROJECTION_MODE_CUBEMAP &&
+            es->video.projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD )
+            track->video->i_projection = libvlc_video_projection_cubemap_layout_standard;
+        else
+            track->video->i_projection = (int) es->video.projection.mode;
 
-        track->video->pose.f_yaw = es->video.pose.yaw;
-        track->video->pose.f_pitch = es->video.pose.pitch;
-        track->video->pose.f_roll = es->video.pose.roll;
-        track->video->pose.f_field_of_view = es->video.pose.fov;
+        track->video->pose.f_yaw = es->video.projection.pose.yaw;
+        track->video->pose.f_pitch = es->video.projection.pose.pitch;
+        track->video->pose.f_roll = es->video.projection.pose.roll;
+        track->video->pose.f_field_of_view = es->video.projection.pose.fov;
 
         assert( es->video.multiview_mode >= MULTIVIEW_2D &&
                 es->video.multiview_mode <= MULTIVIEW_STEREO_CHECKERBOARD );

@@ -78,7 +78,7 @@ static void getViewpointMatrixes(struct vlc_gl_renderer *renderer,
                                  video_projection_mode_t projection_mode)
 {
     if (projection_mode == PROJECTION_MODE_EQUIRECTANGULAR
-        || projection_mode == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        || projection_mode == PROJECTION_MODE_CUBEMAP)
     {
         getProjectionMatrix(renderer->f_sar, renderer->f_fovy,
                             renderer->var.ProjectionMatrix);
@@ -354,7 +354,7 @@ vlc_gl_renderer_SetViewpoint(struct vlc_gl_renderer *renderer,
         UpdateZ(renderer);
     }
     const video_format_t *fmt = &renderer->sampler->glfmt.fmt;
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 
     return VLC_SUCCESS;
 }
@@ -375,7 +375,7 @@ vlc_gl_renderer_SetOutputSize(struct vlc_gl_renderer *renderer, unsigned width,
     UpdateZ(renderer);
 
     const video_format_t *fmt = &renderer->sampler->glfmt.fmt;
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 }
 
 static int
@@ -653,7 +653,7 @@ static int SetupCoords(struct vlc_gl_renderer *renderer,
     unsigned nbVertices, nbIndices;
 
     int i_ret;
-    switch (fmt->projection_mode)
+    switch (fmt->projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         i_ret = BuildRectangle(&vertexCoord, &textureCoord, &nbVertices,
@@ -663,12 +663,16 @@ static int SetupCoords(struct vlc_gl_renderer *renderer,
         i_ret = BuildSphere(&vertexCoord, &textureCoord, &nbVertices,
                             &indices, &nbIndices);
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        i_ret = BuildCube((float)fmt->i_cubemap_padding / fmt->i_width,
-                          (float)fmt->i_cubemap_padding / fmt->i_height,
-                          &vertexCoord, &textureCoord, &nbVertices,
-                          &indices, &nbIndices);
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(fmt->projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            i_ret = BuildCube((float)fmt->projection.cubemap.padding / fmt->i_width,
+                              (float)fmt->projection.cubemap.padding / fmt->i_height,
+                              &vertexCoord, &textureCoord, &nbVertices,
+                              &indices, &nbIndices);
+            break;
+        }
+        /* fallthrough */
     default:
         i_ret = VLC_EGENERIC;
         break;
@@ -802,7 +806,7 @@ vlc_gl_renderer_Open(struct vlc_gl_filter *filter,
     const video_format_t *fmt = &sampler->glfmt.fmt;
     InitStereoMatrix(renderer->var.StereoMatrix, fmt->multiview_mode);
 
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 
     vt->GenBuffers(1, &renderer->vertex_buffer_object);
     vt->GenBuffers(1, &renderer->index_buffer_object);
