@@ -590,7 +590,7 @@ void matroska_segment_c::ParseTrackEntry( const KaxTrackEntry *m )
             dispatcher.iterate (proj.begin (), proj.end (), &vars );
             vars.level -= 1;
         }
-        E_CASE( KaxVideoProjectionType, fint )
+        E_CASE( KaxVideoProjectionType, fint ) /* !warn keep it first in KaxVideoProjection's dispatch order */
         {
             ONLY_FMT(VIDEO);
             switch (static_cast<uint8>( fint ))
@@ -607,6 +607,33 @@ void matroska_segment_c::ParseTrackEntry( const KaxTrackEntry *m )
             default:
                 debug( vars, "Track Video Projection %u not supported", static_cast<uint8>( fint ) ) ;
                 break;
+            }
+        }
+        E_CASE( KaxVideoProjectionPrivate, pvt )
+        {
+            ONLY_FMT(VIDEO);
+            const uint8_t *p = pvt.GetBuffer();
+            switch( vars.tk->fmt.video.projection.mode )
+            {
+                case PROJECTION_MODE_EQUIRECTANGULAR:
+                    if( pvt.GetSize() == 20 && GetDWBE(p) == 0x00000000U )
+                    {
+                        vars.tk->fmt.video.projection.equirect.top =  GetDWBE(p + 4) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.bottom = GetDWBE(p + 8) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.right = GetDWBE(p + 12) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.left = GetDWBE(p + 16) / (double) UINT32_MAX;
+                    }
+                    break;
+                case PROJECTION_MODE_CUBEMAP:
+                    if( pvt.GetSize() == 12 && GetDWBE(p) == 0x00000000U )
+                    {
+                        vars.tk->fmt.video.projection.cubemap.layout = GetDWBE(p + 4);
+                        vars.tk->fmt.video.projection.cubemap.padding = GetDWBE(p + 8);
+                    }
+                    break;
+                default:
+                    debug( vars, "Track Video Projection %u Unknown Private", vars.tk->fmt.video.projection.mode ) ;
+                    break;
             }
         }
         E_CASE( KaxVideoProjectionPoseYaw, pose )
