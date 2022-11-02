@@ -483,7 +483,7 @@ static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *
             unsigned first = (lat * (nbLonBands + 1)) + lon;
             unsigned second = first + nbLonBands + 1;
 
-            unsigned off = (lat * nbLatBands + lon) * 3 * 2;
+            unsigned off = (lat * nbLonBands + lon) * 3 * 2;
 
             (*indices)[off] = first;
             (*indices)[off + 1] = second;

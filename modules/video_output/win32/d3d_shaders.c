@@ -831,7 +831,7 @@ static void SetupQuadSphere(d3d_vertex_t *dst_data, const RECT *output,
             unsigned first = (lat * (nbLonBands + 1)) + lon;
             unsigned second = first + nbLonBands + 1;
 
-            unsigned off = (lat * nbLatBands + lon) * 3 * 2;
+            unsigned off = (lat * nbLonBands + lon) * 3 * 2;
 
             triangle_pos[off] = first;
             triangle_pos[off + 1] = first + 1;
