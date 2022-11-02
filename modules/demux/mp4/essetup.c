@@ -417,7 +417,11 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
         p_fmt->video.projection.equirect.left = BOXDATA(p_equi)->f_bounds_left;
     }
     else if (p_cbmp && BOXDATA(p_cbmp))
+    {
         p_fmt->video.projection.mode = PROJECTION_MODE_CUBEMAP;
+        p_fmt->video.projection.cubemap.layout = BOXDATA(p_cbmp)->i_layout;
+        p_fmt->video.projection.cubemap.padding = BOXDATA(p_cbmp)->i_padding;
+    }
 
     /* It's a little ugly but .. there are special cases */
     switch( i_sample_type )
