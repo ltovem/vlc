@@ -800,14 +800,28 @@ static void SetupQuadSphere(d3d_vertex_t *dst_data, const RECT *output,
 {
     const float scaleX = (float)(RECTWidth(*output))  / quad->i_width;
     const float scaleY = (float)(RECTHeight(*output)) / quad->i_height;
+
+    /* Sanity check for values */
+    const float leftbound = VLC_CLIP(leftbound, 0.0, 0.5);
+    const float topbound = VLC_CLIP(topbound, 0.0, 0.5);
+    const float rightbound = VLC_CLIP(rightbound, 0.0, 0.5);
+    const float bottombound = VLC_CLIP(bottombound, 0.0, 0.5);
+    /* Restricted aperture in % of 360 */
+    const float twoPi = 2.f * M_PI;
+    const float aperturePhiPi = twoPi * (SPHERE_RADIUS - leftbound - rightbound);
+    const float aperturePhiPiCenteringoffset = twoPi * (leftbound + rightbound) * 0.5;
+    /* Restricted aperture in % of 180 */
+    const float apertureThethaPi = M_PI * (SPHERE_RADIUS - topbound - bottombound);
+    const float apertureThethaPiCenteringOffset = M_PI * bottombound;
+
     for (unsigned lat = 0; lat <= nbLatBands; lat++) {
-        float theta = lat * (float) M_PI / nbLatBands;
+        float theta = lat * apertureThethaPi / nbLatBands + apertureThethaPiCenteringOffset;
         float sinTheta, cosTheta;
 
         sincosf(theta, &sinTheta, &cosTheta);
 
         for (unsigned lon = 0; lon <= nbLonBands; lon++) {
-            float phi = lon * 2 * (float) M_PI / nbLonBands;
+            float phi =  aperturePhiPi * (float)lon / nbLonBands + aperturePhiPiCenteringoffset;
             float sinPhi, cosPhi;
 
             sincosf(phi, &sinPhi, &cosPhi);
