@@ -1011,9 +1011,9 @@ void D3D_UpdateViewpoint(d3d_quad_t *quad, const vlc_viewpoint_t *viewpoint, flo
     vlc_viewpoint_to_4x4(viewpoint, quad->vertexConstants->View);
 }
 
-bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mode_t projection)
+bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_t projection)
 {
-    switch (projection)
+    switch (projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         quad->vertexCount = 4;
@@ -1032,7 +1032,7 @@ bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mo
         }
         /* fallthrough */
     default:
-        msg_Warn(o, "Projection mode %d not handled", projection);
+        msg_Warn(o, "Projection mode %d not handled", projection.mode);
         return false;
     }
 
@@ -1045,7 +1045,7 @@ bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mo
 bool D3D_SetupQuadData(vlc_object_t *o, d3d_quad_t *quad, const RECT *output, d3d_vertex_t*dst_data,
                        void *pData, video_transform_t orientation)
 {
-    switch (quad->projection)
+    switch (quad->projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         SetupQuadFlat(dst_data, output, quad, pData, orientation);
@@ -1061,7 +1061,7 @@ bool D3D_SetupQuadData(vlc_object_t *o, d3d_quad_t *quad, const RECT *output, d3
         }
         /* fallthrough */
     default:
-        msg_Warn(o, "Projection mode %d not handled", quad->projection);
+        msg_Warn(o, "Projection mode %d not handled", quad->projection.mode);
         return false;
     }
     return true;

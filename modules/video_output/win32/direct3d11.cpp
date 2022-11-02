@@ -1036,7 +1036,7 @@ static int Direct3D11CreateFormatResources(vout_display_t *vd, const video_forma
         return VLC_EGENERIC;
     }
 
-    if (D3D11_AllocateQuad(vd, sys->d3d_dev, vd->source->projection.mode, &sys->picQuad) != VLC_SUCCESS)
+    if (D3D11_AllocateQuad(vd, sys->d3d_dev, vd->source->projection, &sys->picQuad) != VLC_SUCCESS)
     {
         msg_Err(vd, "Could not allocate quad buffers.");
        return VLC_EGENERIC;
@@ -1328,7 +1328,10 @@ static int Direct3D11MapSubpicture(vout_display_t *vd, int *subpicture_region_co
             d3dquad->generic.i_height = r->fmt.i_height;
 
             d3dquad->generic.textureFormat = sys->regionQuad.generic.textureFormat;
-            err = D3D11_AllocateQuad(vd, sys->d3d_dev, PROJECTION_MODE_RECTANGULAR, d3dquad);
+            video_projection_t projection = {};
+            projection.mode = PROJECTION_MODE_RECTANGULAR;
+            vlc_viewpoint_init( &projection.pose );
+            err = D3D11_AllocateQuad(vd, sys->d3d_dev, projection, d3dquad);
             if (err != VLC_SUCCESS)
             {
                 msg_Err(vd, "Failed to allocate %dx%d quad for OSD",

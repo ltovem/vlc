@@ -82,7 +82,7 @@ typedef struct
     UINT                      vertexCount;
     UINT                      vertexStride;
     UINT                      indexCount;
-    video_projection_mode_t   projection;
+    video_projection_t        projection;
 
     unsigned int              i_width;
     unsigned int              i_height;
@@ -116,7 +116,7 @@ bool D3D_UpdateQuadLuminanceScale(d3d_quad_t *, float luminanceScale);
 void D3D_SetupQuad(vlc_object_t *, const video_format_t *, d3d_quad_t *,
                    const display_info_t *);
 
-bool D3D_QuadSetupBuffers(vlc_object_t *, d3d_quad_t *, video_projection_mode_t);
+bool D3D_QuadSetupBuffers(vlc_object_t *, d3d_quad_t *, video_projection_t);
 bool D3D_SetupQuadData(vlc_object_t *, d3d_quad_t *, const RECT *, d3d_vertex_t*, void *, video_transform_t);
 
 void D3D_UpdateViewpoint(d3d_quad_t *, const vlc_viewpoint_t *, float f_sar);
