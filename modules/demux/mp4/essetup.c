@@ -409,7 +409,13 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
     const MP4_Box_t *p_equi = MP4_BoxGet( p_sample, "sv3d/proj/equi" );
     const MP4_Box_t *p_cbmp = MP4_BoxGet( p_sample, "sv3d/proj/cbmp" );
     if (p_equi && BOXDATA(p_equi))
+    {
         p_fmt->video.projection.mode = PROJECTION_MODE_EQUIRECTANGULAR;
+        p_fmt->video.projection.equirect.top = BOXDATA(p_equi)->f_bounds_top;
+        p_fmt->video.projection.equirect.bottom = BOXDATA(p_equi)->f_bounds_bottom;
+        p_fmt->video.projection.equirect.right = BOXDATA(p_equi)->f_bounds_right;
+        p_fmt->video.projection.equirect.left = BOXDATA(p_equi)->f_bounds_left;
+    }
     else if (p_cbmp && BOXDATA(p_cbmp))
         p_fmt->video.projection.mode = PROJECTION_MODE_CUBEMAP;
 
