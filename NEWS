@@ -180,6 +180,7 @@ Video Output:
 
 Access:
  * Fix RTSP server timeout handling
+ * Improved CD-TEXT and added Shift-JIS encoding support
 
 Interfaces:
  * macOS: Add touchbar support
