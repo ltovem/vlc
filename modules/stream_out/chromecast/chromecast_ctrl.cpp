@@ -40,11 +40,36 @@
 #include <vlc_stream.h>
 #include <vlc_rand.h>
 
-#include "../../misc/webservices/json.h"
+extern "C" {
+#include "../../demux/json/json.h"
+}
 
 /* deadline regarding pings sent from receiver */
 #define PING_WAIT_TIME 6000
 #define PING_WAIT_RETRIES 1
+
+extern "C" {
+
+static size_t Read(void *data, void *buf, size_t size)
+{
+    struct sys_json *sys = (struct sys_json *)data;
+    size_t ret = 0;
+
+    if (size <= sys->size) {
+        memcpy(buf, sys->input, size);
+        ret = size;
+    }
+    else {
+        memcpy(buf, sys->input, sys->size);
+        ret = sys->size;
+    }
+    sys->input += ret;
+    sys->size -= ret;
+
+    return ret;
+}
+
+}
 
 static int httpd_file_fill_cb( httpd_file_sys_t *data, httpd_file_t *http_file,
                           uint8_t *psz_request, uint8_t **pp_data, int *pi_data );
@@ -550,21 +575,47 @@ bool intf_sys_t::processMessage(const castchannel::CastMessage &msg)
     msg_Dbg( m_module, "processMessage: %s->%s %s", namespace_.c_str(), msg.destination_id().c_str(), msg.payload_utf8().c_str());
 #endif
 
+    struct sys_json jsdata;
+    jsdata.logger = m_module->logger;
+    jsdata.input = msg.payload_utf8().c_str();    
+    jsdata.size = strlen(jsdata.input);
+    jsdata.json_read = Read;
+
+    struct json_object json;
+
+    if ((namespace_ == NAMESPACE_HEARTBEAT)
+        || (namespace_ == NAMESPACE_RECEIVER)
+        || (namespace_ == NAMESPACE_MEDIA)
+        || (namespace_ == NAMESPACE_CONNECTION)) {
+        int val = json_parse(&jsdata, &json);
+        if (val) {
+            msg_Dbg( m_module, "error: could not parse json!");
+            return false;
+        }
+    }
+
     bool ret = true;
     if (namespace_ == NAMESPACE_DEVICEAUTH)
         processAuthMessage( msg );
     else if (namespace_ == NAMESPACE_HEARTBEAT)
-        processHeartBeatMessage( msg );
+        processHeartBeatMessage( msg , &json);
     else if (namespace_ == NAMESPACE_RECEIVER)
-        ret = processReceiverMessage( msg );
+        ret = processReceiverMessage( msg , &json);
     else if (namespace_ == NAMESPACE_MEDIA)
-        processMediaMessage( msg );
+        processMediaMessage( msg , &json);
     else if (namespace_ == NAMESPACE_CONNECTION)
-        processConnectionMessage( msg );
+        processConnectionMessage( msg , &json);
     else
     {
         msg_Err( m_module, "Unknown namespace: %s", msg.namespace_().c_str());
     }
+    if ((namespace_ == NAMESPACE_HEARTBEAT)
+        || (namespace_ == NAMESPACE_RECEIVER)
+        || (namespace_ == NAMESPACE_MEDIA)
+        || (namespace_ == NAMESPACE_CONNECTION)) {
+        json_free(&json);
+    }    
+
     return ret;
 }
 
@@ -671,11 +722,11 @@ void intf_sys_t::processAuthMessage( const castchannel::CastMessage& msg )
     }
 }
 
-void intf_sys_t::processHeartBeatMessage( const castchannel::CastMessage& msg )
+void intf_sys_t::processHeartBeatMessage( const castchannel::CastMessage& msg , const struct json_object *entry )
 {
-    json_value *p_data = json_parse(msg.payload_utf8().c_str());
-    std::string type((*p_data)["type"]);
-
+    VLC_UNUSED(msg);
+    const char *tmp = json_get_str(entry, "type");
+    std::string type = tmp ? tmp : ""; 
     if (type == "PING")
     {
         msg_Dbg( m_module, "PING received from the Chromecast");
@@ -690,33 +741,38 @@ void intf_sys_t::processHeartBeatMessage( const castchannel::CastMessage& msg )
     {
         msg_Warn( m_module, "Heartbeat command not supported: %s", type.c_str());
     }
-
-    json_value_free(p_data);
 }
 
-bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg )
+bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg , const struct json_object *entry )
 {
-    json_value *p_data = json_parse(msg.payload_utf8().c_str());
-    std::string type((*p_data)["type"]);
+    const char *tmp = json_get_str(entry, "type");
+    std::string type = tmp ? tmp : "";
 
     bool ret = true;
     if (type == "RECEIVER_STATUS")
     {
-        json_value applications = (*p_data)["status"]["applications"];
-        const json_value *p_app = NULL;
-
-        for (unsigned i = 0; i < applications.u.array.length; ++i)
-        {
-            if ( strcmp( applications[i]["appId"], APP_ID ) == 0 )
+        const json_value *status = json_get(entry, "status");
+        if (!status) {
+            msg_Err(m_module, "receiver message: bad payload");
+            return false;
+        }
+        const json_value *applications = json_get(&status->object, "applications");
+        const json_object *p_app = NULL;
+        if (applications) {
+            for (unsigned i = 0; i < applications->array.size; ++i)
             {
-                if ( (const char*)applications[i]["transportId"] != NULL)
+                const char *appId = json_get_str(&applications->array.entries[i].object, "appId");
+                const char *transportId = json_get_str(&applications->array.entries[i].object, "transportId");
+                if ( strcmp( appId, APP_ID ) == 0 ) 
                 {
-                    p_app = &applications[i];
-                    break;
+                    if (  transportId != NULL )
+                    {
+                        p_app = &applications->array.entries[i].object;
+                        break;
+                    }
                 }
             }
         }
-
         vlc::threads::mutex_locker lock( m_lock );
 
         switch ( m_state )
@@ -727,7 +783,8 @@ bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg )
             if ( p_app != NULL )
             {
                 msg_Dbg( m_module, "Media receiver application was already running" );
-                m_appTransportId = (const char*)(*p_app)["transportId"];
+                tmp = json_get_str(p_app, "transportId");
+                m_appTransportId = tmp ? tmp: "";
                 m_communication->msgConnect( m_appTransportId );
                 setState( Ready );
             }
@@ -741,7 +798,8 @@ bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg )
             if ( p_app != NULL )
             {
                 msg_Dbg( m_module, "Media receiver application has been started." );
-                m_appTransportId = (const char*)(*p_app)["transportId"];
+                tmp = json_get_str(p_app, "transportId");
+                m_appTransportId = tmp ? tmp: "";
                 m_communication->msgConnect( m_appTransportId );
                 setState( Ready );
             }
@@ -779,9 +837,9 @@ bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg )
     }
     else if (type == "LAUNCH_ERROR")
     {
-        json_value reason = (*p_data)["reason"];
+        const char *reason = json_get_str(entry, "reason");
         msg_Err( m_module, "Failed to start the MediaPlayer: %s",
-                (const char *)reason);
+                 reason);
         vlc::threads::mutex_locker lock( m_lock );
         m_appTransportId = "";
         m_mediaSessionId = 0;
@@ -794,41 +852,44 @@ bool intf_sys_t::processReceiverMessage( const castchannel::CastMessage& msg )
                 msg.payload_utf8().c_str());
     }
 
-    json_value_free(p_data);
     return ret;
 }
 
-void intf_sys_t::processMediaMessage( const castchannel::CastMessage& msg )
+void intf_sys_t::processMediaMessage( const castchannel::CastMessage& msg , const struct json_object *entry )
 {
-    json_value *p_data = json_parse(msg.payload_utf8().c_str());
-    std::string type((*p_data)["type"]);
-    int64_t requestId = (json_int_t) (*p_data)["requestId"];
+    const char *tmp = json_get_str(entry, "type");
+    std::string type = tmp ? tmp: "";
+    int64_t requestId = (int64_t) json_get_num(entry,"requestId");
 
     vlc::threads::mutex_locker lock( m_lock );
 
     if ((m_last_request_id != 0 && requestId != m_last_request_id))
-    {
-        json_value_free(p_data);
         return;
-    }
     m_last_request_id = 0;
 
     if (type == "MEDIA_STATUS")
     {
-        json_value status = (*p_data)["status"];
-
-        int64_t sessionId = (json_int_t) status[0]["mediaSessionId"];
-        std::string newPlayerState = (const char*)status[0]["playerState"];
-        std::string idleReason = (const char*)status[0]["idleReason"];
+        const json_value *status = json_get(entry, "status");
+        if (!status) {
+            return;
+        }
+        if (status->array.size < 1) {
+            msg_Warn( m_module, "Bad payload, got a media status message with less than one session Id");
+            return;
+        }
+        int64_t sessionId = (int64_t) json_get_num(&status->array.entries[0].object,"mediaSessionId");
+        tmp = json_get_str(&status->array.entries[0].object,"playerState");
+        std::string newPlayerState = tmp ? tmp: "";
+        tmp = json_get_str(&status->array.entries[0].object,"idleReason");
+        std::string idleReason = tmp ? tmp: "";
 
         msg_Dbg( m_module, "Player state: %s sessionId: %" PRId64,
-                status[0]["playerState"].operator const char *(),
-                sessionId );
+                 json_get_str(&status->array.entries[0].object,"playerState"),
+                 sessionId );
 
         if (sessionId != 0 && m_mediaSessionId != 0 && m_mediaSessionId != sessionId)
         {
             msg_Warn( m_module, "Ignoring message for a different media session");
-            json_value_free(p_data);
             return;
         }
 
@@ -885,12 +946,15 @@ void intf_sys_t::processMediaMessage( const castchannel::CastMessage& msg )
                 setState( Stopping );
             }
             else if (newPlayerState == "PLAYING")
-            {
-                vlc_tick_t currentTime = timeCCToVLC((double) status[0]["currentTime"]);
-                m_cc_time = currentTime;
-                m_cc_time_date = vlc_tick_now();
-
-                setState( Playing );
+            {                
+                if (status->array.size >= 1) {                                
+                    vlc_tick_t currentTime = timeCCToVLC(json_get_num(&status->array.entries[0].object,
+                                                                      "currentTime"));
+                    m_cc_time = currentTime;
+                    m_cc_time_date = vlc_tick_now();
+                    
+                    setState( Playing );
+                }
             }
             else if (newPlayerState == "BUFFERING")
             {
@@ -934,7 +998,7 @@ void intf_sys_t::processMediaMessage( const castchannel::CastMessage& msg )
     }
     else if (type == "INVALID_REQUEST")
     {
-        msg_Dbg( m_module, "We sent an invalid request reason:%s", (const char*)(*p_data)["reason"] );
+        msg_Dbg( m_module, "We sent an invalid request reason:%s", json_get_str(entry, "reason"));
     }
     else
     {
@@ -942,14 +1006,16 @@ void intf_sys_t::processMediaMessage( const castchannel::CastMessage& msg )
                 msg.payload_utf8().c_str());
     }
 
-    json_value_free(p_data);
 }
 
-void intf_sys_t::processConnectionMessage( const castchannel::CastMessage& msg )
+void intf_sys_t::processConnectionMessage( const castchannel::CastMessage& msg , const struct json_object *entry )
 {
-    json_value *p_data = json_parse(msg.payload_utf8().c_str());
-    std::string type((*p_data)["type"]);
-    json_value_free(p_data);
+    const struct json_value *value = json_get(entry, msg.payload_utf8().c_str());
+    if (!value) {
+        msg_Err(m_module, "connection message: bad payload");
+        return;
+    }
+    std::string type = json_get_str(&value->object, "type");
 
     if ( type == "CLOSE" )
     {

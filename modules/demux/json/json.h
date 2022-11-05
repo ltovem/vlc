@@ -61,6 +61,26 @@ struct json_member {
     struct json_value value;
 };
 
+struct sys_json {
+    struct vlc_logger *logger;
+    /*
+    //file descriptor of the file to read from
+    int fd;
+    
+    //buffer and size of the buffer to read from
+    const char *input;
+    size_t size;
+    */
+    size_t (*json_read)(void *, void *, size_t);
+    /*
+      opaque pointer that will hold data that will
+      be used by the json_ callbacks.
+      For examples:
+      file descriptor, size of the file, input method...
+    */
+    void *sys;
+};
+
 size_t json_read(void *data, void *buf, size_t max);
 void json_parse_error(void *log, const char *msg);
 char *json_unescape(const char *, size_t);

@@ -25,57 +25,37 @@
 
 #include <limits.h>
 
-#include "json.h"
+#include "../../demux/json/json.h"
 
 static inline
-const json_value * json_getbyname(const json_value *object, const char *psz_name)
+struct json_value json_getbyname(const struct json_object *object, const char *psz_name)
 {
-    if (object->type != json_object) return NULL;
-    for (unsigned int i=0; i < object->u.object.length; i++)
-        if (strcmp(object->u.object.values[i].name, psz_name) == 0)
-            return object->u.object.values[i].value;
-    return NULL;
+    struct json_member *members = object->members;
+    unsigned int i = 0;
+    for (i = 0; i < object->count; i++) {
+        if (strcmp(members[i].name, psz_name) == 0)
+            break ;
+    }
+    return object->members[i].value;
 }
 
 static inline
-char * jsongetstring(const json_value *node, const char *key)
+char * jsongetstring(const struct json_value *node, const char *key)
 {
-    node = json_getbyname(node, key);
-    if (node && node->type == json_string)
-        return node->u.string.ptr;
-    return NULL;
+    const struct json_value *value = json_get(&node->object, key);
+
+    if (!value)
+        return NULL;
+    if (value->type != JSON_STRING)
+        return NULL;
+    return value->string;
 }
 
 static inline
-char * json_dupstring(const json_value *node, const char *key)
+char * json_dupstring(const struct json_value *node, const char *key)
 {
     const char *str = jsongetstring(node, key);
     return (str) ? strdup(str) : NULL;
-}
-
-static inline
-json_value * json_parse_document(vlc_object_t *p_obj, const char *psz_buffer)
-{
-    json_settings settings;
-    char psz_error[128];
-    memset (&settings, 0, sizeof (json_settings));
-    json_value *root = json_parse_ex(&settings, psz_buffer, psz_error);
-    if (root == NULL)
-    {
-        msg_Warn(p_obj, "Can't parse json data: %s", psz_error);
-        goto error;
-    }
-    if (root->type != json_object)
-    {
-        msg_Warn(p_obj, "wrong json root node");
-        goto error;
-    }
-
-    return root;
-
-error:
-    if (root) json_value_free(root);
-    return NULL;
 }
 
 static inline
@@ -120,6 +100,26 @@ void * json_retrieve_document(vlc_object_t *p_obj, const char *psz_url)
     p_buffer[i_ret] = 0;
 
     return p_buffer;
+}
+
+static inline
+size_t Read(void *data, void *buf, size_t size)
+{
+    struct sys_json *sys = (struct sys_json *)data;
+    size_t ret = 0;
+
+    if (size <= sys->size) {
+        memcpy(buf, sys->input, size);
+        ret = size;
+    }
+    else {
+        memcpy(buf, sys->input, sys->size);
+        ret = sys->size;
+    }
+    sys->input += ret;
+    sys->size -= ret;
+
+    return ret;
 }
 
 #endif

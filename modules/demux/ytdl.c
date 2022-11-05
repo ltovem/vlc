@@ -39,32 +39,6 @@
 #include <vlc_spawn.h>
 #include <vlc_interrupt.h>
 
-struct ytdl_json {
-    struct vlc_logger *logger;
-    int fd;
-};
-
-void json_parse_error(void *data, const char *msg)
-{
-    struct ytdl_json *sys = data;
-
-    vlc_error(sys->logger, "%s", msg);
-}
-
-size_t json_read(void *data, void *buf, size_t size)
-{
-    struct ytdl_json *sys = data;
-
-    while (!vlc_killed()) {
-        ssize_t val = vlc_read_i11e(sys->fd, buf, size);
-
-        if (val >= 0)
-            return val;
-    }
-
-    return 0;
-}
-
 static int ytdl_popen(pid_t *restrict pid, const char *argv[])
 {
     int fds[2];
@@ -338,6 +312,20 @@ static void Close(vlc_object_t *obj)
     json_free(&sys->json);
 }
 
+static size_t Read(void *data, void *buf, size_t size)
+{
+    struct sys_json *sys = (struct sys_json *)data;
+
+    while (!vlc_killed()) {
+        ssize_t val = vlc_read_i11e(sys->fd, buf, size);
+
+        if (val >= 0)
+            return val;
+    }
+
+    return 0;
+}
+
 static int OpenCommon(vlc_object_t *obj)
 {
     stream_t *s = (stream_t *)obj;
@@ -350,12 +338,13 @@ static int OpenCommon(vlc_object_t *obj)
     if (unlikely(path == NULL))
         return VLC_EGENERIC;
 
-    struct ytdl_json jsdata;
+    struct sys_json jsdata;
     pid_t pid;
     const char *argv[] = { path, s->psz_url, NULL };
 
     jsdata.logger = s->obj.logger;
     jsdata.fd = ytdl_popen(&pid, argv);
+    jsdata.json_read = Read;
 
     if (jsdata.fd == -1) {
         msg_Dbg(obj, "cannot start %s: %s", path, vlc_strerror_c(errno));

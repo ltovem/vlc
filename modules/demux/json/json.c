@@ -147,3 +147,17 @@ double json_get_num(const struct json_object *obj, const char *name)
 
     return (v != NULL && v->type == JSON_NUMBER) ? v->number : NAN;
 }
+
+void json_parse_error(void *data, const char *msg)
+{
+    struct sys_json *sys = (struct sys_json *)data;
+
+    vlc_error(sys->logger, "%s", msg);
+}
+
+size_t json_read(void *data, void *buf, size_t size)
+{
+    struct sys_json *sys = (struct sys_json *)data;
+
+    return sys->json_read(data, buf, size);
+}
