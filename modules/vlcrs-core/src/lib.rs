@@ -10,6 +10,7 @@
 
 pub mod error;
 pub mod fourcc;
+pub mod messages;
 pub mod object;
 pub mod rational;
 pub mod sout;
