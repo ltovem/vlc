@@ -138,7 +138,17 @@ StreamFormat::StreamFormat(const void *data_, size_t sz)
         sz -= tagsize;
     }
 
-    if(sz > 188 && data[0] == 0x47 && data[188] == 0x47)
+    bool isMPEG2TS = false; /* check the first 376 bytes for two matching sync bytes */
+    for(size_t i = 0; i + 188 < sz && i < 188; i++)
+    {
+        if(data[i] == 0x47 && data[i+188] == 0x47)
+        {
+            isMPEG2TS = true;
+            break;
+        }
+    }
+
+    if(isMPEG2TS)
         type = StreamFormat::Type::MPEG2TS;
     else if(sz > 8 && (!memcmp(&moov,    &data[4], 4) ||
                        !memcmp(&moov[4], &data[4], 4) ||
