@@ -139,17 +139,12 @@ StreamFormat::StreamFormat(const void *data_, size_t sz)
     }
 
     bool isMPEG2TS = false; /* check the first 376 bytes for two matching sync bytes */
-    if(sz < 189 && sz >= 1)
-        isMPEG2TS = data[0] == 0x47;
-    else
+    for(size_t i = 0; i + 188 < sz && i < 188; i++)
     {
-        for(size_t i = 0; i + 188 < sz && i < 188; i++)
+        if(data[i] == 0x47 && data[i+188] == 0x47)
         {
-            if(data[i] == 0x47 && data[i+188] == 0x47)
-            {
-                isMPEG2TS = true;
-                break;
-            }
+            isMPEG2TS = true;
+            break;
         }
     }
 
