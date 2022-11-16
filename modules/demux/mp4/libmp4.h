@@ -1607,10 +1607,10 @@ typedef struct
 
 typedef struct
 {
-    uint32_t i_projection_bounds_top;
-    uint32_t i_projection_bounds_bottom;
-    uint32_t i_projection_bounds_left;
-    uint32_t i_projection_bounds_right;
+    float f_bounds_top;
+    float f_bounds_bottom;
+    float f_bounds_left;
+    float f_bounds_right;
 } MP4_Box_data_equi_t;
 
 typedef struct

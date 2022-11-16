@@ -317,31 +317,31 @@ static void jpeg_GetProjection(j_decompress_ptr cinfo, video_format_t *fmt)
         spherical video spec says the tag must be there. */
     if (strcasestr(psz_rdf, "ProjectionType=\"equirectangular\"") ||
         strcasestr(psz_rdf, "ProjectionType>equirectangular"))
-        fmt->projection_mode = PROJECTION_MODE_EQUIRECTANGULAR;
+        fmt->projection.mode = PROJECTION_MODE_EQUIRECTANGULAR;
 
     /* pose handling */
     float value;
     if (getRDFFloat(psz_rdf, &value, "PoseHeadingDegrees"))
-        fmt->pose.yaw = value;
+        fmt->projection.pose.yaw = value;
 
     if (getRDFFloat(psz_rdf, &value, "PosePitchDegrees"))
-        fmt->pose.pitch = value;
+        fmt->projection.pose.pitch = value;
 
     if (getRDFFloat(psz_rdf, &value, "PoseRollDegrees"))
-        fmt->pose.roll = value;
+        fmt->projection.pose.roll = value;
 
     /* initial view */
     if (getRDFFloat(psz_rdf, &value, "InitialViewHeadingDegrees"))
-        fmt->pose.yaw = value;
+        fmt->projection.pose.yaw = value;
 
     if (getRDFFloat(psz_rdf, &value, "InitialViewPitchDegrees"))
-        fmt->pose.pitch = value;
+        fmt->projection.pose.pitch = value;
 
     if (getRDFFloat(psz_rdf, &value, "InitialViewRollDegrees"))
-        fmt->pose.roll = value;
+        fmt->projection.pose.roll = value;
 
     if (getRDFFloat(psz_rdf, &value, "InitialHorizontalFOVDegrees"))
-        fmt->pose.fov = value;
+        fmt->projection.pose.fov = value;
 
     free(psz_rdf);
 }

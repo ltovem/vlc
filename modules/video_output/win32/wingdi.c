@@ -117,7 +117,7 @@ static int Open(vout_display_t *vd,
     VLC_UNUSED(context);
     vout_display_sys_t *sys;
 
-    if ( !vd->obj.force && vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR)
+    if ( !vd->obj.force && vd->source->projection.mode != PROJECTION_MODE_RECTANGULAR)
         return VLC_EGENERIC; /* let a module who can handle it do it */
 
     vd->sys = sys = calloc(1, sizeof(*sys));

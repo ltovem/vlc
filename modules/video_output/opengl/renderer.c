@@ -78,7 +78,7 @@ static void getViewpointMatrixes(struct vlc_gl_renderer *renderer,
                                  video_projection_mode_t projection_mode)
 {
     if (projection_mode == PROJECTION_MODE_EQUIRECTANGULAR
-        || projection_mode == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        || projection_mode == PROJECTION_MODE_CUBEMAP)
     {
         getProjectionMatrix(renderer->f_sar, renderer->f_fovy,
                             renderer->var.ProjectionMatrix);
@@ -354,7 +354,7 @@ vlc_gl_renderer_SetViewpoint(struct vlc_gl_renderer *renderer,
         UpdateZ(renderer);
     }
     const video_format_t *fmt = &renderer->sampler->glfmt.fmt;
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 
     return VLC_SUCCESS;
 }
@@ -375,7 +375,7 @@ vlc_gl_renderer_SetOutputSize(struct vlc_gl_renderer *renderer, unsigned width,
     UpdateZ(renderer);
 
     const video_format_t *fmt = &renderer->sampler->glfmt.fmt;
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 }
 
 static int
@@ -396,7 +396,8 @@ RequestOutputSize(struct vlc_gl_filter *filter,
 }
 
 static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *nbVertices,
-                       GLushort **indices, unsigned *nbIndices)
+                       GLushort **indices, unsigned *nbIndices,
+                       float leftbound, float topbound, float rightbound, float bottombound)
 {
     unsigned nbLatBands = 128;
     unsigned nbLonBands = 128;
@@ -421,14 +422,28 @@ static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *
         return VLC_ENOMEM;
     }
 
+    /* Sanity check for values */
+    leftbound = VLC_CLIP(leftbound, 0.0, 0.5);
+    topbound = VLC_CLIP(topbound, 0.0, 0.5);
+    rightbound = VLC_CLIP(rightbound, 0.0, 0.5);
+    bottombound = VLC_CLIP(bottombound, 0.0, 0.5);
+
+    /* Restricted aperture in % of 360 */
+    const float twoPi = 2.f * M_PI;
+    const float aperturePhiPi = twoPi * (SPHERE_RADIUS - leftbound - rightbound);
+    const float aperturePhiPiCenteringoffset = twoPi * (leftbound + rightbound) * 0.5;
+    /* Restricted aperture in % of 180 */
+    const float apertureThethaPi = M_PI * (SPHERE_RADIUS - topbound - bottombound);
+    const float apertureThethaPiCenteringOffset = M_PI * bottombound;
+
     for (unsigned lat = 0; lat <= nbLatBands; lat++) {
-        float theta = lat * (float) M_PI / nbLatBands;
+        float theta = lat * apertureThethaPi / nbLatBands + apertureThethaPiCenteringOffset;
         float sinTheta, cosTheta;
 
         sincosf(theta, &sinTheta, &cosTheta);
 
         for (unsigned int lon = 0; lon <= nbLonBands; lon++) {
-            float phi =  2.f * (float)M_PI * (float)lon / nbLonBands;
+            float phi =  aperturePhiPi * (float)lon / nbLonBands + aperturePhiPiCenteringoffset;
             float sinPhi, cosPhi;
 
             sincosf(phi, &sinPhi, &cosPhi);
@@ -468,7 +483,7 @@ static int BuildSphere(GLfloat **vertexCoord, GLfloat **textureCoord, unsigned *
             unsigned first = (lat * (nbLonBands + 1)) + lon;
             unsigned second = first + nbLonBands + 1;
 
-            unsigned off = (lat * nbLatBands + lon) * 3 * 2;
+            unsigned off = (lat * nbLonBands + lon) * 3 * 2;
 
             (*indices)[off] = first;
             (*indices)[off + 1] = second;
@@ -653,7 +668,7 @@ static int SetupCoords(struct vlc_gl_renderer *renderer,
     unsigned nbVertices, nbIndices;
 
     int i_ret;
-    switch (fmt->projection_mode)
+    switch (fmt->projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         i_ret = BuildRectangle(&vertexCoord, &textureCoord, &nbVertices,
@@ -661,14 +676,22 @@ static int SetupCoords(struct vlc_gl_renderer *renderer,
         break;
     case PROJECTION_MODE_EQUIRECTANGULAR:
         i_ret = BuildSphere(&vertexCoord, &textureCoord, &nbVertices,
-                            &indices, &nbIndices);
+                            &indices, &nbIndices,
+                            fmt->projection.equirect.left,
+                            fmt->projection.equirect.top,
+                            fmt->projection.equirect.right,
+                            fmt->projection.equirect.bottom);
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        i_ret = BuildCube((float)fmt->i_cubemap_padding / fmt->i_width,
-                          (float)fmt->i_cubemap_padding / fmt->i_height,
-                          &vertexCoord, &textureCoord, &nbVertices,
-                          &indices, &nbIndices);
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(fmt->projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            i_ret = BuildCube((float)fmt->projection.cubemap.padding / fmt->i_width,
+                              (float)fmt->projection.cubemap.padding / fmt->i_height,
+                              &vertexCoord, &textureCoord, &nbVertices,
+                              &indices, &nbIndices);
+            break;
+        }
+        /* fallthrough */
     default:
         i_ret = VLC_EGENERIC;
         break;
@@ -802,7 +825,7 @@ vlc_gl_renderer_Open(struct vlc_gl_filter *filter,
     const video_format_t *fmt = &sampler->glfmt.fmt;
     InitStereoMatrix(renderer->var.StereoMatrix, fmt->multiview_mode);
 
-    getViewpointMatrixes(renderer, fmt->projection_mode);
+    getViewpointMatrixes(renderer, fmt->projection.mode);
 
     vt->GenBuffers(1, &renderer->vertex_buffer_object);
     vt->GenBuffers(1, &renderer->index_buffer_object);

@@ -387,7 +387,7 @@ static int Open(vout_display_t *vd,
         if (vd->cfg->window->type == VLC_WINDOW_TYPE_HWND)
         {
             if (CommonWindowInit(vd, &sys->area, &sys->sys,
-                       vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR))
+                       vd->source->projection.mode != PROJECTION_MODE_RECTANGULAR))
                 goto error;
         }
 
@@ -413,7 +413,7 @@ static int Open(vout_display_t *vd,
     }
 
 #ifndef VLC_WINSTORE_APP
-    if (vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR && sys->sys.hvideownd)
+    if (vd->source->projection.mode != PROJECTION_MODE_RECTANGULAR && sys->sys.hvideownd)
         sys->p_sensors = HookWindowsSensors(vd, sys->sys.hvideownd);
 #endif // !VLC_WINSTORE_APP
 
@@ -612,7 +612,7 @@ static void PreparePicture(vout_display_t *vd, picture_t *picture, subpicture_t 
         renderSrc = p_sys->renderSrc;
     }
     D3D11_RenderQuad(sys->d3d_dev, &sys->picQuad,
-                     vd->source->projection_mode == PROJECTION_MODE_RECTANGULAR ? &sys->flatVShader : &sys->projectionVShader,
+                     vd->source->projection.mode == PROJECTION_MODE_RECTANGULAR ? &sys->flatVShader : &sys->projectionVShader,
                      renderSrc, SelectRenderPlane, sys);
 
     if (subpicture) {
@@ -1036,7 +1036,7 @@ static int Direct3D11CreateFormatResources(vout_display_t *vd, const video_forma
         return VLC_EGENERIC;
     }
 
-    if (D3D11_AllocateQuad(vd, sys->d3d_dev, vd->source->projection_mode, &sys->picQuad) != VLC_SUCCESS)
+    if (D3D11_AllocateQuad(vd, sys->d3d_dev, vd->source->projection, &sys->picQuad) != VLC_SUCCESS)
     {
         msg_Err(vd, "Could not allocate quad buffers.");
        return VLC_EGENERIC;
@@ -1060,8 +1060,8 @@ static int Direct3D11CreateFormatResources(vout_display_t *vd, const video_forma
         return VLC_EGENERIC;
     }
 
-    if ( vd->source->projection_mode == PROJECTION_MODE_EQUIRECTANGULAR ||
-         vd->source->projection_mode == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD )
+    if ( vd->source->projection.mode == PROJECTION_MODE_EQUIRECTANGULAR ||
+         vd->source->projection.mode == PROJECTION_MODE_CUBEMAP )
         D3D11_UpdateViewpoint( vd, sys->d3d_dev, &sys->picQuad, &vd->cfg->viewpoint,
                                (float) vd->cfg->display.width / vd->cfg->display.height );
 
@@ -1328,7 +1328,10 @@ static int Direct3D11MapSubpicture(vout_display_t *vd, int *subpicture_region_co
             d3dquad->generic.i_height = r->fmt.i_height;
 
             d3dquad->generic.textureFormat = sys->regionQuad.generic.textureFormat;
-            err = D3D11_AllocateQuad(vd, sys->d3d_dev, PROJECTION_MODE_RECTANGULAR, d3dquad);
+            video_projection_t projection = {};
+            projection.mode = PROJECTION_MODE_RECTANGULAR;
+            vlc_viewpoint_init( &projection.pose );
+            err = D3D11_AllocateQuad(vd, sys->d3d_dev, projection, d3dquad);
             if (err != VLC_SUCCESS)
             {
                 msg_Err(vd, "Failed to allocate %dx%d quad for OSD",

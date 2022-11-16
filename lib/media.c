@@ -122,7 +122,7 @@ static_assert(
 static_assert(
     PROJECTION_MODE_RECTANGULAR             == (int) libvlc_video_projection_rectangular &&
     PROJECTION_MODE_EQUIRECTANGULAR         == (int) libvlc_video_projection_equirectangular &&
-    PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD == (int) libvlc_video_projection_cubemap_layout_standard,
+    PROJECTION_MODE_CUBEMAP                 == (int) libvlc_video_projection_cubemap,
     "Mismatch between libvlc_video_projection_t and video_projection_mode_t" );
 
 static_assert(

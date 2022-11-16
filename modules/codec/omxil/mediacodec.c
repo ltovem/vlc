@@ -661,7 +661,7 @@ CreateVideoContext(decoder_t *p_dec)
 
     p_sys->video.surfacetexture = NULL;
     bool use_surfacetexture =
-        p_dec->fmt_out.video.projection_mode != PROJECTION_MODE_RECTANGULAR
+        p_dec->fmt_out.video.projection.mode != PROJECTION_MODE_RECTANGULAR
      || (!p_sys->api.b_support_rotation && p_dec->fmt_out.video.orientation != ORIENT_NORMAL)
      || !AWindowHandler_canSetVideoLayout(awh)
      || !has_subtitle_surface;

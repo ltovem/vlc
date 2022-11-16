@@ -945,14 +945,17 @@ static int MP4_ReadBox_equi( stream_t *p_stream, MP4_Box_t *p_box )
         MP4_READBOX_EXIT( 0 );
 
     uint32_t i_flags;
-    VLC_UNUSED( i_flags );
     MP4_GET3BYTES( i_flags );
 
     MP4_Box_data_equi_t *p_data = p_box->data.p_equi;
-    MP4_GET4BYTES( p_data->i_projection_bounds_top );
-    MP4_GET4BYTES( p_data->i_projection_bounds_bottom );
-    MP4_GET4BYTES( p_data->i_projection_bounds_left );
-    MP4_GET4BYTES( p_data->i_projection_bounds_right );
+    MP4_GET4BYTES( i_flags );
+    p_data->f_bounds_top = i_flags / (double) UINT32_MAX;
+    MP4_GET4BYTES( i_flags );
+    p_data->f_bounds_bottom = i_flags / (double) UINT32_MAX;
+    MP4_GET4BYTES( i_flags );
+    p_data->f_bounds_left = i_flags / (double) UINT32_MAX;
+    MP4_GET4BYTES( i_flags );
+    p_data->f_bounds_right = i_flags / (double) UINT32_MAX;
 
     MP4_READBOX_EXIT( 1 );
 }

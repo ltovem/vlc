@@ -515,7 +515,7 @@ vout_thread_t *input_resource_RequestVout(input_resource_t *p_resource,
         /* Send original viewpoint to the input in order to update other ESes */
         if (p_resource->p_input != NULL)
         {
-            input_control_param_t param = { .viewpoint = cfg->fmt->pose };
+            input_control_param_t param = { .viewpoint = cfg->fmt->projection.pose };
             input_ControlPush(p_resource->p_input, INPUT_CONTROL_SET_INITIAL_VIEWPOINT,
                               &param);
         }

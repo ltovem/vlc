@@ -590,39 +590,66 @@ void matroska_segment_c::ParseTrackEntry( const KaxTrackEntry *m )
             dispatcher.iterate (proj.begin (), proj.end (), &vars );
             vars.level -= 1;
         }
-        E_CASE( KaxVideoProjectionType, fint )
+        E_CASE( KaxVideoProjectionType, fint ) /* !warn keep it first in KaxVideoProjection's dispatch order */
         {
             ONLY_FMT(VIDEO);
             switch (static_cast<uint8>( fint ))
             {
             case 0:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_RECTANGULAR;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_RECTANGULAR;
                 break;
             case 1:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_EQUIRECTANGULAR;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_EQUIRECTANGULAR;
                 break;
             case 2:
-                vars.tk->fmt.video.projection_mode = PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD;
+                vars.tk->fmt.video.projection.mode = PROJECTION_MODE_CUBEMAP;
                 break;
             default:
                 debug( vars, "Track Video Projection %u not supported", static_cast<uint8>( fint ) ) ;
                 break;
             }
         }
+        E_CASE( KaxVideoProjectionPrivate, pvt )
+        {
+            ONLY_FMT(VIDEO);
+            const uint8_t *p = pvt.GetBuffer();
+            switch( vars.tk->fmt.video.projection.mode )
+            {
+                case PROJECTION_MODE_EQUIRECTANGULAR:
+                    if( pvt.GetSize() == 20 && GetDWBE(p) == 0x00000000U )
+                    {
+                        vars.tk->fmt.video.projection.equirect.top =  GetDWBE(p + 4) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.bottom = GetDWBE(p + 8) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.right = GetDWBE(p + 12) / (double) UINT32_MAX;
+                        vars.tk->fmt.video.projection.equirect.left = GetDWBE(p + 16) / (double) UINT32_MAX;
+                    }
+                    break;
+                case PROJECTION_MODE_CUBEMAP:
+                    if( pvt.GetSize() == 12 && GetDWBE(p) == 0x00000000U )
+                    {
+                        vars.tk->fmt.video.projection.cubemap.layout = GetDWBE(p + 4);
+                        vars.tk->fmt.video.projection.cubemap.padding = GetDWBE(p + 8);
+                    }
+                    break;
+                default:
+                    debug( vars, "Track Video Projection %u Unknown Private", vars.tk->fmt.video.projection.mode ) ;
+                    break;
+            }
+        }
         E_CASE( KaxVideoProjectionPoseYaw, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.yaw = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.yaw = static_cast<float>( pose );
         }
         E_CASE( KaxVideoProjectionPosePitch, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.pitch = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.pitch = static_cast<float>( pose );
         }
         E_CASE( KaxVideoProjectionPoseRoll, pose )
         {
             ONLY_FMT(VIDEO);
-            vars.tk->fmt.video.pose.roll = static_cast<float>( pose );
+            vars.tk->fmt.video.projection.pose.roll = static_cast<float>( pose );
         }
 #endif
         E_CASE( KaxVideoFlagInterlaced, fint ) // UNUSED

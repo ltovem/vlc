@@ -87,7 +87,7 @@ void D3D11_RenderQuad(d3d11_device_t *d3d_dev, d3d11_quad_t *quad, d3d11_vertex_
     }
 }
 
-static bool AllocQuadVertices(vlc_object_t *o, d3d11_device_t *d3d_dev, d3d11_quad_t *quad, video_projection_mode_t projection)
+static bool AllocQuadVertices(vlc_object_t *o, d3d11_device_t *d3d_dev, d3d11_quad_t *quad, video_projection_t projection)
 {
     HRESULT hr;
 
@@ -241,7 +241,7 @@ void (D3D11_UpdateViewpoint)(vlc_object_t *o, d3d11_device_t *d3d_dev, d3d11_qua
 
 #undef D3D11_AllocateQuad
 int D3D11_AllocateQuad(vlc_object_t *o, d3d11_device_t *d3d_dev,
-                       video_projection_mode_t projection, d3d11_quad_t *quad)
+                       video_projection_t projection, d3d11_quad_t *quad)
 {
     quad->generic.vertexConstants = &quad->vConstants;
     quad->generic.shaderConstants = &quad->pConstants;
@@ -259,7 +259,7 @@ int D3D11_AllocateQuad(vlc_object_t *o, d3d11_device_t *d3d_dev,
         goto error;
     }
 
-    if (projection == PROJECTION_MODE_EQUIRECTANGULAR || projection == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+    if (projection.mode == PROJECTION_MODE_EQUIRECTANGULAR || projection.mode == PROJECTION_MODE_CUBEMAP)
     {
         static_assert((sizeof(VS_PROJECTION_CONST)%16)==0,"Constant buffers require 16-byte alignment");
         constantDesc.ByteWidth = sizeof(VS_PROJECTION_CONST);

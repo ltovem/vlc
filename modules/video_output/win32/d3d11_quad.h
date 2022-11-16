@@ -35,7 +35,7 @@ void D3D11_RenderQuad(d3d11_device_t *, d3d11_quad_t *, d3d11_vertex_shader_t *,
                       ID3D11ShaderResourceView *resourceViews[DXGI_MAX_SHADER_VIEW],
                       d3d11_select_plane_t selectPlane, void *selectOpaque);
 
-int D3D11_AllocateQuad(vlc_object_t *, d3d11_device_t *, video_projection_mode_t, d3d11_quad_t *);
+int D3D11_AllocateQuad(vlc_object_t *, d3d11_device_t *, video_projection_t, d3d11_quad_t *);
 #define D3D11_AllocateQuad(a,b,c,d)  D3D11_AllocateQuad(VLC_OBJECT(a),b,c,d)
 
 int D3D11_SetupQuad(vlc_object_t *, d3d11_device_t *, const video_format_t *, d3d11_quad_t *,

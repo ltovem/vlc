@@ -671,7 +671,7 @@ static void VoutGetDisplayCfg(vout_thread_sys_t *p_vout, const video_format_t *f
 {
     vout_thread_t *vout = &p_vout->obj;
     /* Load configuration */
-    cfg->viewpoint = fmt->pose;
+    cfg->viewpoint = fmt->projection.pose;
 
     const int display_width = var_GetInteger(vout, "width");
     const int display_height = var_GetInteger(vout, "height");

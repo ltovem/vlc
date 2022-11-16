@@ -800,14 +800,28 @@ static void SetupQuadSphere(d3d_vertex_t *dst_data, const RECT *output,
 {
     const float scaleX = (float)(RECTWidth(*output))  / quad->i_width;
     const float scaleY = (float)(RECTHeight(*output)) / quad->i_height;
+
+    /* Sanity check for values */
+    const float leftbound = VLC_CLIP(leftbound, 0.0, 0.5);
+    const float topbound = VLC_CLIP(topbound, 0.0, 0.5);
+    const float rightbound = VLC_CLIP(rightbound, 0.0, 0.5);
+    const float bottombound = VLC_CLIP(bottombound, 0.0, 0.5);
+    /* Restricted aperture in % of 360 */
+    const float twoPi = 2.f * M_PI;
+    const float aperturePhiPi = twoPi * (SPHERE_RADIUS - leftbound - rightbound);
+    const float aperturePhiPiCenteringoffset = twoPi * (leftbound + rightbound) * 0.5;
+    /* Restricted aperture in % of 180 */
+    const float apertureThethaPi = M_PI * (SPHERE_RADIUS - topbound - bottombound);
+    const float apertureThethaPiCenteringOffset = M_PI * bottombound;
+
     for (unsigned lat = 0; lat <= nbLatBands; lat++) {
-        float theta = lat * (float) M_PI / nbLatBands;
+        float theta = lat * apertureThethaPi / nbLatBands + apertureThethaPiCenteringOffset;
         float sinTheta, cosTheta;
 
         sincosf(theta, &sinTheta, &cosTheta);
 
         for (unsigned lon = 0; lon <= nbLonBands; lon++) {
-            float phi = lon * 2 * (float) M_PI / nbLonBands;
+            float phi =  aperturePhiPi * (float)lon / nbLonBands + aperturePhiPiCenteringoffset;
             float sinPhi, cosPhi;
 
             sincosf(phi, &sinPhi, &cosPhi);
@@ -831,7 +845,7 @@ static void SetupQuadSphere(d3d_vertex_t *dst_data, const RECT *output,
             unsigned first = (lat * (nbLonBands + 1)) + lon;
             unsigned second = first + nbLonBands + 1;
 
-            unsigned off = (lat * nbLatBands + lon) * 3 * 2;
+            unsigned off = (lat * nbLonBands + lon) * 3 * 2;
 
             triangle_pos[off] = first;
             triangle_pos[off + 1] = first + 1;
@@ -1011,9 +1025,9 @@ void D3D_UpdateViewpoint(d3d_quad_t *quad, const vlc_viewpoint_t *viewpoint, flo
     vlc_viewpoint_to_4x4(viewpoint, quad->vertexConstants->View);
 }
 
-bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mode_t projection)
+bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_t projection)
 {
-    switch (projection)
+    switch (projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         quad->vertexCount = 4;
@@ -1023,12 +1037,16 @@ bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mo
         quad->vertexCount = (SPHERE_SLICES + 1) * (SPHERE_SLICES + 1);
         quad->indexCount = nbLatBands * nbLonBands * 2 * 3;
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        quad->vertexCount = 4 * 6;
-        quad->indexCount = 6 * 2 * 3;
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            quad->vertexCount = 4 * 6;
+            quad->indexCount = 6 * 2 * 3;
+            break;
+        }
+        /* fallthrough */
     default:
-        msg_Warn(o, "Projection mode %d not handled", projection);
+        msg_Warn(o, "Projection mode %d not handled", projection.mode);
         return false;
     }
 
@@ -1041,7 +1059,7 @@ bool D3D_QuadSetupBuffers(vlc_object_t *o, d3d_quad_t *quad, video_projection_mo
 bool D3D_SetupQuadData(vlc_object_t *o, d3d_quad_t *quad, const RECT *output, d3d_vertex_t*dst_data,
                        void *pData, video_transform_t orientation)
 {
-    switch (quad->projection)
+    switch (quad->projection.mode)
     {
     case PROJECTION_MODE_RECTANGULAR:
         SetupQuadFlat(dst_data, output, quad, pData, orientation);
@@ -1049,11 +1067,15 @@ bool D3D_SetupQuadData(vlc_object_t *o, d3d_quad_t *quad, const RECT *output, d3
     case PROJECTION_MODE_EQUIRECTANGULAR:
         SetupQuadSphere(dst_data, output, quad, pData);
         break;
-    case PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD:
-        SetupQuadCube(dst_data, output, quad, pData);
-        break;
+    case PROJECTION_MODE_CUBEMAP:
+        if(quad->projection.cubemap.layout == PROJECTION_MODE_CUBEMAP_LAYOUT_STANDARD)
+        {
+            SetupQuadCube(dst_data, output, quad, pData);
+            break;
+        }
+        /* fallthrough */
     default:
-        msg_Warn(o, "Projection mode %d not handled", quad->projection);
+        msg_Warn(o, "Projection mode %d not handled", quad->projection.mode);
         return false;
     }
     return true;
