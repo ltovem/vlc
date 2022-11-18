@@ -461,23 +461,21 @@ static void *DecodeBlock( decoder_t *p_dec, block_t *p_block )
     decoder_sys_t *p_sys = p_dec->p_sys;
     kate_packet kp;
 
-    if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) )
+    if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
     {
 #ifdef HAVE_TIGER
-        if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY)
-        {
-            /* Hmm, should we wait before flushing the renderer ? I think not, but not certain... */
-            vlc_mutex_lock( &p_sys->lock );
-            tiger_renderer_seek( p_sys->p_tr, 0 );
-            vlc_mutex_unlock( &p_sys->lock );
-        }
+        /* Hmm, should we wait before flushing the renderer ? I think not, but not certain... */
+        vlc_mutex_lock( &p_sys->lock );
+        tiger_renderer_seek( p_sys->p_tr, 0 );
+        vlc_mutex_unlock( &p_sys->lock );
 #endif
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            p_sys->i_max_stop = VLC_TICK_INVALID;
-            block_Release( p_block );
-            return NULL;
-        }
+    }
+
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        p_sys->i_max_stop = VLC_TICK_INVALID;
+        block_Release( p_block );
+        return NULL;
     }
 
     /* Block to Kate packet */

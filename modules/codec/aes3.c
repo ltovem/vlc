@@ -315,14 +315,13 @@ static block_t * Parse( decoder_t *p_dec, int *pi_frame_length, int *pi_bits,
     if( !p_block ) /* No drain */
         return NULL;
 
-    if( p_block->i_flags & (BLOCK_FLAG_CORRUPTED|BLOCK_FLAG_DISCONTINUITY) )
-    {
+    if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
         Flush( p_dec );
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            block_Release( p_block );
-            return NULL;
-        }
+
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        block_Release( p_block );
+        return NULL;
     }
 
     /* Date management */

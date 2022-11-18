@@ -1298,7 +1298,7 @@ static int DecodeVideo( decoder_t *p_dec, block_t *p_block )
     block_t **pp_block = p_block ? &p_block : NULL /* drain signal */;
 
     if( p_block &&
-        p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) )
+        p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
     {
         p_sys->i_late_frames = 0;
         p_sys->i_last_output_frame = -1;
@@ -1309,12 +1309,12 @@ static int DecodeVideo( decoder_t *p_dec, block_t *p_block )
         vlc_mutex_unlock(&p_sys->lock);
 
         cc_Flush( &p_sys->cc );
+    }
 
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            block_Release( p_block );
-            p_block = NULL; /* output only */
-        }
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        block_Release( p_block );
+        p_block = NULL; /* output only */
     }
 
     return DecodeBlock( p_dec, pp_block );

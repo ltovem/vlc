@@ -432,7 +432,7 @@ static block_t *PacketizeOBU(decoder_t *p_dec, block_t **pp_block)
     block_t *p_block = pp_block ? *pp_block : NULL;
     if(p_block)
     {
-        if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY | BLOCK_FLAG_CORRUPTED) )
+        if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
         {
             /* First always drain complete blocks before discontinuity */
             block_t *p_drain = PacketizeOBU( p_dec, NULL );
@@ -440,12 +440,12 @@ static block_t *PacketizeOBU(decoder_t *p_dec, block_t **pp_block)
                 return p_drain;
 
             PacketizeFlush( p_dec );
+        }
 
-            if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-            {
-                block_Release( p_block );
-                return NULL;
-            }
+        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+        {
+            block_Release( p_block );
+            return NULL;
         }
 
         if(!AV1_OBUIsValid(p_block->p_buffer, p_block->i_buffer))

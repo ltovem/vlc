@@ -161,7 +161,7 @@ static block_t *DecodeBlock( decoder_t *p_dec, block_t **pp_block )
 
     if (p_block)
     {
-        if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) )
+        if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
         {
             /* First always drain complete blocks before discontinuity */
             block_t *p_drain = DecodeBlock( p_dec, NULL );
@@ -169,12 +169,12 @@ static block_t *DecodeBlock( decoder_t *p_dec, block_t **pp_block )
                 return p_drain;
 
             Flush( p_dec );
+        }
 
-            if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-            {
-                block_Release( p_block );
-                return NULL;
-            }
+        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+        {
+            block_Release( p_block );
+            return NULL;
         }
 
         if( p_block->i_pts == VLC_TICK_INVALID &&

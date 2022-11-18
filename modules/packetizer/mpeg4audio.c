@@ -1367,7 +1367,7 @@ static block_t *Packetize(decoder_t *p_dec, block_t **pp_block)
 
     if(p_block)
     {
-        if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED))
+        if (p_block->i_flags & BLOCK_FLAG_DISCONTINUITY)
         {
             if(p_sys->i_type == TYPE_ADTS || p_sys->i_type == TYPE_LOAS)
             {
@@ -1378,12 +1378,12 @@ static block_t *Packetize(decoder_t *p_dec, block_t **pp_block)
             }
 
             Flush(p_dec);
+        }
 
-            if (p_block->i_flags & BLOCK_FLAG_CORRUPTED)
-            {
-                block_Release(p_block);
-                return NULL;
-            }
+        if (p_block->i_flags & BLOCK_FLAG_CORRUPTED)
+        {
+            block_Release(p_block);
+            return NULL;
         }
 
         if ( p_block->i_pts == VLC_TICK_INVALID &&

@@ -149,7 +149,7 @@ static int Decode( decoder_t *p_dec, block_t *p_block )
     if( !p_block ) /* No Drain */
         return VLCDEC_SUCCESS;
 
-    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
     {
         Flush( p_dec );
         goto exit;
