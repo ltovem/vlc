@@ -3,6 +3,7 @@
 use proc_macro::TokenStream;
 
 mod module;
+mod vtable;
 
 /// Module macro
 ///
@@ -92,4 +93,40 @@ mod module;
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
     module::module(input)
+}
+
+/// vtable macro
+///
+/// Declares or implements a vtable trait.
+///
+/// ```
+/// # use vlcrs_core_macros::vtable;
+/// #[vtable]
+/// pub trait FooTrait {
+///     fn foo(&self) -> bool {
+///         true
+///     }
+/// 
+///     fn bar(&self) -> u32 {
+///         0
+///     }
+/// }
+/// 
+/// struct Foo;
+/// 
+/// // Implements the `#[vtable]` trait
+/// #[vtable]
+/// impl FooTrait for Foo {
+///     fn foo(&self) -> bool {
+///         // ...
+/// #       false
+///     }
+/// }
+/// 
+/// assert_eq!(<Foo as FooTrait>::HAS_FOO, true);
+/// assert_eq!(<Foo as FooTrait>::HAS_BAR, false);
+/// ```
+#[proc_macro_attribute]
+pub fn vtable(_args: TokenStream, input: TokenStream) -> TokenStream {
+    vtable::vtable(input)
 }
