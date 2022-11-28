@@ -140,7 +140,9 @@ libmedialibrary_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(miscdir)'
 EXTRA_LTLIBRARIES += libmedialibrary_plugin.la
 misc_LTLIBRARIES += $(LTLIBmedialibrary)
 
-libserializers_plugin_la_SOURCES = misc/serializers/serialize.c
+libserializers_plugin_la_SOURCES = \
+	misc/serializers/serialize.c   \
+	misc/serializers/es_format.c   
 
 libserializers_plugin_la_CFLAGS = $(AM_CFLAGS)
 libserializers_plugin_la_LIBADD = $(AM_LIBADD)

@@ -24,8 +24,35 @@
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
+#include <vlc_input_item.h>
+#include <vlc_meta.h>
+#include <vlc_es.h>
+#include <vlc_memstream.h>
+#include <vlc_serializer.h>
+
+/***************************************************************************
+ * Serializable types
+ ***************************************************************************/
+int serialize_es_format   ( type_serializer_t * );
+int deserialize_es_format ( type_serializer_t * );
+
+static int SetEsFormatSerializer( vlc_object_t *p_this )
+{
+    type_serializer_t *serialize = (type_serializer_t *)p_this;
+
+    serialize->pf_serialize = serialize_es_format;
+    serialize->pf_deserialize = deserialize_es_format;
+
+    return VLC_SUCCESS;
+}
 
 vlc_module_begin()
     set_subcategory( SUBCAT_ADVANCED_MISC )
+
+    add_submodule()
+        set_description( N_("es_format_t serializer") )
+        add_shortcut( "serialize-es" )
+        set_capability( "serialize type", 0 )
+        set_callback( SetEsFormatSerializer )
 
 vlc_module_end()
