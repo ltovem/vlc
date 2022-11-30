@@ -43,7 +43,8 @@ struct vlc_input_decoder_callbacks {
                                void *userdata);
     void (*on_new_audio_stats)(vlc_input_decoder_t *decoder, unsigned decoded,
                                unsigned lost, unsigned played, void *userdata);
-
+    void (*on_new_audio_drift)(vlc_input_decoder_t *decoder, vlc_tick_t drift,
+                                 void *userdata);
     /* requests */
     int (*get_attachments)(vlc_input_decoder_t *decoder,
                            input_attachment_t ***ppp_attachment,

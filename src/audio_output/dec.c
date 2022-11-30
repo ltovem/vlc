@@ -99,6 +99,10 @@ struct vlc_aout_stream
 
     atomic_uint buffers_lost;
     atomic_uint buffers_played;
+
+    vlc_tick_t drift_as_delay;
+    void (*on_new_drift_cb)(vlc_tick_t tick, void *data);
+    void *cb_data;
 };
 
 static inline aout_owner_t *aout_stream_owner(vlc_aout_stream *stream)
@@ -122,7 +126,12 @@ static int stream_GetDelay(vlc_aout_stream *stream, vlc_tick_t *delay)
     audio_output_t *aout = aout_stream_aout(stream);
 
     if (aout->time_get != NULL)
-        return aout->time_get(aout, delay);
+    {
+        int ret = aout->time_get(aout, delay);
+        if (ret == 0)
+            *delay -= stream->drift_as_delay;
+        return ret;
+    }
 
     vlc_mutex_lock(&stream->timing.lock);
     vlc_tick_t system_ts = stream->timing.system_ts;
@@ -150,7 +159,7 @@ static int stream_GetDelay(vlc_aout_stream *stream, vlc_tick_t *delay)
      * (generally less than 2 seconds). */
     vlc_tick_t play_date = (last_pts - audio_ts) / (double) stream->sync.rate
                          + system_ts;
-    *delay = play_date - system_now;
+    *delay = play_date - system_now - stream->drift_as_delay;
     return 0;
 }
 
@@ -166,6 +175,7 @@ static void stream_Discontinuity(vlc_aout_stream *stream)
     stream->timing.audio_ts = VLC_TICK_INVALID;
     vlc_mutex_unlock(&stream->timing.lock);
     stream->timing.played_samples = 0;
+    stream->drift_as_delay = 0;
 }
 
 static void stream_Reset(vlc_aout_stream *stream)
@@ -252,6 +262,9 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
     if (stream == NULL)
         return NULL;
     stream->instance = aout_instance(p_aout);
+
+    stream->on_new_drift_cb = cfg->on_new_drift_cb;
+    stream->cb_data = cfg->cb_data;
 
     stream->volume = NULL;
     if (!owner->bitexact)
@@ -495,14 +508,26 @@ static void stream_HandleDrift(vlc_aout_stream *stream, vlc_tick_t drift,
         if (tracer != NULL)
             vlc_tracer_TraceEvent(tracer, "RENDER", stream->str_id, "late_flush");
 
-        if (!stream->sync.discontinuity)
-            msg_Warn (aout, "playback way too late (%"PRId64"): "
-                      "flushing buffers", drift);
+        if (stream->drift_as_delay == 0
+         && stream->on_new_drift_cb != NULL)
+        {
+            msg_Info (aout, "playback late (%"PRId64"): "
+                     "delaying all other ESes", drift);
+            stream->drift_as_delay = drift;
+            stream->on_new_drift_cb(drift, stream->cb_data);
+        }
         else
-            msg_Dbg (aout, "playback too late (%"PRId64"): "
-                     "flushing buffers", drift);
-        vlc_aout_stream_Flush(stream);
-        stream_StopResampling(stream);
+        {
+            if (!stream->sync.discontinuity)
+                msg_Warn (aout, "playback way too late (%"PRId64"): "
+                          "flushing buffers", drift);
+            else
+                msg_Dbg (aout, "playback too late (%"PRId64"): "
+                         "flushing buffers", drift);
+
+            vlc_aout_stream_Flush(stream);
+            stream_StopResampling(stream);
+        }
 
         return; /* nothing can be done if timing is unknown */
     }

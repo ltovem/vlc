@@ -142,6 +142,7 @@ typedef enum input_event_type_e
 
     /* Thumbnail generation */
     INPUT_EVENT_THUMBNAIL_READY,
+    INPUT_EVENT_AOUT_DRIFT,
 } input_event_type_e;
 
 #define VLC_INPUT_CAPABILITIES_SEEKABLE (1<<0)
@@ -299,6 +300,8 @@ struct vlc_input_event
         float subs_fps;
         /* INPUT_EVENT_THUMBNAIL_READY */
         picture_t *thumbnail;
+        /* INPUT_EVENT_AOUT_DRIFT */
+        vlc_tick_t drift;
     };
 };
 
