@@ -551,12 +551,13 @@ AM_CFLAGS += $(GCRYPT_CFLAGS)
 libvlccore_la_LIBADD += $(GCRYPT_LIBS)
 endif
 
+BUILT_SOURCES += $(builddir)/libvlccore.sym.out
 libvlccore_la_LDFLAGS = \
 	$(LDFLAGS_libvlccore) \
 	-no-undefined \
-	-export-symbols $(srcdir)/libvlccore.sym \
+	-export-symbols $(builddir)/libvlccore.sym.out \
 	-version-info 9:0:0
-libvlccore_la_DEPENDENCIES = libvlccore.sym
+libvlccore_la_DEPENDENCIES = $(builddir)/libvlccore.sym.out
 if HAVE_WIN32
 libvlccore_la_DEPENDENCIES += libvlc_win32_rc.$(OBJEXT)
 libvlccore_la_LDFLAGS += -Wl,libvlc_win32_rc.$(OBJEXT) -avoid-version -Wc,-static
@@ -583,6 +584,14 @@ endif
 if HAVE_TVOS
 libvlccore_la_LDFLAGS += -avoid-version
 endif
+
+$(builddir)/libvlccore.sym.out: $(srcdir)/libvlccore.sym
+	$(AM_V_GEN)cp "$<" "$@.tmp"
+if HAVE_ANDROID
+	$(AM_V_at)echo "JNI_OnLoad" >> $@.tmp
+	$(AM_V_at)echo "JNI_OnUnload" >> $@.tmp
+endif
+	$(AM_V_at)mv $@.tmp $@
 
 libvlc_win32_rc.$(OBJEXT): libvlc_win32_rc.rc $(top_srcdir)/extras/package/win32/libvlc.dll.manifest
 	$(WINDRES) --include-dir $(top_srcdir)/share --include-dir $(top_srcdir)/extras/package/win32 -i $< -o $@
