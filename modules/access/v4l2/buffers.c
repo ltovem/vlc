@@ -46,9 +46,12 @@ vlc_tick_t GetBufferPTS(const struct v4l2_buffer *buf)
     switch (buf->flags & V4L2_BUF_FLAG_TIMESTAMP_MASK)
     {
         case V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC:
-            pts = vlc_tick_from_timeval(&buf->timestamp);
+            if(likely(buf->timestamp.tv_sec && buf->timestamp.tv_usec))
+                pts = vlc_tick_from_timeval(&buf->timestamp);
+            else /* Ignore CLOCK_MONOTONIC 0 set during some acquisition start */
+                pts = VLC_TICK_INVALID;
             break;
-        case V4L2_BUF_FLAG_TIMESTAMP_UNKNOWN:
+        case V4L2_BUF_FLAG_TIMESTAMP_UNKNOWN: /* CLOCK_MONOTONIC or CLOCK_REALTIME */
         default:
             pts = vlc_tick_now();
             break;
