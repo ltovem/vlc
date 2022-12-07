@@ -385,6 +385,9 @@ int main(int i_argc, char *ppsz_argv[])
     }
 
     test_media_preparsed (vlc, SRCDIR"/samples/image.jpg", NULL,
+                          libvlc_media_parse_network,
+                          libvlc_media_parsed_status_skipped);
+    test_media_preparsed (vlc, SRCDIR"/samples/image.jpg", NULL,
                           libvlc_media_parse_local,
                           libvlc_media_parsed_status_done);
     test_media_preparsed (vlc, NULL, "http://parsing_should_be_skipped.org/video.mp4",
