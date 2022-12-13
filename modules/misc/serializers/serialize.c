@@ -33,6 +33,18 @@ int serialize_es_format   ( type_serializer_t * );
 int deserialize_es_format ( type_serializer_t * );
 int serialize_input_item  ( type_serializer_t * );
 int deserialize_input_item( type_serializer_t * );
+int serialize_attachment  ( type_serializer_t * );
+int deserialize_attachment( type_serializer_t * );
+
+static int SetInputItemSerializer( vlc_object_t *p_this )
+{
+    type_serializer_t *serialize = (type_serializer_t *)p_this;
+
+    serialize->pf_serialize = serialize_input_item;
+    serialize->pf_deserialize = deserialize_input_item;
+
+    return VLC_SUCCESS;
+}
 
 static int SetEsFormatSerializer( vlc_object_t *p_this )
 {
@@ -44,12 +56,12 @@ static int SetEsFormatSerializer( vlc_object_t *p_this )
     return VLC_SUCCESS;
 }
 
-static int SetInputItemSerializer( vlc_object_t *p_this )
+static int SetAttachmentSerializer( vlc_object_t *p_this )
 {
     type_serializer_t *serialize = (type_serializer_t *)p_this;
 
-    serialize->pf_serialize = serialize_input_item;
-    serialize->pf_deserialize = deserialize_input_item;
+    serialize->pf_serialize = serialize_attachment;
+    serialize->pf_deserialize = deserialize_attachment;
 
     return VLC_SUCCESS;
 }
@@ -68,5 +80,11 @@ vlc_module_begin()
         add_shortcut( "serialize-item" )
         set_capability( "serialize type", 0 )
         set_callback( SetInputItemSerializer )
+
+    add_submodule()
+        set_description( N_("input_attachment_t serializer") )
+        add_shortcut( "serialize-attachment" )
+        set_capability( "serialize type", 0 )
+        set_callback( SetAttachmentSerializer )
 
 vlc_module_end()
