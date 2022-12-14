@@ -50,6 +50,7 @@
 
 typedef struct mediainfo_request_t {
     /* request */
+    vlc_event_type_t events_to_listen[vlc_InputItemAttachmentsFound + 1];
     unsigned int mrl_size;
     char *mrl;
     int i_preparse_depth;

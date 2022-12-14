@@ -29,6 +29,9 @@
 #include <vlc_memstream.h>
 #include <vlc_serializer.h>
 
+#include "../lib/media_internal.h"
+#include "../lib/picture_internal.h"
+
 static type_serializer_t *init_serializer(vlc_object_t *parent)
 {
     type_serializer_t *serializer = vlc_object_create( parent, sizeof(type_serializer_t));
@@ -199,6 +202,100 @@ error:
     vlc_sem_post(&cur_req->sem);
 }
 
+static void media_attachment_found(const libvlc_event_t *event, void *user_data)
+{
+    mediainfo_internal_t *mediainfo = (mediainfo_internal_t *)user_data;
+    libvlc_int_t *libvlc = mediainfo->vlc->p_libvlc_int;
+
+    type_serializer_t *serializer = vlc_object_create( libvlc, sizeof(type_serializer_t));
+    if (unlikely(!serializer))
+        return ;
+
+    struct vlc_memstream answer;
+    if (vlc_memstream_open(&answer)) {
+        msg_Dbg(libvlc, "vlc_memstream_open() failed");
+        return;
+    }
+
+    module_t *module = module_need(serializer, "serialize type", "serialize-attachment", true);
+    if (unlikely(!module)) {
+        msg_Err(libvlc, "cannot find serializer module for input_attachment_t");
+        return;
+    }
+
+    libvlc_picture_list_t* thumbnails = event->u.media_attached_thumbnails_found.thumbnails;
+    unsigned int nb_pictures = libvlc_picture_list_count(thumbnails);
+
+    vlc_memstream_write(&answer, &nb_pictures, sizeof(nb_pictures));
+
+    serializer->serialized_type = &answer;
+    for (unsigned int i = 0; i < nb_pictures; ++i) {
+        libvlc_picture_t *picture = libvlc_picture_list_at(thumbnails, i);
+        const unsigned int attachment_size = 0;
+        if (vlc_memstream_flush(&answer)) {
+            goto error;
+        }
+
+        const unsigned int old_stream_length = answer.length;
+
+        unsigned int *serialized_buffer_size = (unsigned int *)answer.ptr;
+
+        vlc_memstream_write(&answer, &attachment_size, sizeof(attachment_size));
+
+        serializer->type = picture->attachment;
+        if (serializer->pf_serialize(serializer)) {
+            msg_Err(libvlc, "cannot serialize input_attachment_t");
+            goto error;
+        }
+
+        if (vlc_memstream_flush(&answer)) {
+            goto error;
+        }
+
+        *serialized_buffer_size = answer.length - old_stream_length - sizeof(unsigned int);
+    }
+
+    if (vlc_memstream_close(&answer))
+        goto error;
+
+    vlc_write(1, answer.ptr, answer.length);
+
+error:
+    //TODO free resources
+    return;
+}
+
+static void implementation_not_found()
+{
+}
+
+static unsigned int events[VLC_EVENT_TYPE_COUNT] = {
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_RendererDiscovererItemDeleted + 1,
+    libvlc_MediaAttachedThumbnailsFound,
+};
+
+static void (*supported_events[VLC_EVENT_TYPE_COUNT])() = {
+    /* vlc_InputItemMetaChanged */
+    &implementation_not_found,
+    /* vlc_InputItemDurationChanged */
+    &implementation_not_found,
+    /* vlc_InputItemPreparsedChanged */
+    &implementation_not_found,
+    /* vlc_InputItemNameChanged */
+    &implementation_not_found,
+    /* vlc_InputItemInfoChanged */
+    &implementation_not_found,
+    /* vlc_InputItemErrorWhenReadingChanged */
+    &implementation_not_found,
+    /* vlc_InputItemAttachmentsFound */
+    &media_attachment_found,
+};
+
 static int init_serializer_cbs(mediainfo_internal_t *mediainfo, libvlc_media_t *media)
 {
     libvlc_event_manager_t *const em = libvlc_media_event_manager(media);
@@ -214,6 +311,22 @@ static int init_serializer_cbs(mediainfo_internal_t *mediainfo, libvlc_media_t *
     if (attach_status)
         return attach_status;
 
+    attach_status = libvlc_event_attach(em, libvlc_MediaAttachedThumbnailsFound,
+                                        media_attachment_found, mediainfo);
+    if (attach_status)
+        return attach_status;
+
+    return VLC_SUCCESS;
+
+    for (unsigned int i = vlc_InputItemMetaChanged; i < VLC_EVENT_TYPE_COUNT; ++i) {
+        void (*func)() = supported_events[i];
+        if (func == implementation_not_found)
+            continue;
+        attach_status = libvlc_event_attach(em, events[i], func, mediainfo);
+        if (attach_status)
+            return attach_status;
+    }
+
     return VLC_SUCCESS;
 }
 
@@ -226,6 +339,10 @@ static void deinit_serializer_cbs(mediainfo_internal_t *mediainfo, libvlc_media_
 
     libvlc_event_detach(em, libvlc_MediaParsedChanged,
                                         media_parse_changed, mediainfo);
+
+    libvlc_event_detach(em, libvlc_MediaAttachedThumbnailsFound,
+                                        media_attachment_found, mediainfo);
+
 }
 
 static int read_nbytes(int fd, void *dest, size_t size)
@@ -249,6 +366,7 @@ static mediainfo_request_t *get_request(libvlc_instance_t *vlc)
         return NULL;
 
     *req = (struct mediainfo_request_t) {
+        .events_to_listen = {-1},
         .mrl_size = 0,
         .mrl = NULL,
     };
@@ -257,6 +375,22 @@ static mediainfo_request_t *get_request(libvlc_instance_t *vlc)
     if (read_nbytes(0, &request_size, sizeof(request_size))) {
         msg_Err(libvlc, "unable to read vlc preparse request: request size not found");
         goto error;
+    }
+
+    unsigned int nb_events;
+    if (read_nbytes(0, &nb_events, sizeof(nb_events))) {
+        msg_Err(libvlc, "unable to read vlc preparse request: number of events not found");
+        goto error;
+    }
+
+    while (nb_events--) {
+        vlc_event_type_t event;
+        if (read_nbytes(0, &event, sizeof(event))) {
+            msg_Err(libvlc, "unable to read vlc preparse request: event incomplete");
+            goto error;
+        }
+        req->events_to_listen[nb_events] = event;
+        msg_Dbg(libvlc, "received event : %d", event);
     }
 
     if (read_nbytes(0, &req->mrl_size, sizeof(req->mrl_size))) {
