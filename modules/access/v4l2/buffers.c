@@ -185,6 +185,7 @@ block_t *GrabVideo(vlc_object_t *demux, struct vlc_v4l2_buffers *restrict pool)
     assert(buf_req.bytesused <= block->i_size);
     block->i_buffer = buf_req.bytesused;
     block->p_next = NULL;
+    block->i_flags = 0;
 
     if (atomic_fetch_sub(&pool->unused, 1) <= 2) {
         /* Running out of buffers! Memory copy forced. */
