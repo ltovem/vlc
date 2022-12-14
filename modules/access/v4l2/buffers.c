@@ -193,6 +193,9 @@ block_t *GrabVideo(vlc_object_t *demux, struct vlc_v4l2_buffers *restrict pool)
         block_Release(&buf->block);
     }
 
+    if(buf_req.flags & V4L2_BUF_FLAG_ERROR)
+        block->i_flags |= BLOCK_FLAG_CORRUPTED;
+
     block->i_pts = block->i_dts = GetBufferPTS(&buf_req);
     return block;
 }
