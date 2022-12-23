@@ -268,8 +268,9 @@ static void HXXXInitSize(decoder_t *p_dec, bool *p_size_changed)
     {
         decoder_sys_t *p_sys = p_dec->p_sys;
         struct hxxx_helper *hh = &p_sys->video.hh;
-        unsigned i_w, i_h, i_vw, i_vh;
-        hxxx_helper_get_current_picture_size(hh, &i_w, &i_h, &i_vw, &i_vh);
+        unsigned i_w, i_h, i_vw, i_vh, i_left, i_top;
+        hxxx_helper_get_current_picture_size(hh, &i_w, &i_h, &i_vw, &i_vh,
+                                             &i_left, &i_top);
 
         *p_size_changed = (i_w != p_sys->video.i_input_width
                         || i_h != p_sys->video.i_input_height);

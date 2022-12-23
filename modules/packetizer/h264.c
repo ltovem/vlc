@@ -214,7 +214,9 @@ static void ActivateSets( decoder_t *p_dec, const h264_sequence_parameter_set_t 
         (void) h264_get_picture_size( p_sps, &p_dec->fmt_out.video.i_width,
                                       &p_dec->fmt_out.video.i_height,
                                       &p_dec->fmt_out.video.i_visible_width,
-                                      &p_dec->fmt_out.video.i_visible_height );
+                                      &p_dec->fmt_out.video.i_visible_height,
+                                      &p_dec->fmt_out.video.i_x_offset,
+                                      &p_dec->fmt_out.video.i_y_offset );
 
         if( p_sps->vui.i_sar_num != 0 && p_sps->vui.i_sar_den != 0 )
         {

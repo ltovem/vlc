@@ -202,7 +202,8 @@ bool h264_get_dpb_values( const h264_sequence_parameter_set_t *,
                           uint8_t *pi_depth, unsigned *pi_delay );
 
 bool h264_get_picture_size( const h264_sequence_parameter_set_t *, unsigned *p_w, unsigned *p_h,
-                            unsigned *p_vw, unsigned *p_vh );
+                            unsigned *p_vw, unsigned *p_vh,
+                            unsigned *p_left_offset, unsigned *p_top_offset );
 bool h264_get_chroma_luma( const h264_sequence_parameter_set_t *, uint8_t *pi_chroma_format,
                            uint8_t *pi_depth_luma, uint8_t *pi_depth_chroma );
 bool h264_get_colorimetry( const h264_sequence_parameter_set_t *p_sps,
