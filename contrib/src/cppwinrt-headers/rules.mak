@@ -16,6 +16,7 @@ $(TARBALLS)/mingw-w64-cppwinrt-$(CPPWINRT_VERSION_FULL)-headers.tar.gz:
 
 cppwinrt-headers: mingw-w64-cppwinrt-$(CPPWINRT_VERSION_FULL)-headers.tar.gz .sum-cppwinrt-headers
 	$(UNPACK)
+	$(APPLY) $(SRC)/cppwinrt-headers/workaround-llvm13-libc++.patch
 	$(MOVE)
 
 .cppwinrt-headers: cppwinrt-headers
