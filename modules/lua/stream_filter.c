@@ -104,6 +104,7 @@ static int vlclua_demux_setmeta( lua_State *L )
     stream_t *s = (stream_t *)vlclua_get_this(L);
 
     vlclua_read_meta_data(s, L, s->p_input_item);
+    vlclua_read_custom_meta_data(s, L, s->p_input_item);
 
     return 0;
 }
