@@ -19,6 +19,10 @@ VLC defines a global vlc object with the following members:
                       THIS FUNCTION CANNOT BE USED IN probe().
  * vlc.readline(): return a new line of playlist data on each call.
                    THIS FUNCTION CANNOT BE USED IN probe().
+ * vlc.set_current_playlist_meta( <table> ): set metadata table for playlist
+                                             steam input item.
+                                             THIS FUNCTION CANNOT BE USED
+                                             IN probe().
 
 Available VLC specific Lua modules: msg, strings, stream, variables and
 xml. See lua/README.txt.
