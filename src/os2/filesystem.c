@@ -337,8 +337,9 @@ static void vlc_socket_setup(int fd, bool nonblock)
 int vlc_socket (int pf, int type, int proto, bool nonblock)
 {
     int fd = socket(pf, type, proto);
-    if (fd != -1)
-        vlc_socket_setup(fd, nonblock);
+    if (fd < 0)
+        return -1;
+    vlc_socket_setup(fd, nonblock);
     return fd;
 }
 

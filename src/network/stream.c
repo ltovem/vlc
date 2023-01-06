@@ -202,7 +202,10 @@ static ssize_t vlc_tls_SocketWrite(vlc_tls_t *tls, const struct iovec *iov,
         .msg_iovlen = count,
     };
 
-    return vlc_sendmsg(sock->fd, &msg, 0);
+    ssize_t res = vlc_sendmsg(sock->fd, &msg, 0);
+    if (res < 0)
+        return -1;
+    return res;
 }
 
 static int vlc_tls_SocketShutdown(vlc_tls_t *tls, bool duplex)

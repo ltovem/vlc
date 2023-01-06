@@ -239,7 +239,10 @@ static int vlclua_net_accept( lua_State *L )
     int **ppi_fd = (int**)luaL_checkudata( L, 1, "net_listen" );
     int i_fd = net_Accept( p_this, *ppi_fd );
 
-    lua_pushinteger( L, vlclua_fd_map_safe( L, i_fd ) );
+    if (i_fd < 0)
+        lua_pushinteger( L, -1 );
+    else
+        lua_pushinteger( L, vlclua_fd_map_safe( L, i_fd ) );
     return 1;
 }
 
@@ -252,7 +255,10 @@ static int vlclua_net_connect_tcp( lua_State *L )
     const char *psz_host = luaL_checkstring( L, 1 );
     int i_port = luaL_checkinteger( L, 2 );
     int i_fd = net_ConnectTCP( p_this, psz_host, i_port );
-    lua_pushinteger( L, vlclua_fd_map_safe( L, i_fd ) );
+    if (i_fd < 0)
+        lua_pushinteger( L, -1 );
+    else
+        lua_pushinteger( L, vlclua_fd_map_safe( L, i_fd ) );
     return 1;
 }
 
@@ -319,7 +325,7 @@ static int vlclua_net_poll( lua_State *L )
     }
 
     vlc_interrupt_t *oint = vlclua_set_interrupt( L );
-    int ret = 1, val = -1;
+    int val = -1;
 
     do
     {
@@ -327,7 +333,7 @@ static int vlclua_net_poll( lua_State *L )
             break;
         val = vlc_poll_i11e( p_fds, i_fds, -1 );
     }
-    while( val == -1 && errno == EINTR );
+    while( val < 0 && errno == EINTR );
 
     vlc_interrupt_set( oint );
 
@@ -337,14 +343,17 @@ static int vlclua_net_poll( lua_State *L )
         lua_pushinteger( L, (val >= 0) ? p_fds[i].revents : 0 );
         lua_settable( L, 1 );
     }
-    lua_pushinteger( L, val );
+    if (val < 0)
+        lua_pushinteger( L, -1 );
+    else
+        lua_pushinteger( L, val );
 
     free( luafds );
     free( p_fds );
 
-    if( val == -1 )
+    if( val < 0 )
         return luaL_error( L, "Interrupted." );
-    return ret;
+    return 1;
 }
 
 /*****************************************************************************

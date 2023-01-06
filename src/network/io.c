@@ -175,7 +175,7 @@ int (net_Connect)(vlc_object_t *obj, const char *host, int serv,
 
                 val = vlc_poll_i11e(&ufd, 1, MS_FROM_VLC_TICK(deadline - now));
             }
-            while (val == -1 && errno == EINTR);
+            while (val < 0 && errno == EINTR);
 
             switch (val)
             {
@@ -361,7 +361,7 @@ int net_Accept(vlc_object_t *obj, int *fds)
             return fd;
         }
     }
-    return -1;
+    vlc_assert_unreachable();
 }
 
 ssize_t (net_Read)(vlc_object_t *restrict obj, int fd,
@@ -425,7 +425,7 @@ ssize_t (net_Write)(vlc_object_t *obj, int fd, const void *buf, size_t len)
         }
 
         ssize_t val = vlc_send_i11e(fd, buf, len, 0);
-        if (val == -1)
+        if (val < 0)
         {
             if (errno == EINTR || errno == EAGAIN)
                 continue;

@@ -430,12 +430,20 @@ vlc_dbus_send_message( vlc_keystore* p_keystore, DBusMessage* p_msg )
             msg_Err( p_keystore, "vlc_dbus_send_message: watch functions not called" );
             goto end;
         }
-        if( vlc_poll_i11e( pollfds, nfds, -1 ) <= 0 )
+        int poll_err = vlc_poll_i11e( pollfds, nfds, -1 );
+        if( poll_err < 0 && errno == EINTR)
         {
-            if( errno == EINTR )
-                msg_Dbg( p_keystore, "vlc_dbus_send_message: poll was interrupted" );
-            else
-                msg_Err( p_keystore, "vlc_dbus_send_message: poll failed" );
+            msg_Dbg( p_keystore, "vlc_dbus_send_message: poll was interrupted" );
+            goto end;
+        }
+        if( poll_err < 0 )
+        {
+            msg_Err( p_keystore, "vlc_dbus_send_message: poll failed" );
+            goto end;
+        }
+        if( poll_err == 0 )
+        {
+            msg_Err( p_keystore, "vlc_dbus_send_message: timeout" );
             goto end;
         }
         for( int i = 0; i < nfds; ++ i )

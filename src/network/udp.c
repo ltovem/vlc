@@ -609,19 +609,14 @@ int net_ConnectDgram( vlc_object_t *p_this, const char *psz_host, unsigned i_por
             b_unreach = true;
         else
             msg_Warn( p_this, "%s port %u : %s", psz_host, i_port,
-                      vlc_strerror_c(errno) );
+                      vlc_strerror_c(net_errno) );
         net_Close( fd );
     }
 
     freeaddrinfo( res );
 
-    if( i_handle == -1 )
-    {
-        if( b_unreach )
-            msg_Err( p_this, "Host %s port %u is unreachable", psz_host,
-                     i_port );
-        return -1;
-    }
+    if( i_handle == -1 && b_unreach )
+        msg_Err( p_this, "Host %s port %u is unreachable", psz_host, i_port );
 
     return i_handle;
 }
@@ -684,15 +679,25 @@ int net_OpenDgram( vlc_object_t *obj, const char *psz_bind, unsigned i_bind,
              || (ptr2->ai_protocol != ptr->ai_protocol))
                 continue;
 
-            if (net_SockAddrIsMulticast (ptr->ai_addr, ptr->ai_addrlen)
-              ? net_SourceSubscribe (obj, fd,
-                                     ptr2->ai_addr, ptr2->ai_addrlen,
-                                     ptr->ai_addr, ptr->ai_addrlen)
-              : connect (fd, ptr2->ai_addr, ptr2->ai_addrlen))
+            if (net_SockAddrIsMulticast (ptr->ai_addr, ptr->ai_addrlen))
             {
-                msg_Err (obj, "cannot connect to %s port %u: %s",
-                         psz_server, i_server, vlc_strerror_c(net_errno));
-                continue;
+                if (net_SourceSubscribe (obj, fd,
+                                         ptr2->ai_addr, ptr2->ai_addrlen,
+                                         ptr->ai_addr, ptr->ai_addrlen))
+                {
+                    msg_Err (obj, "cannot connect to %s port %u: %s",
+                            psz_server, i_server, vlc_strerror_c(net_errno));
+                    continue;
+                }
+            }
+            else
+            {
+                if (connect (fd, ptr2->ai_addr, ptr2->ai_addrlen))
+                {
+                    msg_Err (obj, "cannot connect to %s port %u: %s",
+                            psz_server, i_server, vlc_strerror_c(net_errno));
+                    continue;
+                }
             }
             val = fd;
             break;

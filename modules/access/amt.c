@@ -939,7 +939,7 @@ static void amt_send_relay_discovery_msg( stream_t *p_access, char *relay_ip )
             (struct sockaddr *)&sys->relayDiscoAddr, sizeof(struct sockaddr) );
 
     if( nRet < 0)
-        msg_Err( p_access, "Sendto failed to %s with error: %s.", relay_ip, vlc_strerror_c(errno));
+        msg_Err( p_access, "Sendto failed to %s with error: %s.", relay_ip, vlc_strerror_c(net_errno));
 }
 
 /**

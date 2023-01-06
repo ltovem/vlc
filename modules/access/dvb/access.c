@@ -304,14 +304,15 @@ static int ScanReadCallback( scan_t *p_scan, void *p_privdata,
         do
         {
             vlc_tick_t i_poll_timeout = i_scan_start - vlc_tick_now() + i_timeout;
+            if( i_poll_timeout < 0 )
+                return VLC_ENOENT;
 
-            i_ret = 0;
+            if( vlc_killed() )
+                return VLC_EGENERIC;
+            if( scan_IsCancelled( p_scan ) )
+                return VLC_ENOENT;
 
-            if( vlc_killed() || scan_IsCancelled( p_scan ) )
-                break;
-
-            if( i_poll_timeout >= 0 )
-                i_ret = vlc_poll_i11e( ufds, 2, i_poll_timeout / 1000 );
+            i_ret = vlc_poll_i11e( ufds, 2, MS_FROM_VLC_TICK(i_poll_timeout) );
         }
         while( i_ret < 0 && errno == EINTR );
 
@@ -319,7 +320,7 @@ static int ScanReadCallback( scan_t *p_scan, void *p_privdata,
         {
             return VLC_EGENERIC;
         }
-        else if( i_ret == 0 )
+        if( i_ret == 0 )
         {
             return VLC_ENOENT;
         }

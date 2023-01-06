@@ -438,7 +438,7 @@ ssize_t vlc_writev(int fd, const struct iovec *iov, int count)
 int vlc_socket (int pf, int type, int proto, bool nonblock)
 {
     int fd = socket (pf, type, proto);
-    if (fd == -1)
+    if (fd < 0)
         return -1;
 
     if (nonblock)
@@ -456,7 +456,9 @@ int vlc_socketpair(int pf, int type, int proto, int fds[2], bool nonblock)
 int vlc_accept (int lfd, struct sockaddr *addr, socklen_t *alen, bool nonblock)
 {
     int fd = accept (lfd, addr, alen);
-    if (fd != -1 && nonblock)
+    if (fd < 0)
+        return -1;
+    if (nonblock)
         ioctlsocket (fd, FIONBIO, &(unsigned long){ 1 });
     else if (fd < 0 && WSAGetLastError() == WSAEWOULDBLOCK)
         errno = EAGAIN;

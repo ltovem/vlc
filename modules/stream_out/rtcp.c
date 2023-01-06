@@ -89,6 +89,8 @@ rtcp_sender_t *OpenRTCP (vlc_object_t *obj, int rtp_fd, int proto,
         fd = WSASocket (info.iAddressFamily, info.iSocketType, info.iProtocol,
                         &info, 0, 0);
 #endif
+        if (fd == -1)
+            return NULL;
     }
     else
     {
@@ -103,25 +105,22 @@ rtcp_sender_t *OpenRTCP (vlc_object_t *obj, int rtp_fd, int proto,
         dport++;
 
         fd = net_OpenDgram (obj, src, sport, dst, dport, proto);
-        if (fd != -1)
-        {
-            /* Copy the multicast IPv4 TTL value (useless for IPv6) */
-            int ttl;
-            socklen_t len = sizeof (ttl);
+        if (fd == -1)
+            return NULL;
 
-            if (!getsockopt (rtp_fd, SOL_IP, IP_MULTICAST_TTL, &ttl, &len))
-                setsockopt (fd, SOL_IP, IP_MULTICAST_TTL, &ttl, len);
+        /* Copy the multicast IPv4 TTL value (useless for IPv6) */
+        int ttl;
+        socklen_t len = sizeof (ttl);
 
-            /* Ignore all incoming RTCP-RR packets */
-            setsockopt (fd, SOL_SOCKET, SO_RCVBUF, &(int){ 0 }, sizeof (int));
-        }
+        if (!getsockopt (rtp_fd, SOL_IP, IP_MULTICAST_TTL, &ttl, &len))
+            setsockopt (fd, SOL_IP, IP_MULTICAST_TTL, &ttl, len);
+
+        /* Ignore all incoming RTCP-RR packets */
+        setsockopt (fd, SOL_SOCKET, SO_RCVBUF, &(int){ 0 }, sizeof (int));
     }
 
-    if (fd == -1)
-        return NULL;
-
     rtcp = malloc (sizeof (*rtcp));
-    if (rtcp == NULL)
+    if (unlikely(rtcp == NULL))
     {
         net_Close (fd);
         return NULL;

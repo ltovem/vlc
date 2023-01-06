@@ -327,26 +327,26 @@ net_SockAddrIsMulticast (const struct sockaddr *addr, socklen_t len)
 }
 
 
-static inline int net_GetSockAddress( int fd, char *address, int *port )
+static inline bool net_GetSockAddress( int fd, char *address, int *port )
 {
     struct sockaddr_storage addr;
     socklen_t addrlen = sizeof( addr );
 
-    return getsockname( fd, (struct sockaddr *)&addr, &addrlen )
-        || vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
-                            NI_MAXNUMERICHOST, port, NI_NUMERICHOST )
-        ? VLC_EGENERIC : 0;
+    if (getsockname( fd, (struct sockaddr *)&addr, &addrlen ) < 0)
+        return true;
+    return vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
+                            NI_MAXNUMERICHOST, port, NI_NUMERICHOST ) < 0;
 }
 
-static inline int net_GetPeerAddress( int fd, char *address, int *port )
+static inline bool net_GetPeerAddress( int fd, char *address, int *port )
 {
     struct sockaddr_storage addr;
     socklen_t addrlen = sizeof( addr );
 
-    return getpeername( fd, (struct sockaddr *)&addr, &addrlen )
-        || vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
-                            NI_MAXNUMERICHOST, port, NI_NUMERICHOST )
-        ? VLC_EGENERIC : 0;
+    if (getpeername( fd, (struct sockaddr *)&addr, &addrlen ) < 0)
+        return true;
+    return vlc_getnameinfo( (struct sockaddr *)&addr, addrlen, address,
+                            NI_MAXNUMERICHOST, port, NI_NUMERICHOST ) < 0;
 }
 
 VLC_API char *vlc_getProxyUrl(const char *);

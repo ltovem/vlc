@@ -232,6 +232,7 @@ static int LogOut(struct cli_client *cl, const char *const *args, size_t count,
     }
     (void) data;
 #else
+    VLC_UNUSED(cl);
     intf_thread_t *intf = data;
     intf_sys_t *sys = intf->p_sys;
 
@@ -911,6 +912,8 @@ static int Activate( vlc_object_t *p_this )
         pi_socket[1] = -1;
     }
 #endif /* AF_LOCAL */
+#else // WIN32
+    VLC_UNUSED(cl);
 #endif /* !_WIN32 */
 
     if( ( pi_socket == NULL ) &&

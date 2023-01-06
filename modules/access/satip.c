@@ -230,7 +230,7 @@ static char *net_readln_timeout(vlc_object_t *obj, int fd, int timeout, bool *in
         ssize_t val = 0;
         if (!intr) {
             val = vlc_recv_i11e(fd, buf + len, size - len, MSG_PEEK);
-            if (val <= 0 && errno == EINTR) {
+            if (val < 0 && errno == EINTR) {
                 intr = true;
                 if (interrupted)
                     *interrupted = true;
@@ -331,9 +331,15 @@ static enum rtsp_result rtsp_handle(stream_t *access, bool *interrupted) {
     }
 
     /* Discard further content */
-    while (content_length > 0 &&
-            (read = net_Read(access, sys->tcp_sock, buffer, __MIN(sizeof(buffer), content_length))))
+    while (content_length > 0)
+    {
+        read = net_Read(access, sys->tcp_sock, buffer, __MIN(sizeof(buffer), content_length));
+        if (read < 0)
+            continue;
+        if (read == 0)
+            break;
         content_length -= read;
+    }
 
     return rtsp_result;
 }
@@ -373,7 +379,6 @@ static int check_rtp_seq(stream_t *access, block_t *block)
 static void satip_teardown(void *data) {
     stream_t *access = data;
     access_sys_t *sys = access->p_sys;
-    int ret;
 
     if (sys->tcp_sock > 0) {
         if (sys->session_id[0] > 0) {
@@ -400,7 +405,7 @@ static void satip_teardown(void *data) {
 #endif
 
             for (int sent = 0; sent < len;) {
-                ret = poll(&pfd, 1, 5000);
+                int ret = poll(&pfd, 1, 5000);
                 if (ret == 0) {
                     msg_Err(access, "Timed out sending RTSP teardown\n");
                     free(msg);
@@ -591,30 +596,28 @@ static int satip_bind_ports(stream_t *access)
 
     vlc_rand_bytes(&rnd, 1);
     sys->udp_port = 9000 + (rnd * 2); /* randomly chosen, even start point */
-    while (sys->udp_sock < 0) {
-        sys->udp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port, NULL,
+    int udp_sock, rtcp_sock;
+    for (;;) {
+        udp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port, NULL,
                 0, IPPROTO_UDP);
-        if (sys->udp_sock < 0) {
+        if (udp_sock < 0) {
             if (sys->udp_port == 65534)
+            {
+                msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
+                return VLC_EGENERIC;
+            }
+        } else {
+            rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
+                    0, IPPROTO_UDP);
+            if (rtcp_sock >= 0)
                 break;
-
-            sys->udp_port += 2;
-            continue;
+            net_Close(udp_sock);
         }
-
-        sys->rtcp_sock = net_OpenDgram(access, "0.0.0.0", sys->udp_port + 1, NULL,
-                0, IPPROTO_UDP);
-        if (sys->rtcp_sock < 0) {
-            close(sys->udp_sock);
-            sys->udp_port += 2;
-            continue;
-        }
+        sys->udp_port += 2;
     }
 
-    if (sys->udp_sock < 0) {
-        msg_Err(access, "Could not open two adjacent ports for RTP and RTCP data");
-        return VLC_EGENERIC;
-    }
+    sys->udp_sock = udp_sock;
+    sys->rtcp_sock = rtcp_sock;
 
     return 0;
 }

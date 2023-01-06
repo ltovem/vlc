@@ -222,7 +222,11 @@ vlc_smb2_mainloop(struct vlc_smb2_op *op)
             p_fds[i].fd = fds[i];
         }
 
-        if (fds == NULL || (ret = vlc_poll_i11e(p_fds, fd_count, smb2_timeout)) < 0)
+        if (fds == NULL)
+        {
+            VLC_SMB2_SET_ERROR(op, "no file descriptor", -EBADF);
+        }
+        else if ((ret = vlc_poll_i11e(p_fds, fd_count, smb2_timeout)) < 0)
         {
             if (op->log && errno == EINTR)
                 vlc_warning(op->log, "vlc_poll_i11e interrupted");
@@ -429,7 +433,7 @@ static int AddItem(stream_t *access, struct vlc_readdir_helper *rdh,
     if (url == NULL)
         return VLC_ENOMEM;
 
-    input_item_t *p_item; 
+    input_item_t *p_item;
     int ret = vlc_readdir_helper_additem(rdh, url, NULL, name, i_type,
                                          ITEM_NET, &p_item);
 

@@ -2028,7 +2028,7 @@ static void httpdLoop(httpd_host_t *host)
         vlc_tls_t *sk = vlc_tls_SocketOpen(fd);
         if (unlikely(sk == NULL))
         {
-            vlc_close(fd);
+            net_Close(fd);
             continue;
         }
 
