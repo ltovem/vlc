@@ -1328,11 +1328,6 @@ static void* ThreadSend( void *data )
 {
     vlc_thread_set_name("vlc-rt-send");
 
-#ifdef _WIN32
-# define ENOBUFS      WSAENOBUFS
-# define EAGAIN       WSAEWOULDBLOCK
-# define EWOULDBLOCK  WSAEWOULDBLOCK
-#endif
     sout_stream_id_sys_t *id = data;
     vlc_tick_t i_caching = id->i_caching;
     block_t *out;
@@ -1373,8 +1368,8 @@ static void* ThreadSend( void *data )
                 SendRTCP( id->sinkv[i].rtcp, out );
 
             if( send( id->sinkv[i].rtp_fd, out->p_buffer, len, 0 ) == -1
-             && net_errno != EAGAIN && net_errno != EWOULDBLOCK
-             && net_errno != ENOBUFS && net_errno != ENOMEM )
+             && net_errno != vlc_net_error(EAGAIN) && net_errno != vlc_net_error(EWOULDBLOCK)
+             && net_errno != vlc_net_error(ENOBUFS) && net_errno != vlc_net_error(ENOMEM) )
             {
                 int type;
                 getsockopt( id->sinkv[i].rtp_fd, SOL_SOCKET, SO_TYPE,

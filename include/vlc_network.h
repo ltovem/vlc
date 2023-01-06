@@ -39,6 +39,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define ESOCKTNOSUPPORT     10044 // error on WSASocket() calls
+#define EPFNOSUPPORT        10046 // similar to EAFNOSUPPORT
+
 #if defined( _WIN32 )
 #   define _NO_OLDNAMES 1
 #   include <winsock2.h>
@@ -48,13 +51,58 @@
 #   ifndef IPV6_V6ONLY
 #       define IPV6_V6ONLY 27
 #   endif
-#else
+
+static inline int vlc_net_err_to_winsock(int err)
+{
+    switch (err)
+    {
+        case EAFNOSUPPORT:    return WSAEAFNOSUPPORT;
+        case EPFNOSUPPORT:    return WSAEPFNOSUPPORT;
+        case ESOCKTNOSUPPORT: return WSAESOCKTNOSUPPORT;
+        case EOPNOTSUPP:      return WSAEOPNOTSUPP;
+        case EWOULDBLOCK:     return WSAEWOULDBLOCK;
+        case EAGAIN:          return WSAEWOULDBLOCK;
+        case ENOBUFS:         return WSAENOBUFS;
+        case ENOMEM:          return WSA_NOT_ENOUGH_MEMORY;
+        case EINPROGRESS:     return WSAEINPROGRESS;
+        case ENETUNREACH:     return WSAENETUNREACH;
+        case EMSGSIZE:        return WSAEMSGSIZE;
+        case ENOPROTOOPT:     return WSAENOPROTOOPT;
+        case EINTR:           return WSAEINTR;
+        case ELOOP:           return WSAELOOP;
+        default:              return 1; // dummy/unknown error
+    }
+}
+
+static inline int vlc_net_error(int err_no)
+{
+    return vlc_net_err_to_winsock(err_no);
+}
+
+#else // !_WIN32
 #   include <sys/socket.h>
 #   include <netinet/in.h>
 #   include <netdb.h>
 #   define net_errno errno
 #   define net_Close(fd) ((void)vlc_close(fd))
-#endif
+
+static inline int vlc_net_err_to_errno(int err)
+{
+    switch (err)
+    {
+        case ESOCKTNOSUPPORT:
+        case EPFNOSUPPORT:
+            return EAFNOSUPPORT;
+        default:              return err;
+    }
+}
+
+static inline int vlc_net_error(int err_no)
+{
+    return vlc_net_err_to_errno(err_no);
+}
+
+#endif // !_WIN32
 
 /**
  * Creates a socket file descriptor.

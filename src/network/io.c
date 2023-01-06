@@ -50,14 +50,6 @@
 #include <vlc_common.h>
 #include <vlc_network.h>
 #include <vlc_interrupt.h>
-#if defined (_WIN32)
-#   undef EINPROGRESS
-#   define EINPROGRESS WSAEWOULDBLOCK
-#   undef EWOULDBLOCK
-#   define EWOULDBLOCK WSAEWOULDBLOCK
-#   undef EAGAIN
-#   define EAGAIN WSAEWOULDBLOCK
-#endif
 
 extern int rootwrap_bind (int family, int socktype, int protocol,
                           const struct sockaddr *addr, size_t alen);
@@ -68,7 +60,7 @@ int net_Socket (vlc_object_t *p_this, int family, int socktype,
     int fd = vlc_socket (family, socktype, protocol, true);
     if (fd == -1)
     {
-        if (net_errno != EAFNOSUPPORT)
+        if (net_errno != vlc_net_error(EAFNOSUPPORT))
             msg_Err (p_this, "cannot create socket: %s",
                      vlc_strerror_c(net_errno));
         return -1;
@@ -149,7 +141,7 @@ int (net_Connect)(vlc_object_t *obj, const char *host, int serv,
 
         if (connect(fd, ptr->ai_addr, ptr->ai_addrlen))
         {
-            if (net_errno != EINPROGRESS && errno != EINTR)
+            if (net_errno != vlc_net_error(EINPROGRESS) && errno != EINTR)
             {
                 msg_Err(obj, "connection failed: %s",
                         vlc_strerror_c(net_errno));
@@ -340,10 +332,8 @@ int net_Accept(vlc_object_t *obj, int *fds)
             int fd = vlc_accept(sfd, NULL, NULL, true);
             if (fd == -1)
             {
-                if (net_errno != EAGAIN)
-#if (EAGAIN != EWOULDBLOCK)
-                if (net_errno != EWOULDBLOCK)
-#endif
+                if (net_errno != vlc_net_error(EAGAIN))
+                if (net_errno != vlc_net_error(EWOULDBLOCK))
                     msg_Err(obj, "accept failed (from socket %d): %s", sfd,
                             vlc_strerror_c(net_errno));
                 continue;
