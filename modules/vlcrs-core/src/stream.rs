@@ -47,6 +47,67 @@ pub trait ReadDirStream: StreamControl {
     fn read_dir(&mut self, input_item_node: &mut InputItemNode) -> Result<()>;
 }
 
+/// This trait allows defining a stream for demuxing some datas.
+pub trait Demux: DemuxControl {
+    /// Pulls some demuxing.
+    #[doc(alias = "pf_demux")]
+    fn demux(&mut self) -> Result<()>;
+}
+
+/// This trait allows defining a stream for demuxing some datas.
+pub trait ReadDirDemux: DemuxControl {
+    /// Pull some data from the stream and output in the InputItemNode.
+    #[doc(alias = "pf_readdir")]
+    fn read_dir(&mut self, input_item_node: &mut InputItemNode) -> Result<()>;
+}
+
+pub trait DemuxControl {
+    /// Get the source stream.
+    fn source_stream(&mut self) -> Option<&mut Stream>;
+
+    /// Get the current time
+    fn time(&mut self) -> Tick;
+
+    /// Get the current time
+    fn length(&mut self) -> Option<Tick> {
+        None
+    }
+
+    /// Does the stream support the seek operation
+    fn can_seek(&mut self) -> bool {
+        self.source_stream()
+            .map_or(false, |source| source.can_seek())
+    }
+
+    /// Automatic done.
+    fn pts_delay(&mut self) -> Tick {
+        self.source_stream()
+            .map_or(Tick::from_miliseconds(Miliseconds::from(200)), |source| {
+                source.pts_delay()
+            })
+    }
+
+    fn can_control_pace(&mut self) -> bool {
+        self.source_stream()
+            .map_or(false, |source| source.can_control_pace())
+    }
+
+    fn can_pause(&mut self) -> bool {
+        self.source_stream()
+            .map_or(false, |source| source.can_pause())
+    }
+
+    fn set_pause_state(&mut self, state: bool) -> Result<()> {
+        self.source_stream()
+            .ok_or(CoreError::Unimplemented)?
+            .set_pause_state(state)
+    }
+
+    fn set_seek_point(&mut self, _pts: i32) -> Result<()> {
+        Err(CoreError::Unimplemented)
+    }
+}
+
 /// This trait allows defining some controls methods.
 pub trait StreamControl {
     /// Get the source stream.
