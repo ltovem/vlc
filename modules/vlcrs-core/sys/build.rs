@@ -1,5 +1,7 @@
 use std::env;
-use std::path::PathBuf;
+use std::fs::File;
+use std::io::{Result, BufWriter, Write};
+use std::path::{Path, PathBuf};
 
 fn main() {
     // // Tell cargo to tell rustc to link the system vlccore
@@ -106,4 +108,42 @@ fn main() {
          .warnings(false)
          .flag_if_supported("-Wno-deprecated-declarations")
          .compile("externs");
+
+    generate_fourcc(
+        Path::new("../../../include/vlc_fourcc.h"),
+        out_path.join("fourcc.rs"),
+    ).expect("coundn't generate the fourcc bindings!");
+}
+
+fn generate_fourcc(from: &Path, to: PathBuf) -> Result<()> {
+    let mut output_file = BufWriter::new(File::create(to).expect("cannot open vlc_fourcc.h"));
+    let fourcc_include_contents = std::fs::read_to_string(from).unwrap();
+
+    writeln!(output_file, "{}", "#[macro_export] macro_rules! fourcc_consts { () => { ")?;
+
+    for line in fourcc_include_contents.lines() {
+        if line.starts_with("#define VLC_CODEC") {
+            // VLC_CODEC_....
+            let name = line
+                .strip_prefix("#define ")
+                .unwrap()
+                .split_whitespace()
+                .next()
+                .unwrap();
+
+            // ('u','n','d','f')
+            let fourcc = line.rsplit("VLC_FOURCC").next().unwrap();
+
+            writeln!(
+                output_file,
+                "    pub const {}: FourCC = fourcc!{};",
+                name, fourcc
+            )
+            .unwrap();
+        }
+    }
+    
+    writeln!(output_file, "{}", "} }")?;
+
+    Ok(())
 }

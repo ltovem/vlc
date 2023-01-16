@@ -239,5 +239,6 @@ unsafe fn fourcc_list(fallback: *const u32) -> Option<&'static [FourCC]> {
     }
 }
 
-// TODO: Add automatic unit-test that generate all the fourcc from the vlc_fourcc.h
-// like what is done in vlc_fourcc_gen.c and for rust rust-analyzer
+impl FourCC {
+    vlcrs_core_sys::fourcc_consts!();
+}
