@@ -10,6 +10,7 @@
 
 pub mod error;
 pub mod es;
+pub mod es_out;
 pub mod fourcc;
 pub mod input_item;
 pub mod messages;
