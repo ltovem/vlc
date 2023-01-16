@@ -9,6 +9,7 @@
 //! then do so first instead of bypassing this crate.
 
 pub mod error;
+pub mod es;
 pub mod fourcc;
 pub mod messages;
 pub mod object;
