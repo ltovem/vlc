@@ -20,6 +20,18 @@ libogg_plugin_la_LIBADD = $(LIBVORBIS_LIBS) $(OGG_LIBS) $(LIBM) libxiph_metadata
 EXTRA_LTLIBRARIES += libogg_plugin.la
 demux_LTLIBRARIES += $(LTLIBogg)
 
+libflv_rs.la:
+	@$(LIBTOOL_CARGO) $(srcdir)/demux/flv-rs/ $@
+
+libflv_rs_plugin_la_SOURCES = \
+        demux/flv-rs/Cargo.toml \
+        demux/flv-rs/src/lib.rs
+libflv_rs_plugin_la_LIBADD = libflv_rs.la
+
+if HAVE_RUST
+demux_LTLIBRARIES += libflv_rs_plugin.la
+endif
+
 xiph_test_SOURCES = demux/xiph_test.c demux/xiph.h
 check_PROGRAMS += xiph_test
 TESTS += xiph_test

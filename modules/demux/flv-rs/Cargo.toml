@@ -1,0 +1,10 @@
+[package]
+name = "flv-rs"
+version = "0.1.0"
+license = "LGPL-2.1-or-later"
+edition = "2021"
+
+[dependencies]
+flavors = { git = "https://github.com/rust-av/flavors.git", rev = "c48542a" }
+vlcrs-core = { workspace = true }
+vlcrs-core-macros = { workspace = true }
