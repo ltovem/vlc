@@ -49,6 +49,13 @@ NSString *const kVLCMediaUnknown = @"Unknown";
 
 @implementation NSString (Helpers)
 
++ (instancetype)stringWithNullableCString:(nullable const char *)cString
+{
+    if (!cString)
+        return nil;
+    return [NSString stringWithUTF8String:cString];
+}
+
 + (instancetype)stringWithDuration:(vlc_tick_t)duration
                        currentTime:(vlc_tick_t)time
                           negative:(BOOL)negative
