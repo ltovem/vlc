@@ -55,6 +55,21 @@ option('winstore_app',
     value : 'false',
     description : 'Build targeted for Windows Store apps')
 
+option('rust',
+    type : 'boolean',
+    value : false,
+    description : 'Experimental support for mostly-pure Rust VLC modules')
+
+option('extra_rust_flags',
+    type : 'array',
+    value : [],
+    description : 'Extra RUSTFLAGS to be passed to the compiler when compiling Rust VLC modules')
+
+option('vendored_rust_deps',
+    type : 'string',
+    value : 'no',
+    description : 'Should use vendored sources: `no`, `yes` or PATH_TO_VENDORED_SOURCES')
+
 # TODO: Missing pdb option, this should probably be solved in meson itself
 
 # TODO: Missing ssp option
