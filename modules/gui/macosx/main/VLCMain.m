@@ -79,6 +79,7 @@
 #import "windows/VLCOpenInputMetadata.h"
 #import "windows/video/VLCVoutView.h"
 #import "windows/video/VLCVideoOutputProvider.h"
+#import "windows/preferences/VLCExpertPreferencesWindowController.h"
 
 #ifdef HAVE_SPARKLE
 #import <Sparkle/Sparkle.h>                 /* we're the update delegate */
@@ -104,6 +105,7 @@ NSString *VLCConfigurationChangedNotification = @"VLCConfigurationChangedNotific
     VLCMainMenu *_mainmenu;
     VLCPrefs *_prefs;
     VLCSimplePrefsController *_sprefs;
+    VLCExpertPreferencesWindowController *_expertPreferencesWindowController;
     VLCOpenWindowController *_open;
     VLCCoreDialogProvider *_coredialogs;
     VLCBookmarksWindowController *_bookmarks;
@@ -492,6 +494,14 @@ static VLCMain *sharedInstance = nil;
         _prefs = [[VLCPrefs alloc] init];
 
     return _prefs;
+}
+
+- (VLCExpertPreferencesWindowController *)expertPreferences
+{
+    if (_expertPreferencesWindowController == nil)
+        _expertPreferencesWindowController = [[VLCExpertPreferencesWindowController alloc] init];
+    
+    return _expertPreferencesWindowController;
 }
 
 - (VLCCoreDialogProvider *)coreDialogProvider

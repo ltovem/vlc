@@ -30,6 +30,7 @@
 /* main menu */
 @property (readwrite, weak) IBOutlet NSMenuItem *about;
 @property (readwrite, weak) IBOutlet NSMenuItem *prefs;
+@property (readwrite, weak) IBOutlet NSMenuItem *expertPreferences;
 @property (readwrite, weak) IBOutlet NSMenuItem *checkForUpdate;
 @property (readwrite, weak) IBOutlet NSMenuItem *extensions;
 @property (readwrite, weak) IBOutlet NSMenu *extensionsMenu;
