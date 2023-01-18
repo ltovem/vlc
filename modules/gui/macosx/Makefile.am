@@ -35,6 +35,12 @@ libmacosx_plugin_la_SOURCES = \
 	gui/macosx/coreinteraction/VLCHotkeysController.m \
 	gui/macosx/coreinteraction/VLCVideoFilterHelper.h \
 	gui/macosx/coreinteraction/VLCVideoFilterHelper.m \
+	gui/macosx/coreinteraction/VLCModule.h \
+	gui/macosx/coreinteraction/VLCModule.m \
+	gui/macosx/coreinteraction/VLCModuleConfigItem.h \
+	gui/macosx/coreinteraction/VLCModuleConfigItem.m \
+	gui/macosx/coreinteraction/VLCModuleConfigItemChoice.h \
+	gui/macosx/coreinteraction/VLCModuleConfigItemChoice.m \
 	gui/macosx/extensions/NSGradient+VLCAdditions.h \
 	gui/macosx/extensions/NSGradient+VLCAdditions.m \
 	gui/macosx/extensions/NSColor+VLCAdditions.h \
