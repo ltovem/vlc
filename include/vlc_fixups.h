@@ -189,6 +189,10 @@ int vasprintf (char **, const char *, va_list);
 #endif
 
 /* string.h */
+#ifndef HAVE_MEMMEM
+void *memmem(const void *, size_t, const void *, size_t);
+#endif
+
 #ifndef HAVE_MEMRCHR
 void *memrchr(const void *, int, size_t);
 #endif
@@ -199,6 +203,10 @@ int strcasecmp (const char *, const char *);
 
 #ifndef HAVE_STRCASESTR
 char *strcasestr (const char *, const char *);
+#endif
+
+#ifndef HAVE_STRCHRNUL
+char *strchrnul (const char *, int);
 #endif
 
 #ifndef HAVE_STRDUP
