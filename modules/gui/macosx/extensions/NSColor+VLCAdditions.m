@@ -24,6 +24,36 @@
 
 @implementation NSColor (VLCAdditions)
 
++ (instancetype)colorWithSRGBBytesRed:(uint8_t)r
+                                green:(uint8_t)g
+                                 blue:(uint8_t)b
+{
+    return [NSColor colorWithSRGBRed:(CGFloat)r/255.0
+                               green:(CGFloat)g/255.0
+                                blue:(CGFloat)b/255.0
+                               alpha:1.0];
+}
+
+- (void)getBytesRed:(uint8_t *)red
+              green:(uint8_t *)green
+               blue:(uint8_t *)blue
+{
+    CGFloat normalizedRed;
+    CGFloat normalizedGreen;
+    CGFloat normalizedBlue;
+    [self getRed:&normalizedRed
+           green:&normalizedGreen
+            blue:&normalizedBlue
+           alpha:nil];
+
+    if (red)
+        *red = (uint8_t)(normalizedRed * 255);
+    if (green)
+        *green = (uint8_t)(normalizedGreen * 255);
+    if (blue)
+        *blue = (uint8_t)(normalizedBlue * 255);
+}
+
 + (instancetype)VLCAccentColor
 {
      return [NSColor VLCOrangeElementColor];

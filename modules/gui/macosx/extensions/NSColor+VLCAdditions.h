@@ -26,6 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSColor (VLCAdditions)
 
++ (instancetype)colorWithSRGBBytesRed:(uint8_t)r
+                                green:(uint8_t)g
+                                 blue:(uint8_t)b;
+
+- (void)getBytesRed:(uint8_t *)red
+              green:(uint8_t *)green
+               blue:(uint8_t *)blue;
+
 + (instancetype)VLCAccentColor;
 + (instancetype)VLCOrangeElementColor;
 + (instancetype)VLClibraryLightTitleColor;
