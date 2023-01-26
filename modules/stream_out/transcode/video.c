@@ -263,9 +263,9 @@ static void decoder_queue_video( decoder_t *p_dec, picture_t *p_pic )
         return;
 
     vlc_fifo_Lock( id->output_fifo );
-    id->b_error |= ret != VLC_SUCCESS;
-    if( id->b_error )
+    if( ret != VLC_SUCCESS )
     {
+        atomic_store_explicit(&id->b_error, true, memory_order_relaxed);
         vlc_fifo_Unlock( id->output_fifo );
         block_ChainRelease( p_block );
         return;
@@ -567,7 +567,8 @@ int transcode_video_process( sout_stream_t *p_stream, sout_stream_id_sys_t *id,
         return VLC_SUCCESS;
 
     vlc_fifo_Lock( id->output_fifo );
-    if( unlikely( !id->b_error && in == NULL ) && transcode_encoder_opened( id->encoder ) )
+    const bool has_error = atomic_load_explicit( &id->b_error, memory_order_acquire );
+    if( unlikely( !has_error && in == NULL ) && transcode_encoder_opened( id->encoder ) )
     {
         msg_Dbg( p_stream, "Flushing thread and waiting that");
         if( transcode_encoder_drain( id->encoder, out ) == VLC_SUCCESS )
@@ -575,7 +576,6 @@ int transcode_video_process( sout_stream_t *p_stream, sout_stream_id_sys_t *id,
         else
             msg_Warn( p_stream, "Flushing failed");
     }
-    bool has_error = id->b_error;
     if( !has_error )
     {
         vlc_frame_t *pendings = vlc_fifo_DequeueAllUnlocked( id->output_fifo );
