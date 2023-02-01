@@ -33,6 +33,12 @@ vlc_modules += {
     'sources' : files('imem.c')
 }
 
+# D3D11 Resource input module
+vlc_modules += {
+    'name' : 'access_d3d11',
+    'sources' : files('imem-d3d11.cpp')
+}
+
 # Fake sdp:// scheme input module
 vlc_modules += {
     'name' : 'sdp',
@@ -221,7 +227,7 @@ if get_option('vcd_module')
         needed_vcd_unix_headers_present = false
     endif
 
-    if (needed_vcd_unix_headers_present or 
+    if (needed_vcd_unix_headers_present or
         host_system in ['darwin', 'windows'])
 
         vcd_cdda_darwin_deps = []

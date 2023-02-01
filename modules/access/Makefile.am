@@ -38,6 +38,16 @@ access_LTLIBRARIES += libimem_plugin.la
 libaccess_imem_plugin_la_SOURCES = access/imem.c
 access_LTLIBRARIES += libaccess_imem_plugin.la
 
+libimem_d3d11_plugin_la_SOURCES = access/imem-d3d11.cpp
+libimem_d3d11_plugin_la_CXXFLAGS = $(AM_CXXFLAGS) $(LIBCOMCXXFLAGS)
+libimem_d3d11_plugin_la_LIBADD = libd3d11_common.la $(LIBCOM) -luuid
+if HAVE_WINSTORE
+libimem_d3d11_plugin_la_LIBADD += -ld3d11
+endif
+if HAVE_WIN32
+access_LTLIBRARIES += libimem_d3d11_plugin.la
+endif
+
 libsdp_plugin_la_SOURCES = access/sdp.c
 access_LTLIBRARIES += libsdp_plugin.la
 
