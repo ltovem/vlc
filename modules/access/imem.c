@@ -36,6 +36,10 @@
 #include <vlc_demux.h>
 #include <vlc_charset.h>
 
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_picture.h>
+#include <vlc/libvlc_media.h>
+
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
@@ -414,6 +418,9 @@ static int OpenDemux(vlc_object_t *object)
 
     if (demux->out == NULL)
         return VLC_EGENERIC;
+
+    if (var_InheritInteger(object, "imem-type") != libvlc_media_source_stream)
+        return VLC_ENOTSUP;
 
     if (OpenCommon(object, &sys, demux->psz_location))
         return VLC_EGENERIC;

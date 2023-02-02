@@ -140,6 +140,13 @@ typedef enum libvlc_media_type_t {
 } libvlc_media_type_t;
 
 /**
+ * Media source type
+ */
+typedef enum libvlc_media_source_t {
+    libvlc_media_source_stream,
+} libvlc_media_source_t;
+
+/**
  * Parse flags used by libvlc_media_parse_request()
  */
 typedef enum libvlc_media_parse_flag_t

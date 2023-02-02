@@ -33,6 +33,16 @@
 #include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_media.h>
 
+#define MEMTYPE_TEXT N_("Callback data type")
+#define MEMTYPE_LONGTEXT N_(\
+    "Type of data in the callback")
+static const int memtype_values[] = {
+    libvlc_media_source_stream,
+};
+static const char *memtype_texts[] = {
+    N_("Memory"),
+};
+
 typedef struct
 {
     void *opaque;
@@ -121,6 +131,9 @@ static int Open(vlc_object_t *object)
 {
     stream_t *access = (stream_t *)object;
 
+    if (var_InheritInteger(access, "imem-type") != libvlc_media_source_stream)
+        return VLC_ENOTSUP;
+
     access_sys_t *sys = vlc_obj_malloc(object, sizeof (*sys));
     if (unlikely(sys == NULL))
         return VLC_ENOMEM;
@@ -172,4 +185,8 @@ vlc_module_begin()
     add_shortcut("imem")
     set_capability("access", 0)
     set_callbacks(Open, Close)
+
+    add_integer ("imem-type", 0, MEMTYPE_TEXT, MEMTYPE_LONGTEXT)
+        change_integer_list(memtype_values, memtype_texts)
+        change_volatile()
 vlc_module_end()
