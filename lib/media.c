@@ -550,6 +550,13 @@ libvlc_media_t *libvlc_media_new_fd(int fd)
     return libvlc_media_new_location(mrl);
 }
 
+static int open_cb_default(void *opaque, void **datap, uint64_t *sizep)
+{
+    *datap = opaque;
+    (void) sizep;
+    return 0;
+}
+
 static libvlc_media_t *create_media_callbacks(libvlc_media_open_cb open_cb,
                                            libvlc_media_close_cb close_cb,
                                            void *opaque)
@@ -559,7 +566,7 @@ static libvlc_media_t *create_media_callbacks(libvlc_media_open_cb open_cb,
         return NULL;
 
     input_item_AddOpaque(m->p_input_item, "imem-data", opaque);
-    input_item_AddOpaque(m->p_input_item, "imem-open", open_cb);
+    input_item_AddOpaque(m->p_input_item, "imem-open", open_cb ? open_cb: open_cb_default);
     input_item_AddOpaque(m->p_input_item, "imem-close", close_cb);
     return m;
 }

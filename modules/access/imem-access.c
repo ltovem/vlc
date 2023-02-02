@@ -120,13 +120,6 @@ static int Control(stream_t *access, int query, va_list args)
     return VLC_SUCCESS;
 }
 
-static int open_cb_default(void *opaque, void **datap, uint64_t *sizep)
-{
-    *datap = opaque;
-    (void) sizep;
-    return 0;
-}
-
 static int Open(vlc_object_t *object)
 {
     stream_t *access = (stream_t *)object;
@@ -143,14 +136,13 @@ static int Open(vlc_object_t *object)
 
     opaque = var_InheritAddress(access, "imem-data");
     open_cb = var_InheritAddress(access, "imem-open");
+    assert(open_cb != NULL);
     sys->opaque = NULL;
     sys->read_cb = var_InheritAddress(access, "imem-read");
     sys->seek_cb = var_InheritAddress(access, "imem-seek");
     sys->close_cb = var_InheritAddress(access, "imem-close");
     sys->size = UINT64_MAX;
 
-    if (open_cb == NULL)
-        open_cb = open_cb_default;
     if (sys->read_cb == NULL)
         return VLC_EGENERIC;
 
