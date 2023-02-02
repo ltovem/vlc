@@ -37,10 +37,10 @@
 #define MEMTYPE_LONGTEXT N_(\
     "Type of data in the callback")
 static const int memtype_values[] = {
-    libvlc_media_source_stream,
+    libvlc_media_source_stream, libvlc_media_source_d3d11,
 };
 static const char *memtype_texts[] = {
-    N_("Memory"),
+    N_("Memory"), N_("D3D11"),
 };
 
 typedef struct

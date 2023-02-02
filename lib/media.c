@@ -589,7 +589,36 @@ libvlc_media_t *libvlc_media_new_callbacks(libvlc_media_open_cb open_cb,
     input_item_AddOption(m->p_input_item, "imem-type=0", VLC_INPUT_OPTION_UNIQUE );
     input_item_AddOpaque(m->p_input_item, "imem-read", read_cb);
     input_item_AddOpaque(m->p_input_item, "imem-seek", seek_cb);
-    input_item_AddOpaque(m->p_input_item, "imem-close", close_cb);
+    return m;
+}
+
+libvlc_media_t *libvlc_media_new_timed_callbacks(
+    libvlc_media_source_t type,
+    libvlc_media_open_cb open_cb,
+    libvlc_media_getbuf_cb get_cb,
+    libvlc_media_releasebuf_cb release_cb,
+    libvlc_media_close_cb close_cb,
+    void *opaque)
+{
+    if (unlikely(get_cb == NULL))
+        return NULL;
+    // TODO add support for more buffer type if needed
+    if (unlikely(type != libvlc_media_source_d3d11))
+        return NULL;
+    libvlc_media_t *m = create_media_callbacks(open_cb, close_cb, opaque);
+    if (unlikely(m == NULL))
+        return NULL;
+
+    char *imem_type;
+    if (asprintf(&imem_type, ":imem-type=%d", type) == -1)
+    {
+        libvlc_media_release(m);
+        return NULL;
+    }
+    libvlc_media_add_option(m, imem_type);
+    free(imem_type);
+    input_item_AddOpaque(m->p_input_item, "imem-read", get_cb);
+    input_item_AddOpaque(m->p_input_item, "imem-release", release_cb);
     return m;
 }
 
