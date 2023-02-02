@@ -571,11 +571,12 @@ libvlc_media_t *libvlc_media_new_callbacks(libvlc_media_open_cb open_cb,
                                            libvlc_media_close_cb close_cb,
                                            void *opaque)
 {
+    if (unlikely(read_cb == NULL))
+        return NULL;
     libvlc_media_t *m = create_media_callbacks(open_cb, close_cb, opaque);
     if (unlikely(m == NULL))
         return NULL;
 
-    assert(read_cb != NULL);
     static_assert(0 == libvlc_media_source_stream, "mismatched libvlc_media_source_t value");
     libvlc_media_add_option(m, ":imem-type=0");
     input_item_AddOption(m->p_input_item, "imem-type=0", VLC_INPUT_OPTION_UNIQUE );
