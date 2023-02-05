@@ -211,6 +211,12 @@
                                     <action selector="showPreferences:" target="-2" id="JR7-ia-wCP"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Expert Preferences…" alternate="YES" keyEquivalent="," id="STy-qf-CGy" userLabel="Expert Preferences…">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="showExpertPreferences:" target="-2" id="AaB-I4-CoM"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="1876">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>

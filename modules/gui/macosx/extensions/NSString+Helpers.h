@@ -28,6 +28,8 @@
 #import <Cocoa/Cocoa.h>
 #import <vlc_input.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 #define NSTR(s) ((s) ? toNSStr(vlc_gettext(s)) : @"")
 
 /**
@@ -54,7 +56,7 @@ extern NSString *const kVLCMediaVideoTSFolder;
 extern NSString *const kVLCMediaBDMVFolder;
 extern NSString *const kVLCMediaUnknown;
 
-NSString *toNSStr(const char *str);
+NSString *toNSStr(const char * _Nullable str);
 
 /**
  * Takes the first value of an cocoa key string, and converts it to VLCs int representation.
@@ -72,6 +74,14 @@ bool fixIntfSettings(void);
 NSImage *imageFromRes(NSString *name);
 
 @interface NSString (Helpers)
+
+/**
+ Creates an NSString from the given UTF8 encoded C string or returns nil if it is NULL
+ 
+ This method is equivalent to `stringWithUTF8String` except that it accepts a
+ NULL cString and returns nil in that case.
+ */
++ (instancetype)stringWithNullableCString:(nullable const char *)cString;
 
 /**
  Creates an NSString with the current time of the \c input_item_t
@@ -201,3 +211,5 @@ NSString * VLCKeyToString(char *theChar);
  * Converts VLC key to cocoa string which can be used as setKeyEquivalentModifierMask for menu items
  */
 unsigned int VLCModifiersToCocoa(char *theChar);
+
+NS_ASSUME_NONNULL_END

@@ -58,6 +58,7 @@
 #import "windows/addons/VLCAddonsWindowController.h"
 #import "windows/video/VLCVoutView.h"
 #import "windows/video/VLCVideoOutputProvider.h"
+#import "windows/preferences/VLCExpertPreferencesWindowController.h"
 
 #import <vlc_interface.h>
 
@@ -340,6 +341,7 @@ typedef NS_ENUM(NSInteger, VLCObjectType) {
     [_about setTitle: _NS("About VLC media player...")];
     [_checkForUpdate setTitle: _NS("Check for Updates...")];
     [_prefs setTitle: _NS("Preferences...")];
+    [_expertPreferences setTitle: _NS("Expert Preferences…")];
     [_extensions setTitle: _NS("Extensions")];
     [_extensionsMenu setTitle: _NS("Extensions")];
     [_addonManager setTitle: _NS("Addons Manager")];
@@ -1415,6 +1417,11 @@ typedef NS_ENUM(NSInteger, VLCObjectType) {
     VLCMain *mainInstance = [VLCMain sharedInstance];
     NSInteger i_level = [[mainInstance voutProvider] currentStatusWindowLevel];
     [[mainInstance simplePreferences] showSimplePrefsWithLevel:i_level];
+}
+
+- (IBAction)showExpertPreferences:(id)sender
+{
+    [[[VLCMain sharedInstance] expertPreferences] showWindow:self];
 }
 
 - (IBAction)openAddonManager:(id)sender

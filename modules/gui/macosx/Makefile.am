@@ -35,6 +35,12 @@ libmacosx_plugin_la_SOURCES = \
 	gui/macosx/coreinteraction/VLCHotkeysController.m \
 	gui/macosx/coreinteraction/VLCVideoFilterHelper.h \
 	gui/macosx/coreinteraction/VLCVideoFilterHelper.m \
+	gui/macosx/coreinteraction/VLCModule.h \
+	gui/macosx/coreinteraction/VLCModule.m \
+	gui/macosx/coreinteraction/VLCModuleConfigItem.h \
+	gui/macosx/coreinteraction/VLCModuleConfigItem.m \
+	gui/macosx/coreinteraction/VLCModuleConfigItemChoice.h \
+	gui/macosx/coreinteraction/VLCModuleConfigItemChoice.m \
 	gui/macosx/extensions/NSGradient+VLCAdditions.h \
 	gui/macosx/extensions/NSGradient+VLCAdditions.m \
 	gui/macosx/extensions/NSColor+VLCAdditions.h \
@@ -315,6 +321,8 @@ libmacosx_plugin_la_SOURCES = \
 	gui/macosx/windows/mainwindow/VLCControlsBarCommon.m \
 	gui/macosx/windows/mainwindow/VLCMainWindowControlsBar.h \
 	gui/macosx/windows/mainwindow/VLCMainWindowControlsBar.m \
+	gui/macosx/windows/preferences/VLCExpertPreferencesWindowController.h \
+	gui/macosx/windows/preferences/VLCExpertPreferencesWindowController.m \
 	gui/macosx/windows/video/VLCDetachedVideoWindow.h \
 	gui/macosx/windows/video/VLCDetachedVideoWindow.m \
 	gui/macosx/windows/video/VLCFSPanelController.h \
@@ -340,6 +348,7 @@ libmacosx_plugin_la_XIB_SOURCES = \
 	gui/macosx/UI/CoreDialogs.xib \
 	gui/macosx/UI/DetachedVideoWindow.xib \
 	gui/macosx/UI/ErrorPanel.xib \
+	gui/macosx/UI/ExpertPreferencesWindow.xib \
 	gui/macosx/UI/Help.xib \
 	gui/macosx/UI/LogMessageWindow.xib \
 	gui/macosx/UI/MainMenu.xib \
