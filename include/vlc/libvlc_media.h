@@ -140,6 +140,16 @@ typedef enum libvlc_media_type_t {
 } libvlc_media_type_t;
 
 /**
+ * Media source type
+ *
+ * \see libvlc_media_new_timed_callbacks
+ */
+typedef enum libvlc_media_source_t {
+    libvlc_media_source_stream,
+    libvlc_media_source_d3d11,
+} libvlc_media_source_t;
+
+/**
  * Parse flags used by libvlc_media_parse_request()
  */
 typedef enum libvlc_media_parse_flag_t
@@ -252,6 +262,31 @@ typedef ptrdiff_t (*libvlc_media_read_cb)(void *opaque, unsigned char *buf,
                                          size_t len);
 
 /**
+ * Callback prototype to get a timed buffer from a custom input media.
+ *
+ * \param opaque private pointer as set by the @ref libvlc_media_open_cb
+ *               callback
+ * \param buf the buffer to read data from
+ * \param pts_us presentation time of the buffer in microseconds
+ *
+ * \return strictly positive on success, 0 on end-of-stream, or -1 on
+ *         non-recoverable error
+ *
+ * \note If no data is immediately available, then the callback should sleep.
+ * \warning The application is responsible for avoiding deadlock situations.
+ */
+typedef ptrdiff_t (*libvlc_media_getbuf_cb)(void *opaque, void **buf, int64_t *pts_us);
+
+/**
+ * Callback prototype to release a timed buffer of a custom input media.
+ *
+ * \param opaque private pointer as set by the @ref libvlc_media_open_cb
+ *               callback
+ * \param buf the buffer to release data from
+ */
+typedef void (*libvlc_media_releasebuf_cb)(void *opaque, void *buf);
+
+/**
  * Callback prototype to seek a custom bitstream input media.
  *
  * \param opaque private pointer as set by the @ref libvlc_media_open_cb
@@ -351,6 +386,40 @@ LIBVLC_API libvlc_media_t *libvlc_media_new_callbacks(
                                    libvlc_media_seek_cb seek_cb,
                                    libvlc_media_close_cb close_cb,
                                    void *opaque );
+
+/**
+ * Create a media with custom callbacks to read the data from with time information.
+ *
+ * \param open_cb callback to open the custom bitstream input media
+ * \param get_cb callback to get timed data from (must not be NULL)
+ * \param release_cb callback to released timed buffer (must not be NULL)
+ * \param close_cb callback to close the media, or NULL if unnecessary
+ * \param opaque data pointer for the open callback
+ *
+ * \return the newly created media or NULL on error
+ *
+ * \note If open_cb is NULL, the opaque pointer will be passed to get_cb,
+ * release_cb and close_cb.
+ *
+ * \note The callbacks may be called asynchronously (from another thread).
+ * A single stream instance need not be reentrant. However the open_cb needs to
+ * be reentrant if the media is used by multiple player instances.
+ *
+ * \warning The callbacks may be used until all or any player instances
+ * that were supplied the media item are stopped.
+ *
+ * \see libvlc_media_release
+ *
+ * \version LibVLC 4.0.0 and later.
+ */
+LIBVLC_API libvlc_media_t *libvlc_media_new_timed_callbacks(
+                                   libvlc_media_source_t type,
+                                   libvlc_media_open_cb open_cb,
+                                   libvlc_media_getbuf_cb get_cb,
+                                   libvlc_media_releasebuf_cb release_cb,
+                                   libvlc_media_close_cb close_cb,
+                                   void *opaque );
+
 
 /**
  * Create a media as an empty node with a given name.

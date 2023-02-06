@@ -33,6 +33,16 @@
 #include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_media.h>
 
+#define MEMTYPE_TEXT N_("Callback data type")
+#define MEMTYPE_LONGTEXT N_(\
+    "Type of data in the callback")
+static const int memtype_values[] = {
+    libvlc_media_source_stream, libvlc_media_source_d3d11,
+};
+static const char *memtype_texts[] = {
+    N_("Memory"), N_("D3D11"),
+};
+
 typedef struct
 {
     void *opaque;
@@ -110,16 +120,12 @@ static int Control(stream_t *access, int query, va_list args)
     return VLC_SUCCESS;
 }
 
-static int open_cb_default(void *opaque, void **datap, uint64_t *sizep)
-{
-    *datap = opaque;
-    (void) sizep;
-    return 0;
-}
-
 static int Open(vlc_object_t *object)
 {
     stream_t *access = (stream_t *)object;
+
+    if (var_InheritInteger(access, "imem-type") != libvlc_media_source_stream)
+        return VLC_ENOTSUP;
 
     access_sys_t *sys = vlc_obj_malloc(object, sizeof (*sys));
     if (unlikely(sys == NULL))
@@ -130,14 +136,13 @@ static int Open(vlc_object_t *object)
 
     opaque = var_InheritAddress(access, "imem-data");
     open_cb = var_InheritAddress(access, "imem-open");
+    assert(open_cb != NULL);
     sys->opaque = NULL;
     sys->read_cb = var_InheritAddress(access, "imem-read");
     sys->seek_cb = var_InheritAddress(access, "imem-seek");
     sys->close_cb = var_InheritAddress(access, "imem-close");
     sys->size = UINT64_MAX;
 
-    if (open_cb == NULL)
-        open_cb = open_cb_default;
     if (sys->read_cb == NULL)
         return VLC_EGENERIC;
 
@@ -172,4 +177,8 @@ vlc_module_begin()
     add_shortcut("imem")
     set_capability("access", 0)
     set_callbacks(Open, Close)
+
+    add_integer ("imem-type", 0, MEMTYPE_TEXT, MEMTYPE_LONGTEXT)
+        change_integer_list(memtype_values, memtype_texts)
+        change_volatile()
 vlc_module_end()

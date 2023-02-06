@@ -35,6 +35,9 @@ if(WIN32)
     target_compile_definitions(d3d11_player PRIVATE _WIN32_WINNT=0x0601)
     target_link_libraries(d3d11_player libvlc d3d11 d3dcompiler uuid)
 
+    add_executable(screen_player WIN32 screen_player.cpp)
+    target_link_libraries(screen_player libvlc d3d11 uuid dxgi)
+
     add_executable(win_player WIN32 win_player.c)
     target_link_libraries(win_player libvlc)
 
