@@ -37,6 +37,8 @@ typedef struct input_thread_t input_thread_t;
  */
 #define VOUT_MAX_PICTURES (20)
 
+typedef void (*prev_frame_status)(vlc_tick_t delay, void *userdata);
+
 /**
  * Vout configuration
  */
@@ -46,6 +48,7 @@ typedef struct {
     const char           *str_id;
     const video_format_t *fmt;
     vlc_mouse_event      mouse_event;
+    prev_frame_status    prev_frame_status;
     void                 *cb_userdata;
 } vout_configuration_t;
 
@@ -227,6 +230,11 @@ void vout_GetResetStatistic( vout_thread_t *p_vout, unsigned *pi_displayed,
  * This function will force to display the next picture while paused
  */
 void vout_NextPicture( vout_thread_t *p_vout );
+
+/**
+ * This function will force to display the previous picture while paused
+ */
+void vout_PreviousPicture( vout_thread_t *p_vout );
 
 /**
  * This function will ask the display of the input title

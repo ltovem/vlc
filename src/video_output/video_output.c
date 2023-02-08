@@ -121,6 +121,16 @@ typedef struct vout_thread_sys_t
         vlc_tick_t  date;
     } pause;
 
+    struct {
+        picture_t *pic;
+        picture_t *next;
+        vlc_tick_t cur_timestamp;
+
+        bool failed;
+        prev_frame_status cb;
+        void *cb_userdata;
+    } prev_frame;
+
     /* OSD title configuration */
     struct {
         bool        show;
@@ -164,7 +174,7 @@ typedef struct vout_thread_sys_t
         vout_chrono_t render;         /**< picture render time estimator */
     } chrono;
 
-    unsigned frame_next_count;
+    int frame_next_count;
 
     vlc_atomic_rc_t rc;
 
@@ -763,6 +773,17 @@ static void FilterFlush(vout_thread_sys_t *sys, bool is_locked)
         sys->displayed.date = VLC_TICK_INVALID;
     }
 
+    if (sys->prev_frame.pic != NULL)
+    {
+        picture_Release(sys->prev_frame.pic);
+        sys->prev_frame.pic = NULL;
+    }
+    if (sys->prev_frame.next != NULL)
+    {
+        picture_Release(sys->prev_frame.next);
+        sys->prev_frame.next = NULL;
+    }
+
     if (!is_locked)
         vlc_mutex_lock(&sys->filter.lock);
     filter_chain_VideoFlush(sys->filter.chain_static);
@@ -917,6 +938,14 @@ static picture_t *PreparePicture(vout_thread_sys_t *vout, bool reuse_decoded,
 {
     vout_thread_sys_t *sys = vout;
     bool is_late_dropped = sys->is_late_dropped && !frame_by_frame;
+
+    if (unlikely(!reuse_decoded && sys->prev_frame.next != NULL))
+    {
+        /* Use the picture that was used for previous-frame comparison first */
+        picture_t *next = sys->prev_frame.next;
+        sys->prev_frame.next = NULL;
+        return next;
+    }
 
     vlc_mutex_lock(&sys->filter.lock);
 
@@ -1385,10 +1414,74 @@ static int DisplayNextFrame(vout_thread_sys_t *sys)
         if (likely(sys->displayed.current != NULL))
             picture_Release(sys->displayed.current);
         sys->displayed.current = next;
+        sys->prev_frame.cur_timestamp = sys->displayed.current->date;
     }
 
     if (!next)
         return VLC_EGENERIC;
+
+    return RenderPicture(sys, true);
+}
+
+static int DisplayPreviousFrame(vout_thread_sys_t *sys)
+{
+    if (sys->prev_frame.failed)
+        return VLC_EGENERIC;
+
+    UpdateDeinterlaceFilter(sys);
+
+    /* Fetch the next picture */
+    picture_t *next = PreparePicture(sys, false, true);
+    if (next == NULL)
+        return VLC_EGENERIC;
+
+    if (sys->prev_frame.cur_timestamp > next->date)
+    {
+        /* Save the pic since this might be the correct previous frame */
+        if (sys->prev_frame.pic != NULL)
+            picture_Release(sys->prev_frame.pic);
+        sys->prev_frame.pic = next;
+
+        /* Continue to fetch new pictures until we reach 'cur_timestamp' */
+        return VLC_EGENERIC;
+    }
+
+    if (sys->prev_frame.pic == NULL || sys->prev_frame.cur_timestamp < next->date)
+    {
+        /* Fail: The next picture is after the current one, or the same as the
+         * current one but no previous pics were saved */
+        sys->prev_frame.failed = true;
+
+        picture_Release(next);
+
+        /* Report the frame delay to help the input adjusting its seek request */
+        vlc_tick_t delay = next->date - sys->prev_frame.cur_timestamp;
+        if (delay == 0)
+        {
+            assert(sys->prev_frame.pic == NULL);
+            /* We have the correct current frame but no previous one */
+            delay = VLC_TICK_MAX;
+        }
+        sys->prev_frame.cb(delay, sys->prev_frame.cb_userdata);
+        return VLC_EGENERIC;
+    }
+
+    /* Success: 'next' is the same picture than the displayed one and we got
+     * the picture just before. */
+
+    /* Save the next picture, to be displayed just after the vout is resumed
+     * (or in case of 'frame-next') */
+    assert(sys->prev_frame.next == NULL);
+    sys->prev_frame.next = next;
+
+    /* Swap the current picture with the previous one */
+    if (sys->displayed.current != NULL)
+        picture_Release(sys->displayed.current);
+    sys->displayed.current = sys->prev_frame.pic;
+    sys->prev_frame.cur_timestamp = sys->displayed.current->date;
+    sys->prev_frame.pic = NULL;
+
+    sys->prev_frame.cb(0, sys->prev_frame.cb_userdata);
 
     return RenderPicture(sys, true);
 }
@@ -1403,11 +1496,22 @@ static bool UpdateCurrentPicture(vout_thread_sys_t *sys)
             --sys->frame_next_count;
         return false;
     }
+    else if (sys->frame_next_count == -1)
+    {
+        if (DisplayPreviousFrame(sys) == VLC_SUCCESS)
+            sys->frame_next_count = 0;
+        return false;
+    }
 
     if (sys->displayed.current == NULL)
     {
         sys->displayed.current = PreparePicture(sys, true, false);
-        return sys->displayed.current != NULL;
+        if (sys->displayed.current != NULL)
+        {
+            sys->prev_frame.cur_timestamp = sys->displayed.current->date;
+            return true;
+        }
+        return false;
     }
 
     if (sys->pause.is_on || sys->wait_interrupted)
@@ -1439,6 +1543,7 @@ static bool UpdateCurrentPicture(vout_thread_sys_t *sys)
         picture_Release(sys->displayed.current);
 
     sys->displayed.current = next;
+    sys->prev_frame.cur_timestamp = sys->displayed.current->date;
 
     return true;
 }
@@ -1542,6 +1647,7 @@ static void vout_FlushUnlocked(vout_thread_sys_t *vout, bool below,
         }
     }
 
+    sys->prev_frame.failed = false;
     picture_fifo_Flush(sys->decoder_fifo, date, below);
 
     vlc_queuedmutex_lock(&sys->display_lock);
@@ -1580,6 +1686,20 @@ void vout_NextPicture(vout_thread_t *vout)
     vout_control_Hold(&sys->control);
 
     sys->frame_next_count++;
+
+    vout_control_ReleaseAndWake(&sys->control);
+}
+
+void vout_PreviousPicture(vout_thread_t *vout)
+{
+    vout_thread_sys_t *sys = VOUT_THREAD_TO_SYS(vout);
+    assert(!sys->dummy);
+    assert(sys->prev_frame.cb != NULL);
+
+    vout_control_Hold(&sys->control);
+
+    if (sys->prev_frame.cur_timestamp != VLC_TICK_INVALID)
+        sys->frame_next_count = -1;
 
     vout_control_ReleaseAndWake(&sys->control);
 }
@@ -1629,6 +1749,9 @@ static int vout_Start(vout_thread_sys_t *vout, vlc_video_context *vctx, const vo
     filter_chain_t *cs, *ci;
 
     assert(!sys->dummy);
+
+    vout->prev_frame.cb = cfg->prev_frame_status;
+    vout->prev_frame.cb_userdata = cfg->cb_userdata;
 
     vlc_mutex_lock(&sys->window_lock);
     vout_display_window_SetMouseHandler(sys->display_cfg.window,
@@ -2041,6 +2164,11 @@ vout_thread_t *vout_Create(vlc_object_t *object)
         var_Destroy(vout, "window");
     sys->window_enabled = false;
     sys->frame_next_count = 0;
+    sys->prev_frame.failed = false;
+    sys->prev_frame.pic = NULL;
+    sys->prev_frame.next = NULL;
+    sys->prev_frame.cb = NULL;
+    sys->prev_frame.cur_timestamp = VLC_TICK_INVALID;
     vlc_mutex_init(&sys->window_lock);
 
     if (var_InheritBool(vout, "video-wallpaper"))
