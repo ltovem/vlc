@@ -43,6 +43,8 @@ struct vlc_input_decoder_callbacks {
                                void *userdata);
     void (*on_new_audio_stats)(vlc_input_decoder_t *decoder, unsigned decoded,
                                unsigned lost, unsigned played, void *userdata);
+    void (*prev_frame_status)(vlc_input_decoder_t *decoder, vlc_tick_t delay,
+                              void *userdata);
 
     /* requests */
     int (*get_attachments)(vlc_input_decoder_t *decoder,
@@ -122,6 +124,11 @@ void vlc_input_decoder_GetCcDesc( vlc_input_decoder_t *, decoder_cc_desc_t * );
  * This function forces the display of the next picture
  */
 void vlc_input_decoder_FrameNext( vlc_input_decoder_t *p_dec );
+
+/**
+ * This function forces the display of the previous picture
+ */
+void vlc_input_decoder_FramePrevious( vlc_input_decoder_t *p_dec );
 
 struct vlc_input_decoder_status
 {

@@ -197,7 +197,7 @@ struct vlc_input_decoder_t
     vlc_tick_t pause_date;
     vlc_tick_t delay;
     float request_rate, output_rate;
-    unsigned frames_countdown;
+    int frames_countdown; /* Use -1 for previous-frame */
     bool paused;
 
     bool error;
@@ -371,6 +371,14 @@ static void MouseEvent( const vlc_mouse_t *newmouse, void *user_data )
     if( owner->mouse_event )
         owner->mouse_event( newmouse, owner->mouse_opaque);
     vlc_mutex_unlock( &owner->mouse_lock );
+}
+
+static void PreviousFrameStatus(vlc_tick_t delay, void *userdata)
+{
+    decoder_t *dec = userdata;
+    vlc_input_decoder_t *owner = dec_get_owner( dec );
+
+    decoder_Notify(owner, prev_frame_status, delay);
 }
 
 /*****************************************************************************
@@ -557,7 +565,9 @@ static int ModuleThread_UpdateVideoFormat( decoder_t *p_dec, vlc_video_context *
         .vout = p_owner->p_vout, .clock = p_owner->p_clock,
         .str_id = p_owner->psz_id,
         .fmt = &p_dec->fmt_out.video,
-        .mouse_event = MouseEvent, .cb_userdata = p_dec,
+        .mouse_event = MouseEvent,
+        .prev_frame_status = PreviousFrameStatus,
+        .cb_userdata = p_dec,
     };
     vlc_fifo_Unlock(p_owner->p_fifo);
 
@@ -2633,6 +2643,24 @@ void vlc_input_decoder_FrameNext( vlc_input_decoder_t *p_owner )
     {
         if( p_owner->p_vout )
             vout_NextPicture( p_owner->p_vout );
+    }
+    vlc_fifo_Unlock(p_owner->p_fifo);
+}
+
+void vlc_input_decoder_FramePrevious( vlc_input_decoder_t *p_owner )
+{
+    assert( p_owner->paused );
+
+    vlc_fifo_Lock( p_owner->p_fifo );
+    p_owner->frames_countdown = -1;
+    vlc_fifo_Signal( p_owner->p_fifo );
+    vlc_fifo_Unlock( p_owner->p_fifo );
+
+    vlc_fifo_Lock(p_owner->p_fifo);
+    if( p_owner->dec.fmt_in->i_cat == VIDEO_ES )
+    {
+        if( p_owner->p_vout )
+            vout_PreviousPicture( p_owner->p_vout );
     }
     vlc_fifo_Unlock(p_owner->p_fifo);
 }
