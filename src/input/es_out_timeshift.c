@@ -644,6 +644,12 @@ static int ControlLockedSetFrameNext( es_out_t *p_out )
 
     return es_out_SetFrameNext( p_sys->p_out );
 }
+static int ControlLockedSetFramePrevious( es_out_t *p_out )
+{
+    es_out_sys_t *p_sys = container_of(p_out, es_out_sys_t, out);
+
+    return es_out_SetFramePrevious( p_sys->p_out );
+}
 
 static int ControlLocked( es_out_t *p_out, input_source_t *in, int i_query,
                           va_list args )
@@ -824,9 +830,9 @@ static int PrivControlLocked( es_out_t *p_tsout, int i_query, va_list args )
         return ControlLockedSetRate( p_tsout, src_rate, rate );
     }
     case ES_OUT_PRIV_SET_FRAME_NEXT:
-    {
         return ControlLockedSetFrameNext( p_tsout );
-    }
+    case ES_OUT_PRIV_SET_FRAME_PREVIOUS:
+        return ControlLockedSetFramePrevious( p_tsout );
     case ES_OUT_PRIV_GET_GROUP_FORCED:
         return es_out_vaPrivControl( p_sys->p_out, i_query, args );
     /* Invalid queries for this es_out level */
