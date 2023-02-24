@@ -1656,8 +1656,6 @@ static const struct vlc_logger_operations log_ops = { MsgCallback, NULL };
  *****************************************************************************/
 static void *Run(void *data)
 {
-    vlc_thread_set_name("vlc-ncurses");
-
     intf_thread_t *intf = data;
     intf_sys_t *sys = intf->p_sys;
 
@@ -1729,7 +1727,7 @@ static int Open(vlc_object_t *p_this)
     if (!sys->playlist_listener)
         return err;
 
-    if (vlc_clone(&sys->thread, Run, intf))
+    if (vlc_clone(&sys->thread, Run, intf, "vlc-ncurses"))
     {
         vlc_playlist_Lock(sys->playlist);
         vlc_playlist_RemoveListener(sys->playlist, sys->playlist_listener);

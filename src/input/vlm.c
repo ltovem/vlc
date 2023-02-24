@@ -146,7 +146,7 @@ vlm_t *vlm_New( libvlc_int_t *libvlc, const char *psz_vlmconf )
     TAB_INIT( p_vlm->i_schedule, p_vlm->schedule );
     var_Create( p_vlm, "intf-event", VLC_VAR_ADDRESS );
 
-    if( vlc_clone( &p_vlm->thread, Manage, p_vlm ) )
+    if( vlc_clone( &p_vlm->thread, Manage, p_vlm, "vlc-vlm" ) )
     {
         vlc_object_delete(p_vlm);
         vlc_mutex_unlock( &vlm_mutex );
@@ -239,8 +239,6 @@ int vlm_ExecuteCommand( vlm_t *p_vlm, const char *psz_command,
  *****************************************************************************/
 static void* Manage( void* p_object )
 {
-    vlc_thread_set_name("vlc-vlm");
-
     vlm_t *vlm = (vlm_t*)p_object;
     time_t lastcheck;
     bool exiting;

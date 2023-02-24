@@ -177,7 +177,7 @@ static int Open (vlc_object_t *obj)
 
     UpdateApps (sd);
 
-    if (vlc_clone (&p_sys->thread, Run, sd))
+    if (vlc_clone (&p_sys->thread, Run, sd, "vlc-xcb-servis"))
         goto error;
     return VLC_SUCCESS;
 
@@ -210,8 +210,6 @@ static void Close (vlc_object_t *obj)
 
 static void *Run (void *data)
 {
-    vlc_thread_set_name("vlc-xcb-servis");
-
     services_discovery_t *sd = data;
     services_discovery_sys_t *p_sys = sd->p_sys;
     xcb_connection_t *conn = p_sys->conn;

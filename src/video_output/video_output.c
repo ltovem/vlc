@@ -1789,8 +1789,6 @@ static void *Thread(void *object)
     vout_thread_sys_t *vout = object;
     vout_thread_sys_t *sys = vout;
 
-    vlc_thread_set_name("vlc-vout");
-
     vlc_tick_t deadline = VLC_TICK_INVALID;
 
     for (;;) {
@@ -2202,7 +2200,7 @@ int vout_Request(const vout_configuration_t *cfg, vlc_video_context *vctx, input
         goto error_display;
     }
     atomic_store(&sys->control_is_terminated, false);
-    if (vlc_clone(&sys->thread, Thread, vout))
+    if (vlc_clone(&sys->thread, Thread, vout, "vlc-vout"))
         goto error_thread;
 
     if (input != NULL && sys->spu)

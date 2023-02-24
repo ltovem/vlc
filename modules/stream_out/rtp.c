@@ -1059,7 +1059,7 @@ static void *Add( sout_stream_t *p_stream, const es_format_t *p_fmt )
                     msg_Err( p_stream, "passive COMEDIA RTP socket failed" );
                     goto error;
                 }
-                if( vlc_clone( &id->listen.thread, rtp_listen_thread, id ) )
+                if( vlc_clone( &id->listen.thread, rtp_listen_thread, id, "vlc-rtp-listen" ) )
                 {
                     net_ListenClose( id->listen.fd );
                     id->listen.fd = NULL;
@@ -1126,7 +1126,7 @@ static void *Add( sout_stream_t *p_stream, const es_format_t *p_fmt )
                                  id->rtp_fmt.clock_rate, mcast_fd );
 
     id->dead = false;
-    if( vlc_clone( &id->thread, ThreadSend, id ) )
+    if( vlc_clone( &id->thread, ThreadSend, id, "vlc-rt-send" ) )
     {
         id->dead = true;
         goto error;
@@ -1328,8 +1328,6 @@ static int  HttpCallback( httpd_file_sys_t *p_args,
  ****************************************************************************/
 static void* ThreadSend( void *data )
 {
-    vlc_thread_set_name("vlc-rt-send");
-
 #ifdef _WIN32
 # undef ENOBUFS
 # define ENOBUFS      WSAENOBUFS
@@ -1409,8 +1407,6 @@ static void* ThreadSend( void *data )
 /* This thread dequeues incoming connections (DCCP streaming) */
 static void *rtp_listen_thread( void *data )
 {
-    vlc_thread_set_name("vlc-rtp-listen");
-
     sout_stream_id_sys_t *id = data;
 
     assert( id->listen.fd != NULL );

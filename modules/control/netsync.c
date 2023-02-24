@@ -192,7 +192,6 @@ static void *Master(void *handle)
 {
     intf_thread_t *intf = handle;
     intf_sys_t *sys = intf->p_sys;
-    vlc_thread_set_name("vlc-netsyncboss");
     for (;;) {
         struct pollfd ufd = { .fd = sys->fd, .events = POLLIN, };
         uint64_t data[2];
@@ -235,8 +234,6 @@ static void *Slave(void *handle)
 {
     intf_thread_t *intf = handle;
     intf_sys_t *sys = intf->p_sys;
-
-    vlc_thread_set_name("vlc-netsyncrecv");
 
     for (;;) {
         struct pollfd ufd = { .fd = sys->fd, .events = POLLIN, };
@@ -308,7 +305,8 @@ static int PlaylistEvent(vlc_object_t *object, char const *cmd,
     sys->input = input;
 
     if (input != NULL) {
-        if (vlc_clone(&sys->thread, sys->is_master ? Master : Slave, intf))
+        if (vlc_clone(&sys->thread, sys->is_master ? Master : Slave, intf,
+                      sys->is_master ? "vlc-netsyncboss" : "vlc-netsyncrecv"))
             sys->input = NULL;
     }
     return VLC_SUCCESS;

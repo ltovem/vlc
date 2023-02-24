@@ -341,7 +341,7 @@ static int Open( vlc_object_t *p_this )
                                               p_intf, NULL ) )
         goto late_failure;
 
-    if( vlc_clone( &p_sys->thread, Run, p_intf ) )
+    if( vlc_clone( &p_sys->thread, Run, p_intf, "vlc-ctrl-dbus" ) )
         goto late_failure;
 
     return VLC_SUCCESS;
@@ -902,8 +902,6 @@ static void *Run( void *data )
 {
     intf_thread_t *p_intf = data;
     intf_sys_t    *p_sys = p_intf->p_sys;
-
-    vlc_thread_set_name("vlc-ctrl-dbus");
 
     int canc = vlc_savecancel();
 

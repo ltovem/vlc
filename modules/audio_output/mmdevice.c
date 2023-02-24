@@ -1097,8 +1097,6 @@ static void *MMThread(void *data)
     aout_sys_t *sys = aout->sys;
     IMMDeviceEnumerator *it = sys->it;
 
-    vlc_thread_set_name("vlc-mmdevice");
-
     EnterMTA();
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(it,
                                                           &sys->device_events);
@@ -1353,7 +1351,7 @@ static int Open(vlc_object_t *obj)
     }
     sys->it = pv;
 
-    if (vlc_clone(&sys->thread, MMThread, aout))
+    if (vlc_clone(&sys->thread, MMThread, aout, "vlc-mmdevice"))
     {
         IMMDeviceEnumerator_Release(sys->it);
         LeaveMTA();

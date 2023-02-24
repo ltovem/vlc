@@ -298,8 +298,6 @@ void transcode_encoder_video_configure( vlc_object_t *p_obj,
 
 static void* EncoderThread( void *obj )
 {
-    vlc_thread_set_name("vlc-encoder");
-
     transcode_encoder_t *p_enc = obj;
     picture_t *p_pic = NULL;
     int canc = vlc_savecancel ();
@@ -415,7 +413,7 @@ int transcode_encoder_video_open( transcode_encoder_t *p_enc,
 
     if( p_cfg->video.threads.i_count > 0 )
     {
-        if( vlc_clone( &p_enc->thread, EncoderThread, p_enc ) )
+        if( vlc_clone( &p_enc->thread, EncoderThread, p_enc, "vlc-encoder" ) )
         {
             if (p_enc->p_encoder->ops->close)
                 p_enc->p_encoder->ops->close(p_enc->p_encoder);

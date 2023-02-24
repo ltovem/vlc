@@ -529,7 +529,7 @@ static int OpenInternal( qt_intf_t *p_intf )
     libvlc_SetExitHandler( vlc_object_instance(p_intf), Abort, p_intf );
     Thread( (void *)p_intf );
 #else
-    if( vlc_clone( &p_intf->thread, Thread, p_intf ) )
+    if( vlc_clone( &p_intf->thread, Thread, p_intf, "vlc-qt" ) )
     {
         return VLC_ENOMEM;
     }
@@ -673,8 +673,6 @@ static void *Thread( void *obj )
     char vlc_name[] = "vlc"; /* for WM_CLASS */
     char *argv[3] = { nullptr };
     int argc = 0;
-
-    vlc_thread_set_name("vlc-qt");
 
     auto argvReleaser = vlc::wrap_carray<char*>(argv, [](char* ptr[]) {
         for ( int i = 0; ptr[i] != nullptr; ++i )

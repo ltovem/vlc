@@ -132,7 +132,7 @@ static int Open( vlc_object_t *p_this )
     var_Create( pl, "podcast-request", VLC_VAR_STRING );
     var_AddCallback( pl, "podcast-request", Request, p_sys );
 
-    if (vlc_clone (&p_sys->thread, Run, p_sd))
+    if (vlc_clone (&p_sys->thread, Run, p_sd, "vlc-podcast"))
     {
         var_DelCallback( pl, "podcast-request", Request, p_sys );
         free (p_sys);
@@ -174,8 +174,6 @@ static void Close( vlc_object_t *p_this )
  *****************************************************************************/
 static void *Run( void *data )
 {
-    vlc_thread_set_name("vlc-podcast");
-
     services_discovery_t *p_sd = data;
     services_discovery_sys_t *p_sys  = p_sd->p_sys;
 

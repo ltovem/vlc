@@ -445,9 +445,10 @@ static void vlc_entry( void *p )
     vlc_thread_cleanup (th);
 }
 
-int vlc_clone (vlc_thread_t *p_handle, void *(*entry) (void *),
-               void *data)
+int (vlc_clone) (vlc_thread_t *p_handle, void *(*entry) (void *),
+                 void *data, const char *name)
 {
+    VLC_UNUSED(name);
     struct vlc_thread *th = malloc (sizeof (*th));
     if (unlikely(th == NULL))
         return ENOMEM;

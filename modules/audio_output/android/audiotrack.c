@@ -849,6 +849,7 @@ AudioTrack_Create( JNIEnv *env, aout_stream_t *stream,
     return 0;
 }
 
+
 static void
 AudioTrack_ConsumeFrame(aout_stream_t *stream, vlc_frame_t *f)
 {
@@ -1213,8 +1214,6 @@ AudioTrack_Thread( void *p_data )
     aout_sys_t *p_sys = stream->sys;
     JNIEnv *env = GET_ENV();
     vlc_tick_t i_last_time_blocked = 0;
-
-    vlc_thread_set_name("vlc-audiotrack");
 
     if( !env )
         return NULL;

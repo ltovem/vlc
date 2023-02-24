@@ -36,6 +36,8 @@
 #include <vlc_threads.h>
 #include <vlc_atomic.h>
 
+#include "../posix/thread.h"
+
 unsigned long vlc_thread_id(void)
 {
      static _Thread_local int tid = -1;
@@ -46,9 +48,9 @@ unsigned long vlc_thread_id(void)
      return tid;
 }
 
-void (vlc_thread_set_name)(const char *name)
+void posix_thread_set_name(pthread_t th, const char *name)
 {
-    pthread_set_name_np(pthread_self(), name);
+    pthread_set_name_np(th, name);
 }
 
 static int vlc_umtx_wake(void *addr, int nr)

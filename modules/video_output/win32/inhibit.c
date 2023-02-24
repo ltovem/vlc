@@ -50,8 +50,6 @@ static void Inhibit (vlc_inhibit_t *ih, unsigned mask)
 
 static void* Run(void* obj)
 {
-    vlc_thread_set_name("vlc-inhibit-win");
-
     vlc_inhibit_t *ih = (vlc_inhibit_t*)obj;
     vlc_inhibit_sys_t *sys = ih->p_sys;
 
@@ -97,7 +95,7 @@ static int OpenInhibit (vlc_object_t *obj)
     sys->exit = false;
 
     /* SetThreadExecutionState always needs to be called from the same thread */
-    if (vlc_clone(&sys->thread, Run, ih))
+    if (vlc_clone(&sys->thread, Run, ih, "vlc-inhibit-win"))
         return VLC_EGENERIC;
 
     ih->inhibit = Inhibit;

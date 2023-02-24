@@ -31,6 +31,8 @@
 #include <vlc_common.h>
 #include <vlc_threads.h>
 
+#include "thread.h"
+
 #include "libvlc.h"
 #include <stdarg.h>
 #include <stdatomic.h>
@@ -130,11 +132,39 @@ void vlc_threads_setup (libvlc_int_t *p_libvlc)
     (void) p_libvlc;
 }
 
-static int vlc_clone_attr (vlc_thread_t *th, pthread_attr_t *attr,
-                           void *(*entry) (void *), void *data)
+VLC_WEAK int vlc_clone_attr (vlc_thread_t *th, pthread_attr_t *attr,
+                             void *(*entry) (void *), void *data, const char *name)
 {
     int ret;
 
+    /* The thread stack size.
+     * The lower the value, the less address space per thread, the highest
+     * maximum simultaneous threads per process. Too low values will cause
+     * stack overflows and weird crashes. Set with caution. Also keep in mind
+     * that 64-bits platforms consume more stack than 32-bits one.
+     *
+     * Thanks to on-demand paging, thread stack size only affects address space
+     * consumption. In terms of memory, threads only use what they need
+     * (rounded up to the page boundary).
+     *
+     * For example, on Linux i386, the default is 2 mega-bytes, which supports
+     * about 320 threads per processes. */
+#define VLC_STACKSIZE (128 * sizeof (void *) * 1024)
+
+#ifdef VLC_STACKSIZE
+    ret = pthread_attr_setstacksize (attr, VLC_STACKSIZE);
+    assert (ret == 0); /* fails iff VLC_STACKSIZE is invalid */
+#endif
+
+    ret = pthread_create(&th->handle, attr, entry, data);
+    if (likely(ret == 0 && name != NULL))
+        posix_thread_set_name(th->handle, name);
+    return ret;
+}
+
+int (vlc_clone) (vlc_thread_t *th, void *(*entry) (void *), void *data,
+                 const char *name)
+{
     /* Block the signals that signals interface plugin handles.
      * If the LibVLC caller wants to handle some signals by itself, it should
      * block these before whenever invoking LibVLC. And it must obviously not
@@ -158,37 +188,14 @@ static int vlc_clone_attr (vlc_thread_t *th, pthread_attr_t *attr,
         pthread_sigmask (SIG_BLOCK, &set, &oldset);
     }
 
-    /* The thread stack size.
-     * The lower the value, the less address space per thread, the highest
-     * maximum simultaneous threads per process. Too low values will cause
-     * stack overflows and weird crashes. Set with caution. Also keep in mind
-     * that 64-bits platforms consume more stack than 32-bits one.
-     *
-     * Thanks to on-demand paging, thread stack size only affects address space
-     * consumption. In terms of memory, threads only use what they need
-     * (rounded up to the page boundary).
-     *
-     * For example, on Linux i386, the default is 2 mega-bytes, which supports
-     * about 320 threads per processes. */
-#define VLC_STACKSIZE (128 * sizeof (void *) * 1024)
-
-#ifdef VLC_STACKSIZE
-    ret = pthread_attr_setstacksize (attr, VLC_STACKSIZE);
-    assert (ret == 0); /* fails iff VLC_STACKSIZE is invalid */
-#endif
-
-    ret = pthread_create(&th->handle, attr, entry, data);
-    pthread_sigmask (SIG_SETMASK, &oldset, NULL);
-    pthread_attr_destroy (attr);
-    return ret;
-}
-
-int vlc_clone (vlc_thread_t *th, void *(*entry) (void *), void *data)
-{
     pthread_attr_t attr;
 
     pthread_attr_init (&attr);
-    return vlc_clone_attr (th, &attr, entry, data);
+    int ret = vlc_clone_attr (th, &attr, entry, data, name);
+
+    pthread_sigmask (SIG_SETMASK, &oldset, NULL);
+    pthread_attr_destroy (attr);
+    return ret;
 }
 
 void vlc_join(vlc_thread_t th, void **result)
@@ -207,7 +214,11 @@ VLC_WEAK unsigned long vlc_thread_id(void)
 
 VLC_WEAK void (vlc_thread_set_name)(const char *name)
 {
+#ifdef VLC_SET_EXT_THREAD_NAME
+    posix_thread_set_name(pthread_self(), name);
+#else
     VLC_UNUSED(name);
+#endif
 }
 
 void vlc_cancel(vlc_thread_t th)

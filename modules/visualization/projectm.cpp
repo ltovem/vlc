@@ -195,7 +195,7 @@ static int Open( vlc_object_t * p_this )
         goto error;
 
     /* Create the thread */
-    if( vlc_clone( &p_sys->thread, Thread, p_filter ) )
+    if( vlc_clone( &p_sys->thread, Thread, p_filter, "vlc-projectm" ) )
     {
         vlc_gl_surface_Destroy( p_sys->gl );
         goto error;
@@ -273,8 +273,6 @@ static block_t *DoWork( filter_t *p_filter, block_t *p_in_buf )
  */
 static void *Thread( void *p_data )
 {
-    vlc_thread_set_name("vlc-projectm");
-
     filter_t  *p_filter = (filter_t*)p_data;
     filter_sys_t *p_sys = reinterpret_cast<filter_sys_t *>( p_filter->p_sys );
     vlc_gl_t *gl = p_sys->gl;

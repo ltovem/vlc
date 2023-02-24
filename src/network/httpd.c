@@ -996,7 +996,7 @@ static httpd_host_t *httpd_HostCreate(vlc_object_t *p_this,
     host->p_tls    = p_tls;
 
     /* create the thread */
-    if (vlc_clone(&host->thread, httpd_HostThread, host)) {
+    if (vlc_clone(&host->thread, httpd_HostThread, host, "vlc-httpd")) {
         msg_Err(p_this, "cannot spawn http host thread");
         goto error;
     }
@@ -2068,8 +2068,6 @@ static void httpdLoop(httpd_host_t *host)
 
 static void* httpd_HostThread(void *data)
 {
-    vlc_thread_set_name("vlc-httpd");
-
     httpd_host_t *host = data;
 
     while (atomic_load_explicit(&host->ref, memory_order_relaxed) > 0)

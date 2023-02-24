@@ -1701,18 +1701,6 @@ static void *DecoderThread( void *p_data )
 {
     vlc_input_decoder_t *p_owner = (vlc_input_decoder_t *)p_data;
 
-    const char *thread_name;
-    switch (p_owner->dec.fmt_in->i_cat)
-    {
-        case VIDEO_ES: thread_name = "vlc-dec-video"; break;
-        case AUDIO_ES: thread_name = "vlc-dec-audio"; break;
-        case SPU_ES:   thread_name = "vlc-dec-spu"; break;
-        case DATA_ES:  thread_name = "vlc-dec-data"; break;
-        default:       thread_name = "vlc-decoder"; break;
-    }
-
-    vlc_thread_set_name(thread_name);
-
     /* The decoder's main loop */
     vlc_fifo_Lock( p_owner->p_fifo );
 
@@ -2157,8 +2145,18 @@ decoder_New( vlc_object_t *p_parent, const struct vlc_input_decoder_cfg *cfg )
 
     if( !vlc_input_decoder_IsSynchronous( p_owner ) )
     {
+        const char *thread_name;
+        switch (p_owner->dec.fmt_in->i_cat)
+        {
+            case VIDEO_ES: thread_name = "vlc-dec-video"; break;
+            case AUDIO_ES: thread_name = "vlc-dec-audio"; break;
+            case SPU_ES:   thread_name = "vlc-dec-spu"; break;
+            case DATA_ES:  thread_name = "vlc-dec-data"; break;
+            default:       thread_name = "vlc-decoder"; break;
+        }
+
         /* Spawn the decoder thread in asynchronous scenario. */
-        if( vlc_clone( &p_owner->thread, DecoderThread, p_owner ) )
+        if( vlc_clone( &p_owner->thread, DecoderThread, p_owner, thread_name ) )
         {
             msg_Err( p_dec, "cannot spawn decoder thread" );
             DeleteDecoder( p_owner, p_dec->fmt_in->i_cat );

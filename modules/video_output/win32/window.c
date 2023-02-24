@@ -688,8 +688,6 @@ static inline bool isMouseEvent( WPARAM type )
 
 static void *EventThread( void *p_this )
 {
-    vlc_thread_set_name("vlc-window-win");
-
     vlc_window_t *wnd = (vlc_window_t *)p_this;
     vout_window_sys_t *sys = wnd->sys;
 
@@ -842,7 +840,7 @@ static int Open(vlc_window_t *wnd)
         return VLC_EGENERIC;
     }
 
-    if( vlc_clone( &sys->thread, EventThread, wnd ) )
+    if( vlc_clone( &sys->thread, EventThread, wnd, "vlc-window-win" ) )
     {
         Close(wnd);
         return VLC_EGENERIC;

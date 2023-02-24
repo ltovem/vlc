@@ -275,7 +275,7 @@ static int Open (vlc_object_t *obj, const struct subsys *subsys)
     }
     udev_enumerate_unref (devenum);
 
-    if (vlc_clone (&p_sys->thread, Run, sd))
+    if (vlc_clone (&p_sys->thread, Run, sd, "vlc-udev"))
     {   /* Fallback without thread */
         udev_monitor_unref (mon);
         udev_unref (udev);
@@ -316,8 +316,6 @@ static void Close (vlc_object_t *obj)
 
 static void *Run (void *data)
 {
-    vlc_thread_set_name("vlc-udev");
-
     services_discovery_t *sd = data;
     services_discovery_sys_t *p_sys = sd->p_sys;
     struct udev_monitor *mon = p_sys->monitor;

@@ -852,8 +852,6 @@ static uint8_t* download_chunk( stream_t *s,
 
 static void* download_thread( void* p )
 {
-    vlc_thread_set_name("vlc-hds-dl");
-
     vlc_object_t* p_this = (vlc_object_t*)p;
     stream_t* s = (stream_t*) p_this;
     stream_sys_t* sys = s->p_sys;
@@ -1100,8 +1098,6 @@ static void maintain_live_chunks(
 
 static void* live_thread( void* p )
 {
-    vlc_thread_set_name("vlc-hds-live");
-
     stream_t *s = (stream_t*)p;
     stream_sys_t* sys = s->p_sys;
 
@@ -1687,7 +1683,7 @@ static int Open( vlc_object_t *p_this )
     s->pf_seek = NULL;
     s->pf_control = Control;
 
-    if( vlc_clone( &p_sys->dl_thread, download_thread, s ) )
+    if( vlc_clone( &p_sys->dl_thread, download_thread, s, "vlc-hds-dl" ) )
     {
         goto error;
     }
@@ -1695,7 +1691,7 @@ static int Open( vlc_object_t *p_this )
     if( p_sys->live ) {
         msg_Info( p_this, "Live stream detected" );
 
-        if( vlc_clone( &p_sys->live_thread, live_thread, s ) )
+        if( vlc_clone( &p_sys->live_thread, live_thread, s, "vlc-hds-live" ) )
         {
             goto error;
         }

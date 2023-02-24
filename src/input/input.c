@@ -122,13 +122,17 @@ int input_Start( input_thread_t *p_input )
 {
     input_thread_private_t *priv = input_priv(p_input);
     void *(*func)(void *) = Run;
+    const char *func_name = "vlc-input";
 
     if( priv->type == INPUT_TYPE_PREPARSING )
+    {
         func = Preparse;
+        func_name = "vlc-preparse";
+    }
 
     assert( !priv->is_running );
     /* Create thread and wait for its readiness. */
-    priv->is_running = !vlc_clone( &priv->thread, func, priv );
+    priv->is_running = !vlc_clone( &priv->thread, func, priv, func_name);
     if( !priv->is_running )
     {
         msg_Err( p_input, "cannot create input thread" );
@@ -420,8 +424,6 @@ static void *Run( void *data )
     input_thread_private_t *priv = data;
     input_thread_t *p_input = &priv->input;
 
-    vlc_thread_set_name("vlc-input");
-
     vlc_interrupt_set(&priv->interrupt);
 
     if( !Init( p_input ) )
@@ -440,8 +442,6 @@ static void *Preparse( void *data )
 {
     input_thread_private_t *priv = data;
     input_thread_t *p_input = &priv->input;
-
-    vlc_thread_set_name("vlc-preparse");
 
     vlc_interrupt_set(&priv->interrupt);
 

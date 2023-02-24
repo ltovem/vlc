@@ -595,7 +595,6 @@ static int ProcessEvent(vlc_window_t *wnd, xcb_generic_event_t *ev)
 /** Background thread for X11 events handling */
 static void *Thread (void *data)
 {
-    vlc_thread_set_name("vlc-window-x11");
     unsigned x = 0;
     unsigned y = 0;
     unsigned width = 0;
@@ -971,7 +970,7 @@ static int OpenCommon(vlc_window_t *wnd, char *display, xcb_connection_t *conn,
     vlc_latch_init(&sys->ready, 1);
     /* Create the event thread. It will dequeue all events, so any checked
      * request from this thread must be completed at this point. */
-    if (vlc_clone(&sys->thread, Thread, wnd))
+    if (vlc_clone(&sys->thread, Thread, wnd, "vlc-window-x11"))
     {
         DeinitKeyboardExtension(wnd);
         return VLC_ENOMEM;

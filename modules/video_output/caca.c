@@ -69,8 +69,6 @@ typedef struct vlc_caca_event {
 
 static void *VoutDisplayEventKeyDispatch(void *data)
 {
-    vlc_thread_set_name("vlc-caca");
-
     vout_display_t *vd = data;
     vout_display_sys_t *sys = vd->sys;
     vlc_caca_event_t *event;
@@ -479,7 +477,7 @@ static int Open(vout_display_t *vd,
     sys->dead = false;
     vlc_queue_Init(&sys->q, offsetof (vlc_caca_event_t, next));
 
-    if (vlc_clone(&sys->thread, VoutDisplayEventKeyDispatch, vd))
+    if (vlc_clone(&sys->thread, VoutDisplayEventKeyDispatch, vd, "vlc-caca"))
         goto error;
 
     sys->cursor_timeout = VLC_TICK_FROM_MS( var_InheritInteger(vd, "mouse-hide-timeout") );
