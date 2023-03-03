@@ -510,7 +510,7 @@ enum VLCTreeBranchType {
                 continue;
             }
 
-            if (cat == CAT_HIDDEN || cat == CAT_UNKNOWN)
+            if (cat == CAT_UNKNOWN || vlc_config_subcat_IsGUIHidden(subcat))
                 continue;
 
             if (!CONFIG_ITEM(configType) && configType != CONFIG_SECTION)

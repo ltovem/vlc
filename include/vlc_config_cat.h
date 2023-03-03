@@ -43,6 +43,7 @@
 #define SUBPIC_TITLE    N_( "Subtitles / OSD" )
 #define HOTKEYS_TITLE   N_( "Hotkeys" )
 #define ML_TITLE        N_( "Media Library" )
+#define MISC_TITLE      N_( "Miscellaneous" )
 
 /*  - Tooltip text -
  * These are used for simple prefs view tabs.
@@ -140,6 +141,7 @@
 #define SD_HELP N_("Services discovery modules are facilities "\
         "that automatically add items to playlist.")
 #define PEXPORT_HELP N_( "Settings relating to exporting playlists." )
+#define PBOOKMARKS_HELP N_( "Settings relating to bookmarks." )
 
 /* Advanced */
 #define AADVANCED_HELP N_( "Advanced settings. Use with care...")
@@ -169,11 +171,13 @@ static const struct config_category_t categories_array[] =
     { CAT_INPUT,      SUBCAT_INPUT_GENERAL,      INPUT_HELP     },
     { CAT_SOUT,       SUBCAT_SOUT_GENERAL,       SOUT_HELP      },
     { CAT_ADVANCED,   SUBCAT_ADVANCED_MISC,      AADVANCED_HELP },
+    { CAT_MISC,       SUBCAT_MISC_GENERAL,       ""             },
 };
 
 static const struct config_subcategory_t subcategories_array[] =
 {
     { SUBCAT_PLAYLIST_GENERAL,     CAT_PLAYLIST,   PLAYLIST_TITLE,            PGENERAL_HELP      },
+    { SUBCAT_PLAYLIST_BOOKMARKS,   CAT_PLAYLIST,   N_("Bookmarks"),           PBOOKMARKS_HELP    },
     { SUBCAT_PLAYLIST_EXPORT,      CAT_PLAYLIST,   N_("Export"),              PEXPORT_HELP       },
     { SUBCAT_PLAYLIST_SD,          CAT_PLAYLIST,   N_("Services discovery"),  SD_HELP            },
 
@@ -212,6 +216,8 @@ static const struct config_subcategory_t subcategories_array[] =
 
     { SUBCAT_ADVANCED_MISC,        CAT_ADVANCED,   AADVANCED_TITLE,           AADVANCED_HELP     },
     { SUBCAT_ADVANCED_NETWORK,     CAT_ADVANCED,   N_("Network"),             ANETWORK_HELP      },
+
+    { SUBCAT_MISC_GENERAL,         CAT_MISC,       MISC_TITLE,                ""                 },
 
     { SUBCAT_HIDDEN,               CAT_HIDDEN,     NULL,                      NULL               },
 };
@@ -318,6 +324,18 @@ static inline bool vlc_config_subcat_IsGeneral( enum vlc_config_subcat subcat )
         return false;
     enum vlc_config_cat cat = vlc_config_cat_FromSubcat( subcat );
     return (subcat == vlc_config_cat_GetGeneralSubcat( cat ));
+}
+
+/** Check if the given subcategory should not be shown in GUI prefs.
+ *
+ * Certain subcategories are only for use in help output.
+ */
+VLC_USED
+static inline bool vlc_config_subcat_IsGUIHidden( enum vlc_config_subcat subcat )
+{
+    return ( subcat == SUBCAT_HIDDEN ||
+             subcat == SUBCAT_MISC_GENERAL ||
+             subcat == SUBCAT_PLAYLIST_BOOKMARKS );
 }
 
 #endif /* VLC_CONFIG_CAT_H */

@@ -108,8 +108,6 @@ enum vlc_module_properties
 };
 
 /* Configuration hint types */
-#define CONFIG_HINT_CATEGORY                0x02  /* Start of new category */
-
 #define CONFIG_SUBCATEGORY                  0x07 /* Set subcategory */
 #define CONFIG_SECTION                      0x08 /* Start of new section */
 
@@ -160,6 +158,7 @@ enum vlc_config_cat
     CAT_SOUT      = 5,
     CAT_ADVANCED  = 6,
     CAT_PLAYLIST  = 7,
+    CAT_MISC      = 8,
 };
 
 /* Config subcategory */
@@ -211,6 +210,9 @@ enum vlc_config_subcat
     SUBCAT_PLAYLIST_GENERAL    = 701,
     SUBCAT_PLAYLIST_SD         = 702,
     SUBCAT_PLAYLIST_EXPORT     = 703,
+    SUBCAT_PLAYLIST_BOOKMARKS  = 704,
+
+    SUBCAT_MISC_GENERAL        = 801,
 };
 
 /**
@@ -403,11 +405,6 @@ VLC_METADATA_EXPORTS
 
 #define set_section( text, longtext ) \
     add_typedesc_inner( CONFIG_SECTION, text, longtext )
-
-#ifndef __PLUGIN__
-#define add_category_hint(text, longtext) \
-    add_typedesc_inner( CONFIG_HINT_CATEGORY, text, longtext )
-#endif
 
 #define add_string( name, value, text, longtext ) \
     add_string_inner(CONFIG_ITEM_STRING, name, text, longtext, value)

@@ -35,6 +35,7 @@
 #include <vlc_modules.h>
 #include <vlc_plugin.h>
 #include <vlc_charset.h>
+#include <vlc_config_cat.h>
 #include "ansi_term.h"
 #include "modules/modules.h"
 #include "config/configuration.h"
@@ -333,7 +334,9 @@ static int vlc_swidth(const char *str)
 }
 
 static void print_item(const module_t *m, const struct vlc_param *param,
-                       const module_config_t **section, bool color, bool desc)
+                       const module_config_t **subcat_item,
+                       const module_config_t **section_item,
+                       bool color, bool desc, bool is_core)
 {
     const module_config_t *item = &param->item;
 #ifndef _WIN32
@@ -350,21 +353,13 @@ static void print_item(const module_t *m, const struct vlc_param *param,
         case 0: // hint class
             switch (item->i_type)
             {
-                case CONFIG_HINT_CATEGORY:
-                    printf(color ? TS_GREEN_BOLD "\n %s\n" TS_RESET : "\n %s\n",
-                           module_gettext(m, item->psz_text));
-
-                    if (desc && item->psz_longtext != NULL)
-                        printf(color ? TS_CYAN_BOLD " %s\n" TS_RESET : " %s\n",
-                               module_gettext(m, item->psz_longtext));
-                    break;
-
                 case CONFIG_SUBCATEGORY:
-                    /* We ignore these here, using 'hints' instead */
+                    *subcat_item = (is_core) ? item : NULL;
+                    *section_item = NULL;
                     break;
 
                 case CONFIG_SECTION:
-                    *section = item;
+                    *section_item = item;
                     break;
             }
             return;
@@ -485,7 +480,29 @@ static void print_item(const module_t *m, const struct vlc_param *param,
             return;
     }
 
-    print_section(m, section, color, desc);
+    if (*subcat_item != NULL)
+    {
+        int subcat = (int) (*subcat_item)->value.i;
+        const char *subcat_name = vlc_config_subcat_GetName(subcat);
+        const char *subcat_help = vlc_config_subcat_GetHelp(subcat);
+
+        if (vlc_config_subcat_IsGeneral(subcat))
+            printf(color ? TS_GREEN_BOLD "\n %s\n" TS_RESET : "\n %s\n", subcat_name);
+        else
+        {
+            int cat = vlc_config_cat_FromSubcat(subcat);
+            const char *cat_name = vlc_config_cat_GetName(cat); /* identical to general subcat */
+            printf(color ? TS_GREEN_BOLD "\n %s :: %s\n" TS_RESET : "\n %s :: %s\n",
+                   cat_name, subcat_name);
+        }
+
+        if (desc && subcat_help && *subcat_help)
+            printf(color ? TS_CYAN_BOLD " %s\n" TS_RESET : " %s\n", subcat_help);
+
+        *subcat_item = NULL;
+    }
+
+    print_section(m, section_item, color, desc);
 
     /* Add short option if any */
     char shortopt[4];
@@ -594,8 +611,10 @@ static void Usage (libvlc_int_t *p_this, char const *psz_search)
     for (const vlc_plugin_t *p = vlc_plugins; p != NULL; p = p->next)
     {
         const module_t *m = p->module;
-        const module_config_t *section = NULL;
+        const module_config_t *subcat_item = NULL;
+        const module_config_t *section_item = NULL;
         const char *objname = module_get_object(m);
+        bool is_core = module_is_main(m);
 
         if (psz_search == NULL && p->conf.count == 0)
             continue; /* Ignore modules without config options */
@@ -624,7 +643,7 @@ static void Usage (libvlc_int_t *p_this, char const *psz_search)
             if (param->obsolete)
                 continue; /* Skip removed options */
 
-            print_item(m, param, &section, color, desc);
+            print_item(m, param, &subcat_item, &section_item, color, desc, is_core);
         }
     }
 

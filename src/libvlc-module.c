@@ -62,12 +62,6 @@ static const char *const ppsz_snap_formats[] =
  * Intf
  ****************************************************************************/
 
-// DEPRECATED
-#define INTF_CAT_LONGTEXT N_( \
-    "These options allow you to configure the interfaces used by VLC. " \
-    "You can select the main interface, additional " \
-    "interface modules, and define various related options." )
-
 #define INTF_TEXT N_("Interface module")
 #define INTF_LONGTEXT N_( \
     "This is the main interface used by VLC. " \
@@ -108,14 +102,6 @@ static const char *const ppsz_snap_formats[] =
 /*****************************************************************************
  * Audio
  ****************************************************************************/
-
-// DEPRECATED
-#define AOUT_CAT_LONGTEXT N_( \
-    "These options allow you to modify the behavior of the audio " \
-    "subsystem, and to add audio filters which can be used for " \
-    "post processing or visual effects (spectrum analyzer, etc.). " \
-    "Enable these filters here, and configure them in the \"audio filters\" " \
-    "modules section.")
 
 #define AOUT_TEXT N_("Audio output module")
 #define AOUT_LONGTEXT N_( \
@@ -251,14 +237,6 @@ static const char *const ppsz_replay_gain_mode_text[] = {
 /*****************************************************************************
  * Video
  ****************************************************************************/
-
-// DEPRECATED
-#define VOUT_CAT_LONGTEXT N_( \
-    "These options allow you to modify the behavior of the video output " \
-    "subsystem. You can for example enable video filters (deinterlacing, " \
-    "image adjusting, etc.). Enable these filters here and configure " \
-    "them in the \"video filters\" modules section. You can also set many " \
-    "miscellaneous video options." )
 
 #define VOUT_TEXT N_("Video output module")
 #define VOUT_LONGTEXT N_( \
@@ -517,12 +495,6 @@ static const char *const fit_descriptions[] = {
  * Input
  ****************************************************************************/
 
-// Deprecated
-#define INPUT_CAT_LONGTEXT N_( \
-    "These options allow you to modify the behavior of the input " \
-    "subsystem, such as the DVD or VCD device, the network interface " \
-    "settings or the subtitle channel.")
-
 #define CACHING_TEXT N_("File caching (ms)")
 #define CACHING_LONGTEXT N_( \
     "Caching value for local files, in milliseconds." )
@@ -767,14 +739,6 @@ static const char* const ppsz_restore_playback_desc[] = {
     "$n: Track num<br>$p: Now playing<br>$A: Date<br>$D: Duration<br>"  \
     "$Z: \"Now playing\" (Fall back on Title - Artist)" )
 
-// DEPRECATED
-#define SUB_CAT_LONGTEXT N_( \
-    "These options allow you to modify the behavior of the subpictures " \
-    "subsystem. You can for example enable subpictures sources (logo, etc.). " \
-    "Enable these filters here and configure them in the " \
-    "\"subsources filters\" modules section. You can also set many " \
-    "miscellaneous subpictures options." )
-
 #define SUB_MARGIN_TEXT N_("Force subtitle position")
 #define SUB_MARGIN_LONGTEXT N_( \
     "You can use this option to place the subtitles under the movie, " \
@@ -984,11 +948,6 @@ static const char* const ppsz_restore_playback_desc[] = {
 #define META_URL_LONGTEXT N_( \
      "Allows you to specify a \"url\" metadata for an input.")
 
-// DEPRECATED
-#define CODEC_CAT_LONGTEXT N_( \
-    "These options allow you to control the preferred modules used for " \
-    "accessing, demuxing and decoding (or encoding) inputs." )
-
 #define CODEC_TEXT N_("Preferred decoders list")
 #define CODEC_LONGTEXT N_( \
     "List of codecs that VLC will use in " \
@@ -1007,11 +966,6 @@ static const char* const ppsz_restore_playback_desc[] = {
 /*****************************************************************************
  * Sout
  ****************************************************************************/
-
-// DEPRECATED
-#define SOUT_CAT_LONGTEXT N_( \
-    "These options allow you to set default global options for the " \
-    "stream output subsystem." )
 
 #define SOUT_TEXT N_("Default stream output chain")
 #define SOUT_LONGTEXT N_( \
@@ -1167,11 +1121,6 @@ static const char *const clock_sources_text[] = {
  * Playlist
  ****************************************************************************/
 
-// DEPRECATED
-#define PLAYLIST_CAT_LONGTEXT N_( \
-     "These options define the behavior of the playlist. Some " \
-     "of them can be overridden in the playlist dialog box." )
-
 #define PREPARSE_TEXT N_( "Automatically preparse items")
 #define PREPARSE_LONGTEXT N_( \
     "Automatically preparse items added to the playlist " \
@@ -1283,10 +1232,6 @@ static const char *const psz_recursive_list_text[] = {
 /*****************************************************************************
  * Hotkeys
  ****************************************************************************/
-
-// DEPRECATED
-#define HOTKEY_CAT_LONGTEXT N_( "These settings are the global VLC key " \
-    "bindings, known as \"hotkeys\"." )
 
 static const int mouse_wheel_values[] = { -1, 0, 2, 3, };
 static const char *const mouse_wheel_texts[] = {
@@ -1545,7 +1490,6 @@ static const char *const mouse_wheel_texts[] = {
 /*
  * Quick usage guide for the configuration options:
  *
- * add_category_hint(N_(text), N_(longtext))
  * add_string( option_name, value, N_(text), N_(longtext) )
  * add_loadfile( option_name, psz_value, N_(text), N_(longtext) )
  * add_savefile( option_name, psz_value, N_(text), N_(longtext) )
@@ -1560,7 +1504,6 @@ vlc_module_begin ()
 
 /* Audio options */
     set_subcategory( SUBCAT_AUDIO_GENERAL )
-    add_category_hint(N_("Audio"), AOUT_CAT_LONGTEXT)
 
     add_bool( "audio", true, AUDIO_TEXT, AUDIO_LONGTEXT )
         change_safe ()
@@ -1621,7 +1564,6 @@ vlc_module_begin ()
 
 /* Video options */
     set_subcategory( SUBCAT_VIDEO_GENERAL )
-    add_category_hint(N_("Video"), VOUT_CAT_LONGTEXT)
 
     add_bool( "video", true, VIDEO_TEXT, VIDEO_LONGTEXT )
         change_safe ()
@@ -1744,7 +1686,6 @@ vlc_module_begin ()
 /* Subpictures options */
     set_subcategory( SUBCAT_VIDEO_SUBPIC )
     set_section( N_("On Screen Display") , NULL )
-    add_category_hint(N_("Subpictures"), SUB_CAT_LONGTEXT)
 
     add_bool( "spu", true, SPU_TEXT, SPU_LONGTEXT )
         change_safe ()
@@ -1789,7 +1730,6 @@ vlc_module_begin ()
 
 /* Input options */
     set_subcategory( SUBCAT_INPUT_GENERAL )
-    add_category_hint( N_("Input"), INPUT_CAT_LONGTEXT )
 
     set_section( N_( "Track settings" ), NULL )
     add_integer( "program", 0,
@@ -1989,8 +1929,6 @@ vlc_module_begin ()
     add_string( "input-title-format", "$Z", INPUT_TITLE_FORMAT_TEXT, INPUT_TITLE_FORMAT_LONGTEXT );
 
 /* Decoder options */
-    add_category_hint(N_("Input access and codecs"), CODEC_CAT_LONGTEXT)
-
     //set_subcategory( SUBCAT_INPUT_ACCESS )
     add_obsolete_string("access") /* since 4.0.0 */
 
@@ -2015,7 +1953,6 @@ vlc_module_begin ()
 
 /* Stream output options */
     set_subcategory( SUBCAT_SOUT_GENERAL )
-    add_category_hint(N_("Stream output"), SOUT_CAT_LONGTEXT)
 
     add_string( "sout", NULL, SOUT_TEXT, SOUT_LONGTEXT )
     add_bool( "sout-display", false, SOUT_DISPLAY_TEXT,
@@ -2054,7 +1991,6 @@ vlc_module_begin ()
 
 /* Advanced options */
     set_subcategory( SUBCAT_ADVANCED_MISC )
-    add_category_hint(N_("Advanced"), NULL)
     set_section( N_("Special modules"), NULL )
     add_obsolete_string("vod-server") /* since 4.0.0 */
     add_module("tracer", "tracer", "none",
@@ -2095,7 +2031,6 @@ vlc_module_begin ()
 
 /* Playlist options */
     set_subcategory( SUBCAT_PLAYLIST_GENERAL )
-    add_category_hint(N_("Playlist"), PLAYLIST_CAT_LONGTEXT)
     add_bool( "random", false, RANDOM_TEXT, RANDOM_LONGTEXT )
         change_short('Z')
         change_safe()
@@ -2164,8 +2099,7 @@ vlc_module_begin ()
         change_short('S')
 
     /* Not displayed in GUI, listed in help output though */
-    set_subcategory( SUBCAT_HIDDEN )
-    set_section(N_("Bookmarks"), NULL)
+    set_subcategory( SUBCAT_PLAYLIST_BOOKMARKS )
     add_string( "bookmark1", NULL,
              BOOKMARK1_TEXT, BOOKMARK_LONGTEXT )
     add_string( "bookmark2", NULL,
@@ -2189,7 +2123,6 @@ vlc_module_begin ()
 
 /* Interface options */
     set_subcategory( SUBCAT_INTERFACE_GENERAL )
-    add_category_hint( N_("Interface"), INTF_CAT_LONGTEXT )
     add_integer( "verbose", 0, VERBOSE_TEXT, VERBOSE_LONGTEXT )
         change_short('v')
         change_volatile ()
@@ -2220,7 +2153,6 @@ vlc_module_begin ()
 
 /* Hotkey options*/
     set_subcategory( SUBCAT_INTERFACE_HOTKEYS )
-    add_category_hint(N_("Hot keys"), HOTKEY_CAT_LONGTEXT)
 
     add_integer( "hotkeys-y-wheel-mode", 0, MOUSE_Y_WHEEL_MODE_TEXT,
                  MOUSE_Y_WHEEL_MODE_LONGTEXT )
@@ -2757,8 +2689,7 @@ vlc_module_begin ()
 
 /* Miscellaneous */
     /* Not displayed in GUI, listed in help output though */
-    set_subcategory( SUBCAT_HIDDEN )
-    add_category_hint(N_("Miscellaneous"), NULL)
+    set_subcategory( SUBCAT_MISC_GENERAL )
 
 #define HELP_TEXT \
     N_("print help for VLC (can be combined with --help-verbose)")
