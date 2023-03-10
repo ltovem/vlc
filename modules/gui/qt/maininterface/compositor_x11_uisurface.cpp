@@ -31,7 +31,7 @@ CompositorX11UISurface::CompositorX11UISurface(QWindow* window, QScreen* screen)
 {
     setSurfaceType(QWindow::OpenGLSurface);
 
-    QSurfaceFormat format;
+    QSurfaceFormat format = this->format();
     // Qt Quick may need a depth and stencil buffer. Always make sure these are available.
     format.setDepthBufferSize(8);
     format.setStencilBufferSize(8);

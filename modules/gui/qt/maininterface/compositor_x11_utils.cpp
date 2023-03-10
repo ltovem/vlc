@@ -41,6 +41,7 @@ DummyNativeWidget::DummyNativeWidget(QWidget* parent, Qt::WindowFlags f)
      */
     QSurfaceFormat format = w->format();
     format.setAlphaBufferSize(0);
+    format.setSamples(-1);
     w->setFormat(format);
 }
 
