@@ -380,6 +380,7 @@ struct input_source_t
 
     /* Properties */
     bool b_can_pause;
+    bool b_can_seek;
     bool b_can_pace_control;
     bool b_can_rate_control;
     bool b_can_stream_record;
@@ -466,6 +467,18 @@ typedef struct input_thread_private_t
     bool        b_recording;
     float       rate;
     vlc_tick_t  normal_time;
+
+    struct
+    {
+        vlc_tick_t  reftime;
+        vlc_tick_t  jump;
+        unsigned    request_count;
+        bool        start_of_file;
+
+        /* For log/debugging purpose */
+        vlc_tick_t  request_date;
+        unsigned    seek_count;
+    } prevframe;
 
     /* Playtime configuration and state */
     vlc_tick_t  i_start;    /* :start-time,0 by default */
@@ -579,6 +592,7 @@ enum input_control_e
     INPUT_CONTROL_SET_RECORD_STATE,
 
     INPUT_CONTROL_SET_FRAME_NEXT,
+    INPUT_CONTROL_SET_FRAME_PREVIOUS,
 
     INPUT_CONTROL_SET_RENDERER,
 
@@ -639,10 +653,17 @@ bool input_Stopped( input_thread_t * );
 
 int input_GetAttachments(input_thread_t *input, input_attachment_t ***attachments);
 
-input_attachment_t *input_GetAttachment(input_thread_t *input, const char *name);
-
 bool input_CanPaceControl(input_thread_t *input);
 
+#define INPUT_PREVIOUS_FRAME_USER -1
+int input_PreviousFrameStatus(input_thread_t *input, vlc_tick_t delay);
+
+static inline int input_PreviousFrame(input_thread_t *input)
+{
+    return input_PreviousFrameStatus(input, INPUT_PREVIOUS_FRAME_USER);
+}
+
+input_attachment_t *input_GetAttachment(input_thread_t *input, const char *name);
 /**
  * Hold the input_source_t
  */

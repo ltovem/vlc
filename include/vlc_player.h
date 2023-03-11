@@ -485,6 +485,14 @@ VLC_API void
 vlc_player_NextVideoFrame(vlc_player_t *player);
 
 /**
+ * Pause and display the previous video frame
+ *
+ * @param player locked player instance
+ */
+VLC_API void
+vlc_player_PreviousVideoFrame(vlc_player_t *player);
+
+/**
  * Get the state of the player
  *
  * @note Since all players actions are asynchronous, this function won't

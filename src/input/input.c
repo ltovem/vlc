@@ -269,6 +269,10 @@ input_thread_t *input_Create( vlc_object_t *p_parent,
     priv->b_recording = false;
     priv->rate = 1.f;
     priv->normal_time = VLC_TICK_0;
+    priv->prevframe.reftime = VLC_TICK_INVALID;
+    priv->prevframe.jump = 0;
+    priv->prevframe.request_count = 0;
+    priv->prevframe.start_of_file = false;
     TAB_INIT( priv->i_attachment, priv->attachment );
     priv->p_sout   = NULL;
     priv->b_out_pace_control = priv->type == INPUT_TYPE_THUMBNAILING;
@@ -688,6 +692,12 @@ static void MainLoop( input_thread_t *p_input, bool b_interactive )
                 i_intf_update = now + VLC_TICK_FROM_MS(250);
             }
         }
+        else if( input_priv(p_input)->prevframe.request_count > 0 )
+        {
+            /* Don't sleep indefinitely in case of prev-frame since we might
+             * need to demux more if we seeked too far back. */
+            i_wakeup = vlc_tick_now() + VLC_TICK_FROM_MS(25);
+        }
 
         /* Handle control */
         for( ;; )
@@ -789,11 +799,10 @@ static void InitProperties( input_thread_t *input )
     assert(master);
 
     int capabilities = 0;
-    bool b_can_seek;
 
-    if( demux_Control( master->p_demux, DEMUX_CAN_SEEK, &b_can_seek ) )
-        b_can_seek = false;
-    if( b_can_seek )
+    if( demux_Control( master->p_demux, DEMUX_CAN_SEEK, &master->b_can_seek ) )
+        master->b_can_seek = false;
+    if( master->b_can_seek )
         capabilities |= VLC_INPUT_CAPABILITIES_SEEKABLE;
 
     if( master->b_can_pause || !master->b_can_pace_control )
@@ -1935,6 +1944,128 @@ static void ControlSetEsList(input_thread_t *input,
     free(array);
 }
 
+static int SeekFramePrevious(input_thread_t *input, vlc_tick_t delay)
+{
+    input_thread_private_t *priv = input_priv(input);
+    assert(delay > 0);
+
+    if (!priv->master->b_can_seek)
+    {
+        msg_Err(input, "'previous-frame' error: can't seek");
+        return -1;
+    }
+
+    if (priv->prevframe.reftime == VLC_TICK_INVALID)
+    {
+        if (demux_Control(priv->master->p_demux, DEMUX_GET_TIME,
+                          &priv->prevframe.reftime))
+        {
+            msg_Err(input, "'previous-frame' error: "
+                    "DEMUX_GET_TIME not implemented");
+            return -1; /* TODO handle POSITION */
+        }
+    }
+
+    vlc_tick_t seek_step;
+    if (priv->master->f_fps > 0)
+    {
+        /* We need 2 frames, the current one and the one just before
+         * Educated guess: multipy by 3 for demux seek approximation */
+        seek_step = 6 * vlc_tick_rate_duration(priv->master->f_fps);
+    }
+    else
+        seek_step = VLC_TICK_FROM_MS(250);
+
+    if (delay == VLC_TICK_MAX /* MAX for the first seek request */
+     || priv->prevframe.jump == delay /* seeking on the current frame */)
+    {
+        if (priv->prevframe.jump == 0)
+            priv->prevframe.jump = priv->master->i_pts_delay;
+        priv->prevframe.jump += seek_step;
+    }
+    else /* Use the frame delay provided by the vout */
+        priv->prevframe.jump += delay;
+
+    vlc_tick_t seek_time = priv->prevframe.reftime - priv->prevframe.jump;
+    if (seek_time <= VLC_TICK_0)
+    {
+        seek_time = VLC_TICK_0;
+        priv->prevframe.start_of_file = true;
+    }
+
+    Control(input, INPUT_CONTROL_SET_TIME, (input_control_param_t) {
+        .time.b_fast_seek = false,
+        .time.i_val = seek_time,
+    });
+
+    return 0;
+}
+
+static void HandleFramePrevious(input_thread_t *input, vlc_tick_t control_date,
+                                vlc_tick_t delay)
+{
+    input_thread_private_t *priv = input_priv(input);
+
+    if (priv->prevframe.start_of_file)
+    {
+        /* Already seeked at the start of the file, we are very likely at the
+         * first frame, stop searching a previous frame */
+        priv->prevframe.start_of_file = false;
+        delay = 0;
+    }
+
+    if (priv->i_state == PAUSE_S)
+    {
+        if (delay == INPUT_PREVIOUS_FRAME_USER)
+        {
+
+            /* The control comes from the user, so increase the request count */
+            priv->prevframe.request_count++;
+            if (priv->prevframe.request_count > 1)
+                return; /* One request already in progress */
+
+            delay = VLC_TICK_MAX;
+            priv->prevframe.request_date = vlc_tick_now();
+            priv->prevframe.seek_count = 0;
+        }
+        else if (delay == 0 /* previous frame found */)
+        {
+            msg_Dbg(input, "'previous-frame' took %u seek requests "
+                    "and %" PRId64 " us\n",
+                    priv->prevframe.seek_count,
+                    vlc_tick_now() - priv->prevframe.request_date);
+
+            priv->prevframe.request_count--;
+            priv->prevframe.reftime = VLC_TICK_INVALID;
+            priv->prevframe.jump = 0;
+
+            if (priv->prevframe.request_count == 0)
+                return;
+            /* else, process remaining previous-frame requests */
+
+            delay = VLC_TICK_MAX;
+            priv->prevframe.request_date = vlc_tick_now();
+            priv->prevframe.seek_count = 0;
+        }
+
+        if (SeekFramePrevious(input, delay) == 0)
+        {
+            priv->prevframe.seek_count++;
+            es_out_SetFramePrevious(priv->p_es_out);
+        }
+        else /* Seek failed */
+        {
+            priv->prevframe.request_count = 0;
+            priv->prevframe.reftime = VLC_TICK_INVALID;
+            priv->prevframe.jump = 0;
+        }
+    }
+    else if (priv->i_state == PLAYING_S)
+        ControlPause(input, control_date);
+    else
+        msg_Err(input, "invalid state for frame previous");
+}
+
 static bool Control( input_thread_t *p_input,
                      int i_type, input_control_param_t param )
 {
@@ -2335,7 +2466,10 @@ static bool Control( input_thread_t *p_input,
             }
             b_force_update = true;
             break;
-
+        case INPUT_CONTROL_SET_FRAME_PREVIOUS:
+            HandleFramePrevious( p_input, i_control_date, param.val.i_int );
+            b_force_update = true;
+            break;
         case INPUT_CONTROL_SET_RENDERER:
         {
 #ifdef ENABLE_SOUT
@@ -3519,4 +3653,10 @@ bool input_CanPaceControl(input_thread_t *input)
 {
     input_thread_private_t *priv = input_priv(input);
     return priv->master->b_can_pace_control;
+}
+
+int input_PreviousFrameStatus(input_thread_t *input, vlc_tick_t delay)
+{
+    vlc_value_t val = { .i_int = delay };
+    return input_ControlPushHelper(input, INPUT_CONTROL_SET_FRAME_PREVIOUS, &val);
 }

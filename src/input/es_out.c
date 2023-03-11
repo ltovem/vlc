@@ -445,6 +445,22 @@ decoder_on_new_audio_stats(vlc_input_decoder_t *decoder, unsigned decoded, unsig
                               memory_order_relaxed);
 }
 
+static void
+decoder_prev_frame_status(vlc_input_decoder_t *decoder, vlc_tick_t delay,
+                          void *userdata)
+{
+    (void) decoder;
+
+    es_out_id_t *id = userdata;
+    es_out_t *out = id->out;
+    es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
+
+    if (!p_sys->p_input)
+        return;
+
+    input_PreviousFrameStatus(p_sys->p_input, delay);
+}
+
 static int
 decoder_get_attachments(vlc_input_decoder_t *decoder,
                         input_attachment_t ***ppp_attachment,
@@ -468,6 +484,7 @@ static const struct vlc_input_decoder_callbacks decoder_cbs = {
     .on_thumbnail_ready = decoder_on_thumbnail_ready,
     .on_new_video_stats = decoder_on_new_video_stats,
     .on_new_audio_stats = decoder_on_new_audio_stats,
+    .prev_frame_status = decoder_prev_frame_status,
     .get_attachments = decoder_get_attachments,
 };
 
@@ -1141,7 +1158,7 @@ static void EsOutProgramsChangeRate( es_out_t *out )
         input_clock_ChangeRate(pgrm->p_input_clock, p_sys->rate);
 }
 
-static void EsOutFrameNext( es_out_t *out )
+static void EsOutFrameNext( es_out_t *out, bool previous )
 {
     es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
 
@@ -1166,7 +1183,10 @@ static void EsOutFrameNext( es_out_t *out )
         }
     }
 
-    vlc_input_decoder_FrameNext( p_sys->p_next_frame_es->p_dec );
+    if( previous )
+        vlc_input_decoder_FramePrevious( p_sys->p_next_frame_es->p_dec );
+    else
+        vlc_input_decoder_FrameNext( p_sys->p_next_frame_es->p_dec );
 }
 static vlc_tick_t EsOutGetBuffering( es_out_t *out )
 {
@@ -3850,7 +3870,8 @@ static int EsOutVaPrivControlLocked( es_out_t *out, int query, va_list args )
         return VLC_SUCCESS;
     }
     case ES_OUT_PRIV_SET_FRAME_NEXT:
-        EsOutFrameNext( out );
+    case ES_OUT_PRIV_SET_FRAME_PREVIOUS:
+        EsOutFrameNext( out, query == ES_OUT_PRIV_SET_FRAME_PREVIOUS );
         return VLC_SUCCESS;
     case ES_OUT_PRIV_SET_TIMES:
     {

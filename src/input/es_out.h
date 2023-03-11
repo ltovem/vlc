@@ -80,6 +80,9 @@ enum es_out_query_private_e
     /* Set next frame */
     ES_OUT_PRIV_SET_FRAME_NEXT,                     /*                          res=can fail */
 
+    /* Set previous frame */
+    ES_OUT_PRIV_SET_FRAME_PREVIOUS,                     /*                          res=can fail */
+
     /* Set position/time/length */
     ES_OUT_PRIV_SET_TIMES,                          /* arg1=double f_position arg2=vlc_tick_t i_time arg3=vlc_tick_t i_normal_time arg4=vlc_tick_t i_length res=cannot fail */
 
@@ -202,6 +205,10 @@ static inline int es_out_SetRate( es_out_t *p_out, float source_rate, float rate
 static inline int es_out_SetFrameNext( es_out_t *p_out )
 {
     return es_out_PrivControl( p_out, ES_OUT_PRIV_SET_FRAME_NEXT );
+}
+static inline int es_out_SetFramePrevious( es_out_t *p_out )
+{
+    return es_out_PrivControl( p_out, ES_OUT_PRIV_SET_FRAME_PREVIOUS );
 }
 static inline void es_out_SetTimes( es_out_t *p_out, double f_position,
                                     vlc_tick_t i_time, vlc_tick_t i_normal_time,
