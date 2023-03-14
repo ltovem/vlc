@@ -5,19 +5,7 @@
 
 /**********************************************************************
  *  Copyright (C) 2007 Rémi Denis-Courmont.                           *
- *  This program is free software; you can redistribute and/or modify *
- *  it under the terms of the GNU General Public License as published *
- *  by the Free Software Foundation; version 2 of the license, or (at *
- *  your option) any later version.                                   *
- *                                                                    *
- *  This program is distributed in the hope that it will be useful,   *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.              *
- *  See the GNU General Public License for more details.              *
- *                                                                    *
- *  You should have received a copy of the GNU General Public License *
- *  along with this program; if not, you can get it from:             *
- *  http://www.gnu.org/copyleft/gpl.html                              *
+ *  SPDX-License-Identifier: GPL-2.0-or-later                         *
  **********************************************************************/
 
 #include "test.h"
@@ -47,7 +35,7 @@ static void test_moduledescriptionlist (libvlc_module_description_t *list)
         assert (module->psz_longname == NULL || strlen (module->psz_longname));
         assert (module->psz_help == NULL || strlen (module->psz_help));
         module = module->p_next;
-    }    
+    }
 
     libvlc_module_description_list_release (list);
 }
