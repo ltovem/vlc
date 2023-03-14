@@ -5,19 +5,7 @@
  *
  * Author: Juha Jeronen <juha.jeronen@jyu.fi>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DEINTERLACE_ALGO_IVTC_H
@@ -643,7 +631,7 @@ void IVTCClearState( filter_t *p_filter );
  *
  * In this emergency mode, we simply output the least interlaced frame out of
  * the combinations TNBN, TNBC and TCBN (where only one of the last two is
- * tested, based on the stream TFF/BFF information). In this mode, we do not 
+ * tested, based on the stream TFF/BFF information). In this mode, we do not
  * touch the timestamps, and just pass all five frames from each group right
  * through. This introduces some stutter, but in practice it is often not
  * noticeable. This is because the kind of material that is likely to trip up

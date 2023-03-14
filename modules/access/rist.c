@@ -5,19 +5,7 @@
  *
  * Authors: Sergio Ammirata <sergio@ammirata.net>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -68,7 +56,7 @@ static int cb_stats(void *arg, const struct rist_stats *stats_container)
     const struct rist_stats_receiver_flow *stats_receiver_flow = &stats_container->stats.receiver_flow;
 
     p_sys->cumulative_loss += stats_receiver_flow->lost;
-    msg_Dbg(p_access, "[RIST-STATS]: received %"PRIu64", missing %"PRIu32", reordered %"PRIu32", recovered %"PRIu32", lost %"PRIu32", Q %.2f, max jitter (us) %"PRIu64", rtt %"PRIu32"ms, cumulative loss %"PRIu32"", 
+    msg_Dbg(p_access, "[RIST-STATS]: received %"PRIu64", missing %"PRIu32", reordered %"PRIu32", recovered %"PRIu32", lost %"PRIu32", Q %.2f, max jitter (us) %"PRIu64", rtt %"PRIu32"ms, cumulative loss %"PRIu32"",
     stats_receiver_flow->received,
     stats_receiver_flow->missing,
     stats_receiver_flow->reordered,
@@ -326,18 +314,18 @@ vlc_module_begin ()
     add_string( RIST_CFG_PREFIX RIST_CFG_URL4, NULL, RIST_URL4_TEXT, NULL )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_BANDWIDTH, RIST_DEFAULT_RECOVERY_MAXBITRATE,
             RIST_MAX_BITRATE_TEXT, RIST_MAX_BITRATE_LONGTEXT )
-    add_integer( RIST_CFG_PREFIX RIST_CFG_RETRY_INTERVAL, RIST_DEFAULT_RECOVERY_RTT_MIN, 
+    add_integer( RIST_CFG_PREFIX RIST_CFG_RETRY_INTERVAL, RIST_DEFAULT_RECOVERY_RTT_MIN,
         RIST_RETRY_INTERVAL_TEXT, NULL )
-    add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_REORDER_BUFFER, RIST_DEFAULT_RECOVERY_REORDER_BUFFER, 
+    add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_REORDER_BUFFER, RIST_DEFAULT_RECOVERY_REORDER_BUFFER,
         RIST_REORDER_BUFFER_TEXT, NULL )
-    add_integer( RIST_CFG_PREFIX RIST_CFG_MAX_RETRIES, RIST_DEFAULT_MAX_RETRIES, 
+    add_integer( RIST_CFG_PREFIX RIST_CFG_MAX_RETRIES, RIST_DEFAULT_MAX_RETRIES,
         RIST_MAX_RETRIES_TEXT, NULL )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_VERBOSE_LEVEL, RIST_DEFAULT_VERBOSE_LEVEL,
             RIST_VERBOSE_LEVEL_TEXT, RIST_VERBOSE_LEVEL_LONGTEXT )
         change_integer_list( verbose_level_type, verbose_level_type_names )
     add_integer( RIST_CFG_PREFIX RIST_CFG_LATENCY, 0,
             BUFFER_TEXT, BUFFER_LONGTEXT )
-    add_string( RIST_CFG_PREFIX RIST_URL_PARAM_CNAME, NULL, RIST_CNAME_TEXT, 
+    add_string( RIST_CFG_PREFIX RIST_URL_PARAM_CNAME, NULL, RIST_CNAME_TEXT,
             RIST_CNAME_LONGTEXT )
     add_integer( RIST_CFG_PREFIX RIST_URL_PARAM_PROFILE, RIST_DEFAULT_PROFILE,
             RIST_PROFILE_TEXT, RIST_PROFILE_LONGTEXT )
