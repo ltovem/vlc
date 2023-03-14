@@ -6,19 +6,7 @@
           Rémi Duraffort  <ivoire at videolan dot org>
           Gian Marco Sibilla <techos at jamendo dot com>
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ SPDX-License-Identifier: GPL-2.0-or-later
 --]]
 
 local xml = nil
@@ -104,7 +92,7 @@ function add_playlist( node_title, ids )
                     added[track_id] = true
 
                     position = position + position_increment
-                end 
+                end
 
                 if position > playlist_max_tracks then
                     log( position / position_increment .. " tracks added from playlist " .. id )
@@ -129,7 +117,7 @@ function parse_xml( url )
 
     if response == nil or #response.children < 2 then return nil end
 
-    if response.children[1].children_map["status"][1].children[1] == "success" 
+    if response.children[1].children_map["status"][1].children[1] == "success"
             and tonumber( response.children[1].children_map["results_count"][1].children[1] ) > 0 then
         return response.children[2].children[1].children[1]
     else
