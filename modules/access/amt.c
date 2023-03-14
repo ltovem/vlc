@@ -15,24 +15,8 @@
  *          Wayne Brassem <wbrassem@rogers.com>               - Added FQDN support
  *          Nicolas Zunker                                    - Added IPv6 support
  *
- * This code is licensed to you under the GNU Lesser General Public License
- * version 2.1 or later. You may not use this code except in compliance with
- * the GNU Lesser General Public License.
  * This code is not an official Juniper product.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -437,7 +421,7 @@ static int Open( vlc_object_t *p_this )
         msg_Dbg( p_access, "Parsed AMT URL port %d",url.i_port);
         i_bind_port = url.i_port;
     }
-    
+
     msg_Dbg( p_access, "Opening multicast: %s:%d local=%s:%d", url.psz_host, i_server_port, url.psz_path, i_bind_port );
 
     /* Initialize hints prior to call to vlc_getaddrinfo with either IP address or FQDN */
