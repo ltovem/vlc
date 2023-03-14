@@ -5,19 +5,7 @@
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCLibraryModel.h"
@@ -52,7 +40,7 @@ NSString *VLCLibraryModelMediaItemUpdated = @"VLCLibraryModelMediaItemUpdated";
     enum vlc_ml_sorting_criteria_t _sortCriteria;
     bool _sortDescending;
     NSString *_filterString;
-    
+
     size_t _initialVideoCount;
     size_t _initialAudioCount;
 }
@@ -154,10 +142,10 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
                                        selector:@selector(applicationWillTerminate:)
                                            name:NSApplicationWillTerminateNotification
                                          object:nil];
-        
+
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
             const vlc_ml_query_params_t queryParameters = {};
-            
+
             // Preload video and audio count for gui
             self->_initialVideoCount = vlc_ml_count_video_media(self->_p_mediaLibrary, &queryParameters);
             self->_initialAudioCount = vlc_ml_count_audio_media(self->_p_mediaLibrary, &queryParameters);
@@ -189,7 +177,7 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
         dispatch_async(dispatch_get_main_queue(), ^{
             [self updateCachedListOfAudioMedia];
         });
-        
+
         // Return initial count here, otherwise it will return 0 on the first time
         return _initialAudioCount;
     }
@@ -198,8 +186,8 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
 
 - (vlc_ml_query_params_t)queryParams
 {
-    const vlc_ml_query_params_t queryParams = { .psz_pattern = self->_filterString.length > 0 ? [self->_filterString UTF8String] : NULL, 
-                                                .i_sort = self->_sortCriteria, 
+    const vlc_ml_query_params_t queryParams = { .psz_pattern = self->_filterString.length > 0 ? [self->_filterString UTF8String] : NULL,
+                                                .i_sort = self->_sortCriteria,
                                                 .b_desc = self->_sortDescending };
     return queryParams;
 }
@@ -346,7 +334,7 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
         dispatch_async(dispatch_get_main_queue(), ^{
             [self updateCachedListOfVideoMedia];
         });
-        
+
         // Return initial count here, otherwise it will return 0 on the first time
         return _initialVideoCount;
     }
@@ -489,7 +477,7 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
     if(sortCriteria == _sortCriteria && descending == _sortDescending) {
         return;
     }
-    
+
     _sortCriteria = sortCriteria;
     _sortDescending = descending;
     [self dropCaches];

@@ -7,19 +7,7 @@
  *          David Fuhrmann <dfuhrmann # videolan dot org>
  *          Jérôme Decoodt <djc@videolan.org>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -168,7 +156,7 @@ static inline void enableTextField(NSTextField *const __unsafe_unretained textFi
     aout_EnableFilter(p_aout, "karaoke", false);
     aout_EnableFilter(p_aout, "scaletempo_pitch", false);
     aout_EnableFilter(p_aout, "stereo_pan", false);
-  
+
     /* fetch preset */
     NSString *profileString;
     if (profileIndex == 0)
@@ -203,7 +191,7 @@ static inline void enableTextField(NSTextField *const __unsafe_unretained textFi
     var_SetFloat(p_aout, "spatializer-damp", [[items objectAtIndex:13] floatValue]);
     var_SetFloat(p_aout, "norm-max-level", [[items objectAtIndex:14] floatValue]);
     var_SetBool(p_aout, "equalizer-2pass", (BOOL)[[items objectAtIndex:15] intValue]);
-    
+
     // The old version of the defaults data contains 16 members (without pitch and pan).
     // These values are used above.
     // In case the user updates VLC, this check handles the 1 time case that the data
@@ -211,7 +199,7 @@ static inline void enableTextField(NSTextField *const __unsafe_unretained textFi
     // it loads normally the saved pitch value.
     var_SetFloat(p_aout, "pitch-shift", items.count >= 17 ? [[items objectAtIndex:16] floatValue] : 0.0f);
     var_SetFloat(p_aout, "pan-control", items.count >= 18 ? [[items objectAtIndex:17] floatValue] : 0.5f);
-    
+
     var_SetString(p_aout, "equalizer-bands", [[[defaults objectForKey:VLCAudioEffectsEqualizerValuesKey] objectAtIndex:presetIndex] UTF8String]);
     var_SetFloat(p_aout, "equalizer-preamp", [[[defaults objectForKey:VLCAudioEffectsEqualizerPreampValuesKey] objectAtIndex:presetIndex] floatValue]);
     var_SetString(p_aout, "equalizer-preset", [[[defaults objectForKey:VLCAudioEffectsEqualizerProfileNamesKey] objectAtIndex:presetIndex] UTF8String]);
@@ -290,13 +278,13 @@ static inline void enableTextField(NSTextField *const __unsafe_unretained textFi
                                                   "suppressing mono (signal common to both channels) "\
                                                   "and by delaying the signal of left into right and vice versa, "\
                                                   "thereby widening the stereo effect.")];
-    
+
     /* Advanced */
     [_advancedResetButton setTitle:_NS("Reset")];
     [_advancedEnablePitchCheckBox setStringValue:_NS("Adjust pitch")];
     [_advancedEnableStereoPanCheckBox setStringValue:_NS("Adjust pan")];
-    
-    
+
+
     /* generic */
     [_segmentView setLabel:_NS("Equalizer") forSegment:0];
     [_segmentView setLabel:_NS("Compressor") forSegment:1];
@@ -1228,7 +1216,7 @@ static bool GetEqualizerStatus(intf_thread_t *p_custom_intf,
     BOOL bEnable_pitch = NO;
     BOOL bEnable_pan = NO;
     char *psz_afilters = NULL;
-    
+
     audio_output_t *p_aout = [_playerController mainAudioOutput];
     if (!p_aout)
         return;
@@ -1237,23 +1225,23 @@ static bool GetEqualizerStatus(intf_thread_t *p_custom_intf,
     if (psz_afilters) {
         bEnable_pitch = strstr(psz_afilters, "scaletempo_pitch") != NULL;
         bEnable_pan = strstr(psz_afilters, "stereo_pan") != NULL;
-        
+
         free(psz_afilters);
     }
-    
+
     [_advancedEnablePitchCheckBox setState:(bEnable_pitch ? NSControlStateValueOn : NSControlStateValueOff)];
     [_advancedPitchSlider setEnabled:bEnable_pitch];
     enableTextField(_advancedPitchTextField, bEnable_pitch);
-    
+
     const float pitchValue = var_CreateGetFloat(p_aout, "pitch-shift");
     [_advancedPitchSlider setFloatValue:pitchValue * 4.0f];
     [_advancedPitchTextField setStringValue:[NSString localizedStringWithFormat:@"%1.1f semitones", pitchValue]];
-    
+
 
     [_advancedEnableStereoPanCheckBox setState:(bEnable_pan ? NSControlStateValueOn : NSControlStateValueOff)];
     [_advancedStereoPanSlider setEnabled:bEnable_pan];
     enableTextField(_advancedStereoPanTextField, bEnable_pan);
-    
+
     const float panValue = var_CreateGetFloat(p_aout, "pan-control");
     [_advancedStereoPanSlider setFloatValue: panValue * 10.0f];
     [_advancedStereoPanTextField setStringValue:[NSString localizedStringWithFormat:@"%1.1f", panValue]];
@@ -1269,7 +1257,7 @@ static bool GetEqualizerStatus(intf_thread_t *p_custom_intf,
         var_SetFloat(p_aout, "pan-control", 0.5f);
         aout_Release(p_aout);
     }
-    
+
     [self resetAdvanced];
 }
 
@@ -1291,20 +1279,20 @@ static bool GetEqualizerStatus(intf_thread_t *p_custom_intf,
 {
     char *const psz_property = "pan-control";
     const float f_value = [sender floatValue] * 0.1; // Scale
-    
+
     audio_output_t *p_aout = [_playerController mainAudioOutput];
     if (p_aout) {
         var_SetFloat(p_aout, psz_property, f_value);
         aout_Release(p_aout);
     }
-    
+
     [_advancedStereoPanTextField setStringValue:[NSString localizedStringWithFormat:@"%1.1f", f_value]];
 }
 
 - (IBAction)advancedEnablePitchAction:(id)sender
 {
     const BOOL newState = _advancedEnablePitchCheckBox.state == NSControlStateValueOn;
-    
+
     enableTextField(_advancedPitchTextField, newState);
     [_advancedPitchSlider setEnabled:newState];
     [_playerController enableAudioFilterWithName:@"scaletempo_pitch" state:newState];
@@ -1313,7 +1301,7 @@ static bool GetEqualizerStatus(intf_thread_t *p_custom_intf,
 - (IBAction)advancedEnableStereoPanAction:(id)sender
 {
     const BOOL newState = _advancedEnableStereoPanCheckBox.state == NSControlStateValueOn;
-    
+
     enableTextField(_advancedStereoPanTextField, newState);
     [_advancedStereoPanSlider setEnabled:newState];
     [_playerController enableAudioFilterWithName:@"stereo_pan" state:newState];

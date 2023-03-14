@@ -5,19 +5,7 @@
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCLibraryAlbumTableCellView.h"
@@ -74,13 +62,13 @@ const CGFloat VLCLibraryAlbumTableCellViewDefaultHeight = 168.;
     }
 
     const CGFloat artworkAndSecondaryLabelsHeight = [VLCLibraryUIUnits largeSpacing] +
-                                                    _representedImageView.frame.size.height + 
+                                                    _representedImageView.frame.size.height +
                                                     [VLCLibraryUIUnits mediumSpacing] +
-                                                    _summaryTextField.frame.size.height + 
+                                                    _summaryTextField.frame.size.height +
                                                     [VLCLibraryUIUnits smallSpacing] +
-                                                    _yearTextField.frame.size.height + 
+                                                    _yearTextField.frame.size.height +
                                                     [VLCLibraryUIUnits largeSpacing];
-    
+
     if(_tracksTableView == nil) {
         return artworkAndSecondaryLabelsHeight;
     }
@@ -88,7 +76,7 @@ const CGFloat VLCLibraryAlbumTableCellViewDefaultHeight = 168.;
     const CGFloat titleAndTableViewHeight = [VLCLibraryUIUnits largeSpacing] +
                                             _albumNameTextField.frame.size.height +
                                             [VLCLibraryUIUnits smallSpacing] +
-                                            _artistNameTextField.frame.size.height + 
+                                            _artistNameTextField.frame.size.height +
                                             [VLCLibraryUIUnits smallSpacing] +
                                             [self expectedTableViewHeight] +
                                             [VLCLibraryUIUnits largeSpacing];
@@ -213,7 +201,7 @@ const CGFloat VLCLibraryAlbumTableCellViewDefaultHeight = 168.;
     _representedAlbum = representedAlbum;
     self.albumNameTextField.stringValue = _representedAlbum.title;
     self.artistNameTextField.stringValue = _representedAlbum.artistName;
-    
+
     if (_representedAlbum.year > 0) {
         self.yearTextField.intValue = _representedAlbum.year;
     } else {

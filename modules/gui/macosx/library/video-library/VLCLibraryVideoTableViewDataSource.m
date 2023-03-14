@@ -5,19 +5,7 @@
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCLibraryVideoTableViewDataSource.h"
@@ -73,9 +61,9 @@
     if(!_libraryModel) {
         return;
     }
-    
+
     [_collectionViewFlowLayout resetLayout];
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         self->_recentsArray = [self->_libraryModel listOfRecentMedia];
         self->_libraryArray = [self->_libraryModel listOfVideoMedia];
@@ -94,7 +82,7 @@
     _groupsTableView.dataSource = self;
     _groupsTableView.delegate = self;
     _groupsTableView.target = self;
-    
+
     _groupSelectionTableView.dataSource = self;
     _groupSelectionTableView.delegate = self;
     _groupSelectionTableView.target = self;
@@ -117,19 +105,19 @@
                 break;
         }
     }
-    
+
     return 0;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
     VLCLibraryTableCellView *cellView = [tableView makeViewWithIdentifier:@"VLCVideoLibraryTableViewCellIdentifier" owner:self];
-    
+
     if (!cellView) {
         cellView = [VLCLibraryTableCellView fromNibWithOwner:self];
         cellView.identifier = @"VLCVideoLibraryTableViewCellIdentifier";
     }
-    
+
     if (tableView == _groupsTableView) {
         cellView.representedVideoLibrarySection = row;
     } else if (tableView == _groupSelectionTableView && _groupsTableView.selectedRow > -1) {
@@ -145,7 +133,7 @@
                 break;
         }
     }
-    
+
     return cellView;
 }
 
