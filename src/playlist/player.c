@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * playlist/player.c
  *****************************************************************************
  * Copyright (C) 2018 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

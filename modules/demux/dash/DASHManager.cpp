@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * DASHManager.cpp
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Created on: Aug 10, 2010
  * Authors: Christopher Mueller <christopher.mueller@itec.uni-klu.ac.at>
  *          Christian Timmerer  <christian.timmerer@itec.uni-klu.ac.at>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

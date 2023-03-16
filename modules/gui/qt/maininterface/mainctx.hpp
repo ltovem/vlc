@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * main_interface.hpp : Main Interface
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2010 VideoLAN and AUTHORS
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_MAIN_INTERFACE_H_

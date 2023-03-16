@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Role.cpp
  *****************************************************************************
  * Copyright (C) 2019 VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

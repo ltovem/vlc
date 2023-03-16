@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * variables.c: Generic lua<->vlc variables interface
  *****************************************************************************
  * Copyright (C) 2007-2010 the VideoLAN team
  *
  * Authors: Antoine Cellerier <dionoea at videolan tod org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /*****************************************************************************

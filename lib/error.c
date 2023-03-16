@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * error.c: Error handling for libvlc
  *****************************************************************************
  * Copyright (C) 2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "libvlc_internal.h"

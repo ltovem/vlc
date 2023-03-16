@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * macosx.m: MacOS X OpenGL provider
  *****************************************************************************
@@ -13,8 +14,6 @@
  *          Rémi Denis-Courmont
  *          Juho Vähä-Herttua <juhovh at iki dot fi>
  *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

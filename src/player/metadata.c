@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * player_metadata.c: Player metadata listener implementation
  *****************************************************************************
  * Copyright © 2020 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

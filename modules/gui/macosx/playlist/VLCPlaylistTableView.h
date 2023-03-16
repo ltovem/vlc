@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCPlaylistTableView.h: table view subclass for the playlist
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Benjamin Pracht <bigben at videolab dot org>
  *          Felix Paul Kühne <fkuehne at videolan dot org>
  *          David Fuhrmann <dfuhrmann # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

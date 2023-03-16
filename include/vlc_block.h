@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_block.h: Data blocks management functions
  *****************************************************************************
  * Copyright (C) 2003 VLC authors and VideoLAN
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_BLOCK_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * openurl.cpp: Open a MRL or clipboard content
  *****************************************************************************
  * Copyright © 2009 the VideoLAN team
  *
  * Authors: Jean-Philippe André <jpeg@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ogg.h : ogg stream demux module for vlc
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Gildas Bazin <gbazin@netcourrier.com>
  *          Andre Pang <Andre.Pang@csiro.au> (Annodex support)
  *          Gabriel Finch <salsaman@gmail.com> (moved from ogg.c to ogg.h)
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * gototime.hpp : GotoTime dialogs
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2007 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb (at) videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_GOTOTIME_DIALOG_H_

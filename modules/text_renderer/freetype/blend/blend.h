@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * blend.h :
  *****************************************************************************
  * Copyright (C) 2002 - 2020 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_FREETYPE_BLEND_H
 #define VLC_FREETYPE_BLEND_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ogg_granule.h : ogg granule functions
  *****************************************************************************
  * Copyright (C) 2008 - 2018 VideoLAN Authors and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 int64_t Ogg_GetKeyframeGranule ( const logical_stream_t *, int64_t i_granule );

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_hash.h: Hash functions
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Rémi Denis-Courmont
  *          Rafaël Carré
  *          Marvin Scholz
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_HASH_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_services_discovery.h : Services Discover functions
  *****************************************************************************
  * Copyright (C) 1999-2004 VLC authors and VideoLAN
  *
  * Authors: Pierre d'Herbemont <pdherbemont # videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_SERVICES_DISCOVERY_H_

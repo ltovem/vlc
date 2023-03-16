@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * smb_common.h: common strings used by SMB and DSM modules
  *****************************************************************************
  * Copyright (C) 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #define SMB_USER_TEXT N_("Username")

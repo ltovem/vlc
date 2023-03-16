@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * scte18.h : SCTE-18 EAS decoder
  *****************************************************************************
  * Copyright (C) 2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_SCTE18_H
 #define VLC_SCTE18_H

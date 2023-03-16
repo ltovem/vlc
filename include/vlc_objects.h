@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_objects.h: vlc_object_t definition and manipulation methods
  *****************************************************************************
  * Copyright (C) 2002-2008 VLC authors and VideoLAN
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

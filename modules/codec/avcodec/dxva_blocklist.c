@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * directx_va.c: DirectX Generic Video Acceleration helpers
  *****************************************************************************
  * Copyright © 2018 VLC authors and VideoLAN, VideoLabs
  *
  * Authors: Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

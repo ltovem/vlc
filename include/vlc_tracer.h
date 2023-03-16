@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_tracer.h: tracing interface
  * This library provides basic functions for threads to interact with user
  * interface, such as trace output.
  *****************************************************************************
  * Copyright (C) 2021 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_TRACES_H

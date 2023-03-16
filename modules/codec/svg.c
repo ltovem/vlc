@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * svg.c: svg decoder module making use of librsvg2.
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Adam Leggett <adamvleggett@gmail.com>
  *          Jean-Paul Saman <jpsaman@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

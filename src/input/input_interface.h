@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * input_interface.h: Input functions usable outside input code.
  *****************************************************************************
  * Copyright (C) 1998-2008 VLC authors and VideoLAN
  *
  * Authors: Laurent Aimar < fenrir _AT_ videolan _DOT_ org >
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_INPUT_INTERFACE_H

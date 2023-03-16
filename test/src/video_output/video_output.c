@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * video_output.c: test for the video output pipeline
  *****************************************************************************
  * Copyright (C) 2021 VideoLabs
  *
  * Author: Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

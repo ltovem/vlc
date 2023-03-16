@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_tls.h:
  *****************************************************************************
  * Copyright (C) 2004-2016 Rémi Denis-Courmont
  * Copyright (C) 2005-2006 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_TLS_H

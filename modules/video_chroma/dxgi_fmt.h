@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dxgi_fmt.h : DXGI helper calls
  *****************************************************************************
  * Copyright © 2015 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_VIDEOCHROMA_DXGI_FMT_H_

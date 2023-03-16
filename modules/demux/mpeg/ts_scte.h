@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_scte.h: TS Demux SCTE section decoders/handlers
  *****************************************************************************
  * Copyright (C) 2004-2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_SCTE_H
 #define VLC_TS_SCTE_H

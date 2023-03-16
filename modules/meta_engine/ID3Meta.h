@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ID3Meta.h : ID3v2 Meta Helper
  *****************************************************************************
  * Copyright (C) 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef ID3META_H
 #define ID3META_H

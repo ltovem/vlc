@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chromaprint.hpp: Fingerprinter helper class
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef CHROMAPRINT_HPP
 #define CHROMAPRINT_HPP

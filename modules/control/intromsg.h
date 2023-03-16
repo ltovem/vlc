@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * intromsg.h
  *****************************************************************************
  * Copyright (C) 1999-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 static inline void intf_consoleIntroMsg(intf_thread_t *p_intf)

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * libmp4mux.h: mp4/mov muxer
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Gildas Bazin <gbazin at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #include <vlc_common.h>
 #include <vlc_es.h>

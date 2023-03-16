@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dirs.c: OS/2 directories configuration
  *****************************************************************************
  * Copyright (C) 2010 VLC authors and VideoLAN
  *
  * Authors: KO Myung-Hun <komh@chollian.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

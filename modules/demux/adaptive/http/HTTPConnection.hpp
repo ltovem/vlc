@@ -1,14 +1,13 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * HTTPConnection.hpp
  *****************************************************************************
- * Copyright (C) 2010 - 2011 Klagenfurt University
- *               2014 - 2015 VideoLAN and VLC Authors
- *
- * Created on: Aug 10, 2010
- * Authors: Christopher Mueller <christopher.mueller@itec.uni-klu.ac.at>
- *          Christian Timmerer  <christian.timmerer@itec.uni-klu.ac.at>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2010 - 2011 Klagenfurt University
+               2014 - 2015 VideoLAN and VLC Authors
+
+ Created on: Aug 10, 2010
+ Authors: Christopher Mueller <christopher.mueller@itec.uni-klu.ac.at>
+          Christian Timmerer  <christian.timmerer@itec.uni-klu.ac.at>
  *****************************************************************************/
 #ifndef HTTPCONNECTION_H_
 #define HTTPCONNECTION_H_

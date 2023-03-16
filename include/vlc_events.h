@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_events.h: events definitions
  * Interface used to send events.
@@ -5,8 +6,6 @@
  * Copyright (C) 2007 VLC authors and VideoLAN
  *
  * Authors: Pierre d'Herbemont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_EVENTS_H

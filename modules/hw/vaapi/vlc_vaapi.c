@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_vaapi.c: VAAPI helper for VLC
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Thomas Guillem <thomas@gllm.fr>
  *          Petri Hintukainen <phintuka@gmail.com>
  *          Victorien Le Couviour--Tuffet <victorien.lecouviour.tuffet@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

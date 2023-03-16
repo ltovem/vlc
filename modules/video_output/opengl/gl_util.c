@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gl_util.c
  *****************************************************************************
  * Copyright (C) 2020 VLC authors and VideoLAN
  * Copyright (C) 2020 Videolabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * medialibrary.c
  *****************************************************************************
  * Copyright (C) 2020 the VideoLAN team
  *
  * Authors: Hugo Beauzée-Luyssen <hugo@beauzee.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

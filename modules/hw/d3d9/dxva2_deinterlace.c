@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dxva2_deinterlace.c: DxVA2 deinterlacing filter
  *****************************************************************************
  * Copyright (C) 2017 Videolabs SAS
  *
  * Authors: Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

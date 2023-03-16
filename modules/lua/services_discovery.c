@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * services_discovery.c : Services discovery using lua scripts
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Fabio Ritrovato <sephiroth87 at videolan dot org>
  *          Rémi Duraffort <ivoire at videolan -dot- org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

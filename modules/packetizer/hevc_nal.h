@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright © 2010-2014 VideoLAN
  *
  * Authors: Thomas Guillem <thomas.guillem@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef HEVC_NAL_H
 # define HEVC_NAL_H

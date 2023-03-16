@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright (C) 2012-2013 VLC authors and VideoLAN
  *
@@ -15,8 +16,6 @@
  *          Aurélie Sbinné
  *          Samuel Kerjose
  *          Julien Puyobro
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

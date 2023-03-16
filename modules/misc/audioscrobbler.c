@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * audioscrobbler.c : audioscrobbler submission plugin
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Author: Rafaël Carré <funman at videolanorg>
  *         Ilkka Ollakka <ileoo at videolan org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /* Last.fm Submissions protocol version: 1.2

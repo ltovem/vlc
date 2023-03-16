@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * SegmentTracker.hpp
  *****************************************************************************
- * Copyright (C) 2014 - VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2014 - VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef SEGMENTTRACKER_HPP
 #define SEGMENTTRACKER_HPP

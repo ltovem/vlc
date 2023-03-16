@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * opus.h : Opus demux helpers
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
  *
  * Authors: Timothy B. Terriberry <tterribe@xiph.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /* Returns Opus frame duration in samples */

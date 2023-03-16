@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ogg_granule.c : ogg granule functions
  *****************************************************************************
  * Copyright (C) 2008 - 2018 VideoLAN Authors and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

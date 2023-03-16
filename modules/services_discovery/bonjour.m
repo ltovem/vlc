@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * bonjour.m: mDNS services discovery module based on Bonjour
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Felix Paul Kühne <fkuehne@videolan.org>
  *          Marvin Scholz <epirat07@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

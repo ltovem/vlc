@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * video_output.c : video output thread
- *
+ *****************************************************************************
  * This module describes the programming interface for video output threads.
  * It includes functions allowing to open a new thread, send pictures to a
  * thread, and destroy a previously oppened video output thread.
@@ -10,8 +11,6 @@
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
  *          Gildas Bazin <gbazin@videolan.org>
  *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * spatializer.cpp: sound reverberation
  *****************************************************************************
@@ -8,8 +9,6 @@
  * Authors: Biodun Osunkunle <biodun@videolan.org>
  *
  * Mentor : Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

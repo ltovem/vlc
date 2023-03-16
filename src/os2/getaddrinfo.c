@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * getaddrinfo.c: getaddrinfo/getnameinfo replacement functions
  *****************************************************************************
@@ -7,8 +8,6 @@
  *
  * Authors: KO Myung-Hun <komh@chollian.net>
  *          Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

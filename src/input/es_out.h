@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * es_out.h: Input es_out functions
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2008 Laurent Aimar
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_INPUT_ES_OUT_H

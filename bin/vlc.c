@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * vlc.c: the VLC player
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Gildas Bazin <gbazin@videolan.org>
  *          Derk-Jan Hartman <hartman at videolan dot org>
  *          Lots of other people, see the libvlc AUTHORS file
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

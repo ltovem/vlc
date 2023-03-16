@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * flac.h: fLAC audio headers
  *****************************************************************************
  * Copyright (C) 2001-2018 VLC authors, VideoLabs and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #include <vlc_common.h>
 

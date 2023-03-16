@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_plugin.h : Macros used from within a module.
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright © 2007-2009 Rémi Denis-Courmont
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_MODULES_MACROS_H

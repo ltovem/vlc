@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file events.h
  * @brief X C Bindings VLC module common header
  */
 /*****************************************************************************
  * Copyright © 2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef XCB_CURSOR_NONE

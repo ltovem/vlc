@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /* Copyright (C) 2003-2020 VLC authors and VideoLAN
  *
  * Authors: Jon Lech Johansen <jon-vl@nanocrew.net>
  *          Felix Paul Kühne <fkuehne at videolan dot org>
  *          Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 #import <Foundation/Foundation.h>

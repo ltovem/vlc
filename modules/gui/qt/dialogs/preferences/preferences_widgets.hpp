@@ -1,13 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * preferences_widgets.hpp : Widgets for preferences panels
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2011 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Antoine Cellerier <dionoea@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_PREFERENCES_WIDGETS_HPP_

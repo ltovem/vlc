@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCPositionFormatter.h: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2013, 2019 VLC authors and VideoLAN
  *
  * Author: David Fuhrmann <dfuhrmann # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Foundation/Foundation.h>

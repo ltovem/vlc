@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file glx.c
  * @brief GLX OpenGL extension module
  */
 /*****************************************************************************
  * Copyright © 2010-2012 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

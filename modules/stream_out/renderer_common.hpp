@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * renderer_common.hpp : renderer helper functions
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Steve Lhomme <robux4@videolabs.io>
  *          Shaleen Jain <shaleen@jain.sh>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef RENDERER_COMMON_H

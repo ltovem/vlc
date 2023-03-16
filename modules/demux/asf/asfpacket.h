@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * asfpacket.h :
  *****************************************************************************
  * Copyright © 2001-2004, 2011, 2014 VLC authors and VideoLAN
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_ASF_ASFPACKET_H_
 #define VLC_ASF_ASFPACKET_H_

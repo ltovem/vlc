@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * rist.c: RIST (Reliable Internet Stream Transport) input module
  *****************************************************************************
  * Copyright (C) 2021, SipRadius LLC
  *
  * Authors: Sergio Ammirata <sergio@ammirata.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

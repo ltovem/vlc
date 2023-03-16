@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * text_layout.c : Text shaping and layout
  *****************************************************************************
@@ -12,8 +13,6 @@
  *          David Fuhrmann <dfuhrmann@videolan.org>
  *          Erwan Tulou <erwan10@videolan.org>
  *          Devin Heitmueller <dheitmueller@kernellabs.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /** \ingroup freetype

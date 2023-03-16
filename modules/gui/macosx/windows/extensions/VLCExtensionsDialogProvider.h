@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCExtensionsDialogProvider.h: Mac OS X Extensions Dialogs
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Brendon Justin <brendonjustin@gmail.com>,
  *          Derk-Jan Hartman <hartman@videolan dot org>,
  *          Felix Paul Kühne <fkuehne@videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

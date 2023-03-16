@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * NearOptimalAdaptationLogic.cpp
  *****************************************************************************
- * Copyright (C) 2017 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2017 - VideoLAN Authors
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

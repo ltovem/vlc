@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * video.c: libvlc new API video functions
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Filippo Carone <littlejohn@videolan.org>
  *          Jean-Paul Saman <jpsaman _at_ m2x _dot_ nl>
  *          Damien Fouilleul <damienf a_t videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

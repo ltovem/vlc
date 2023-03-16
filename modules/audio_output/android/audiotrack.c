@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * audiotrack.c: Android Java AudioTrack audio output module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Thomas Guillem <thomas@gllm.fr>
  *          Ming Hu <tewilove@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

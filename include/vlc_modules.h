@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_modules.h : Module descriptor and load functions
  *****************************************************************************
  * Copyright (C) 2001-2011 VLC authors and VideoLAN
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_MODULES_H

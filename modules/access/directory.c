@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * directory.c: expands a directory (directory: access_browser plug-in)
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Derk-Jan Hartman <hartman at videolan dot org>
  *          Rémi Denis-Courmont
  *          Julien 'Lta' BALLET <contact # lta.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

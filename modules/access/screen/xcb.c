@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file xcb.c
  * @brief X11 C Bindings screen capture demux module for VLC media player
  */
 /*****************************************************************************
  * Copyright © 2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * extradata.c: Muxing extradata builder/gatherer
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

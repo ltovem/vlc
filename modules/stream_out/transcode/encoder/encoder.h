@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * encoder.h: transcoding encoders header
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #define ENC_FRAMERATE (25 * 1000)

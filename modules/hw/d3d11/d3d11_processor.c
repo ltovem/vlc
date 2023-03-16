@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * d3d11_processor.c: D3D11 VideoProcessor helper
  *****************************************************************************
  * Copyright © 2017 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

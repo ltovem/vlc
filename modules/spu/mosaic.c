@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mosaic.c : Mosaic video plugin for vlc
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Antoine Cellerier <dionoea at videolan dot org>
  *          Christophe Massiot <massiot@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
 *****************************************************************************/
 
 /*****************************************************************************

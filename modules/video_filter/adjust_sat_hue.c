@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * adjust_sat_hue.c : Hue/Saturation executive part of adjust plugin for vlc
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Simon Latapie <garf@via.ecp.fr>
  *          Antoine Cellerier <dionoea -at- videolan d0t org>
  *          Martin Briza <gamajun@seznam.cz> (SSE)
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * libavi.h : LibAVI library
- ******************************************************************************
+ *****************************************************************************
  * Copyright (C) 2001-2003 VLC authors and VideoLAN
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /* flags for use in <dwFlags> in AVIFileHdr */

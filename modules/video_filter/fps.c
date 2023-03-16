@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fps.c : fps conversion plugin for vlc
  *****************************************************************************
  * Copyright (C) 2014 VLC authors and VideoLAN
  *
  * Author: Ilkka Ollakka <ileoo at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * emscripten.c: Emscripten logger
  *****************************************************************************
  * Copyright © 2022 VLC authors, VideoLAN and Videolabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

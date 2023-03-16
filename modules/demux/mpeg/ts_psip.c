@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_psip.c : TS demux ATSC A65 PSIP handling
  *****************************************************************************
  * Copyright (C) 2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

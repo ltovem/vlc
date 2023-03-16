@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * bpg.c: bpg decoder module using libbpg.
  *****************************************************************************
  * Copyright (C) 2015 VLC authors and VideoLAN
  *
  * Author: Tristan Matthews <tmatth@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

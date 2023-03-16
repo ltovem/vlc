@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gstvlcvideopool.h: VLC pictures managed by GstBufferPool
  *****************************************************************************
  * Copyright (C) 2016 VLC authors and VideoLAN
  *
  * Author: Vikram Fugro <vikram.fugro@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

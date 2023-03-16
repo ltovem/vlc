@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * objects.c: vlc_object_t handling
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2006-2010 Rémi Denis-Courmont
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

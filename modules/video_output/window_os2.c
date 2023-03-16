@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * window_os2.c: OS/2 non-embedded video window provider
  *****************************************************************************
  * Copyright (C) 2020 VLC authors and VideoLAN
  *
  * Authors: KO Myung-Hun <komh@chollian.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

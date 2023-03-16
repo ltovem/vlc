@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * timestamps.h: MPEG TS/PS Timestamps helpers
  *****************************************************************************
  * Copyright (C) 2004-2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MPEG_TIMESTAMPS_H
 #define VLC_MPEG_TIMESTAMPS_H

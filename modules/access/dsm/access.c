@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * bdsm/access.c: liBDSM based SMB/CIFS access module
  *****************************************************************************
  * Copyright (C) 2001-2014 VLC authors and VideoLAN
  *
  * Authors: Julien 'Lta' BALLET <contact # lta 'dot' io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

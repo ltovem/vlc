@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ncurses.c : NCurses interface for vlc
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Yoann Peronneau <yoann@videolan.org>
  *          Derk-Jan Hartman <hartman at videolan dot org>
  *          Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /* UTF8 locale is required */

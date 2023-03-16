@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * thumbnail.c: test thumbnailing API
  *****************************************************************************
  * Copyright (C) 2018 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "../../libvlc/test.h"

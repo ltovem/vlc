@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file platform_android.c
  * @brief Vulkan platform-specific code for Android
  */
 /*****************************************************************************
  * Copyright © 2018 Niklas Haas, Thomas Guillem
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

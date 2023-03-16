@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCDefaultValueSliderCell.m: SliderCell subclass for VLCDefaultValueSlider
  *****************************************************************************
@@ -12,8 +13,6 @@
  *   Date: September 1997
  *   Rewrite: Richard Frith-Macdonald <richard@brainstorm.co.uk>
  *   Date: 1999
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCDefaultValueSliderCell.h"

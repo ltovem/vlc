@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * iosvlc.m: iOS specific development main executable for VLC media player
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Marvin Scholz <epirat07 at gmail dot com>
  *          Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

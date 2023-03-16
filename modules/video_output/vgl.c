@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vgl.c: virtual LibVLC OpenGL extension
  *****************************************************************************
  * Copyright (c) 2018 VLC authors and VideoLAN
  *
  * Authors: Pierre Lamot <pierre@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

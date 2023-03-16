@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fifo.c: FIFO management functions
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2007-2015 Rémi Denis-Courmont
  *
  * Authors: Laurent Aimar <fenrir@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file instance_vulkan.c
  * @brief Vulkan specific libplacebo GPU wrapper
  */
 /*****************************************************************************
  * Copyright © 2021 Niklas Haas
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * file_crypt.h: Crypt extension of the keystore memory module
  *****************************************************************************
  * Copyright © 2016 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #if defined(__ANDROID__) || defined(_WIN32)

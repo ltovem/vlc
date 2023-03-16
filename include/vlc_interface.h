@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_interface.h: interface access for other threads
  * This library provides basic functions for threads to interact with user
@@ -6,8 +7,6 @@
  * Copyright (C) 1999, 2000 VLC authors and VideoLAN
  *
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_INTF_H_

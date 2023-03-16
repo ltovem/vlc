@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * TimeSelectionPanelController.h: Controller for time selection panel
  *****************************************************************************
  * Copyright (C) 2015-2018 VideoLAN and authors
  * Author:       David Fuhrmann <david dot fuhrmann at googlemail dot com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

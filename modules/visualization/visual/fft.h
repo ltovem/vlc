@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * fft.h: Headers for iterative implementation of a FFT
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Mainly taken from XMMS's code
  *
  * Authors: Richard Boulton <richard@tartarus.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_VISUAL_FFT_H_

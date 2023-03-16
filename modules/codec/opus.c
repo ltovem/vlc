@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * opus.c: opus decoder/encoder module making use of libopus.
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Gregory Maxwell <greg@xiph.org>
  * Based on speex.c by: Gildas Bazin <gbazin@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

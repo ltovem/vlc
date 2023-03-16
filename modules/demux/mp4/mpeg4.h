@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mpeg4.h: MPEG4 ISO-14496-1 definitions
  *****************************************************************************
  * Copyright (C) 2001-2019 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef MP4_MPEG4_H
 #define MP4_MPEG4_H

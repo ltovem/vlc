@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * json.c: JSON tracer plugin
  *****************************************************************************
  * Copyright © 2021 Videolabs
  *
  * Authors : Nicolas Le Quec
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

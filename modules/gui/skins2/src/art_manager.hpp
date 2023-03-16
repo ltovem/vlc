@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * art_manager.hpp
  *****************************************************************************
  * Copyright (C) 2010 the VideoLAN team
  *
  * Author: Erwan Tulou      <erwan10@vidoelan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef ART_MANAGER_HPP

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * SharedResources.h
  *****************************************************************************
- * Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef SHAREDRESOURCES_H_
 #define SHAREDRESOURCES_H_

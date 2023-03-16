@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * stereo_widen.c : simple stereo widening effect
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
  *
  * Author : Sukrit Sangwan < sukritsangwan at gmail dot com >
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

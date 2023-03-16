@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * AlwaysLowestAdaptationLogic.hpp
  *****************************************************************************
  * Copyright (C) 2014 - VideoLAN and VLC authors
-  *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef ALWAYSLOWESTADAPTATIONLOGIC_HPP
 #define ALWAYSLOWESTADAPTATIONLOGIC_HPP

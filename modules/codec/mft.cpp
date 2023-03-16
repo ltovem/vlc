@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mft.cpp : Media Foundation Transform audio/video decoder
  *****************************************************************************
  * Copyright (C) 2014 VLC authors and VideoLAN
  *
  * Author: Felix Abecassis <felix.abecassis@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

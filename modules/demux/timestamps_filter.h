@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * timestamps_filter.h: Seamless timestamps helper
  *****************************************************************************
  * Copyright © 2018 VideoLabs, VideoLAN, VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TIMESTAMPS_FILTER_H
 #define VLC_TIMESTAMPS_FILTER_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mediacodec.c: Video decoder module using the Android MediaCodec API
  *****************************************************************************
  * Copyright (C) 2012 Martin Storsjo
  *
  * Authors: Martin Storsjo <martin@martin.st>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * syslog.c: POSIX syslog logger plugin
  *****************************************************************************
  * Copyright (C) 2002-2008 the VideoLAN team
  * Copyright © 2007-2015 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

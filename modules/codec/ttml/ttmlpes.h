@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ttmlpes.c : TTML subtitles in EN 303 560 payload
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <vlc_common.h>

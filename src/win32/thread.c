@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * thread.c : Win32 back-end for LibVLC
  *****************************************************************************
@@ -9,8 +10,6 @@
  *          Clément Sténac
  *          Rémi Denis-Courmont
  *          Pierre Ynard
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

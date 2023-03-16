@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * VLCCVOpenGLProvider.m: iOS OpenGL ES offscreen provider backed by
  *                        CVPixelBuffer supporting both iOS/tvOS and MacOSX
@@ -5,8 +6,6 @@
  * Copyright (C) 2021 Videolabs
  *
  * Authors: Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

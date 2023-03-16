@@ -1,4 +1,5 @@
 
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * darwin_specific.m: Darwin specific features
  *****************************************************************************
@@ -7,8 +8,6 @@
  * Authors: Sam Hocevar <sam@zoy.org>
  *          Christophe Massiot <massiot@via.ecp.fr>
  *          Pierre d'Herbemont <pdherbemont@free.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

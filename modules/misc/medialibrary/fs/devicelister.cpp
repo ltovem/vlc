@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * devicelister.h: Media library network file system
  *****************************************************************************
  * Copyright (C) 2018 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #if HAVE_CONFIG_H

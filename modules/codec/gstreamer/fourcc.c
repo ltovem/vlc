@@ -1,12 +1,11 @@
 
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fourcc.c: convert between gst <->  vlc formats
  *****************************************************************************
  * Copyright (C) 2020 VLC authors and VideoLAN
  *
  * Author: Vikram Fugro <vikram.fugro@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

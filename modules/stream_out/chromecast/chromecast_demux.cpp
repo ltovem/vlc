@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chromecast_demux.cpp: Chromecast demux filter module for vlc
  *****************************************************************************
  * Copyright © 2015-2016 VideoLAN
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

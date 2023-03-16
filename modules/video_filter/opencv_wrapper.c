@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * opencv_wrapper.c : OpenCV wrapper video filter
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Dugal Harris <dugalh@protoclea.co.za>
  *          Edward Wang <edward.c.wang@compdigitec.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

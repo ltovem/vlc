@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dialog.c: User dialog functions
  *****************************************************************************
  * Copyright © 2009 Rémi Denis-Courmont
  * Copyright © 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /** @ingroup vlc_dialog */

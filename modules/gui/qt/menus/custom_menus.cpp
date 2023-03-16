@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * custom_menus.cpp : Qt custom menus classes
  *****************************************************************************
  * Copyright © 2006-2018 VideoLAN authors
  *                  2018 VideoLabs
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

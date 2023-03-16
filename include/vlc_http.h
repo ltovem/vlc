@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_http.h: Shared code for HTTP clients
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Christophe Massiot <massiot@via.ecp.fr>
  *          Rémi Denis-Courmont
  *          Antoine Cellerier <dionoea at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_HTTP_H

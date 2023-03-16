@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * aom.c: libaom encoder and decoder (AV1) module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Tristan Matthews <tmatth@videolan.org>
  * Based on vpx.c by: Rafaël Carré <funman@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

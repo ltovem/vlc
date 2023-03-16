@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * egl_surfacetexture.c: OpenGL offscreen provider with SurfaceTexture
  *****************************************************************************
  * Copyright (C) 2021 Videolabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include <config.h>

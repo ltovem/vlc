@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * DBMHelper.cpp: Decklink SDI Helpers
  *****************************************************************************
  * Copyright © 2014-2016 VideoLAN and VideoLAN Authors
  *             2018-2019 VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

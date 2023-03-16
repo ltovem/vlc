@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * av1.h: AV1 definitions
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_AV1_H
 #define VLC_AV1_H

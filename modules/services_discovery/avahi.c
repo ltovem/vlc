@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * avahi.c: Bonjour services discovery module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Jon Lech Johansen <jon@nanocrew.net>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /*****************************************************************************

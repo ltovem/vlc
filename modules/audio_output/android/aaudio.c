@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * aaudio.c: Android AAudio audio stream module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Romain Vimont <rom1v@videolabs.io>
  *          Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_psi_eit.h : TS demuxer SI handling
  *****************************************************************************
  * Copyright (C) 2014-2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_PSI_EIT_H
 #define VLC_TS_PSI_EIT_H

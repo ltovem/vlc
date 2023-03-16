@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCDefaultValueSlider.m: Custom NSSlider which allows a defaultValue
  *****************************************************************************
  * Copyright (C) 2016 VLC authors and VideoLAN
  *
  * Authors: Marvin Scholz <epirat07 -at- gmail -dot- com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCDefaultValueSlider.h"

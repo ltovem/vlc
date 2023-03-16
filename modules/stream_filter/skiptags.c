@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * skiptags.c:
  *****************************************************************************
  * Copyright © 2005-2008 VLC authors and VideoLAN
  * Copyright © 2016-2017 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

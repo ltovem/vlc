@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * thread.c : pthread back-end for LibVLC
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Gildas Bazin <gbazin@netcourrier.com>
  *          Clément Sténac
  *          Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

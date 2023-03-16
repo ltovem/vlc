@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * charset.c: Locale's character encoding stuff.
  *****************************************************************************
@@ -7,8 +8,6 @@
  *
  * Authors: Christophe Massiot
  *          Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

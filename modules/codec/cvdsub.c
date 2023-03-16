@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * cvdsub.c : CVD Subtitle decoder
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Gildas Bazin <gbazin@videolan.org>
  *          Julio Sanchez Fernandez (http://subhandler.sourceforge.net)
  *          Laurent Aimar <fenrir@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

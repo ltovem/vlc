@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * os2_popup.cpp
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Olivier Teulière <ipkiss@via.ecp.fr>
  *          KO Myung-Hun      <komh@chollian.net>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef OS2_SKINS

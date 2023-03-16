@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mpeg4_iod.h: ISO 14496-1 IOD and parsers
  *****************************************************************************
  * Copyright (C) 2004-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MPEG4_IOD_H
 #define VLC_MPEG4_IOD_H

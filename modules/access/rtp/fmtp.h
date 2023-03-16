@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file fmtp.h
  * @brief SDP format parameters (fmtp) helpers
  */
 /*****************************************************************************
  * Copyright © 2022 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 #include <errno.h>

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * ICanonicalUrl.hpp
  *****************************************************************************
- * Copyright (C) 2014 - VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2014 - VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef CANONICALURL_HPP
 #define CANONICALURL_HPP

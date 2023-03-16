@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file amt.c
  * @brief Automatic Multicast Tunneling Protocol (AMT) file for VLC media player
@@ -14,9 +15,6 @@
  *          Natalie Landsberg <natalie.landsberg97@gmail.com> - AMT support
  *          Wayne Brassem <wbrassem@rogers.com>               - Added FQDN support
  *          Nicolas Zunker                                    - Added IPv6 support
- *
- * This code is not an official Juniper product.
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

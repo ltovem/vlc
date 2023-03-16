@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * jpeg.c: jpeg decoder module making use of libjpeg.
  *****************************************************************************
  * Copyright (C) 2013-2014,2016 VLC authors and VideoLAN
  *
  * Authors: Maxim Bublis <b@codemonkey.ru>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

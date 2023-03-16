@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chromaprint_data.h: Chromaprint's sout fingerprint data header
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 struct chromaprint_fingerprint_t

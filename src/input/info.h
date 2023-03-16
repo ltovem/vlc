@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * info.h
  *****************************************************************************
  * Copyright (C) 2010 Laurent Aimar
  *
  * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_INPUT_INFO_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * errors.hpp : Errors
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb (at) videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_ERRORS_DIALOG_H_

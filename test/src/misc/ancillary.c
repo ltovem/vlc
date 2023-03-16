@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ancillary.c: test for ancillary
  *****************************************************************************
  * Copyright (C) 2021 the VideoLAN team
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

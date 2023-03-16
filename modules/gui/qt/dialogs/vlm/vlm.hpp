@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * vlm.hpp : VLM Management
- ****************************************************************************
+ *****************************************************************************
  * Copyright ( C ) 2006 the VideoLAN team
  *
  * Authors: Jean-François Massol <jf.massol@gmail.com>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_VLM_DIALOG_H_

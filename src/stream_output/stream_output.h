@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * stream_output.h : internal stream output
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Laurent Aimar <fenrir@via.ecp.fr>
  *          Eric Petit <titer@videolan.org>
  *          Jean-Paul Saman <jpsaman #_at_# m2x.nl>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ***************************************************************************/
 
 #ifndef VLC_SRC_STREAMOUT_H

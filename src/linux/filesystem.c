@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * filesystem.c: Linux file system helpers
  *****************************************************************************
  * Copyright © 2018 Rémi Denis-Courmont
  *
  * Authors: Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

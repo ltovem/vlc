@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCRemoteControlService.m: MacOS X interface module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Carola Nitz <nitz.carola # gmail.com>
  *          Felix Paul Kühne <fkuehne # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <MediaPlayer/MediaPlayer.h>

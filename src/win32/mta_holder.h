@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * mta_holder.c: Hold a MTA from another thread
  *****************************************************************************
  * Copyright (C) 2002-2017 the VideoLAN and AUTHORS
  *
  * Author: Hugo Beauzée-Luyssen <hugo@beauzee.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef MTA_HOLDER_H

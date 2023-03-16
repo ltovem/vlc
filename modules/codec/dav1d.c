@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dav1d.c: dav1d decoder (AV1) module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Adrien Maglo <magsoft@videolan.org>
  * Based on aom.c by: Tristan Matthews <tmatth@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

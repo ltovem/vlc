@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * clock_nanosleep.c: Test for clock_nanosleep implementation
  *****************************************************************************
  * Copyright © 2020 VideoLAN & VLC authors
  *
  * Authors: Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "config.h"

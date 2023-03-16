@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCLibraryCollectionViewAlbumSupplementaryDetailView.m: MacOS X interface module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Samuel Bassaly <shkshk90 # gmail -dot- com>
  *          Claudio Cambra <claudio.cambra@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCLibraryCollectionViewAlbumSupplementaryDetailView.h"

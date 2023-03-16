@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * clock.c: Output modules synchronisation clock
  *****************************************************************************
  * Copyright (C) 2018-2019 VLC authors, VideoLAN and Videolabs SAS
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

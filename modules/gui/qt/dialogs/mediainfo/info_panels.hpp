@@ -1,13 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * info_panels.hpp : Panels for the information dialogs
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2007 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Ilkka Ollakka <ileoo@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_INFO_PANELS_HPP_

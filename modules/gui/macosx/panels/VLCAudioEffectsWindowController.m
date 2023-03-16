@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCAudioEffectsWindowController.m: MacOS X interface module
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Felix Paul Kühne <fkuehne # videolan dot org>
  *          David Fuhrmann <dfuhrmann # videolan dot org>
  *          Jérôme Decoodt <djc@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

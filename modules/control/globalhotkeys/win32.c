@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * win32.c: Global-Hotkey _WIN32 handling for vlc
  *****************************************************************************
  * Copyright (C) 2008-2009 the VideoLAN team
  *
  * Authors: Domani Hannes <ssbssa at yahoo dot de>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

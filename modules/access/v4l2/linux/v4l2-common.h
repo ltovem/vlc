@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * include/linux/v4l2-common.h
  *
@@ -9,8 +10,6 @@
  *
  * Copyright (C) 2012 Nokia Corporation
  * Contact: Sakari Ailus <sakari.ailus@iki.fi>
- *
- * SPDX-License-Identifier: GPL-2.0-only
  *
  */
 

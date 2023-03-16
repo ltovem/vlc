@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * media_list_internal.h : Definition of opaque structures for libvlc exported API
  * Also contains some internal utility functions
@@ -5,8 +6,6 @@
  * Copyright (C) 2005-2009 VLC authors and VideoLAN
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef _LIBVLC_MEDIA_LIST_INTERNAL_H

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * jaro_winkler.c: Tests for our Jaro Winkler algorithm
  *****************************************************************************
  * Copyright 2015 Danny Guo
  * Copyright 2018 Lyndon Brown
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

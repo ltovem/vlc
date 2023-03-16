@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * input.h
  *****************************************************************************
  * Copyright (C) 2007-2008 the VideoLAN team
  *
  * Authors: Antoine Cellerier <dionoea at videolan tod org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_LUA_INPUT_H

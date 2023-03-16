@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * open_panels.hpp : Panels for the open dialogs
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2009 the VideoLAN team
  * Copyright (C) 2007 Société des arts technologiques
  * Copyright (C) 2007 Savoir-faire Linux
@@ -8,8 +9,6 @@
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Pierre-Luc Beaudoin <pierre-luc.beaudoin@savoirfairelinux.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_OPEN_PANELS_HPP_

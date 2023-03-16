@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * atsc_a65.c : ATSC A65 decoding helpers
  *****************************************************************************
  * Copyright (C) 2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

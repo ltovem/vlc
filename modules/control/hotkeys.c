@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * hotkeys.c: Hotkey handling for vlc
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Sigmund Augdal Helberg <dnumgis@videolan.org>
  *          Jean-Paul Saman <jpsaman #_at_# m2x.nl>
  *          Victorien Le Couviour--Tuffet <victorien.lecouviour.tuffet@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

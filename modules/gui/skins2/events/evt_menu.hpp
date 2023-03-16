@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * evt_menu.hpp
  *****************************************************************************
  * Copyright (C) 2003 the VideoLAN team
  *
  * Authors: Olivier Teulière <ipkiss@via.ecp.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef EVT_MENU_HPP

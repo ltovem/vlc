@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * decoder_device.c: MMAL-based decoder plugin for Raspberry Pi
  *****************************************************************************
  * Copyright © 2020 Steve Lhomme
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

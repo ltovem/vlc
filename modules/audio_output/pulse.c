@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * pulse.c : Pulseaudio output plugin for vlc
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2009-2011 Rémi Denis-Courmont
  *
  * Authors: Martin Hamrle <hamrle @ post . cz>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

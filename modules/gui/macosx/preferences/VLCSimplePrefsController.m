@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCSimplePrefsController.m: Simple Preferences for Mac OS X
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan dot org>
  *          David Fuhrmann <dfuhrmann # videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

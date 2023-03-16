@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ansi_term.h: Common declarations and helpers for ANSI terminal handling
  *****************************************************************************
  * Copyright (C) 1998-2011 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_ANSI_TERM_H

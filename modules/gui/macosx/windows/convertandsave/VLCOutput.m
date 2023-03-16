@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCOutput.m: MacOS X Output Dialog
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Derk-Jan Hartman <thedj@users.sourceforge.net>
  *          Benjamin Pracht <bigben AT videolan DOT org>
  *          Felix Paul Kühne <fkuehne # videolan org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCOutput.h"

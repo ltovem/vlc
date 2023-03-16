@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * motion.h: laptop built-in motion sensors
  *****************************************************************************
  * Copyright (C) 2012 the VideoLAN team
  *
  * Author: Pierre Ynard
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef MOTION_H

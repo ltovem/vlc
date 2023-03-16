@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_boxes.h : Boxes/Atoms handling helpers
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Gildas Bazin <gbazin at videolan dot org>
  *          Rafaël Carré <funman at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_BOXES_H
 #define VLC_BOXES_H

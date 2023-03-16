@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * merge.h : Merge (line blending) routines for the VLC deinterlacer
  *****************************************************************************
@@ -7,8 +8,6 @@
  *         Sigmund Augdal Helberg <sigmunau@videolan.org> (MMXEXT, 3DNow, SSE2)
  *         Eric Petit <eric.petit@lapsus.org>             (Altivec)
  *         Rémi Denis-Courmont                            (ARM NEON)
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DEINTERLACE_MERGE_H

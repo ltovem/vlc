@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * info_widgets.hpp : Widgets for info panels
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2013 the VideoLAN team
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifndef INFO_WIDGETS_HPP
 #define INFO_WIDGETS_HPP

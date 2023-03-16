@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * customwidgets.hpp: Custom widgets
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_CUSTOMWIDGETS_HPP_

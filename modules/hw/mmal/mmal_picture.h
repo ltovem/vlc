@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mmal_picture.h: Shared header for MMAL pictures
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Julian Scheel <julian@jusst.de>
  *          John Cox <jc@kynesim.co.uk>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_MMAL_MMAL_PICTURE_H_

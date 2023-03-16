@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dirs.c: XDG directories configuration
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright © 2007-2009 Rémi Denis-Courmont
  *
  * Authors: Gildas Bazin <gbazin@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

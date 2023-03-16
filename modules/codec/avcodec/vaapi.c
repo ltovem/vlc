@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vaapi.c: VAAPI helpers for the libavcodec decoder
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Copyright (C) 2012-2014 Rémi Denis-Courmont
  *
  * Authors: Laurent Aimar <fenrir_AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

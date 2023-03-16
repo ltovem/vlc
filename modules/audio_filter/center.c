@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * center.c : Central channel filter
  *****************************************************************************
  * Copyright © 2020 VLC authors and VideoLAN
  *
  * Authors: Vedanta Nayak <vedantnayak2@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

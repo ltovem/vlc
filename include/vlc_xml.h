@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_xml.h: XML abstraction layer
  *****************************************************************************
  * Copyright (C) 2004-2010 VLC authors and VideoLAN
  *
  * Author: Gildas Bazin <gbazin@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_XML_H

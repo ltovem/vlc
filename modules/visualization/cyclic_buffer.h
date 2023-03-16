@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * cyclic_buffer.h cyclic buffer helper class for vlc's audio visualizations
  *****************************************************************************
  * Copyright © 2012 Vovoid Media Technologies
  *
  * Authors: Jonatan "jaw" Wallmander
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef CYCLIC_BUFFER_H

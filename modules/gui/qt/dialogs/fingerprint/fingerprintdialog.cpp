@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fingerprintdialog.cpp: Fingerprinter Dialog
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "dialogs/fingerprint/fingerprintdialog.hpp"

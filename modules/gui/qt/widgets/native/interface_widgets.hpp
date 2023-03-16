@@ -1,13 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * interface_widgets.hpp : Custom widgets for the main interface
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2008 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_INTERFACE_WIDGETS_HPP_

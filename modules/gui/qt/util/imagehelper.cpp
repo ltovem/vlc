@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * input_slider.cpp : VolumeSlider and SeekSlider
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2017 the VideoLAN team
  *
  * Authors: Pierre Lamot <pierre@videolabs.io>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

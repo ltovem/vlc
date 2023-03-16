@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * hxxx_nal.h: Common helpers for AVC/HEVC NALU
  *****************************************************************************
  * Copyright (C) 2014-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef HXXX_NAL_H
 #define HXXX_NAL_H

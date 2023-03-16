@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * entities.cpp: medialibrary C++ -> C entities conversion & management
  *****************************************************************************
  * Copyright © 2008-2018 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

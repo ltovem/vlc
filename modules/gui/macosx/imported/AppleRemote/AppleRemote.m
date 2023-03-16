@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * AppleRemote.m
  * AppleRemote
@@ -34,8 +35,6 @@
  * Copyright (C) 2006-2009 VLC authors and VideoLAN
  * Authors: Eric Petit <titer@m0k.org>
  *          Felix Kühne <fkuehne at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "AppleRemote.h"

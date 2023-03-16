@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * xcb.c: Global-Hotkey X11 using xcb handling for vlc
  *****************************************************************************
  * Copyright (C) 2009 the VideoLAN team
  *
  * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

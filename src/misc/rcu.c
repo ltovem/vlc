@@ -2,10 +2,9 @@
  * \file rcu.c Read-Copy-Update (RCU) definitions
  * \ingroup rcu
  */
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright © 2021 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

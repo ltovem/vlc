@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCCustomCropArWindowController.h: Controller for custom crop / AR panel
  *****************************************************************************
  * Copyright (C) 2019 VideoLAN and authors
  * Author:       Felix Paul Kühne <fkuehne # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

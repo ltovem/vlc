@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * extended.hpp : Extended controls - Undocked
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_EXTENDED_DIALOG_H_

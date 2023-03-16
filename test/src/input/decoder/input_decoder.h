@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * input_decoder.h: test for input_decoder state machine
  *****************************************************************************
  * Copyright (C) 2022 VideoLabs
  *
  * Author: Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <vlc_fourcc.h>

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * aribsub.c : ARIB subtitles decoder
  *****************************************************************************
  * Copyright (C) 2012 Naohiro KORIYAMA
  *
  * Authors:  Naohiro KORIYAMA <nkoriyama@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

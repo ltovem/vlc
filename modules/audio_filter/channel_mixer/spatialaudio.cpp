@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * spatialaudio.cpp : Ambisonics audio renderer and binauralizer filter
  *****************************************************************************
  * Copyright © 2017 VLC authors and VideoLAN
  *
  * Authors: Adrien Maglo <magsoft@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * NSView+VLCAdditions.m: MacOS X interface module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: David Fuhrmann <dfuhrmann # videolan.org>
  *          Felix Paul Kühne <fkuehne at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "NSView+VLCAdditions.h"

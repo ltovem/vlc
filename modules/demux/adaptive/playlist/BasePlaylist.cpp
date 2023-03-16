@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * BasePlaylist.cpp
  *****************************************************************************
- * Copyright (C) 2010 - 2011 Klagenfurt University
- * Copyright (C) 2015 - 2020 VideoLabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2010 - 2011 Klagenfurt University
+ Copyright (C) 2015 - 2020 VideoLabs, VideoLAN and VLC authors
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

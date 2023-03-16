@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file wdummy.c
  * @brief Dummy video window provider for legacy video plugins
  */
 /*****************************************************************************
  * Copyright © 2009, 2018 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

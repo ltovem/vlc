@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * breakpad.cpp: Wrapper to breakpad crash handler
  *****************************************************************************
  * Copyright (C) 1998-2017 VLC authors
  *
  * Authors: Hugo Beauzée-Luyssen <hugo@beauzee.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

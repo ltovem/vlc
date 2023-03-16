@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * microdns.c: mDNS services discovery module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
  *          Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

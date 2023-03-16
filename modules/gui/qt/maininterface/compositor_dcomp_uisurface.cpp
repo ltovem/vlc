@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2020 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #include "compositor_dcomp_uisurface.hpp"
 #include "compositor_dcomp_error.hpp"

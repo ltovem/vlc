@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_opengl_interop.h: VLC picture_t to GL texture API
  *****************************************************************************
  * Copyright (C) 2019-2022 Videolabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_GL_INTEROP_H

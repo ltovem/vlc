@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * common.c : Common helper function for the VLC deinterlacer
  *****************************************************************************
@@ -8,8 +9,6 @@
  *         Laurent Aimar <fenrir@videolan.org>
  *         Juha Jeronen <juha.jeronen@jyu.fi>
  *         Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

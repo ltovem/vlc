@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_dialog.h: user interaction dialogs
  *****************************************************************************
  * Copyright (C) 2009 Rémi Denis-Courmont
  * Copyright (C) 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DIALOG_H_

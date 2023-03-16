@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * expert_view.cpp : Detailed preferences overview - view
  *****************************************************************************
  * Copyright (C) 2019-2022 VLC authors and VideoLAN
  *
  * Authors: Lyndon Brown <jnqnfe@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

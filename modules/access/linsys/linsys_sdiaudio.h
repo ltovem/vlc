@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: BSD-3-Clause
 /* sdiaudio.h
  *
  * Shared header file for the Linux user-space API for
  * Linear Systems Ltd. SMPTE 292M and SMPTE 259M-C Audio interface boards.
  *
  * Copyright (C) 2009-2010 Linear Systems Ltd.
- *
- * SPDX-License-Identifier: BSD-3-Clause
  *
  * Linear Systems can be contacted at <http://www.linsys.ca/>.
  *

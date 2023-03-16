@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vt_utils.h: videotoolbox/cvpx utility functions
  *****************************************************************************
  * Copyright (C) 2017 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_CODEC_VTUTILS_H_

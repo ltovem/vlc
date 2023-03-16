@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * inhibit.h: screen saver inhibition
  *****************************************************************************
  * Copyright (C) 2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_VIDEO_OUTPUT_INHIBIT_H_

@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * mainctx_win32.cpp : Main interface
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2010 VideoLAN and AUTHORS
  *
  * Authors: Jean-Baptiste Kempf <jb@videolan.org>
  *          Hugo Beauzée-Luyssen <hugo@beauzee.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef MAIN_INTERFACE_WIN32_HPP

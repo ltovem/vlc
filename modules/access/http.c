@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * http.c: HTTP input module
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Christophe Massiot <massiot@via.ecp.fr>
  *          Rémi Denis-Courmont
  *          Antoine Cellerier <dionoea at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * projectm.cpp: visualization module based on libprojectM
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Rémi Duraffort <ivoire@videolan.org>
  *          Laurent Aimar
- *
-  * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

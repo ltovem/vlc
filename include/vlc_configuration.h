@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_configuration.h : configuration management module
  * This file describes the programming interface for the configuration module.
@@ -6,8 +7,6 @@
  * Copyright (C) 1999-2006 VLC authors and VideoLAN
  *
  * Authors: Gildas Bazin <gbazin@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_CONFIGURATION_H

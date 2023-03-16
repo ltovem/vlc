@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * qvlcframe.cpp : A few helpers
  *****************************************************************************
  * Copyright (C) 2006-2007 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include <QWindow>

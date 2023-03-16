@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file opus.c
  * @brief Real-Time Protocol Opus payload format parser
  */
 /*****************************************************************************
  * Copyright © 2022 VideoLabs, Videolan and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include <config.h>

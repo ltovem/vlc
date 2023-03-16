@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
- *
+ *****************************************************************************
  * Authors: Benjamin Arnaud <bunjee@omega.gg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include "standardpathmodel.hpp"

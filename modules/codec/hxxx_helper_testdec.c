@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * hxxx_helper_testdec.c: test decoder for hxxx_helper API
  *****************************************************************************
  * Copyright © 2020 VideoLAN, VLC authors and libbluray AUTHORS
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

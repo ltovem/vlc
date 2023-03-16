@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * common.h : common spu defines
  *****************************************************************************
  * Copyright (C) 2021 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #define OPACITY_TEXT N_("Opacity")

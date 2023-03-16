@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * live555_dtsgen.h : DTS rebuilder for pts only streams
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #define DTSGEN_REORDER_MAX   4 /* should be enough */
 #define DTSGEN_HISTORY_COUNT (DTSGEN_REORDER_MAX + 2)

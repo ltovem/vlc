@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dbus.c: power management inhibition using D-Bus
  *****************************************************************************
  * Copyright © 2009-2012 Rémi Denis-Courmont
  * Copyright © 2007-2012 Rafaël Carré
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*

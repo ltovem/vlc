@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCExtensionsManager.h: Extensions manager for Cocoa
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2012 VideoLAN and authors
  *
  * Authors: Brendon Justin <brendonjustin@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

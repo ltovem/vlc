@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ft2_err.c: Provide a strerror() type function for freetype2
  *****************************************************************************
  * Copyright (C) 2009 the VideoLAN team
  *
  * Authors: JP Dinger <jpd (at) videolan (dot) org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include <ft2build.h>

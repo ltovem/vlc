@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * playlists.hpp : playlists
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2021 the VideoLAN team
  *
  * Authors: Benjamin Arnaud <bunjee@omega.gg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_PLAYLISTS_H_

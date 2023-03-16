@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file splitter.c
  * @brief Video splitter video output module for VLC media player
@@ -5,8 +6,6 @@
 /*****************************************************************************
  * Copyright © 2009 Laurent Aimar
  * Copyright © 2009-2018 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chroma_neon.h
  *****************************************************************************
  * Copyright (C) 2011 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /* Planes must start on a 16-bytes boundary. Pitches must be multiples of 16

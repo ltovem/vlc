@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * avci.h : AVC Intra SPS/PPS tables
  *****************************************************************************
  * Copyright (C) 2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef MP4_AVCI_H
 # define MP4_AVCI_H

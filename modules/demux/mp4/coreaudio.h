@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * coreaudio.h : CoreAudio definitions for vlc
  *****************************************************************************
  * Copyright (C) 2014-2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_DEMUX_COREAUDIO_H
 #define VLC_DEMUX_COREAUDIO_H

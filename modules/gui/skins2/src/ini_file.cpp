@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ini_file.cpp
  *****************************************************************************
  * Copyright (C) 2006 the VideoLAN team
  *
  * Authors: Cyril Deguet     <asmax@via.ecp.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include "ini_file.hpp"

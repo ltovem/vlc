@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Manifest.cpp
  *****************************************************************************
- * Copyright © 2015 - VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2015 - VideoLAN and VLC Authors
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

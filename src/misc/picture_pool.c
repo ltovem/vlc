@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * picture_pool.c : picture pool functions
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Copyright (C) 2013-2015 Rémi Denis-Courmont
  *
  * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

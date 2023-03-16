@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * d3d11_device.c : D3D11 decoder device from external ID3D11DeviceContext
  *****************************************************************************
  * Copyright © 2019 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@ycbcr.xyz>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

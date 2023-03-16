@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * eject.c: CD/DVD-ROM ejection handling functions
  *****************************************************************************
@@ -7,8 +8,6 @@
  *                with code taken from the Linux "eject" command
  *          Jon Lech Johansen <jon-vl@nanocrew.net> for Darwin
  *          Gildas Bazin <gbazin@netcourrier.com> for Win32
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /**

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCTimeField.m: NSTextField subclass for playback time fields
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Felix Paul Kühne <fkuehne at videolan dot org>
  *          Marvin Scholz <epirat07 at gmail dot com>
  *          Claudio Cambra <developer at claudiocambra dot com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCTimeField.h"

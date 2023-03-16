@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chromecast_common.h: Chromecast common code between modules for vlc
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Adrien Maglo <magsoft@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_CHROMECAST_COMMON_H

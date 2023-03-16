@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * clock_nanosleep.c: POSIX clock_nanosleep() replacement
  *****************************************************************************
  * Copyright © 2020 VLC authors and VideoLAN
  *
  * Author: Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef _WIN32

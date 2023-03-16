@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * netconf.m : Network configuration
  *****************************************************************************
  * Copyright (C) 2013-2018 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

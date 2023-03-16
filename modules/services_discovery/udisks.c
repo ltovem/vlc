@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * udisks.c: file system services discovery module
  *****************************************************************************
  * Copyright © 2022 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Juliane de Sartiges <jill@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

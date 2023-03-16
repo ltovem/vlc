@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * fft.c: Iterative implementation of a FFT
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Richard Boulton <richard@tartarus.org>
  *          Ralph Loader <suckfish@ihug.co.nz>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include <stdlib.h>

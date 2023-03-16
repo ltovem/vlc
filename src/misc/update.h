@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * update.h: VLC PGP update private API
  *****************************************************************************
  * Copyright © 2007-2008 VLC authors and VideoLAN
  *
  * Authors: Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <stdatomic.h>

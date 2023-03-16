@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * CodecParameters.hpp
  *****************************************************************************
- * Copyright (C) 2021 - VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2021 - VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef CODECPARAMETERS_HPP
 #define CODECPARAMETERS_HPP

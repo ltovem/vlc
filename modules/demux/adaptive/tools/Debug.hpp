@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Debug.hpp
  *****************************************************************************
- * Copyright © 2015 VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2015 VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef DEBUG_HPP
 #define DEBUG_HPP

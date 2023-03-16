@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file window_macosx.m
  * @brief macOS Window and View output provider
@@ -6,8 +7,6 @@
 /* Copyright (C) 2020 VLC authors and VideoLAN
  *
  * Authors: Marvin Scholz <epirat 07 at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #ifdef HAVE_CONFIG_H

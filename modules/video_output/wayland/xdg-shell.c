@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file xdg-shell.c
  * @brief Desktop shell surface provider module for VLC media player
  */
 /*****************************************************************************
  * Copyright © 2014, 2017 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

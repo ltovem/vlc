@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * android/device.h: Android AudioTrack/AAudio device handler
  *****************************************************************************
  * Copyright © 2012-2022 VLC authors and VideoLAN, VideoLabs
  *
  * Authors: Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <jni.h>

@@ -1,13 +1,12 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Helper.h
  *****************************************************************************
- * Copyright (C) 2010 - 2012 Klagenfurt University
- *
- * Created on: Feb 20, 2012
- * Authors: Christopher Mueller <christopher.mueller@itec.uni-klu.ac.at>
- *          Christian Timmerer  <christian.timmerer@itec.uni-klu.ac.at>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2010 - 2012 Klagenfurt University
+
+ Created on: Feb 20, 2012
+ Authors: Christopher Mueller <christopher.mueller@itec.uni-klu.ac.at>
+          Christian Timmerer  <christian.timmerer@itec.uni-klu.ac.at>
  *****************************************************************************/
 
 #ifndef HELPER_H_

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * d3d9_device.c : D3D9 decoder device from external IDirect3DDevice9
  *****************************************************************************
  * Copyright © 2019 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@ycbcr.xyz>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

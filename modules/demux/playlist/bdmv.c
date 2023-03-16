@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * bdmv.c: Dummy bdmv demux - opens BluRays rips via index.bdmv
  *****************************************************************************
  * Copyright (C) 2018 VLC authors and VideoLAN
  *
  * Authors: Shaya Potter <spotter@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

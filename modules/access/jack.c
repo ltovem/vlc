@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * jack.c: JACK audio input module
  *****************************************************************************
@@ -8,8 +9,6 @@
  * Authors: Arnaud Sala <arnaud.sala at savoirfairelinux.com>
  *          Julien Plissonneau Duquene <... at savoirfairelinux.com>
  *          Pierre-Luc Beaudoin <pierre-luc.beaudoin at savoirfairelinux.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * qt_dirs.hpp : String Directory helpers
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2008 the VideoLAN team
  *
  * Authors:       Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_QT_DIRS_HPP_

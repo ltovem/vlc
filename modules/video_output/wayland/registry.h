@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file registry.h
  * @brief Wayland client register common helpers for VLC media player
  */
 /*****************************************************************************
  * Copyright © 2019 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <stdint.h>

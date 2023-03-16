@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gradfun.c: wrapper for the gradfun filter from libav
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
  *
  * Based on the work of: Nolan Lum and Loren Merritt
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

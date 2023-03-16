@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * i420_rgb_sse2.h: SSE2 YUV transformation assembly
  *****************************************************************************
  * Copyright (C) 1999-2012 VLC authors and VideoLAN
  *
  * Authors: Damien Fouilleul <damienf@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #if defined(CAN_COMPILE_SSE2)
 

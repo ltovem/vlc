@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: MIT
 /*****************************************************************************
  * kms_drm.c : Direct rendering management plugin for vlc
  *****************************************************************************
  * Copyright © 2018 Intel Corporation
  * Copyright © 2021 Videolabs
  * Copyright © 2022 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: MIT
  *****************************************************************************/
 
 /*****************************************************************************

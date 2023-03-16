@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dvbpsi_compat.h: Compatibility headerfile
  *****************************************************************************
  * Copyright (C) 2013 VideoLAN Association
  *
  * Authors: Jean-Paul Saman <jpsaman@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef DVBPSI_COMPAT_H

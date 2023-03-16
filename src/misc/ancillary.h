@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ancillary.h: helpers to manage ancillaries from a frame or a picture
  *****************************************************************************
  * Copyright (C) 2021 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_ANCILLARY_INTERNAL_H

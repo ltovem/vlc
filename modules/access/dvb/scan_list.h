@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * scan_list.h : Scanning parameters and transponders list
  *****************************************************************************
  * Copyright (C) 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_SCAN_LIST_H
 #define VLC_SCAN_LIST_H

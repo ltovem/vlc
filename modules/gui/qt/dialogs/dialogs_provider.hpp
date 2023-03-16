@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * dialogs_provider.hpp : Dialogs provider
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2008 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_DIALOGS_PROVIDER_H_

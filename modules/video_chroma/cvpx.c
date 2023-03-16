@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * cvpx.c: core video buffer to picture converter
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Felix Paul Kühne <fkuehne at videolan dot org>
  *          Thomas Guillem <thomas@gllm.fr>
  *          Victorien Le Couviour--Tuffet <victorien.lecouiour.tuffet@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

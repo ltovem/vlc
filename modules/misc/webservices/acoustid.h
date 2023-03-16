@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * acoustid.h: AcoustId webservice parser
  *****************************************************************************
  * Copyright (C) 2012 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #define ACOUSTID_ANON_SERVER "fingerprint.videolan.org"
 #define ACOUSTID_ANON_SERVER_PATH   "/acoustid.php"

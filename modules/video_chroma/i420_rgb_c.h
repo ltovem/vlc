@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * i420_rgb_c.h: YUV transformation functions
  * Provides functions to perform the YUV conversion. The functions provided here
@@ -7,8 +8,6 @@
  * Copyright (C) 1999, 2000 VLC authors and VideoLAN
  *
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

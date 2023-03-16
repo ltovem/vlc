@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
 * VLCLibraryImageCache.m: MacOS X interface module
 *****************************************************************************
 * Copyright (C) 2020 VLC authors and VideoLAN
 *
 * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
-*
-* SPDX-License-Identifier: GPL-2.0-or-later
 *****************************************************************************/
 
 #import "VLCLibraryImageCache.h"

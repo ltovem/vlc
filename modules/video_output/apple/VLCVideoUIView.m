@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * VLCVideoUIView.m: iOS UIView vout window provider
  *****************************************************************************
@@ -11,8 +12,6 @@
  *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
  *          Eric Petit <titer@m0k.org>
  *          Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

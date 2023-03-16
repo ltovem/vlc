@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * livehttp.c: Live HTTP Streaming
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Keary Griffin <kearygriffin at gmail.com>
  *          Ilkka Ollakka <ileoo at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

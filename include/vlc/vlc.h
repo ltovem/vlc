@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc.h: global header for libvlc
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Gildas Bazin <gbazin@netcourrier.com>
  *          Derk-Jan Hartman <hartman at videolan dot org>
  *          Pierre d'Herbemont <pdherbemont@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_VLC_H

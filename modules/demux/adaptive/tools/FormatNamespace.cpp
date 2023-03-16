@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * FormatNamespace.cpp
  *****************************************************************************
- * Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

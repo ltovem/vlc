@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * profile_selector.hpp : A small profile selector and editor
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2009 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_PROFILE_SELECTOR_HPP_

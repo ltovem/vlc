@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * image_cvpx.c: export test for image_handler with cvpx sources
  *****************************************************************************
  * Copyright (C) 2023 Videolabs
  *
  * Authors: Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

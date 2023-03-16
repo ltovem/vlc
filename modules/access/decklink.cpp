@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * decklink.cpp: BlackMagic DeckLink SDI input module
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Steinar H. Gunderson <steinar+vlc@gunderson.no>
             Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

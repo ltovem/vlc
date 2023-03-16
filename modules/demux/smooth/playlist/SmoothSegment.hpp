@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * SmoothSegment.hpp:
  *****************************************************************************
  * Copyright (C) 2015 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef SMOOTHSEGMENT_HPP
 #define SMOOTHSEGMENT_HPP

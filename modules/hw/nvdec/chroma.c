@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * chroma.c: NVDEC/CUDA chroma conversion filter
  *****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

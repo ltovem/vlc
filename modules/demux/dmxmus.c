@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dmxmus.c : DMX audio music (.mus) demux module for vlc
  *****************************************************************************
  * Copyright © 2019 Rémi Denis-Courmont
  *
  * Perusing documentation by Vladimir Arnost and Adam Nielsen.
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

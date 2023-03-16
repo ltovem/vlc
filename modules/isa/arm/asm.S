@@ -1,8 +1,7 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Copyright (c) 2018 Janne Grunau <janne-libav@jannau.net>
  * Copyright (c) 2019 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #ifdef __APPLE__

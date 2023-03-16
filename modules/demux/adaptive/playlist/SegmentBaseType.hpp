@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * SegmentBaseType.hpp
  *****************************************************************************
- * Copyright (C) 2020 VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2020 VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef SEGMENTBASETYPE_H_
 #define SEGMENTBASETYPE_H_

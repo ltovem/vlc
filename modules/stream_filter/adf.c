@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * adf.c ADF stream filter
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Author: Tristan Matthews <tmatth@videolan.org>
  * Based on record.c by: Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

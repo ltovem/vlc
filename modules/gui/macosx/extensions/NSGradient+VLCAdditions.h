@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * NSGradient+VLCAdditions.h: Category that adds safer bezier path operations
  *****************************************************************************
  * Copyright (C) 2020 VLC authors and VideoLAN
  *
  * Authors: Marvin Scholz <epirat07 at gmail dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file window.c
  * @brief Win32 non-embedded video window provider
@@ -8,8 +9,6 @@
  *
  * Authors: Filippo Carone <filippo@carone.org>
  *          Pierre d'Herbemont <pdherbemont # videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

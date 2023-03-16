@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ctrl_text.cpp
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Cyril Deguet     <asmax@via.ecp.fr>
  *          Olivier Teulière <ipkiss@via.ecp.fr>
  *          Erwan Tulou      <erwan10 At videolan Dot org<
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include "ctrl_text.hpp"

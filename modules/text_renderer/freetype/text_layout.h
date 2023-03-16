@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * text_layout.h : Text shaping and layout
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Devin Heitmueller <dheitmueller@kernellabs.com>
  *          Salah-Eddin Shaban <salshaaban@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /** \ingroup freetype

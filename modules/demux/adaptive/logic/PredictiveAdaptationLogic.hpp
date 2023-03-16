@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * PredictiveAdaptationLogic.hpp
  *****************************************************************************
- * Copyright (C) 2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2016 - VideoLAN Authors
  *****************************************************************************/
 #ifndef PREDICTIVEADAPTATIONLOGIC_HPP
 #define PREDICTIVEADAPTATIONLOGIC_HPP

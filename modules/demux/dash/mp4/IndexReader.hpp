@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * IndexReader.hpp
  *****************************************************************************
- * Copyright (C) 2015 - VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2015 - VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef INDEXREADER_HPP
 #define INDEXREADER_HPP

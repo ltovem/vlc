@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCBookmarksWindowController.m: MacOS X Bookmarks window
  *****************************************************************************
  * Copyright (C) 2005 - 2015 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 

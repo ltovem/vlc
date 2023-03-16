@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * lpcm.c: lpcm decoder/packetizer module
  *****************************************************************************
@@ -9,8 +10,6 @@
  *          Gildas Bazin <gbazin@videolan.org>
  *          Lauren Aimar <fenrir _AT_ videolan _DOT_ org >
  *          Steinar H. Gunderson <steinar+vlc@gunderson.no>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

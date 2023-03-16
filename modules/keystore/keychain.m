@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * keychain.m: Darwin Keychain keystore module
  *****************************************************************************
  * Copyright © 2016, 2018 VLC authors, VideoLAN and VideoLabs
  *
  * Author: Felix Paul Kühne <fkuehne # videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

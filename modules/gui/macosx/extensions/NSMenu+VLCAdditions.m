@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
 * NSMenu+ItemAddition.m: MacOS X interface module
 *****************************************************************************
 * Copyright (C) 2020 VLC authors and VideoLAN
 *
 * Author: Felix Paul Kühne <fkuehne at videolan dot org>
-*
-* SPDX-License-Identifier: GPL-2.0-or-later
 *****************************************************************************/
 
 #import "NSMenu+VLCAdditions.h"

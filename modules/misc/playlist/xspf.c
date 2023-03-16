@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /******************************************************************************
  * xspf.c : XSPF playlist export functions
  ******************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Daniel Stränger <vlc at schmaller dot de>
  *          Yoann Peronneau <yoann@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *******************************************************************************/
 
 /**

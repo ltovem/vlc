@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * rist.h: RIST (Reliable Internet Stream Transport) helper
  *****************************************************************************
  * Copyright (C) 2020, SipRadius LLC
  *
  * Authors: Sergio Ammirata <sergio@ammirata.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef RIST_VLC_COMMON_H

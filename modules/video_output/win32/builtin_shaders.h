@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * builtin_shaders.h: Builtin HLSL shader functions.
  *****************************************************************************
  * Copyright (C) 2014 the VideoLAN team
  *
  * Authors: Sasha Koruga <skoruga@gmail.com>,
- *          Felix Abecassis <felix.abecassis@gmail.com>
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 static const char shader_disabled_source[] =

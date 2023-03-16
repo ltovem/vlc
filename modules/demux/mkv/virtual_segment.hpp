@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * virtual_segment.hpp : virtual segment implementation in the MKV demuxer
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Steve Lhomme <steve.lhomme@free.fr>
  *          Denis Charmet <typx@dinauz.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_MKV_VIRTUAL_SEGMENT_HPP_

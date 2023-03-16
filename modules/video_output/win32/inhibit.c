@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * inhibit.c: Windows video output common code
  *****************************************************************************
  * Copyright (C) 2018 VLC authors and VideoLAN
  *
  * Authors: Steve Lhomme <robux4@ycbcr.xyz>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

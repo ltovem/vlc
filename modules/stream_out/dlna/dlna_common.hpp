@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dlna_common.hpp : DLNA common header
  *****************************************************************************
  * Copyright © 2018 VLC authors and VideoLAN
  *
  * Authors: Shaleen Jain <shaleen@jain.sh>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef DLNA_COMMON_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * subtitle.h: subtitle helper functions
  *****************************************************************************
  * Copyright (C) 2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 inline static char * peek_Readline( stream_t *p_demuxstream, uint64_t *pi_offset )

@@ -1,4 +1,5 @@
 
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * EbmlParser for the matroska demuxer
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Steve Lhomme <steve.lhomme@free.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "Ebml_parser.hpp"

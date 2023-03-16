@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * epg.cpp : Epg Viewer dialog
- ****************************************************************************
+ *****************************************************************************
  * Copyright © 2010 VideoLAN and AUTHORS
  *
  * Authors:    Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

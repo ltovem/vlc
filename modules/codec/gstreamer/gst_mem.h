@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gst_mem.h: GStreamer Memory picture context for VLC
  *****************************************************************************
  * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * Author: Yann Lochet <yann@l0chet.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_GST_MEM_H

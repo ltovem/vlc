@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * rav1e.c : rav1e encoder (AV1) module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Kartik Ohri <kartikohri13@gmail.com>
  *          Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

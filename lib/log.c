@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * log.c: libvlc new API log functions
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  *
  * Authors: Damien Fouilleul <damienf@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * demux.c : V4L2 raw video demux module for vlc
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Richard Hosking <richard at hovis dot net>
  *          Antoine Cellerier <dionoea at videolan d.t org>
  *          Dennis Lou <dlou99 at yahoo dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

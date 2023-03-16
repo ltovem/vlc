@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * vout_window.hpp
  *****************************************************************************
  * Copyright (C) 2003 the VideoLAN team
  *
  * Authors: Cyril Deguet     <asmax@via.ecp.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VOUT_WINDOW_HPP

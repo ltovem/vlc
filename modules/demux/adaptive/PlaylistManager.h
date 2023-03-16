@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * PlaylistManager.h
  *****************************************************************************
- * Copyright © 2010 - 2011 Klagenfurt University
- *             2015 VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2010 - 2011 Klagenfurt University
+             2015 VideoLAN and VLC Authors
  *****************************************************************************/
 
 #ifndef PLAYLISTMANAGER_H_

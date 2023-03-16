@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_strings.h: String functions
  *****************************************************************************
  * Copyright (C) 2006 VLC authors and VideoLAN
  *
  * Authors: Antoine Cellerier <dionoea at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_STRINGS_H

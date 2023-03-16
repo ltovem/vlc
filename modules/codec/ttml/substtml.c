@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * substtml.c : TTML subtitles decoder
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Hugo Beauzée-Luyssen <hugo@beauzee.fr>
  *          Sushma Reddy <sushma.reddy@research.iiit.ac.in>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * decoder.c
  *****************************************************************************
  * Copyright (C) 2017 VLC authors and VideoLAN
  *
  * Authors: Shaleen Jain <shaleen.jain95@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

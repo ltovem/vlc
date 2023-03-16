@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * libvlc.h: Internal libvlc generic/misc declaration
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright © 2006-2007 Rémi Denis-Courmont
  *
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef LIBVLC_LIBVLC_H

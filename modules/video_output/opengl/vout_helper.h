@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vout_helper.h: OpenGL vout_display helpers
  *****************************************************************************
@@ -10,8 +11,6 @@
  *          Ilkka Ollakka <ileoo@videolan.org>
  *          Felix Paul Kühne <fkuehne at videolan dot org>
  *          Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_OPENGL_VOUT_HELPER_H

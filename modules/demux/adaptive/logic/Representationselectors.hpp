@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Representationselectors.hpp
  *****************************************************************************
- * Copyright (C) 2014 - VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2014 - VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef REPRESENTATIONSELECTORS_HPP
 #define REPRESENTATIONSELECTORS_HPP

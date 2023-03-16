@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * mtp.c :  MTP interface module
  *****************************************************************************
  * Copyright (C) 2009 the VideoLAN team
  *
  * Authors: Fabio Ritrovato <exsephiroth87@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

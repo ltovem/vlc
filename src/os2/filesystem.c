@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * filesystem.c: OS/2 file system helpers
  *****************************************************************************
@@ -7,8 +8,6 @@
  *
  * Authors: Rémi Denis-Courmont
  *          KO Myung-Hun <komh@chollian.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,12 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * errors.cpp : Errors
- ****************************************************************************
+ *****************************************************************************
  * Copyright ( C ) 2006 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

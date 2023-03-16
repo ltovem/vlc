@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file platform_xcb.c
  * @brief Vulkan platform-specific code for X11/xcb
  */
 /*****************************************************************************
  * Copyright © 2018 Niklas Haas
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

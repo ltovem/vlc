@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright (C) 2013 VLC authors and VideoLAN
- *
+ *****************************************************************************
  * Author:
  *          Simona-Marinela Prodea <simona dot marinela dot prodea at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

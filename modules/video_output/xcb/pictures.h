@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file pictures.h
  * @brief XCB pictures allocation header
  */
 /*****************************************************************************
  * Copyright © 2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef WORDS_BIGENDIAN

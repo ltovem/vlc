@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_threads.h : threads implementation for the VideoLAN client
  * This header provides portable declarations for mutexes & conditions
@@ -9,8 +10,6 @@
  *          Samuel Hocevar <sam@via.ecp.fr>
  *          Gildas Bazin <gbazin@netcourrier.com>
  *          Christophe Massiot <massiot@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_THREADS_H_

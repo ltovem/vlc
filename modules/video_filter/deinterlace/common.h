@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * common.h : Common macros for the VLC deinterlacer
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Author: Sam Hocevar <sam@zoy.org>
  *         Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DEINTERLACE_COMMON_H

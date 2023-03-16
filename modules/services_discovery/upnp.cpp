@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * upnp.cpp :  UPnP discovery module (libupnp)
  *****************************************************************************
@@ -12,8 +13,6 @@
  *          Felix Paul Kühne <fkuehne # videolan.org>
  *          Bastien Penavayre <swac31@gmail.com>
  *          Andreas Krug <akrug@arcor.de>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

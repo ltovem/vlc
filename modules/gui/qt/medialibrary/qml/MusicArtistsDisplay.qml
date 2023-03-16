@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 import QtQuick.Controls 2.4
 import QtQuick 2.11

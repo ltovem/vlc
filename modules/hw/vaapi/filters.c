@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * filters.c: VAAPI filters
  *****************************************************************************
  * Copyright (C) 2017 VLC authors, VideoLAN and VideoLabs
  *
  * Author: Victorien Le Couviour--Tuffet <victorien.lecouviour.tuffet@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

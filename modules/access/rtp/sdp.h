@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file sdp.h
  * @brief Session Description Protocol (SDP)
@@ -5,8 +6,6 @@
  */
 /*****************************************************************************
  * Copyright © 2020 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 #ifndef VLC_SDP_H

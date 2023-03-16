@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ttml.h : TTML helpers
  *****************************************************************************
  * Copyright (C) 2017 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 int tt_OpenDemux( vlc_object_t* p_this );

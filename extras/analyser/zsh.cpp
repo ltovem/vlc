@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * zsh.cpp: create zsh completion rule for vlc
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Sigmund Augdal Helberg <dnumgis@videolan.org>
             Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

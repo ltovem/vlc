@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * ctrl_tree.cpp
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Antoine Cellerier <dionoea@videolan.org>
  *          Clément Stenac <zorglub@videolan.org>
  *          Erwan Tulou  <erwan10 At videolan DoT org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include <algorithm>

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_desciptions.c: es description strings
  *****************************************************************************
  * Copyright (C) 2004-2016 VLC authors and VideoLAN
  *                    2018 VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef TS_DESCRIPTIONS
 #define TS_DESCRIPTIONS

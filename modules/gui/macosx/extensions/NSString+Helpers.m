@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * NSString+Helpers.m: Category with helper functions for NSStrings
  *****************************************************************************
@@ -9,8 +10,6 @@
  *          Felix Paul Kühne <fkuehne at videolan dot org>
  *          Marvin Scholz <epirat07@gmail.com>
  *          David Fuhrmann <dfuhrmann # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "NSString+Helpers.h"

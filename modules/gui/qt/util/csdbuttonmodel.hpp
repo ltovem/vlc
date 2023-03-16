@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2022 the VideoLAN team
- *
+ *****************************************************************************
  * Authors: Prince Gupta <guptaprince8832@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef CSDBUTTONCONTROLLER_HPP

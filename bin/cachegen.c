@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * cachegen.c: LibVLC plugins cache generator
  *****************************************************************************
  * Copyright (C) 2010 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

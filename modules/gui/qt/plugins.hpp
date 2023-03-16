@@ -1,14 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * plugins.hpp : Qt static plugin integration
- ****************************************************************************
+ *****************************************************************************
  * Copyright © 2006-2009 the VideoLAN team
  * Copyright © 2022 Videolabs
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #if !defined(QT_STATIC) && !defined(QT_SHARED)

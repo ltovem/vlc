@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * helpers.h: WEBVTT helper
  *****************************************************************************
  * Copyright (C) 2020 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef WEBVTT_HELPERS_H
 #define WEBVTT_HELPERS_H

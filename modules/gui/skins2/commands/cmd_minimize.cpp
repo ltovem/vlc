@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * cmd_minimize.cpp
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Mohammed Adnène Trojette     <adn@via.ecp.fr>
  *          Olivier Teulière <ipkiss@via.ecp.fr>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include "cmd_minimize.hpp"

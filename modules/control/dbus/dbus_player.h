@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * dbus_player.h : dbus control module (mpris v2.2) - Player object
  *****************************************************************************
@@ -7,8 +8,6 @@
  *
  * Authors:    Mirsal Ennaime <mirsal at mirsal fr>
  *             Rafaël Carré <funman at videolanorg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_DBUS_DBUS_PLAYER_H_

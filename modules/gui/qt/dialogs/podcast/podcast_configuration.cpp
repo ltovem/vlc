@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * podcast_configuration.cpp: Podcast configuration dialog
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2007 the VideoLAN team
  *
  * Authors: Antoine Cellerier <dionoea at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

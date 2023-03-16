@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Downloader.hpp
  *****************************************************************************
- * Copyright (C) 2015 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2015 - VideoLAN Authors
  *****************************************************************************/
 #ifndef DOWNLOADER_HPP
 #define DOWNLOADER_HPP

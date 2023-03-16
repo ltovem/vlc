@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ID3Genres.h: list of genres for id3 genre tags
  *****************************************************************************
@@ -9,8 +10,6 @@
  *         updated with extensions to conform to real-world files
  *         see http://www.id3.org/Compliance_Issues and
  *             http://www.id3.org/id3v2.3.0
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef ID3GENRES_H
 #define ID3GENRES_H

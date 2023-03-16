@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ball.c : Augmented reality ball video filter module
  *****************************************************************************
@@ -9,8 +10,6 @@
  * written by:
  *         Samuel Hocevar <sam@zoy.org>
  *         Antoine Cellerier <dionoea -at- videolan -dot- org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file sdp_test.c
  */
 /*****************************************************************************
  * Copyright © 2020 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

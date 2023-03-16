@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * hds.c: Http Dynamic Streaming (HDS) stream filter
  *****************************************************************************
  *
  * Author: Jonathan Thambidurai <jonathan _AT_ fastly _DOT_ com>
  * Heavily inspired by SMooth module of Frédéric Yhuel <fyhuel _AT_ viotech _DOT_ net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

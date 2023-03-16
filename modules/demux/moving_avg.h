@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * moving_avg.h: Moving average helper
  *****************************************************************************
  * Copyright © 2018 VideoLabs, VideoLAN, VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MOVING_AVG_H
 #define VLC_MOVING_AVG_H

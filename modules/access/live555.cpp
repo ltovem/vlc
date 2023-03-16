@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * live555.cpp : LIVE555 Streaming Media support.
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Derk-Jan Hartman <hartman at videolan. org>
  *          Derk-Jan Hartman <djhartman at m2x .dot. nl> for M2X
  *          Sébastien Escudier <sebastien-devel celeos eu>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

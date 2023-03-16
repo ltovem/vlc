@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * deinterlace.c : deinterlacer plugin for vlc
  *****************************************************************************
@@ -8,8 +9,6 @@
  *         Laurent Aimar <fenrir@videolan.org>
  *         Juha Jeronen <juha.jeronen@jyu.fi>
  *         ...and others
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

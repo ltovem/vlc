@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * stereo_pan.c : Stereo panning filter
  *****************************************************************************
  * Copyright © 2021 VLC authors and VideoLAN
  *
  * Authors: Vedanta Nayak <vedantnayak2@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

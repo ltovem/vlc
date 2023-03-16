@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * backends.h : freetype font configuration backends declarations
  *****************************************************************************
  * Copyright (C) 2002 - 2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef __cplusplus
 extern "C" {

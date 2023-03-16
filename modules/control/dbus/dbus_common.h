@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * dbus_common.h : Common header for D-Bus control modules
  *****************************************************************************
@@ -9,8 +10,6 @@
  * Authors:    Mirsal Ennaime <mirsal dot ennaime at gmailcom>
  *             Rafaël Carré <funman at videolanorg>
  *             Alex Merry <dev at randomguy3 me uk>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_DBUS_DBUS_COMMON_H_

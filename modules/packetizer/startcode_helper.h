@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * startcode_helper.h: Startcodes helpers
  *****************************************************************************
  * Copyright (C) 2016 VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_STARTCODE_HELPER_H_
 #define VLC_STARTCODE_HELPER_H_

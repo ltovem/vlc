@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * volume.c : audio output volume operations
  *****************************************************************************
  * Copyright (C) 2002-2004 VLC authors and VideoLAN
  * Copyright (C) 2011-2012 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

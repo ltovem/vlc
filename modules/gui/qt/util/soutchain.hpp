@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * soutchain.hpp: A class to generate Stream Output Chains
  ****************************************************************************
  * Copyright (C) 2019 Jérôme Froissart <software@froiss.art>
  *
  * Authors: Jérôme Froissart <software@froiss.art>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_SOUTCHAIN_HPP_

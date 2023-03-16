@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file rtp.h
  * @brief RTP demux module shared declarations
  */
 /*****************************************************************************
  * Copyright © 2008 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 /**

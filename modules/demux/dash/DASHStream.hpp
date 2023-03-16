@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * DASHStream.hpp
  *****************************************************************************
- * Copyright (C) 2015 - VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2015 - VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef DASHSTREAM_HPP
 #define DASHSTREAM_HPP

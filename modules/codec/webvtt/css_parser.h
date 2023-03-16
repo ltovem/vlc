@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * css_parser.h : CSS parser interface
  *****************************************************************************
  * Copyright (C) 2017 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef CSS_PARSER_H
 #define CSS_PARSER_H

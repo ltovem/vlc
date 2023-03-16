@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_timestamp_helper.h : timestamp handling helpers
  *****************************************************************************
  * Copyright (C) 2014 VLC authors and VideoLAN
  *
  * Authors: Felix Abecassis <felix.abecassis@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_TIMESTAMP_H

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file wextern.c
  * @brief Dummy video window provider where the size is handled externally
  */
 /*****************************************************************************
  * Copyright © 2019 VideoLabs, VideoLAN and VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

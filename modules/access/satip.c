@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * satip.c: SAT>IP input module
  *****************************************************************************
@@ -7,8 +8,6 @@
  * Copyright © 2016 Julian Scheel
  *
  * Authors: Julian Scheel <julian@jusst.de>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "config.h"

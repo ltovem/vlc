@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * yuv_rgb.c : ARM NEONv1 YUV to RGB32 chroma conversion for VLC
  *****************************************************************************
  * Copyright (C) 2011 Sébastien Toque
  *                    Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

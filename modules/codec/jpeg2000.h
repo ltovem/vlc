@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * jpeg2000.h J2K definitions
  *****************************************************************************
  * Copyright (C) 2017 VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_JPEG2000_H
 #define VLC_JPEG2000_H

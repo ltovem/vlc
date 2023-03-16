@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mac.c: Screen capture module for the Mac.
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          Derk-Jan Hartman <hartman at videolan dot org>
  *          Pierre d'Herbemont <pdherbemont # videolan org>
  *          Felix Paul Kühne <fkuehne # videolan org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

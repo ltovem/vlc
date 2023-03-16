@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * FormatNameSpace.hpp
  *****************************************************************************
- * Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2019 VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef FORMATNAMESPACE_HPP_
 #define FORMATNAMESPACE_HPP_

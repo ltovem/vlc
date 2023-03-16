@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_media_library.h: SQL-based media library
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Rémi Duraffort <ivoire@videolan.org>
  *          Adrien Maglo <magsoft@videolan.org>
  *          Srikanth Raju <srikiraju at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_MEDIA_LIBRARY_H

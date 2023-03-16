@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Time.hpp: Adaptative streaming time definitions
  *****************************************************************************
  * Copyright © 2015 - VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef TIME_HPP
 #define TIME_HPP

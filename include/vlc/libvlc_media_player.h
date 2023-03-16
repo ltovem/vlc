@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * libvlc_media_player.h:  libvlc_media_player external API
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Paul Saman <jpsaman@videolan.org>
  *          Pierre d'Herbemont <pdherbemont@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_LIBVLC_MEDIA_PLAYER_H
@@ -704,9 +703,9 @@ typedef enum libvlc_video_engine_t {
 
 
 /** Callback type that can be called to request a render size changes.
- * 
+ *
  * libvlc will provide a callback of this type when calling \ref libvlc_video_output_set_resize_cb.
- * 
+ *
  * \param report_opaque parameter passed to \ref libvlc_video_output_set_resize_cb. [IN]
  * \param width new rendering width requested. [IN]
  * \param height new rendering height requested. [IN]

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * musicbrainz.h : Musicbrainz API lookup
  *****************************************************************************
  * Copyright (C) 2019 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MUSICBRAINZ_H_
 #define VLC_MUSICBRAINZ_H_

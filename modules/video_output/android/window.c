@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file window.c
  * @brief Android native window provider module for VLC media player
@@ -6,8 +7,6 @@
  * Copyright © 2013 VLC authors and VideoLAN
  *
  * Author: Adrien Maglo <magsoft@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

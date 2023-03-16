@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * xmlreading.h : Videolan.org's Addons xml readers helper
  *****************************************************************************
  * Copyright (C) 2014 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #define BINDNODE(name,target,type)\

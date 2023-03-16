@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ftcache.h : Font Face and glyph cache freetype2
  *****************************************************************************
  * Copyright (C) 2020 - VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef FTCACHE_H
 #define FTCACHE_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * SDIAudioMultiplex.hpp: SDI Audio Multiplexing
  *****************************************************************************
  * Copyright © 2018 VideoLabs, VideoLAN and VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef SDIAUDIOMULTIPLEX_HPP
 #define SDIAUDIOMULTIPLEX_HPP

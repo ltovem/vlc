@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * remap.c : simple channel remapper plug-in
  *****************************************************************************
  * Copyright (C) 2011 VLC authors and VideoLAN
  *
  * Authors: Cheng Sun <chengsun9@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

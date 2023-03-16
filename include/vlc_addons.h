@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_addons.h : addons handling and describing
  *****************************************************************************
  * Copyright (C) 2013 VideoLAN and authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_ADDONS_H

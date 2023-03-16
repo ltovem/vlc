@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * encoder_priv.h: transcoding encoders interface
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #include <vlc_picture_fifo.h>
 

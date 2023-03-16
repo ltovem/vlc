@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * NearOptimalAdaptationLogic.hpp
  *****************************************************************************
- * Copyright (C) 2017 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2017 - VideoLAN Authors
  *****************************************************************************/
 #ifndef NEAROPTIMALADAPTATIONLOGIC_HPP
 #define NEAROPTIMALADAPTATIONLOGIC_HPP

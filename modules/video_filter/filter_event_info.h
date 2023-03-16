@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * filter_event_info.h:
  *****************************************************************************
  * Copyright (C) 2004-2005 VLC authors and VideoLAN
  *
  * Authors: Dugal Harris
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef FILTER_EVENT_INFO_H_

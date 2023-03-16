@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * textst.c: HDMV TextST subtitles decoder
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Adapted from libluray textst_decode.c
  * Copyright (C) 2013  Petri Hintukainen <phintuka@users.sourceforge.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

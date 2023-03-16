@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * md5.c: test md5
  *****************************************************************************
  * Copyright (C) 2011 VideoLAN
  *
  * Authors: Jean-Bapstiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

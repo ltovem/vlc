@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * interop_gst_mem.c: OpenGL GStreamer Memory opaque converter
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Author: Yann Lochet <yann@l0chet.fr>
  * Heavily inspired by interop_vaapi.c
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

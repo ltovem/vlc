@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file vulkan.c
  * @brief Vulkan platform-specific code for Wayland
  */
 /*****************************************************************************
  * Copyright © 2020 VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #if HAVE_CONFIG_H

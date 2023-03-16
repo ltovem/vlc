@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * glspectrum.c: spectrum visualization module based on OpenGL
  *****************************************************************************
  * Copyright © 2009-2013 VLC authors and VideoLAN
  *
  * Authors: Adrien Maglo <magsoft@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

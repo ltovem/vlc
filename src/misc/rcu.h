@@ -2,10 +2,9 @@
  * \file rcu.h Read-Copy-Update (RCU) declarations
  * \ingroup rcu
  */
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright © 2021 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_RCU_H_

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * slaves.c: test libvlc_media_t and libvlc_media_player_t slaves API
  *****************************************************************************
  * Copyright © 2016 VLC authors, VideoLAN and VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include "test.h"

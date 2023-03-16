@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * nvdec.c: NVDEC hw video decoder
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Jai Luthra <me@jailuthra.in>
  *          Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

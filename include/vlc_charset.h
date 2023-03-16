@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_charset.h: Unicode UTF-8 wrappers function
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright © 2005-2010 Rémi Denis-Courmont
  *
  * Author: Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_CHARSET_H

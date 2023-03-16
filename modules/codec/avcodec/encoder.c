@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * encoder.c: video and audio encoder using the libavcodec library
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Christophe Massiot <massiot@via.ecp.fr>
  * Part of the file Copyright (C) FFmpeg Project Developers
  * (mpeg4_default matrixes)
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

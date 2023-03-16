@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * soxr.c: resampler/converter using The SoX Resampler library
  *****************************************************************************
  * Copyright (C) 2015 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * srt.c: SRT (Secure Reliable Transport) access_output module
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Justin Kim <justin.kim@collabora.com>
  *          Roman Diouskine <rdiouskine@haivision.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <srt_common.h>

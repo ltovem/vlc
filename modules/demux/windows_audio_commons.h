@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * windows_audio_common.h: Windows Audio common code
  *****************************************************************************
  * Copyright (C) 2001-2013 VideoLAN
  *
  * Authors: Denis Charmet <typx@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef DMX_WINDOWS_AUDIO_COMMONS_H
 #define DMX_WINDOWS_AUDIO_COMMONS_H

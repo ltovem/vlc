@@ -1,14 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * interface_widgets.cpp : Custom widgets for the main interface
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2010 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Rafaël Carré <funman@videolanorg>
  *          Ilkka Ollakka <ileoo@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

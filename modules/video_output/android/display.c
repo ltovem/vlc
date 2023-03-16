@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * display.c: Android video output module
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Ming Hu <tewilove@gmail.com>
  *          Ludovic Fauvet <etix@l0cal.com>
  *          Sébastien Toque <xilasz@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * localtime_r.c: POSIX localtime_r() replacement
  *****************************************************************************
  * Copyright © 1998-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #if defined(__STDC_LIB_EXT1__) && (__STDC_LIB_EXT1__ >= 20112L)

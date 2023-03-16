@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * daala.c: daala codec module making use of libdaala.
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Tristan Matthews <le.businessman@gmail.com>
  *   * Based on theora.c by: Gildas Bazin <gbazin@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

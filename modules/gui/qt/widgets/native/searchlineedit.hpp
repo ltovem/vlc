@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * searchlineedit.hpp: Custom widgets
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_SEARCHLINEEDIT_HPP_

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file xkb.c
  * @brief XKeyboard symbols mapping for VLC
  */
 /*****************************************************************************
  * Copyright © 2009-2018 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

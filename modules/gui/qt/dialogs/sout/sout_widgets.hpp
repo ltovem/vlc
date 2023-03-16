@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * sout_widgets.hpp : Widgets for stream output destination boxes
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2009 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef SOUT_WIDGETS_H

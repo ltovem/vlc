@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: BSD-2-Clause
 /* vim: set et ts=3 sw=3 ft=c:
  *
  * Copyright (C) 2012 James McLaughlin et al.  All rights reserved.
  * https://github.com/udp/json-parser
- *
- * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "json.h"

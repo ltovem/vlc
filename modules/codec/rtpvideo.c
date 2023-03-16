@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * rtpvideo.c: video encoder for raw video for RTP (see RFC 4175)
  *****************************************************************************
  * Copyright (C) 2015 VLC authors and VideoLAN
  *
  * Authors: Tristan Matthews <tmatth@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

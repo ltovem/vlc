@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * fsc_window.hpp
  *****************************************************************************
  * Copyright (C) 2010 the VideoLAN team
  *
  * Author: Erwan Tulou      <erwan10 At videolan Dot Org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef FSC_WINDOW_HPP

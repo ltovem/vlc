@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * dbus_introspect.h : dbus control module (mpris v2.2) - introspection data
  *****************************************************************************
@@ -9,8 +10,6 @@
  * Authors:    Mirsal Ennaime <mirsal at mirsal fr>
  *             Rafaël Carré <funman at videolanorg>
  *             Alex Merry <dev at randomguy3 me uk>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_DBUS_DBUS_INTROSPECT_H_

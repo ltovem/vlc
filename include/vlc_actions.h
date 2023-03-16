@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_actions.h: handle vlc actions
  *****************************************************************************
  * Copyright (C) 2003-2016 VLC authors and VideoLAN
  *
  * Authors: Sigmund Augdal Helberg <dnumgis@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_ACTIONS_H

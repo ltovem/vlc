@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * telx.c : Minimalistic Teletext subtitles decoder
  *****************************************************************************
  * Copyright (C) 2007 Vincent Penne
  * Some code converted from ProjectX java dvb decoder (c) 2001-2005 by dvb.matt
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 /*****************************************************************************
  *

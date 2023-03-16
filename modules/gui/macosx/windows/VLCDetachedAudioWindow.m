@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
 * VLCDetachedAudioWindow.m: macOS user interface
 *****************************************************************************
 * Copyright (C) 2019 VLC authors and VideoLAN
 *
 * Author: Felix Paul Kühne <fkuehne at videolan dot org>
-*
-* SPDX-License-Identifier: GPL-2.0-or-later
 *****************************************************************************/
 
 #import "extensions/NSString+Helpers.h"

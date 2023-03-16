@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * audiounit_ios.m: AudioUnit output plugin for iOS
  *****************************************************************************
  * Copyright (C) 2012 - 2017 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #pragma mark includes

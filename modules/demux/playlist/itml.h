@@ -1,11 +1,10 @@
-/*******************************************************************************
+// SPDX-License-Identifier: LGPL-2.1-or-later
+/*****************************************************************************
  * itml.h : iTunes Music Library import functions
- *******************************************************************************
+ *****************************************************************************
  * Copyright (C) 2007 VLC authors and VideoLAN
  *
  * Authors: Yoann Peronneau <yoann@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *******************************************************************************/
 /**
  * \file modules/demux/playlist/itml.h

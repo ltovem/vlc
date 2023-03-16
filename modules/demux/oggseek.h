@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * oggseek.h : ogg seeking functions for ogg demuxer vlc
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Gabriel Finch <salsaman@gmail.com>
  * adapted from: http://lives.svn.sourceforge.net/viewvc/lives/trunk/lives-plugins
  * /plugins/decoders/ogg_theora_decoder.c
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

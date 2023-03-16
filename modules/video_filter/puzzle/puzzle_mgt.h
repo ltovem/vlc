@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * puzzle_mgt.h : Puzzle game filter - game management
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2013      Vianney Boyer
  *
  * Authors: Vianney Boyer <vlcvboyer -at- gmail -dot- com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * puzzle_bezier.c : Bezier curves management
  *****************************************************************************
  * Copyright (C) 2013 Vianney Boyer
  *
  * Author:  Vianney Boyer <vlcvboyer -at- gmail -dot- com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

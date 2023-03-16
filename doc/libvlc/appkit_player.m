@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-2-Clause
 /* appkit_player.m: AppKit libvlc integration sample
  *
  * Copyright (C) 2022 Videolabs
@@ -5,7 +6,6 @@
  * Authors: Marvin Scholz <epirat07 at gmail dot com>
  *          Alexandre Janniaux <ajanni@videolabs.io>
  *
- * SPDX-License-Identifier: BSD-2-Clause
  */
 
 /*

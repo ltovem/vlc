@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * entry.c : Callbacks for module entry point
  *****************************************************************************
  * Copyright (C) 2007 VLC authors and VideoLAN
  * Copyright © 2007-2008 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

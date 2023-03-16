@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vsxu.cpp: visualization module wrapper for Vovoid VSXu
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Jonatan "jaw" Wallmander
  *
  * Used the projectM implementation as reference for this file.
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,11 +1,10 @@
-/**
+// SPDX-License-Identifier: LGPL-2.1-or-later
+/*****************************************************************************
  * @file os2drive.c
  * @brief List of disc drives for VLC media player for OS/2
  */
 /*****************************************************************************
  * Copyright (C) 2012 KO Myung-Hun <komh@chollian.net>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

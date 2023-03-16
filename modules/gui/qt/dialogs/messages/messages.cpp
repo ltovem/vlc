@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * messages.cpp : Information about an item
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2011 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb (at) videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

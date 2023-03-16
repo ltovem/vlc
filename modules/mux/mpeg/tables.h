@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * tables.h
  *****************************************************************************
  * Copyright (C) 2001-2005, 2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MPEG_TABLES_H_
 #define VLC_MPEG_TABLES_H_

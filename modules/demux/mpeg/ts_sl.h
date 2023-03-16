@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_sl.h : MPEG SL/FMC handling for TS demuxer
  *****************************************************************************
  * Copyright (C) 2014-2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_SL_H
 #define VLC_TS_SL_H

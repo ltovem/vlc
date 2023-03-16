@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file mpeg12.c
  * @brief Real-Time Protocol MPEG 1/2 payload format parser
  */
 /*****************************************************************************
  * Copyright © 2021 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

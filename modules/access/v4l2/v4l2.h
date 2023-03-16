@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * v4l2.h : Video4Linux2 input module for vlc
  *****************************************************************************
  * Copyright (C) 2002-2011 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #if defined(HAVE_LINUX_VIDEODEV2_H)

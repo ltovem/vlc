@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * subsdec.c : text subtitle decoder
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Laurent Aimer <fenrir@videolan.org>
  *          Jean-Baptiste Kempf <jb@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <vlc_strings.h>

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCAddonListItem.h: Addons manager for the Mac
  ****************************************************************************
  * Copyright (C) 2014 VideoLAN and authors
  * Authors:       Felix Paul Kühne <fkuehne # videolan.org>
  *                David Fuhrmann <dfuhrmann # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

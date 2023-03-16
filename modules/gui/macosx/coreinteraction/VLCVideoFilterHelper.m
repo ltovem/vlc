@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCVideoFilterHelper.h: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2006-2019 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCVideoFilterHelper.h"

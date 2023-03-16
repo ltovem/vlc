@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*******************************************************************************
  * xspf.c : XSPF playlist import functions
  *******************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Daniel Stränger <vlc at schmaller dot de>
  *          Yoann Peronneau <yoann@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ******************************************************************************/
 /**
  * \file modules/demux/playlist/xspf.c

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * qcom.c : pixel format translation for Qualcomm tiled nv12
  *****************************************************************************
  * Copyright © 2012 Rafaël Carré
  *
  * Authors: Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * osx_notifications.m : macOS notification plugin
  *
@@ -9,8 +10,6 @@
  * Authors: Marvin Scholz <epirat07@gmail.com>
  *          Felix Paul Kühne <fkuehne # videolan.org>
  *          Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 #define VLC_MODULE_LICENSE VLC_LICENSE_GPL_2_PLUS

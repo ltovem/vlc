@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * missing.c: missing libvlccore symbols
  *****************************************************************************
@@ -10,8 +11,6 @@
  *          Felix Paul Kühne <fkuehne # videolan org>
  *          Jean-Paul Saman <jpsaman # videolan org>
  *          Antoine Cellerier <dionoea # videolan org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /** \file

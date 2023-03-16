@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * error.c: Darwin error messages handling
  *****************************************************************************
  * Copyright © 2006-2013 Rémi Denis-Courmont
  *           © 2013 Felix Paul Kühne
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

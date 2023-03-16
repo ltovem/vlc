@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mpeg4audio.h: MPEG 4 audio definitions
  *****************************************************************************
  * Copyright (C) 2001-2017 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 enum mpeg4_audioObjectType /* ISO/IEC 14496-3:2009 1.5.1 */
 {

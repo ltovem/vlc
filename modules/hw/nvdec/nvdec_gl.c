@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * converter_nvdec.c: OpenGL NVDEC opaque converter
  *****************************************************************************
  * Copyright (C) 2019 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

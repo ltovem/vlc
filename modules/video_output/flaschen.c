@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * flaschentaschen.c: Flaschen-Taschen video output display for vlc
  * cf. https://github.com/hzeller/flaschen-taschen
@@ -8,8 +9,6 @@
  * Includes code from vdummy.c and aa.c:
  * Authors: Samuel Hocevar <sam@zoy.org>
  * Authors: Sigmund Augdal Helberg <dnumgis@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

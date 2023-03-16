@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vbi.c : Video4Linux2 VBI input module for vlc
  *****************************************************************************
  * Copyright (C) 2012 the VideoLAN team
  *
  * Author: Devin Heitmueller <dheitmueller at kernellabs dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * instance.h: libplacebo instance abstraction
  *****************************************************************************
  * Copyright (C) 2021 Niklas Haas
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_LIBPLACEBO_INSTANCE_H

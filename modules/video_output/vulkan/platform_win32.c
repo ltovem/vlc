@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file platform_win32.c
  * @brief Vulkan platform-specific code for Win32
  */
 /*****************************************************************************
  * Copyright © 2018 Niklas Haas, Marvin Scholz
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

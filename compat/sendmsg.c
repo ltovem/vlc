@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * sendmsg.c: POSIX sendmsg() replacement
  *****************************************************************************
@@ -6,8 +7,6 @@
  *
  * Authors: Rémi Denis-Courmont
  *          Dennis Hamester <dhamester@jusst.de>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

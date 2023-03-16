@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * twolame.c: libtwolame encoder (MPEG-1/2 layer II) module
  *            (using libtwolame from http://www.twolame.org/)
@@ -6,8 +7,6 @@
  *
  * Authors: Christophe Massiot <massiot@via.ecp.fr>
  *          Gildas Bazin
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

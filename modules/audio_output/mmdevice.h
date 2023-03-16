@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mmdevice.h : Windows Multimedia Device API audio output plugin for VLC
  *****************************************************************************
  * Copyright (C) 2012 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_AOUT_MMDEVICE_H

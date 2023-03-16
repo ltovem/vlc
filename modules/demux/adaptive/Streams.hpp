@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Streams.hpp
  *****************************************************************************
- * Copyright (C) 2014 - VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2014 - VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef STREAM_HPP
 #define STREAM_HPP

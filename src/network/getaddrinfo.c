@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * getaddrinfo.c: getaddrinfo/getnameinfo replacement functions
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2002-2007 Rémi Denis-Courmont
  *
  * Author: Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

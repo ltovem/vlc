@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /*****************************************************************************
  * sapi.cpp: Simple text to Speech renderer for Windows, based on SAPI
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Moti Zilberman
  *          Jean-Baptiste Kempf
- *
- * SPDX-License-Identifier: MIT
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * languages.h: Quicktime language codes and ISO-639-2/T conversion
  *****************************************************************************
  * Copyright (C) 2014 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MP4_LANGUAGES_H_
 #define VLC_MP4_LANGUAGES_H_

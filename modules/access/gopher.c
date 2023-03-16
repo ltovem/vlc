@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gopher.c: gopher input module
  *****************************************************************************
@@ -7,8 +8,6 @@
  * Authors: Vincenzo "KatolaZ" Nicosia <katolaz@freaknet.org>
  *
  * This module was adapted from tcp.c
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

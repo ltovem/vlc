@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * algo_basic.h : Basic algorithms for the VLC deinterlacer
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Author: Sam Hocevar <sam@zoy.org>
  *         Damien Lucas <nitrox@videolan.org>  (Bob, Blend)
  *         Laurent Aimar <fenrir@videolan.org> (Bob, Blend)
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DEINTERLACE_ALGO_BASIC_H

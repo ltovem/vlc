@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * evt_dragndrop.hpp
  *****************************************************************************
  * Copyright (C) 2011 the VideoLAN team
  *
  * Author: Erwan Tulou      <erwan10 At videolan Dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef EVT_DRAGNDROP_HPP

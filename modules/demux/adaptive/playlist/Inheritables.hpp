@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Inheritables.hpp Nodes inheritables properties
  *****************************************************************************
  * Copyright (C) 2016-2020 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef INHERITABLES_H
 #define INHERITABLES_H

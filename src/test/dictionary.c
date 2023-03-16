@@ -1,10 +1,9 @@
 
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dictionary.c: Tests for vlc_dictionary_t
  *****************************************************************************
  * Copyright (C) 2007 Pierre d'Herbemont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

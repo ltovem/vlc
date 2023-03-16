@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * wgl.c: WGL extension for OpenGL
  *****************************************************************************
  * Copyright © 2009-2016 VLC authors and VideoLAN
  *
  * Authors: Adrien Maglo <magsoft@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include "config.h"

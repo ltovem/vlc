@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * d3d_shaders.h: Direct3D Shaders
  *****************************************************************************
  * Copyright (C) 2017-2021 VLC authors and VideoLAN
  *
  * Authors: Steve Lhomme <robux4@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_D3D_SHADERS_H

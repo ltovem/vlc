@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * caopengllayer.m: CAOpenGLLayer (Mac OS X) video output
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Pierre d'Herbemont <pdherbemont at videolan dot org>
  *
  * Some of the code is based on mpv's video_layer.swift by "der richter"
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

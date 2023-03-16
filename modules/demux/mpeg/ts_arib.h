@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_arib.h : TS demux ARIB specific handling
  *****************************************************************************
  * Copyright (C) 2017 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_ARIB_H
 #define VLC_TS_ARIB_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_tick.h: high resolution time management functions
  *****************************************************************************
@@ -10,8 +11,6 @@
  * Copyright (C) 1996, 1997, 1998, 1999, 2000 VLC authors and VideoLAN
  *
  * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef __VLC_MTIME_H

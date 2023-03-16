@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * opensles_android.c : audio output for android native code
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Dominique Martinet <asmadeus@codewreck.org>
  *          Hugo Beauzée-Luyssen <hugo@beauzee.fr>
  *          Rafaël Carré <funman@videolanorg>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

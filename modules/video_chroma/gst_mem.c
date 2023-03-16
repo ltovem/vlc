@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gst_mem.c: GStreamer Memory to picture converter
  *****************************************************************************
  * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * Author: Yann Lochet <yann@l0chet.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * file.c: file logger plugin
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright © 2007-2015 Rémi Denis-Courmont
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

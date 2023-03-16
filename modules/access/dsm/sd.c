@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file bdsm/sd.c
  * @brief List host supporting NETBIOS on the local network
@@ -6,8 +7,6 @@
  * Copyright © 2014 Authors and the VideoLAN team
  *
  * Authors: - Julien 'Lta' BALLET <contact # lta 'dot' io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

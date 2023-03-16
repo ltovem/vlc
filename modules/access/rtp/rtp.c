@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file rtp.c
  * @brief Real-Time Protocol (RTP) demux module for VLC media player
@@ -5,8 +6,6 @@
 /*****************************************************************************
  * Copyright (C) 2001-2005 VLC authors and VideoLAN
  * Copyright © 2007-2009 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * alsa.c : alsa plugin for vlc
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Jeffrey Baker <jwbaker@acm.org> - Port to ALSA 1.0 API
  *          John Paul Lorenti <jpl31@columbia.edu> - Device selection
  *          Arnaud de Bossoreille de Ribou <bozo@via.ecp.fr> - S/PDIF and aout3
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

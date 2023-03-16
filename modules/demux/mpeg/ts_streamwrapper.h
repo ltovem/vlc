@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_streamwrapper.c: Stream filter source wrapper
  *****************************************************************************
  * Copyright (C) 2020 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #include <vlc_stream.h>
 

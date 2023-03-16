@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #ifndef VLC_QT_PLAYLIST_NEW_ITEM_HPP_
 #define VLC_QT_PLAYLIST_NEW_ITEM_HPP_

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * viewpoint.c: viewpoint helpers for conversions and transformations
  *****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
  *
  * Authors: Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

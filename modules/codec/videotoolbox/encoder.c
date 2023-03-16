@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * videotoolbox/encoder.c: Video Toolbox encoder
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Alexandre Janniaux <ajanni@videolabs.io>
  *          Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

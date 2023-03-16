@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dlna.cpp : DLNA/UPNP (renderer) sout module
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Shaleen Jain <shaleen@jain.sh>
  *          William Ung <william1.ung@epitech.eu>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

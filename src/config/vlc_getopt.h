@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Declarations for getopt_long()
  *****************************************************************************
  * Copyright (C) 1987-1997 Free Software Foundation, Inc.
  * Copyright (C) 2005-2010 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_GETOPT_H

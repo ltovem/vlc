@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * cea708.h : CEA708 subtitles decoder
  *****************************************************************************
  * Copyright © 2017 Videolabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_CEA708_H_
 #define VLC_CEA708_H_

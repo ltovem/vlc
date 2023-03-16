@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * media_list_path.h : Some inlined function that allows media_list_path
  * manipulation. This is internal and used only by media_list_player.
@@ -5,8 +6,6 @@
  * Copyright (C) 2005 VLC authors and VideoLAN
  *
  * Authors: Pierre d'Herbemont <pdherbemont # videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef _LIBVLC_MEDIA_LIST_PATH_H

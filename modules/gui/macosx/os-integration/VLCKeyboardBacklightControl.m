@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCKeyboardBlacklightControl.m: MacBook keyboard backlight control for VLC
  *****************************************************************************
  * Copyright (C) 2015, 2019 VLC authors and VideoLAN
  *
  * Authors: Maxime Mouchet <max@maxmouchet.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCKeyboardBacklightControl.h"

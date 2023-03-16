@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * egl_pbuffer.c: OpenGL filter in EGL offscreen framebuffer
  *****************************************************************************
  * Copyright (C) 2020 Videolabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifdef HAVE_CONFIG_H
 # include <config.h>

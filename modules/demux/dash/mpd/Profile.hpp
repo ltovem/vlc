@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Profile.hpp
  *****************************************************************************
- * Copyright (C) 2010 - 2014 VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2010 - 2014 VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef PROFILE_HPP
 #define PROFILE_HPP

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * platform.h: Vulkan platform abstraction
  *****************************************************************************
  * Copyright (C) 2018 Niklas Haas
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_VULKAN_PLATFORM_H

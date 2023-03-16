@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * opencv_example.cpp : Example OpenCV internal video filter
  * (performs face identification).  Mostly taken from the facedetect.c
@@ -8,8 +9,6 @@
  *
  * Authors: Dugal Harris <dugalh@protoclea.co.za>
  *          Edward Wang <edward.c.wang@compdigitec.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

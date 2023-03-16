@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Templates.hpp
  *****************************************************************************
  * Copyright (C) 2014-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef TEMPLATES_HPP
 #define TEMPLATES_HPP

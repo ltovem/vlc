@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * lru.h : Last recently used cache implementation
  *****************************************************************************
  * Copyright (C) 2020 - VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef LRU_H
 #define LRU_H

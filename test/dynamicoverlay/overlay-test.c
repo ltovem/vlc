@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * overlay-test.c : test program for the dynamic overlay plugin
  *****************************************************************************
  * Copyright (C) 2007 the VideoLAN team
  *
  * Author: Søren Bøg <avacore@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /*****************************************************************************

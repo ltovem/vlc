@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * iso-639_def.h: language codes and abbreviations
  *****************************************************************************
@@ -7,8 +8,6 @@
  *
  * Authors: Stéphane Borel <stef@via.ecp.fr>
  *          Arnaud de Bossoreille de Ribou <bozo@via.ecp.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /* This table defines ISO-639-1, ISO-639-2T and ISO-639-2B languages codes and

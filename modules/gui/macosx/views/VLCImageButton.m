@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCImageButton.m
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Cameron Mozie <camsw0rld14@gmail.com>
  *          Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCImageButton.h"

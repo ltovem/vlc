@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * gstcopypicture.h: copy GStreamer frames into pictures
  *****************************************************************************
  * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * Author: Yann Lochet <yann@l0chet.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_GSTCOPYPICTURE_H

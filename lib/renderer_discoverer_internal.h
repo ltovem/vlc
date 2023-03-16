@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * renderer_discoverer_internal.h:  libvlc external API
  *****************************************************************************
  * Copyright © 2016 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef _LIBVLC_RENDERER_DISCOVERER_INTERNAL_H

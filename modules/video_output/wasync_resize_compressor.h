@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * @file wasync_resize_compressor.h
  * @brief Windows asynchronous resize compressor helper
  */
 /*****************************************************************************
  * Copyright © 2022 VideoLAN and VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef WASYNC_RESIZE_COMPRESSOR_H

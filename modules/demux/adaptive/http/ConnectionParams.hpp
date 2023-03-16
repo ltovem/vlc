@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * ConnectionParams.hpp
  *****************************************************************************
- * Copyright (C) 2016 - VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2016 - VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef CONNECTIONPARAMS_HPP
 #define CONNECTIONPARAMS_HPP

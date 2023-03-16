@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * aribcam.c : ARIB STB-B25 software CAM stream filter
  *****************************************************************************
  * Copyright (C) 2014 VideoLAN and authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * attachments.h : MP4 attachments handling
  *****************************************************************************
  * Copyright (C) 2001-2015 VLC authors and VideoLAN
  *               2019 VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MP4_ATTACHMENTS_H_
 #define VLC_MP4_ATTACHMENTS_H_

@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * orient.h: image reorientation video conversion
  *****************************************************************************
  * Copyright (C) 2010 Laurent Aimar
  * Copyright (C) 2012 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #include <stdint.h>

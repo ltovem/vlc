@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * freetype.h : Put text on the video, using freetype2
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Laurent Aimar <fenrir@videolan.org>
  *          Salah-Eddin Shaban <salshaaban@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_FREETYPE_H

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * utils.h: Definition of various libplacebo helpers
  *****************************************************************************
  * Copyright (C) 2018 Niklas Haas
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_PLACEBO_UTILS_H

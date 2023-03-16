@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * color_config.h: ISO/IEC 23001-8:2016 color mappings
  *****************************************************************************
  * Copyright (C) 2018 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_ISO_23001_8_COLOR_TABLES_H_
 #define VLC_ISO_23001_8_COLOR_TABLES_H_

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * substext.h : ARIB subtitles subpicture decoder
  *****************************************************************************
  * Copyright (C) 2012 Naohiro KORIYAMA
  *
  * Authors:  Naohiro KORIYAMA <nkoriyama@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 typedef struct arib_text_region_s

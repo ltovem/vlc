@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * BufferingLogic.hpp
  *****************************************************************************
- * Copyright (C) 2014 - 2020 VideoLabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2014 - 2020 VideoLabs, VideoLAN and VLC authors
  *****************************************************************************/
 #ifndef BUFFERINGLOGIC_HPP
 #define BUFFERINGLOGIC_HPP

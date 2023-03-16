@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mmal.c: MMAL-based deinterlace plugin for Raspberry Pi
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Julian Scheel <julian@jusst.de>
  *          Dennis Hamester <dennis.hamester@gmail.com>
  *          John Cox <jc@kynesim.co.uk>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

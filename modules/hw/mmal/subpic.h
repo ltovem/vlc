@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * subpic.h:
  *****************************************************************************
  * Copyright © 2018-2020 John Cox
  *
  * Authors: John Cox <jc@kynesim.co.uk>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_HW_MMAL_SUBPIC_H_

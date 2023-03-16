@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mtp.c: mtp input (mtp: access plug-in)
  *****************************************************************************
@@ -7,8 +8,6 @@
  * Authors: Fabio Ritrovato <exsephiroth87@gmail.com>
  * Original file.c: Christophe Massiot <massiot@via.ecp.fr>
  *                  Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

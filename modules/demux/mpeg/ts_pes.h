@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_pes.h: Transport Stream input module for VLC.
  *****************************************************************************
  * Copyright (C) 2004-2019 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_PES_H
 #define VLC_TS_PES_H

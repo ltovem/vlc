@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * VLCOpenGLES2VideoView.m: iOS OpenGL ES provider through CAEAGLLayer
  *****************************************************************************
@@ -11,8 +12,6 @@
  *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
  *          Eric Petit <titer@m0k.org>
  *          Alexandre Janniaux <ajanni@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

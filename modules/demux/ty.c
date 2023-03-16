@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ty.c - TiVo ty stream video demuxer for VLC
  *****************************************************************************
@@ -6,8 +7,6 @@
  * based on code by Christopher Wingert for tivo-mplayer
  * tivo(at)wingert.org, February 2003
  *
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *
  * CODE CHANGES:
  * v1.0.0 - 24-Feb-2005 - Initial release - Series 1 support ONLY!

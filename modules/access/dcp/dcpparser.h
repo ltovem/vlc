@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright (C) 2013 VLC authors and VideoLAN
- *
+ *****************************************************************************
  * Authors: Nicolas Bertrand <nico@isf.cc>
  *          Jean-Baptiste Kempf <jb@videolan.org>
  *          Guillaume Gonnaud
@@ -9,8 +10,6 @@
  *          Ludovic Hoareau
  *          Loukmane Dessai
  *          Simona-Marinela Prodea <simona dot marinela dot prodea at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

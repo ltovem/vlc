@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * AuthStorage.hpp
  *****************************************************************************
- * Copyright (C) 2017 - VideoLabs and VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright (C) 2017 - VideoLabs and VideoLAN Authors
  *****************************************************************************/
 #ifndef AUTHSTORAGE_HPP_
 #define AUTHSTORAGE_HPP_

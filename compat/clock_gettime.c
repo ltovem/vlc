@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * clock_gettime.c: POSIX clock_gettime() replacement
  *****************************************************************************
  * Copyright © 2020 VLC authors and VideoLAN
  *
  * Author: Marvin Scholz <epirat07 at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef __APPLE__

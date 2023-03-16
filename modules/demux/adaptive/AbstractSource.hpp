@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * AbstractSource.hpp
  *****************************************************************************
- * Copyright © 2015-2019 - VideoLabs, VideoLAN and VLC Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ Copyright © 2015-2019 - VideoLabs, VideoLAN and VLC Authors
  *****************************************************************************/
 #ifndef ABSTRACTSOURCE_HPP
 #define ABSTRACTSOURCE_HPP

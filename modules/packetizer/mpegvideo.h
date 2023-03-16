@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mpegvideo.h: MPEG1/2 video stream definitions
  *****************************************************************************
  * Copyright (C) 2020 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #define PROFILE_MPEG2_HIGH                  1

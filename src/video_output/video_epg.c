@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * video_epg.c : EPG manipulation functions
  *****************************************************************************
@@ -5,8 +6,6 @@
  *               2017 VLC authors, VideoLAN and VideoLabs
  *
  * Author: Adrien Maglo <magsoft@videolan.org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

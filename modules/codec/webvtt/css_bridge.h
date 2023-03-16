@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * css_bridge.h : CSS grammar/lexer bridge
  *****************************************************************************
  * Copyright (C) 2017 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #define yyconst const
 #define YYSTYPE CSSSTYPE

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fragments.h : MP4 fragments
  *****************************************************************************
  * Copyright (C) 2001-2015 VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_MP4_FRAGMENTS_H_
 #define VLC_MP4_FRAGMENTS_H_

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * filter_chain.c : Handle chains of filter_t objects.
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2008-2014 Rémi Denis-Courmont
  *
  * Author: Antoine Cellerier <dionoea at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

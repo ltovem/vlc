@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * imageupdater.h : TTML image to SPU updater
  *****************************************************************************
  * Copyright © 2018 Videolabs, VideoLAN and VLC authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #include <vlc_subpicture.h>
 

@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2020 VideoLAN and AUTHORS
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 #include "interface_window_handler.hpp"
 #include "mainctx.hpp"

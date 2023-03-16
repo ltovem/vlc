@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * schroedinger.c: Dirac decoder module making use of libschroedinger.
  *          (http://www.bbc.co.uk/rd/projects/dirac/index.shtml)
@@ -8,8 +9,6 @@
  * Authors: Jonathan Rosser <jonathan.rosser@gmail.com>
  *          David Flynn <davidf at rd dot bbc.co.uk>
  *          Anuradha Suraparaju <asuraparaju at gmail dot com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * mediacodec.h: Video decoder module using the Android MediaCodec API
  *****************************************************************************
  * Copyright © 2015 VLC authors and VideoLAN, VideoLabs
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_MEDIACODEC_H

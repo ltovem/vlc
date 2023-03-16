@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_fixups.h: portability fixups included from config.h
  *****************************************************************************
  * Copyright © 1998-2008 the VideoLAN project
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /**

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * bdagraph.hpp : DirectShow BDA graph builder header for vlc
  *****************************************************************************
  * Copyright ( C ) 2007 the VideoLAN team
  *
  * Author: Ken Self <kenself(at)optusnet(dot)com(dot)au>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 /*****************************************************************************

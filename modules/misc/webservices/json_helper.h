@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * json_helper.h:
  *****************************************************************************
  * Copyright (C) 2012-2019 VLC authors, VideoLabs and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef JSON_HELPER_H
 #define JSON_HELPER_H

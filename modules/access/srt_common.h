@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * srt_common.h: SRT (Secure Reliable Transport) access module
  *****************************************************************************
@@ -5,8 +6,6 @@
  * Copyright (C) 2019, Haivision Systems Inc.
  *
  * Author: Aaron Boxer <aaron.boxer@collabora.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef SRT_COMMON_H
 #define SRT_COMMON_H 1

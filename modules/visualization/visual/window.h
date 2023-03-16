@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * window.h : Header for FFT window routines
  *****************************************************************************
  * Copyright (C) 2014 Ronald Wright
  *
  * Author: Ronald Wright <logiconcepts819@gmail.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_VISUAL_WINDOW_H_

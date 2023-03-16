@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * io.c: network I/O functions
  *****************************************************************************
@@ -7,8 +8,6 @@
  * Authors: Laurent Aimar <fenrir@videolan.org>
  *          Rémi Denis-Courmont
  *          Christophe Mutricy <xtophe at videolan dot org>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * Copyright (C) 2021 the VideoLAN team
- *
+ *****************************************************************************
  * Authors: Prince Gupta <guptaprince8832@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef COMPOSITOR_DCOMP_ACRYLICSURFACE_HPP

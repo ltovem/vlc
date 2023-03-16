@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ts_strings.h : Descriptions for TS known values
  *****************************************************************************
  * Copyright (C) 2015-2016 - VideoLAN Authors
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef VLC_TS_STRINGS
 #define VLC_TS_STRINGS

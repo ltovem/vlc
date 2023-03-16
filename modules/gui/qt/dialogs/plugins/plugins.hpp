@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * plugins.hpp : Plug-ins and extensions listing
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2008 the VideoLAN team
  *
  * Authors: Jean-Baptiste Kempf <jb (at) videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef QVLC_PLUGIN_DIALOG_H_

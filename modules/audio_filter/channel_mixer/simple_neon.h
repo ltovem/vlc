@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * simple_neon.h : simple channel mixer plug-in using NEON assembly
  *****************************************************************************
@@ -7,8 +8,6 @@
  *          David Geldreich <david.geldreich@free.fr>
  *          Sébastien Toque
  *          Thomas Guillem <thomas@gllm.fr>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H

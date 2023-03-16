@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_decklink.h: Decklink Common includes
  *****************************************************************************
  * Copyright (C) 2018 LTN Global Communications
  *
  * Authors: Devin Heitmueller <dheitmueller@ltnglobal.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_DECKLINK_H

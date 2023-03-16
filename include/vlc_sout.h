@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_sout.h : stream output module
  *****************************************************************************
@@ -8,8 +9,6 @@
  *          Eric Petit <titer@videolan.org>
  *          Jean-Paul Saman <jpsaman #_at_# m2x.nl>
  *          Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_SOUT_H_

@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * complete_preferences.hpp : Tree of modules for preferences
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2006-2007 the VideoLAN team
  *
  * Authors: Clément Stenac <zorglub@videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_COMPLETE_PREFERENCES_HPP_

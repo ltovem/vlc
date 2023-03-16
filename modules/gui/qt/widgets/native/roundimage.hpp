@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * roundimage.hpp: Custom widgets
- ****************************************************************************
+ *****************************************************************************
  * Copyright (C) 2021 the VideoLAN team
  *
  * Authors: Prince Gupta <guptaprince8832@gmail.com>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #ifndef VLC_QT_ROUNDIMAGE_HPP

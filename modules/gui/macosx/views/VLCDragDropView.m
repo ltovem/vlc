@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCDragDropView.m: MacOS X interface module
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Derk-Jan Hartman <hartman # videolan dot org>
  *          Felix Paul Kühne <fkuehne # videolan dot org>
  *          David Fuhrmann <dfuhrmann # videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCDragDropView.h"

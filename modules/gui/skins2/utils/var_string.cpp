@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * var_string.cpp
  *****************************************************************************
  * Copyright (C) 2010 the VideoLAN team
  *
  * Author: Erwan Tulou      <erwan10 aT videolan DoT org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #include "var_string.hpp"

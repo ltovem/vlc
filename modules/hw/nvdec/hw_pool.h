@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * hw_pool.h: hw based picture pool
  *****************************************************************************
@@ -6,8 +7,6 @@
  * Authors: Jai Luthra <me@jailuthra.in>
  *          Quentin Chateau <quentin.chateau@deepskycorp.com>
  *          Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 #ifndef HW_POOL_H
 #define HW_POOL_H

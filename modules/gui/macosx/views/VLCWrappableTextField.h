@@ -1,10 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCWrappableTextField.h
  *****************************************************************************
  * Copyright (C) 2017 VideoLAN and authors
  * Author:       David Fuhrmann <dfuhrmann at videolan dot org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import <Cocoa/Cocoa.h>

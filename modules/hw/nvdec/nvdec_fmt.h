@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * nvdec_fmt.h : NVDEC common code
  *****************************************************************************
  * Copyright © 2019 VLC authors, VideoLAN and VideoLabs
  *
  * Authors: Steve Lhomme <robux4@videolabs.io>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 #ifndef VLC_VIDEOCHROMA_NVDEC_FMT_H_

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dvbsub.c : DVB subtitles decoder
  *            DVB subtitles encoder (developed for Anevia, www.anevia.com)
@@ -11,8 +12,6 @@
  *          Jean-Paul Saman <jpsaman #_at_# m2x dot nl>
  *          Derk-Jan Hartman <hartman #at# videolan dot org>
  *          Simon Hailes <simon _a_ screen.subtitling.com>
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 /*****************************************************************************

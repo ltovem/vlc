@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCStatusBarIcon.m: Status bar icon controller/delegate
  *****************************************************************************
@@ -5,8 +6,6 @@
  *
  * Authors: Goran Dokic <vlc at 8hz dot com>
  *          Felix Paul Kühne <fkuehne # videolan.org>
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
  *****************************************************************************/
 
 #import "VLCStatusBarIcon.h"
