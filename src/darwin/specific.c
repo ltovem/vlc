@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * darwin_specific.m: Darwin specific features

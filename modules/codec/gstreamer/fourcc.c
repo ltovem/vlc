@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * fourcc.c: convert between gst <->  vlc formats
