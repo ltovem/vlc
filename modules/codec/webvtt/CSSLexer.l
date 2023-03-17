@@ -1,9 +1,8 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*****************************************************************************
  * CSSLexer.l : lexer for simplified CSS, based on W3C spec
  *****************************************************************************
  * Copyright (C) 2017 VideoLabs, VLC authors and VideoLAN
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 %option case-insensitive
 %option reentrant

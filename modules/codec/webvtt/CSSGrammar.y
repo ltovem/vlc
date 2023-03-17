@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.0-or-later */
 /*****************************************************************************
  * CSSGrammar.y: bison production rules for simplified css parsing
  *****************************************************************************
@@ -10,9 +11,6 @@
  *  Copyright (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  *  Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  *  Copyright (C) 2012 Intel Corporation. All rights reserved.
- *
- *  SPDX-License-Identifier: LGPL-2.0-or-later
- *
  */
 %define api.pure full
 %define api.prefix {css}

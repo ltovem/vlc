@@ -1,9 +1,8 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*****************************************************************************
  * json/grammar.y: JSON parser
  *****************************************************************************
  * Copyright © 2020 Rémi Denis-Courmont
- *
- * SPDX-License-Identifier: LGPL-2.1-or-later
  *****************************************************************************/
 
 %define api.pure full
