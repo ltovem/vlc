@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: BSD-2-Clause
 /* Copyright (C)2012 Xiph.Org Foundation
    File: opus_header.h
-
-   SPDX-License-Identifier: BSD-2-Clause
 */
 
 #ifndef OPUS_HEADER_H

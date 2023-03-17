@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * @file keysym.c
  * @brief Code generator for X11 key definitions (X11/keysymdef.h)
  */
-// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright © 2009 Rémi Denis-Courmont
  *****************************************************************************/

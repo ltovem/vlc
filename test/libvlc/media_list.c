@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * media_list.c - libvlc smoke test
  *
@@ -5,7 +6,6 @@
 
 /**********************************************************************
  *  Copyright (C) 2007 Rémi Denis-Courmont.                           *
- *  SPDX-License-Identifier: GPL-2.0-or-later                         *
  **********************************************************************/
 
 #include "test.h"

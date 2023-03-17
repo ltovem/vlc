@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * \file rcu.h Read-Copy-Update (RCU) declarations
  * \ingroup rcu
  */
-// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright © 2021 Rémi Denis-Courmont
  *****************************************************************************/

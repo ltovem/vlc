@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /**
  * \file vlcpulse.h
  * \brief PulseAudio support library for LibVLC plugins
  */
-// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * Copyright (C) 2011 Rémi Denis-Courmont
  *****************************************************************************/
