@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * dvd_types.hpp : matroska demuxer
  *****************************************************************************
@@ -5,20 +6,6 @@
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Steve Lhomme <steve.lhomme@free.fr>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #ifndef VLC_MKV_DVD_TYPES_HPP
@@ -65,7 +52,7 @@ typedef struct {
 #ifdef WORDS_BIGENDIAN
   unsigned char zero                           : 7; /* 25-31 */
   unsigned char video_pres_mode_change         : 1; /* 24 */
- 
+
   unsigned char karaoke_audio_pres_mode_change : 1; /* 23 */
   unsigned char angle_change                   : 1;
   unsigned char subpic_stream_change           : 1;
@@ -74,7 +61,7 @@ typedef struct {
   unsigned char still_off                      : 1;
   unsigned char button_select_or_activate      : 1;
   unsigned char resume                         : 1; /* 16 */
- 
+
   unsigned char chapter_menu_call              : 1; /* 15 */
   unsigned char angle_menu_call                : 1;
   unsigned char audio_menu_call                : 1;
@@ -83,7 +70,7 @@ typedef struct {
   unsigned char title_menu_call                : 1;
   unsigned char backward_scan                  : 1;
   unsigned char forward_scan                   : 1; /* 8 */
- 
+
   unsigned char next_pg_search                 : 1; /* 7 */
   unsigned char prev_or_top_pg_search          : 1;
   unsigned char time_or_chapter_search         : 1;
@@ -95,7 +82,7 @@ typedef struct {
 #else
   unsigned char video_pres_mode_change         : 1; /* 24 */
   unsigned char zero                           : 7; /* 25-31 */
- 
+
   unsigned char resume                         : 1; /* 16 */
   unsigned char button_select_or_activate      : 1;
   unsigned char still_off                      : 1;
@@ -104,7 +91,7 @@ typedef struct {
   unsigned char subpic_stream_change           : 1;
   unsigned char angle_change                   : 1;
   unsigned char karaoke_audio_pres_mode_change : 1; /* 23 */
- 
+
   unsigned char forward_scan                   : 1; /* 8 */
   unsigned char backward_scan                  : 1;
   unsigned char title_menu_call                : 1;
@@ -113,7 +100,7 @@ typedef struct {
   unsigned char audio_menu_call                : 1;
   unsigned char angle_menu_call                : 1;
   unsigned char chapter_menu_call              : 1; /* 15 */
- 
+
   unsigned char title_or_time_play             : 1; /* 0 */
   unsigned char chapter_search_or_play         : 1;
   unsigned char title_play                     : 1;

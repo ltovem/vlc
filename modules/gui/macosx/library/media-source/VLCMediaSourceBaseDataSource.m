@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCMediaSourceBaseDataSource.m: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCMediaSourceBaseDataSource.h"
@@ -108,7 +95,7 @@ NSString *VLCMediaSourceTableViewCellIdentifier = @"VLCMediaSourceTableViewCellI
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     self.tableView.hidden = YES;
-    
+
     [self reloadViews];
 }
 
@@ -177,7 +164,7 @@ NSString *VLCMediaSourceTableViewCellIdentifier = @"VLCMediaSourceTableViewCellI
 {
     VLCMediaSourceDeviceCollectionViewItem *viewItem = [collectionView makeItemWithIdentifier:VLCMediaSourceDeviceCellIdentifier forIndexPath:indexPath];
     VLCMediaSource *mediaSource = _mediaSources[indexPath.section];
-    
+
     if (_mediaSourceMode == VLCMediaSourceModeLAN) {
         VLCInputNode *rootNode = mediaSource.rootNode;
         NSArray *nodeChildren = rootNode.children;
@@ -187,10 +174,10 @@ NSString *VLCMediaSourceTableViewCellIdentifier = @"VLCMediaSourceTableViewCellI
 
         const enum input_item_type_e inputType = childRootInput.inputType;
         const BOOL isStream = childRootInput.isStream;
-        
+
         NSURL *artworkURL = childRootInput.artworkURL;
         NSImage *placeholder = nil;
-        
+
         if (mediaSource.category == SD_CAT_LAN) {
             placeholder = [NSImage imageNamed:@"bw-Music"];
         } else {
@@ -214,7 +201,7 @@ NSString *VLCMediaSourceTableViewCellIdentifier = @"VLCMediaSourceTableViewCellI
                     break;
             }
         }
-        
+
         if (artworkURL) {
             [viewItem.mediaImageView setImageURL:artworkURL placeholderImage:placeholder];
         } else {
@@ -262,7 +249,7 @@ viewForSupplementaryElementOfKind:(NSCollectionViewSupplementaryElementKind)kind
     VLCLibraryCollectionViewSupplementaryElementView *labelView = [collectionView makeSupplementaryViewOfKind:kind
                                                                                                withIdentifier:VLCLibrarySupplementaryElementViewIdentifier
                                                                                                  forIndexPath:indexPath];
-    
+
     labelView.stringValue = _mediaSources[indexPath.section].mediaSourceDescription;
 
     return labelView;
@@ -278,7 +265,7 @@ referenceSizeForHeaderInSection:(NSInteger)section
         // Hide Section if no children under the root node are found.
         return rootNode.numberOfChildren == 0 ? CGSizeZero : [VLCLibraryCollectionViewSupplementaryElementView defaultHeaderSize];
     }
-    
+
     return [VLCLibraryCollectionViewSupplementaryElementView defaultHeaderSize];
 }
 
@@ -383,15 +370,15 @@ referenceSizeForHeaderInSection:(NSInteger)section
     }
 
     [mediaSource preparseInputNodeWithinTree:node];
-    
+
     VLCMediaSourceDataSource *newChildDataSource = [[VLCMediaSourceDataSource alloc] init];
-    
+
     newChildDataSource.displayedMediaSource = mediaSource;
     newChildDataSource.nodeToDisplay = node;
     newChildDataSource.collectionView = self.collectionView;
     newChildDataSource.pathControl = self.pathControl;
     newChildDataSource.tableView = self.tableView;
-    
+
     [self setChildDataSource:newChildDataSource];
     [[VLCMain sharedInstance].libraryWindow.navigationStack appendCurrentLibraryState];
 }
@@ -406,7 +393,7 @@ referenceSizeForHeaderInSection:(NSInteger)section
         NSLog(@"Received same childDataSource");
         return;
     }
-    
+
     _childDataSource = childDataSource;
 
     if (_mediaSourceMode == VLCMediaSourceModeLAN) {
@@ -416,7 +403,7 @@ referenceSizeForHeaderInSection:(NSInteger)section
         [self.pathControl appendInputNodePathControlItem:nodePathItem];
     }
     self.pathControl.hidden = NO;
-    
+
     [_childDataSource setupViews];
 
     self.collectionView.dataSource = _childDataSource;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
 * VLCCustomWindowButton.m: MacOS X interface module
 *****************************************************************************
@@ -5,20 +6,6 @@
 *
 * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
 *          David Fuhrmann <dfuhrmann at videolan dot org>
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
 *****************************************************************************/
 
 #import "VLCCustomWindowButton.h"
@@ -270,30 +257,30 @@
     self.wantsLayer = YES;
     self.layer.backgroundColor = [NSColor VLCAccentColor].CGColor;
     self.layer.cornerRadius = 6.0f;
-    
+
     self.bezelStyle = NSBezelStyleRecessed;
     self.bordered = NO;
-    
+
     NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithAttributedString:self.attributedTitle];
     NSRange const titleRange = NSMakeRange(0, [title length]);
-    
+
     // Normal
     [title addAttribute:NSForegroundColorAttributeName value:[NSColor whiteColor] range:titleRange];
     [self setAttributedTitle:title];
-    
+
     // Highlighted
     [title removeAttribute:NSForegroundColorAttributeName range:titleRange];
     [title addAttribute:NSForegroundColorAttributeName value:[NSColor VLClibraryLightTitleColor] range:titleRange];
-    
+
     [self setAttributedAlternateTitle:title];
-        
+
     if ([self.cell isKindOfClass:[NSButtonCell class]]) {
         NSButtonCell *cell = (NSButtonCell *)self.cell;
-        
+
         cell.highlightsBy = NSContentsCellMask;
         cell.imagePosition = NSImageLeft;
     }
-    
+
 #if 0
     // FIXME: Add the @"wifi" system symbol for macOS 11
     if (@available(macOS 11.0, *)) {

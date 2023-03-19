@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * clock_gettime.c: POSIX clock_gettime() replacement
  *****************************************************************************
  * Copyright © 2020 VLC authors and VideoLAN
  *
  * Author: Marvin Scholz <epirat07 at gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #ifdef __APPLE__
@@ -33,13 +20,13 @@
 
 /**
  * Get the absolute time at which the system was booted
- * 
+ *
  * This time is changed whenever the clock is adjusted to
  * correctly reflect the boot time with the adjusted clock,
  * so just querying it once and reusing the value is not safe.
  *
  * \param[out]  tv   Timeval struct to write the boottime to
- * 
+ *
  * \note
  * The boot time only has microsecond precision
  *
@@ -58,10 +45,10 @@ static int vlc__get_system_boottime(struct timeval *tv)
 
 /**
  * Get the monotonic time (CLOCK_MONOTONIC)
- * 
+ *
  * Calculates a monotically incrasing time since system boot
  * that continues to increment when the system is asleep.
- * 
+ *
  * Warnings to everyone trying to simplify this:
  * - Using mach_continuous_time is not equivalent to this, see
  *   the darwin manpage about CLOCK_MONOTONIC_RAW for an explanation.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCDefaultValueSliderCell.m: SliderCell subclass for VLCDefaultValueSlider
  *****************************************************************************
@@ -6,26 +7,12 @@
  * Authors: Marvin Scholz <epirat07 -at- gmail -dot- com>
  *
  * This file uses parts of code from the GNUstep NSSliderCell code:
- * 
+ *
  *   Copyright (C) 1996,1999 Free Software Foundation, Inc.
  *   Author: Ovidiu Predescu <ovidiu@net-community.com>
  *   Date: September 1997
  *   Rewrite: Richard Frith-Macdonald <richard@brainstorm.co.uk>
  *   Date: 1999
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCDefaultValueSliderCell.h"

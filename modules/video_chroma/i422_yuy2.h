@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * i422_yuy2.h : YUV to YUV conversion module for vlc
  *****************************************************************************
@@ -5,20 +6,6 @@
  *
  * Authors: Samuel Hocevar <sam@zoy.org>
  *          Damien Fouilleul <damienf@videolan.org>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #if defined( PLUGIN_SSE2 )
@@ -143,7 +130,7 @@ movdqu    %%xmm1, 16(%0)  # Store high UYVY                             \n\
     _mm_stream_si128((__m128i*)(p_line), xmm2); \
     xmm0 = _mm_unpackhi_epi8(xmm0, xmm1);       \
     _mm_stream_si128((__m128i*)(p_line+16), xmm0);
- 
+
 #define SSE2_YUV422_YUYV_UNALIGNED              \
     xmm0 = _mm_loadu_si128((__m128i *)p_y);     \
     xmm1 = _mm_loadl_epi64((__m128i *)p_u);     \
@@ -154,7 +141,7 @@ movdqu    %%xmm1, 16(%0)  # Store high UYVY                             \n\
     _mm_storeu_si128((__m128i*)(p_line), xmm2); \
     xmm0 = _mm_unpackhi_epi8(xmm0, xmm1);       \
     _mm_storeu_si128((__m128i*)(p_line+16), xmm0);
- 
+
 #define SSE2_YUV422_YVYU_ALIGNED                \
     xmm0 = _mm_load_si128((__m128i *)p_y);      \
     xmm2 = _mm_loadl_epi64((__m128i *)p_u);     \

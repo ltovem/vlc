@@ -1,21 +1,8 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * sdp.c: Fake input for sdp:// scheme
  *****************************************************************************
  * Copyright (C) 2010 Rémi Denis-Courmont
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -75,7 +62,7 @@ static int Control (stream_t *access, int query, va_list args)
         case STREAM_GET_PTS_DELAY:
             *va_arg(args, vlc_tick_t *) =  DEFAULT_PTS_DELAY;
             return VLC_SUCCESS;
-    
+
         case STREAM_SET_PAUSE_STATE:
             return VLC_SUCCESS;
     }

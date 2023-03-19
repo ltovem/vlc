@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCLibraryWindow.m: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2019 VLC authors and VideoLAN
  *
  * Authors: Felix Paul Kühne <fkuehne # videolan -dot- org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCLibraryWindow.h"
@@ -77,7 +64,7 @@ const NSUserInterfaceItemIdentifier VLCLibraryWindowIdentifier = @"VLCLibraryWin
 @interface VLCLibraryWindow () <VLCDragDropTarget, NSSplitViewDelegate>
 {
     CGFloat _lastPlaylistWidthBeforeCollaps;
-    
+
     NSInteger _currentSelectedSegment;
     NSInteger _currentSelectedViewModeSegment;
 }
@@ -137,7 +124,7 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     }
 
     self.toolbar.allowsUserCustomization = NO;
-    
+
     VLCMain *mainInstance = [VLCMain sharedInstance];
     _playlistController = [mainInstance playlistController];
 
@@ -192,7 +179,7 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
                                             forKeyPath:@"effectiveAppearance"
                                                options:NSKeyValueObservingOptionNew
                                                context:nil];
-        
+
         _mediaToolBar.centeredItemIdentifier = _segmentedTitleControlToolbarItem.itemIdentifier;
     }
 
@@ -396,7 +383,7 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
 
 - (IBAction)segmentedControlAction:(id)sender
 {
-    if (_segmentedTitleControl.selectedSegment == _currentSelectedSegment && 
+    if (_segmentedTitleControl.selectedSegment == _currentSelectedSegment &&
         _gridVsListSegmentedControl.selectedSegment == _currentSelectedViewModeSegment) {
         return;
     }
@@ -756,9 +743,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     for (NSView *subview in _libraryTargetView.subviews) {
         [subview removeFromSuperview];
     }
-    
+
     NSLog(@"Presenting video view in main library window.");
-    
+
     NSView *videoView = self.videoViewController.view;
     videoView.translatesAutoresizingMaskIntoConstraints = NO;
     videoView.hidden = NO;

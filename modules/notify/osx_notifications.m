@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * osx_notifications.m : macOS notification plugin
  *
@@ -9,20 +10,6 @@
  * Authors: Marvin Scholz <epirat07@gmail.com>
  *          Felix Paul Kühne <fkuehne # videolan.org>
  *          Rafaël Carré <funman@videolanorg>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  */
 
 #define VLC_MODULE_LICENSE VLC_LICENSE_GPL_2_PLUS
@@ -103,12 +90,12 @@ static int Open(vlc_object_t *p_this)
     @autoreleasepool {
         VLCNotificationDelegate *notificationDelegate =
             [[VLCNotificationDelegate alloc] initWithInterfaceThread:p_intf];
-        
+
         if (notificationDelegate == nil) {
             free(p_sys);
             return VLC_ENOMEM;
         }
-        
+
         p_sys->vlcNotificationDelegate = (__bridge_retained void*)notificationDelegate;
     }
 
@@ -168,7 +155,7 @@ static inline NSString* CharsToNSString(char * _Nullable cStr)
 - (id)initWithInterfaceThread:(intf_thread_t *)intf_thread
 {
     self = [super init];
-    
+
     if (self) {
 
         _p_playlist = vlc_intf_GetMainPlaylist(intf_thread);
@@ -183,7 +170,7 @@ static inline NSString* CharsToNSString(char * _Nullable cStr)
 
         [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
     }
-    
+
     return self;
 }
 
@@ -213,7 +200,7 @@ static inline NSString* CharsToNSString(char * _Nullable cStr)
     if (inputItem == NULL) {
         return;
     }
-    
+
     // Get title, first try now playing
     NSString *title = CharsToNSString(input_item_GetNowPlayingFb(inputItem));
 
@@ -249,7 +236,7 @@ static inline NSString* CharsToNSString(char * _Nullable cStr)
     } else if (artist) {
         desc = artist;
     }
-    
+
     // Notify!
     [self notifyWithTitle:title description:desc imagePath:artPath];
 
@@ -305,7 +292,7 @@ static inline NSString* CharsToNSString(char * _Nullable cStr)
     notification.subtitle           = descriptionText;
     notification.hasActionButton    = YES;
     notification.actionButtonTitle  = [NSString stringWithUTF8String:_("Skip")];
-    
+
     // Try to set private properties
     @try {
         // Private API to set cover image, see rdar://23148801

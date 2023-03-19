@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCLogWindowController.m: Log message window controller
  *****************************************************************************
@@ -6,20 +7,6 @@
  * Authors: Felix Paul Kühne <fkuehne at videolan dot org>
  *          Pierre d'Herbemont <pdherbemont # videolan org>
  *          Derk-Jan Hartman <hartman at videolan.org>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCLogWindowController.h"
@@ -63,7 +50,7 @@ static void MsgCallback(void *data, int type, const vlc_log_t *item, const char 
         if (vasprintf(&msg, format, ap) == -1) {
             return;
         }
-        
+
         [controller addMessage:[VLCLogMessage logMessage:msg
                                                     type:type
                                                     info:item]];
@@ -281,7 +268,7 @@ static const struct vlc_logger_operations log_ops = { MsgCallback, NULL };
 #pragma mark -
 #pragma mark Data handling
 
-/** 
+/**
  Adds a message to the messageBuffer, it does not has to be called from the main thread, as
  items are only added to the messageArray on refresh.
  */

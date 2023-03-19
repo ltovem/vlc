@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCLibraryNavigationStack.m: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2022 VLC authors and VideoLAN
  *
  * Authors: Claudio Cambra <claudio.cambra@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCLibraryNavigationStack.h"
@@ -90,15 +77,15 @@
 {
     NSUInteger numNavigationStates = _navigationStates.count;
 
-    return _currentPosition != nil && 
-        _currentPosition.navigationStackIndex < numNavigationStates - 1 && 
+    return _currentPosition != nil &&
+        _currentPosition.navigationStackIndex < numNavigationStates - 1 &&
         numNavigationStates > 1;
 }
 
 - (BOOL)backwardsAvailable
 {
-    return _currentPosition != nil && 
-        _currentPosition.navigationStackIndex > 0 && 
+    return _currentPosition != nil &&
+        _currentPosition.navigationStackIndex > 0 &&
         _navigationStates.count > 1;
 }
 
@@ -156,15 +143,15 @@
 - (void)removeAndCleanUpStatesInRange:(NSRange)range
 {
     NSAssert(range.location + range.length - 1 < _navigationStates.count, @"Invalid range for state removal and cleanup, out of bounds.");
-    
+
     for (NSUInteger i = range.location; i < range.length; ++i) {
         VLCLibraryNavigationState *state = [_navigationStates objectAtIndex:i];
         VLCInputNode *stateNode = state.currentNodeDisplayed;
-        
+
         if (stateNode) {
             [state.currentMediaSource.displayedMediaSource clearChildNodesForNode:stateNode.vlcInputItemNode];
         }
-        
+
         [_navigationStates removeObjectAtIndex:i];
     }
 }

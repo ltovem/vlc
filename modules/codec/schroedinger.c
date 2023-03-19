@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * schroedinger.c: Dirac decoder module making use of libschroedinger.
  *          (http://www.bbc.co.uk/rd/projects/dirac/index.shtml)
@@ -8,20 +9,6 @@
  * Authors: Jonathan Rosser <jonathan.rosser@gmail.com>
  *          David Flynn <davidf at rd dot bbc.co.uk>
  *          Anuradha Suraparaju <asuraparaju at gmail dot com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 /*****************************************************************************

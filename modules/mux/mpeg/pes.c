@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * pes.c: PES packetizer used by the MPEG multiplexers
  *****************************************************************************
@@ -5,20 +6,6 @@
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Eric Petit <titer@videolan.org>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 /*****************************************************************************
@@ -114,7 +101,7 @@ static inline int PESHeader( uint8_t *p_hdr, int64_t i_pts, int64_t i_dts,
                     ( i_pts != i_dts || ( p_fmt->i_cat == VIDEO_ES &&
                       p_fmt->i_codec != VLC_CODEC_MPGV &&
                       p_fmt->i_codec != VLC_CODEC_MP2V &&
-                      p_fmt->i_codec != VLC_CODEC_MP1V 
+                      p_fmt->i_codec != VLC_CODEC_MP1V
                       ) ) )
                 {
                     i_pts_dts = 0x03;

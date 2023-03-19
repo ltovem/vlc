@@ -7,19 +7,7 @@ Contact:
 http://addons.videolan.org/messages/?action=newmessage&username=exebetche
 Bug report: http://addons.videolan.org/content/show.php/?content=148752
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+SPDX-License-Identifier: GPL-2.0-or-later
 --]]
 
 
@@ -1303,7 +1291,7 @@ openSub = {
 
     local showName, seasonNumber, episodeNumber
     for _,name in ipairs(names) do
-      if name then 
+      if name then
         -- try matching the pattern, stop if a match is found
         for _,pattern in ipairs(movie_info_patterns) do
           showName, seasonNumber, episodeNumber = string.match(name, pattern)
@@ -1514,7 +1502,7 @@ function download_subtitles()
 
   for _, index in ipairs(indexes) do
     local item = openSub.itemStore[index]
-  
+
     if openSub.option.downloadBehaviour == 'manual'
     or not openSub.file.hasInput then
       local link = "<span style='color:#181'>"
@@ -1523,18 +1511,18 @@ function download_subtitles()
       link = link.."</span> &nbsp;<a href='"..
         item.ZipDownloadLink.."'>"
       link = link..item.MovieReleaseName.."</a>"
-  
+
       setMessage(link)
       return false
     end
-  
+
     local message = ""
     local subfileName = openSub.file.name or ""
-  
+
     if openSub.option.langExt then
       subfileName = subfileName.."."..item.SubLanguageID
     end
-  
+
     subfileName = subfileName.."."..item.SubFormat
     local tmp_dir = vlc.config.cachedir()
     -- create the cache directory if it doesn't already exist
@@ -1552,14 +1540,14 @@ function download_subtitles()
       current_dir = current_dir..dir..separator
       local vars = vlc.io.mkdir(current_dir, "0700")
     end
-  
+
     local file_target_access = true
-  
+
     local tmpFileName = dump_zip(
       item.ZipDownloadLink,
       tmp_dir,
       item.SubFileName)
-  
+
     if not tmpFileName then
       setError(lang["mess_save_fail"].." &nbsp;"..
       "<a href='"..item.ZipDownloadLink.."'>"..
@@ -1567,21 +1555,21 @@ function download_subtitles()
       return false
     end
     vlc.msg.dbg("[VLsub] tmpFileName: "..tmpFileName)
-  
+
     local subtitleMrl = find_subtitle_in_archive(tmpFileName, item.SubFormat)
-  
+
     if not subtitleMrl then
       setMessage( lang['mess_not_load'] )
       return false
     end
-  
+
     -- Determine if the path to the video file is accessible for writing
-  
+
     local target
     if openSub.file.dir then
       target = openSub.file.dir..subfileName
     end
-  
+
     if not target or not file_touch(target) then
       if openSub.conf.dirPath then
         target =  openSub.conf.dirPath..slash..subfileName
@@ -1601,37 +1589,37 @@ function download_subtitles()
         return false
       end
     end
-  
+
     vlc.msg.dbg("[VLsub] Subtitles files: "..target)
-  
+
     -- Unzipped data into file target
-  
+
     local stream = vlc.stream(subtitleMrl)
     local data = ""
     local subfile = vlc.io.open(target, "wb")
-  
+
     while data do
       subfile:write(data)
       data = stream:read(65536)
     end
-  
+
     subfile:flush()
     subfile:close()
-  
+
     stream = nil
     collectgarbage()
-  
+
     if not vlc.io.unlink(tmpFileName) then
       vlc.msg.err("[VLsub] Unable to remove temp: "..tmpFileName)
     end
-  
+
     -- load subtitles
     if add_sub(target) then
       message = success_tag(lang["mess_loaded"]) .. message
     else
       message = error_tag(lang["mess_not_load"]) .. message
     end
-  
+
     setMessage(message)
   end
 end

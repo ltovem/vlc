@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * vlc_tracer.h: tracing interface
  * This library provides basic functions for threads to interact with user
  * interface, such as trace output.
  *****************************************************************************
  * Copyright (C) 2021 VLC authors and VideoLAN
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #ifndef VLC_TRACES_H
@@ -175,7 +162,7 @@ static inline void vlc_tracer_TraceRender(struct vlc_tracer *tracer, const char 
 {
     if (now != VLC_TICK_MAX && now != VLC_TICK_INVALID)
     {
-        vlc_tracer_TraceWithTs(tracer, vlc_tick_now(), VLC_TRACE("type", type), 
+        vlc_tracer_TraceWithTs(tracer, vlc_tick_now(), VLC_TRACE("type", type),
                                VLC_TRACE("id", id), VLC_TRACE("pts", pts),
                                VLC_TRACE("render_ts", now), VLC_TRACE_END);
         vlc_tracer_TraceWithTs(tracer, now, VLC_TRACE("type", type),

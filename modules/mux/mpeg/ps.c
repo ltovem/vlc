@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
 /*****************************************************************************
  * ps.c: MPEG PS (ISO/IEC 13818-1) / MPEG SYSTEM (ISO/IEC 1172-1)
  *       multiplexer module for vlc
@@ -7,20 +8,6 @@
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Eric Petit <titer@videolan.org>
  *          Gildas Bazin <gbazin@videolan.org>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 /*****************************************************************************
@@ -123,7 +110,7 @@ typedef struct
     int i_system_header;
     vlc_tick_t i_dts_delay;
     int i_rate_bound; /* units of 50 bytes/second */
- 
+
     int64_t i_instant_bitrate;
     int64_t i_instant_size;
     vlc_tick_t i_instant_dts;
@@ -260,7 +247,7 @@ static int AddStream( sout_mux_t *p_mux, sout_input_t *p_input )
 {
     sout_mux_sys_t  *p_sys = p_mux->p_sys;
     ps_stream_t *p_stream;
- 
+
 
     msg_Dbg( p_mux, "adding input codec=%4.4s",
              (char*)&p_input->p_fmt->i_codec );

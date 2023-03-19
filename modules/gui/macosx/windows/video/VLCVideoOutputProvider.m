@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*****************************************************************************
  * VLCVideoOutputProvider.m: MacOS X interface module
  *****************************************************************************
@@ -5,20 +6,6 @@
  *
  * Authors: Felix Paul Kühne <fkuehne -at- videolan -dot- org>
  *          David Fuhrmann <david dot fuhrmann at googlemail dot com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
 #import "VLCVideoOutputProvider.h"
@@ -236,7 +223,7 @@ int WindowOpen(vlc_window_t *p_wnd)
 
     VLCVideoWindowCommon *newVideoWindow = [[VLCVideoWindowCommon alloc] initWithContentRect:window_rect styleMask:mask backing:NSBackingStoreBuffered defer:YES];
     newVideoWindow.delegate = newVideoWindow;
-    newVideoWindow.releasedWhenClosed = NO;            
+    newVideoWindow.releasedWhenClosed = NO;
 
     newVideoWindow.backgroundColor = [NSColor blackColor];
     newVideoWindow.canBecomeKeyWindow = !asVideoWallpaper;
@@ -329,12 +316,12 @@ int WindowOpen(vlc_window_t *p_wnd)
     if ((videoWallpaper || !windowDecorations) && !isNativeFullscreen) {
         return [self borderlessVideoWindowAsVideoWallpaper:videoWallpaper withWindowDecorations:windowDecorations];
     }
-    
+
     BOOL isEmbedded = var_InheritBool(getIntf(), "embedded-video") && !b_mainWindowHasVideo;
     if (isEmbedded) {
         return [self setupMainLibraryVideoWindow];
     }
-    
+
     return [self setupDetachedVideoWindow];
 }
 
@@ -369,7 +356,7 @@ int WindowOpen(vlc_window_t *p_wnd)
     BOOL isEmbedded = [videoWindow isKindOfClass:[VLCLibraryWindow class]];
     BOOL multipleVoutWindows = _voutWindows.count > 0;
     NSSize videoViewSize = NSMakeSize(videoViewPosition.size.width, videoViewPosition.size.height);
-    
+
     // set (only!) window origin if specified
     if (!isEmbedded) {
         if ([videoWindow isKindOfClass:[VLCAspectRatioRetainingVideoWindow class]]) {
@@ -392,7 +379,7 @@ int WindowOpen(vlc_window_t *p_wnd)
                          withVlcWindow:(vlc_window_t *)p_wnd
 {
     VLCVoutView *voutView = videoWindow.videoViewController.voutView;
-    
+
     [videoWindow setAlphaValue:config_GetFloat("macosx-opaqueness")];
     [_voutWindows setObject:videoWindow forKey:[NSValue valueWithPointer:p_wnd]];
     [voutView setVoutThread:(vout_thread_t *)vlc_object_parent(p_wnd)];
@@ -410,7 +397,7 @@ int WindowOpen(vlc_window_t *p_wnd)
     char *psz_splitter = var_GetString(voutView.voutThread, "video-splitter");
     BOOL b_have_splitter = psz_splitter != NULL && strcmp(psz_splitter, "none");
     free(psz_splitter);
-    
+
     BOOL multipleVoutWindows = _voutWindows.count > 0;
     BOOL videoWallpaper = var_InheritBool(getIntf(), "video-wallpaper") && !multipleVoutWindows;
 
