@@ -103,19 +103,20 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  wait_callback;
 static bool done;
 
-static void callback(const libvlc_event_t *ev, void *param)
+static void on_picture(void *data, libvlc_thumbnailer_request_t *req,
+                       libvlc_picture_t *picture)
 {
-    if (ev->type == libvlc_MediaThumbnailGenerated)
-    {
-        libvlc_picture_t** pic = param;
-        pthread_mutex_lock(&lock);
-        *pic = ev->u.media_thumbnail_generated.p_thumbnail;
-        if (*pic != NULL)
-            libvlc_picture_retain(*pic);
-        done = true;
-        pthread_cond_signal(&wait_callback);
-        pthread_mutex_unlock(&lock);
-    }
+    libvlc_picture_t** outpicture = data;
+    if (picture != NULL)
+        libvlc_picture_retain(picture);
+
+    libvlc_thumbnailer_request_destroy(req);
+
+    pthread_mutex_lock(&lock);
+    *outpicture = picture;
+    done = true;
+    pthread_cond_signal(&wait_callback);
+    pthread_mutex_unlock(&lock);
 }
 
 #define VLC_THUMBNAIL_TIMEOUT   5 /* 5 secs */
@@ -123,19 +124,23 @@ static void callback(const libvlc_event_t *ev, void *param)
 static void snapshot(libvlc_instance_t *vlc, libvlc_media_t *m,
                      int width, char *out_with_ext)
 {
-    libvlc_event_manager_t *em = libvlc_media_event_manager(m);
-    assert(em);
-
     libvlc_picture_t* pic = NULL;
-    libvlc_event_attach(em, libvlc_MediaThumbnailGenerated, callback, &pic);
+    static const struct libvlc_thumbnailer_cbs thumb_cbs = {
+        .on_picture = on_picture,
+    };
+    libvlc_thumbnailer_t *thumbnailer =
+        libvlc_thumbnailer_new(vlc, LIBVLC_THUMBNAILER_CBS_VER_LATEST,
+                               &thumb_cbs, &pic);
+    assert(thumbnailer);
     done = false;
-    libvlc_media_thumbnail_request_t* req =
-            libvlc_media_thumbnail_request_by_pos(vlc, m,
-                                          VLC_THUMBNAIL_POSITION,
-                                          libvlc_media_thumbnail_seek_fast,
-                                          width, 0, false, libvlc_picture_Png,
-                                          VLC_THUMBNAIL_TIMEOUT * 1000);
-    if (!req)
+    libvlc_thumbnailer_request_t* req = libvlc_thumbnailer_request_new(m);
+    assert(req != NULL);
+    libvlc_thumbnailer_request_set_position(req, VLC_THUMBNAIL_POSITION, true);
+    libvlc_thumbnailer_request_set_picture_size(req, width, 0, false);
+    libvlc_thumbnailer_request_set_picture_type(req, libvlc_picture_Png);
+    libvlc_thumbnailer_request_set_timeout(req, VLC_THUMBNAIL_TIMEOUT * 1000);
+    int ret = libvlc_thumbnailer_queue(thumbnailer, req);
+    if (ret != 0)
     {
         fprintf(stderr, "Failed to request thumbnail\n");
         exit(1);
@@ -144,8 +149,7 @@ static void snapshot(libvlc_instance_t *vlc, libvlc_media_t *m,
     while (!done)
         pthread_cond_wait(&wait_callback, &lock);
     pthread_mutex_unlock(&lock);
-    libvlc_media_thumbnail_request_destroy(req);
-    libvlc_event_detach(em, libvlc_MediaThumbnailGenerated, callback, &pic);
+    libvlc_thumbnailer_destroy(thumbnailer);
 
     if (!pic)
     {

@@ -89,12 +89,6 @@ enum libvlc_event_e {
      */
     libvlc_MediaSubItemTreeAdded = libvlc_MediaParsedChanged + 3,
     /**
-     * A thumbnail generation for this \link #libvlc_media_t media \endlink completed.
-     * \see libvlc_media_thumbnail_request_by_time()
-     * \see libvlc_media_thumbnail_request_by_pos()
-     */
-    libvlc_MediaThumbnailGenerated,
-    /**
      * One or more embedded thumbnails were found during the media preparsing
      * The user can hold these picture(s) using libvlc_picture_retain if they
      * wish to use them
@@ -284,10 +278,6 @@ typedef struct libvlc_event_t
         {
             int new_state; /**< see @ref libvlc_state_t */
         } media_state_changed;
-        struct
-        {
-            libvlc_picture_t* p_thumbnail;
-        } media_thumbnail_generated;
         struct
         {
             libvlc_media_t * item;

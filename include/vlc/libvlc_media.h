@@ -840,6 +840,4 @@ void libvlc_media_slaves_release( libvlc_media_slave_t **pp_slaves,
 }
 # endif
 
-#include <vlc/libvlc_thumbnailer.h>
-
 #endif /* VLC_LIBVLC_MEDIA_H */
