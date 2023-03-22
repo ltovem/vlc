@@ -17,6 +17,7 @@ pkginclude_HEADERS = \
 	../include/vlc/libvlc_media_list_player.h \
 	../include/vlc/libvlc_media_player.h \
 	../include/vlc/libvlc_media_track.h \
+	../include/vlc/libvlc_thumbnailer.h \
 	../include/vlc/libvlc_renderer_discoverer.h \
 	../include/vlc/libvlc_picture.h \
 	../include/vlc/libvlc_version.h \
@@ -48,6 +49,7 @@ libvlc_la_SOURCES = \
 	media_list_player.c \
 	media_discoverer.c \
 	picture.c \
+	thumbnailer.c \
 	libvlc.pc.in \
 	libvlc.sym \
 	../src/revision.c
