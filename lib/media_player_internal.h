@@ -49,8 +49,7 @@ struct libvlc_media_player_t
 
     struct {
         vlc_player_timer_id *id;
-        libvlc_media_player_watch_time_on_update on_update;
-        libvlc_media_player_watch_time_on_discontinuity on_discontinuity;
+        const struct libvlc_media_player_watch_time_cbs *cbs;
         void *cbs_data;
     } timer;
 };

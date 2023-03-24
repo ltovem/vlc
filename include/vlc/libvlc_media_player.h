@@ -2878,41 +2878,64 @@ typedef struct libvlc_media_player_time_point_t
 } libvlc_media_player_time_point_t;
 
 /**
- * Callback prototype that notify when the player state or time changed.
- *
- * Get notified when the time is updated by the input or output source. The
- * input source is the 'demux' or the 'access_demux'. The output source are
- * audio and video outputs: an update is received each time a video frame is
- * displayed or an audio sample is written. The delay between each updates may
- * depend on the input and source type (it can be every 5ms, 30ms, 1s or
- * 10s...). Users of this timer may need to update the position at a higher
- * frequency from their own mainloop via
- * libvlc_media_player_time_point_interpolate().
- *
- * \warning It is forbidden to call any Media Player functions from here.
- *
- * \param value always valid, the time corresponding to the state
- * \param data opaque pointer set by libvlc_media_player_watch_time()
+ * Initial version of the struct defining callbacks for
+ * libvlc_media_player_watch_time()
  */
-typedef void (*libvlc_media_player_watch_time_on_update)(
-        const libvlc_media_player_time_point_t *value, void *data);
+#define LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_0 0
 
 /**
- * Callback prototype that notify when the player is paused or a discontinuity
- * occurred.
- *
- * Likely caused by seek from the user or because the playback is stopped. The
- * player user should stop its "interpolate" timer.
- *
- * \warning It is forbidden to call any Media Player functions from here.
- *
- * \param system_date_us system date, in us, of this event, only valid (> 0)
- * when paused. It can be used to interpolate the last updated point to this
- * date in order to get the last paused ts/position.
- * \param data opaque pointer set by libvlc_media_player_watch_time()
+ * Last version of the struct defining callbacks for
+ * libvlc_media_player_watch_time()
  */
-typedef void (*libvlc_media_player_watch_time_on_discontinuity)(
-        int64_t system_date_us, void *data);
+#define LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_LATEST \
+    LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_0
+
+/**
+ * struct defining callbacks for libvlc_media_player_watch_time()
+ */
+struct libvlc_media_player_watch_time_cbs {
+    /**
+     * Callback prototype that notify when the player state or time changed.
+     *
+     * Get notified when the time is updated by the input or output source. The
+     * input source is the 'demux' or the 'access_demux'. The output source are
+     * audio and video outputs: an update is received each time a video frame is
+     * displayed or an audio sample is written. The delay between each updates may
+     * depend on the input and source type (it can be every 5ms, 30ms, 1s or
+     * 10s...). Users of this timer may need to update the position at a higher
+     * frequency from their own mainloop via
+     * libvlc_media_player_time_point_interpolate().
+     *
+     * \note Mandatory (can't be NULL),
+     * available since \ref LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_0
+     *
+     * \warning It is forbidden to call any Media Player functions from here.
+     *
+     * \param opaque opaque pointer set by libvlc_media_player_watch_time()
+     * \param value always valid, the time corresponding to the state
+     */
+    void (*on_update)(void *opaque,
+                      const libvlc_media_player_time_point_t *value);
+
+    /**
+     * Callback prototype that notify when the player is paused or a discontinuity
+     * occurred.
+     *
+     * Likely caused by seek from the user or because the playback is stopped. The
+     * player user should stop its "interpolate" timer.
+     *
+     * \note Optional (can be NULL),
+     * available since \ref LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_0
+     *
+     * \warning It is forbidden to call any Media Player functions from here.
+     *
+     * \param opaque opaque pointer set by libvlc_media_player_watch_time()
+     * \param system_date_us system date, in us, of this event, only valid (> 0)
+     * when paused. It can be used to interpolate the last updated point to this
+     * date in order to get the last paused ts/position.
+     */
+    void (*on_discontinuity)(void *opaque, int64_t system_date_us);
+};
 
 /**
  * Watch for times updates
@@ -2925,19 +2948,19 @@ typedef void (*libvlc_media_player_watch_time_on_discontinuity)(
  * \param min_period_us corresponds to the minimum period, in us, between each
  * updates, use it to avoid flood from too many source updates, set it to 0 to
  * receive all updates.
- * \param on_update callback to listen to update events (must not be NULL)
- * \param on_discontinuity callback to listen to discontinuity events (can be
- * be NULL)
- * \param cbs_data opaque pointer used by the callbacks
+ * \param cbs_version version of the struct defining callbacks, should be
+ * \ref LIBVLC_MEDIA_PLAYER_WATCH_TIME_CBS_VER_LATEST
+ * \param cbs callback to listen to events (can't be NULL)
+ * \param cbs_opaque opaque pointer used by the callbacks
  * \return 0 on success, -1 on error (allocation error, or if already watching)
  * \version LibVLC 4.0.0 or later
  */
 LIBVLC_API int
 libvlc_media_player_watch_time(libvlc_media_player_t *p_mi,
                                int64_t min_period_us,
-                               libvlc_media_player_watch_time_on_update on_update,
-                               libvlc_media_player_watch_time_on_discontinuity on_discontinuity,
-                               void *cbs_data);
+                               unsigned cbs_version,
+                               const struct libvlc_media_player_watch_time_cbs *cbs,
+                               void *cbs_opaque);
 
 /**
  * Unwatch time updates
