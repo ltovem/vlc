@@ -12,6 +12,7 @@ pub mod error;
 pub mod fourcc;
 pub mod object;
 pub mod rational;
+pub mod sout;
 pub mod stream;
 pub mod tick;
 pub mod url;
