@@ -31,10 +31,10 @@
 #include <vlc/libvlc.h>
 #include <vlc/libvlc_picture.h>
 #include <vlc/libvlc_media.h>
-#include <vlc/libvlc_events.h>
 
 #include <vlc_common.h>
 #include <vlc_atomic.h>
+#include <vlc_preparser.h>
 
 #include "../src/libvlc.h"
 
@@ -42,38 +42,29 @@
 #include "media_internal.h"
 #include "picture_internal.h"
 
+struct libvlc_parser_t {
+    libvlc_instance_t *libvlc;
+    vlc_preparser_t *preparser;
+
+    const struct libvlc_parser_cbs *cbs;
+    void *cbs_opaque;
+};
+
+struct libvlc_parser_request_t {
+    libvlc_parser_t *parser;
+    libvlc_media_t *media;
+    int timeout_ms;
+    input_item_meta_request_option_t parse_scope;
+};
+
 static void input_item_subtree_added(input_item_t *item,
                                      input_item_node_t *node,
                                      void *user_data)
 {
     VLC_UNUSED(item);
-    libvlc_media_t * p_md = user_data;
-    libvlc_media_add_subtree(p_md, node);
-}
 
-static void send_parsed_changed( libvlc_media_t *p_md,
-                                 libvlc_media_parsed_status_t new_status )
-{
-    libvlc_event_t event;
-
-    if (atomic_exchange(&p_md->parsed_status, new_status) == new_status)
-        return;
-
-    /* Duration event */
-    event.type = libvlc_MediaDurationChanged;
-    event.u.media_duration_changed.new_duration =
-        input_item_GetDuration( p_md->p_input_item );
-    libvlc_event_send( &p_md->event_manager, &event );
-
-    /* Meta event */
-    event.type = libvlc_MediaMetaChanged;
-    event.u.media_meta_changed.meta_type = 0;
-    libvlc_event_send( &p_md->event_manager, &event );
-
-    /* Parsed event */
-    event.type = libvlc_MediaParsedChanged;
-    event.u.media_parsed_changed.new_status = new_status;
-    libvlc_event_send( &p_md->event_manager, &event );
+    libvlc_parser_request_t *request = user_data;
+    libvlc_media_add_subtree(request->media, node);
 }
 
 /**
@@ -85,9 +76,10 @@ static void input_item_preparse_ended(input_item_t *item,
                                       void *user_data)
 {
     VLC_UNUSED(item);
-    libvlc_media_t * p_md = user_data;
-    libvlc_media_parsed_status_t new_status;
+    libvlc_parser_request_t *request = user_data;
+    assert(request->media->p_input_item == item);
 
+    libvlc_media_parsed_status_t new_status;
     switch( status )
     {
         case ITEM_PREPARSE_SKIPPED:
@@ -105,11 +97,11 @@ static void input_item_preparse_ended(input_item_t *item,
         default:
             return;
     }
-    send_parsed_changed( p_md, new_status );
 
-    if (atomic_fetch_sub_explicit(&p_md->worker_count, 1,
-                                  memory_order_release) == 1)
-        vlc_atomic_notify_one(&p_md->worker_count);
+    atomic_store(&request->media->parsed_status, new_status);
+
+    request->parser->cbs->on_parsed( request->parser->cbs_opaque,
+                                     request, new_status );
 }
 
 static void input_item_attachments_added( input_item_t *item,
@@ -117,8 +109,11 @@ static void input_item_attachments_added( input_item_t *item,
                                           size_t count, void *user_data )
 {
     VLC_UNUSED(item);
-    libvlc_media_t * p_md = user_data;
-    libvlc_event_t event;
+    libvlc_parser_request_t *request = user_data;
+    assert(request->media->p_input_item == item);
+
+    if (request->parser->cbs->on_attachments_added == NULL)
+        return;
 
     libvlc_picture_list_t* list =
         libvlc_picture_list_from_attachments(array, count);
@@ -130,13 +125,8 @@ static void input_item_attachments_added( input_item_t *item,
         return;
     }
 
-    /* Construct the event */
-    event.type = libvlc_MediaAttachedThumbnailsFound;
-    event.u.media_attached_thumbnails_found.thumbnails = list;
-
-    /* Send the event */
-    libvlc_event_send( &p_md->event_manager, &event );
-
+    request->parser->cbs->on_attachments_added( request->parser->cbs_opaque,
+                                                request, list );
     libvlc_picture_list_destroy( list );
 }
 
@@ -146,33 +136,76 @@ static const struct vlc_metadata_cbs preparser_callbacks = {
     .on_attachments_added = input_item_attachments_added,
 };
 
-int libvlc_media_parse_request(libvlc_instance_t *inst, libvlc_media_t *media,
-                               libvlc_media_parse_flag_t parse_flag,
-                               int timeout)
+int
+libvlc_parser_queue( libvlc_parser_t *parser, libvlc_parser_request_t *req )
 {
+    assert( req != NULL );
+
+    libvlc_media_t *media = req->media;
     libvlc_media_parsed_status_t expected = libvlc_media_parsed_status_none;
 
     while (!atomic_compare_exchange_weak(&media->parsed_status, &expected,
-                                        libvlc_media_parsed_status_pending))
+                                         libvlc_media_parsed_status_pending))
         if (expected == libvlc_media_parsed_status_pending
          || expected == libvlc_media_parsed_status_done)
             return -1;
 
-    libvlc_int_t *libvlc = inst->p_libvlc_int;
+    req->parser = parser;
+
     input_item_t *item = media->p_input_item;
-    input_item_meta_request_option_t parse_scope = 0;
     int ret;
-    unsigned int ref = atomic_load_explicit(&media->worker_count,
-                                            memory_order_relaxed);
-    do
-    {
-        if (unlikely(ref == UINT_MAX))
-            return -1;
-    }
-    while (!atomic_compare_exchange_weak_explicit(&media->worker_count,
-                                                  &ref, ref + 1,
-                                                  memory_order_relaxed,
-                                                  memory_order_relaxed));
+
+    vlc_mutex_lock( &item->lock );
+    if( item->i_preparse_depth == 0 )
+        item->i_preparse_depth = 1;
+    vlc_mutex_unlock( &item->lock );
+
+    ret = vlc_preparser_Push( parser->preparser, item, req->parse_scope,
+                              &preparser_callbacks, req, req->timeout_ms,
+                              req );
+    if (ret != VLC_SUCCESS)
+        return -1;
+    return 0;
+}
+
+libvlc_parser_request_t *
+libvlc_parser_request_new( libvlc_media_t *md  )
+{
+    assert( md != NULL );
+
+    libvlc_parser_request_t *req = malloc( sizeof(*req) );
+    if( req == NULL )
+        return NULL;
+
+    req->media = libvlc_media_retain( md );
+    req->parser = NULL;
+    req->timeout_ms = -1;
+    req->parse_scope = META_REQUEST_OPTION_SCOPE_LOCAL;
+
+    return req;
+}
+
+void
+libvlc_parser_request_destroy( libvlc_parser_request_t *req )
+{
+    libvlc_media_release( req->media );
+    if( req->parser != NULL )
+        vlc_preparser_Cancel( req->parser->preparser, req );
+    free( req );
+}
+
+void
+libvlc_parser_request_set_timeout( libvlc_parser_request_t *req,
+                                   libvlc_time_t timeout )
+{
+    req->timeout_ms = timeout;
+}
+
+void
+libvlc_parser_request_set_flags( libvlc_parser_request_t *req,
+                                 libvlc_media_parse_flag_t parse_flag )
+{
+    input_item_meta_request_option_t parse_scope = 0;
 
     if (parse_flag & libvlc_media_parse_local)
         parse_scope |= META_REQUEST_OPTION_SCOPE_LOCAL;
@@ -187,21 +220,47 @@ int libvlc_media_parse_request(libvlc_instance_t *inst, libvlc_media_t *media,
     if (parse_flag & libvlc_media_do_interact)
         parse_scope |= META_REQUEST_OPTION_DO_INTERACT;
 
-    ret = libvlc_MetadataRequest(libvlc, item, parse_scope,
-                                 &preparser_callbacks, media,
-                                 timeout, media);
-    if (ret != VLC_SUCCESS)
-    {
-        atomic_fetch_sub_explicit(&media->worker_count, 1,
-                                  memory_order_relaxed);
-        return -1;
-    }
-    return 0;
+    req->parse_scope = parse_scope;
 }
 
-// Stop parsing of the media
-void
-libvlc_media_parse_stop(libvlc_instance_t *inst, libvlc_media_t *media)
+libvlc_media_t *
+libvlc_parser_request_get_media( libvlc_parser_request_t *request )
 {
-    libvlc_MetadataCancel(inst->p_libvlc_int, media);
+    return request->media;
+}
+
+libvlc_parser_t *
+libvlc_parser_new( libvlc_instance_t *inst, unsigned cbs_version,
+                   const struct libvlc_parser_cbs *cbs,
+                   void *cbs_opaque )
+{
+    assert( inst != NULL );
+    assert( cbs != NULL && cbs->on_parsed != NULL );
+
+    /* No different versions to handle for now */
+    (void) cbs_version;
+
+    libvlc_parser_t *parser = malloc( sizeof(*parser) );
+    if( parser == NULL )
+        return NULL;
+
+    parser->preparser = vlc_preparser_New( VLC_OBJECT( inst->p_libvlc_int ) );
+    if( parser->preparser == NULL)
+    {
+        free( parser );
+        return NULL;
+    }
+    parser->libvlc = libvlc_retain(inst);
+    parser->cbs = cbs;
+    parser->cbs_opaque = cbs_opaque;
+
+    return parser;
+}
+
+void
+libvlc_parser_destroy( libvlc_parser_t *parser )
+{
+    vlc_preparser_Delete( parser->preparser );
+    libvlc_release( parser->libvlc );
+    free( parser );
 }
