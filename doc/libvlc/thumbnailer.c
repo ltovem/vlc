@@ -25,7 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <locale.h>
-#include <pthread.h>
+#include <semaphore.h>
 #include <errno.h>
 #include <time.h>
 #include <vlc/vlc.h>
@@ -99,24 +99,24 @@ static libvlc_instance_t *create_libvlc(void)
     return libvlc_new(sizeof args / sizeof *args, args);
 }
 
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t  wait_callback;
-static bool done;
+struct cbs_context
+{
+    sem_t sem;
+    libvlc_picture_t *outpicture;
+};
 
 static void on_picture(void *data, libvlc_thumbnailer_request_t *req,
                        libvlc_picture_t *picture)
 {
-    libvlc_picture_t** outpicture = data;
-    if (picture != NULL)
-        libvlc_picture_retain(picture);
+    struct cbs_context *ctx = data;
 
     libvlc_thumbnailer_request_destroy(req);
 
-    pthread_mutex_lock(&lock);
-    *outpicture = picture;
-    done = true;
-    pthread_cond_signal(&wait_callback);
-    pthread_mutex_unlock(&lock);
+    if (picture != NULL)
+        libvlc_picture_retain(picture);
+
+    ctx->outpicture = picture;
+    sem_post(&ctx->sem);
 }
 
 #define VLC_THUMBNAIL_TIMEOUT   5 /* 5 secs */
@@ -124,15 +124,15 @@ static void on_picture(void *data, libvlc_thumbnailer_request_t *req,
 static void snapshot(libvlc_instance_t *vlc, libvlc_media_t *m,
                      int width, char *out_with_ext)
 {
-    libvlc_picture_t* pic = NULL;
     static const struct libvlc_thumbnailer_cbs thumb_cbs = {
         .on_picture = on_picture,
     };
+    struct cbs_context ctx;
+    sem_init(&ctx.sem, 0, 0);
     libvlc_thumbnailer_t *thumbnailer =
         libvlc_thumbnailer_new(vlc, LIBVLC_THUMBNAILER_CBS_VER_LATEST,
-                               &thumb_cbs, &pic);
+                               &thumb_cbs, &ctx);
     assert(thumbnailer);
-    done = false;
     libvlc_thumbnailer_request_t* req = libvlc_thumbnailer_request_new(m);
     assert(req != NULL);
     libvlc_thumbnailer_request_set_position(req, VLC_THUMBNAIL_POSITION, true);
@@ -145,20 +145,19 @@ static void snapshot(libvlc_instance_t *vlc, libvlc_media_t *m,
         fprintf(stderr, "Failed to request thumbnail\n");
         exit(1);
     }
-    pthread_mutex_lock(&lock);
-    while (!done)
-        pthread_cond_wait(&wait_callback, &lock);
-    pthread_mutex_unlock(&lock);
+
+    sem_wait(&ctx.sem);
+
     libvlc_thumbnailer_destroy(thumbnailer);
 
-    if (!pic)
+    if (!ctx.outpicture)
     {
         fprintf(stderr, "Snapshot has not been written (timeout after %d secs!\n",
                 VLC_THUMBNAIL_TIMEOUT);
         exit(1);
     }
-    int res = libvlc_picture_save(pic, out_with_ext);
-    libvlc_picture_release(pic);
+    int res = libvlc_picture_save(ctx.outpicture, out_with_ext);
+    libvlc_picture_release(ctx.outpicture);
     if (res)
     {
         fprintf(stderr, "Failed to save the thumbnail\n");
@@ -179,8 +178,6 @@ int main(int argc, const char **argv)
 
     cmdline(argc, argv, &in, &out, &out_with_ext, &width);
 
-    pthread_cond_init(&wait_callback, NULL);
-
     /* starts vlc */
     libvlc = create_libvlc();
     assert(libvlc);
@@ -200,8 +197,6 @@ int main(int argc, const char **argv)
 
     libvlc_media_release(m);
     libvlc_release(libvlc);
-
-    pthread_cond_destroy(&wait_callback);
 
     return 0;
 }
