@@ -62,3 +62,7 @@ JSCustomExtensions::~JSCustomExtensions()
     assert(engine.isNull());
 }
 
+QString JSCustomExtensions::qtr(const QString& msgid)
+{
+    return QString::fromUtf8(vlc_gettext(msgid.toUtf8().constData()));
+}

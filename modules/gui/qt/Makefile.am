@@ -297,7 +297,6 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/imageluminanceextractor.cpp gui/qt/util/imageluminanceextractor.hpp \
 	gui/qt/util/csdbuttonmodel.cpp gui/qt/util/csdbuttonmodel.hpp \
 	gui/qt/util/imagehelper.cpp gui/qt/util/imagehelper.hpp \
-	gui/qt/util/i18n.cpp gui/qt/util/i18n.hpp \
 	gui/qt/util/keyhelper.cpp gui/qt/util/keyhelper.hpp \
 	gui/qt/util/listcache.hxx gui/qt/util/listcache.hpp \
 	gui/qt/util/listcacheloader.hpp \
@@ -502,7 +501,6 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/color_svg_image_provider.moc.cpp \
 	gui/qt/util/imageluminanceextractor.moc.cpp \
 	gui/qt/util/csdbuttonmodel.moc.cpp \
-	gui/qt/util/i18n.moc.cpp \
 	gui/qt/util/keyhelper.moc.cpp \
 	gui/qt/util/listcache.moc.cpp \
 	gui/qt/util/locallistcacheloader.moc.cpp \

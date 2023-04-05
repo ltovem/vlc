@@ -36,6 +36,8 @@ public:
 
     ~JSCustomExtensions();
 
+    // Extension: I18n
+    static EXPORT(I18n) Q_INVOKABLE QString qtr(const QString&);
 
 private:
     const QPointer<QJSEngine> engine;

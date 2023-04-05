@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include "util/jscustomextensions.hpp"
+
 #include "medialibrary/medialib.hpp"
 #include "medialibrary/mlqmltypes.hpp"
 #include "medialibrary/mlcustomcover.hpp"
@@ -35,7 +37,6 @@
 
 #include "util/item_key_event_filter.hpp"
 #include "util/imageluminanceextractor.hpp"
-#include "util/i18n.hpp"
 #include "util/keyhelper.hpp"
 #include "style/systempalette.hpp"
 #include "util/navigation_history.hpp"
@@ -143,7 +144,6 @@ MainUI::MainUI(qt_intf_t *p_intf, MainCtx *mainCtx, QWindow* interfaceWindow,  Q
     SingletonRegisterHelper<DialogErrorModel>::setInstance( DialogErrorModel::getInstance<false>() );
 
     SingletonRegisterHelper<NavigationHistory>::setInstance( new NavigationHistory(this) );
-    SingletonRegisterHelper<I18n>::setInstance( new I18n(this) );
     SingletonRegisterHelper<SystemPalette>::setInstance( new SystemPalette(this) );
     SingletonRegisterHelper<QmlKeyHelper>::setInstance( new QmlKeyHelper(this) );
     SingletonRegisterHelper<SVGColorImage>::setInstance( new SVGColorImage(this) );
@@ -240,7 +240,6 @@ void MainUI::registerQMLTypes()
 
         qmlRegisterSingletonType<NavigationHistory>(uri, versionMajor, versionMinor, "History", SingletonRegisterHelper<NavigationHistory>::callback);
         qmlRegisterSingletonType<PlayerController>(uri, versionMajor, versionMinor, "Player", SingletonRegisterHelper<PlayerController>::callback);
-        qmlRegisterSingletonType<I18n>(uri, versionMajor, versionMinor, "I18n", SingletonRegisterHelper<I18n>::callback);
         qmlRegisterSingletonType<DialogsProvider>(uri, versionMajor, versionMinor, "DialogsProvider", SingletonRegisterHelper<DialogsProvider>::callback);
         qmlRegisterSingletonType<DialogErrorModel>(uri, versionMajor, versionMinor, "DialogErrorModel", SingletonRegisterHelper<DialogErrorModel>::callback);
         qmlRegisterSingletonType<QmlKeyHelper>(uri, versionMajor, versionMinor, "KeyHelper", SingletonRegisterHelper<QmlKeyHelper>::callback);
