@@ -45,6 +45,7 @@
 #include "util/csdbuttonmodel.hpp"
 #include "util/vlctick.hpp"
 #include "util/list_selection_model.hpp"
+#include "util/jscustomextensions.hpp"
 
 #include "dialogs/help/aboutmodel.hpp"
 #include "dialogs/dialogs_provider.hpp"
@@ -163,6 +164,9 @@ MainUI::~MainUI()
 
 bool MainUI::setup(QQmlEngine* engine)
 {
+    assert(engine);
+    new JSCustomExtensions(*engine, m_mainCtx);
+
     engine->setOutputWarningsToStandardError(false);
     connect(engine, &QQmlEngine::warnings, this, &MainUI::onQmlWarning);
 
