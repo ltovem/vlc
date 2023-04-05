@@ -5,14 +5,14 @@
 # include "config.h"
 #endif
 
-#include "qt.hpp"
-
 #include <QObject>
 #include <QQmlEngine>
 #include <QQmlError>
 #include <QQuickItem>
 
 class VLCVarChoiceModel;
+class MainCtx;
+struct qt_intf_t;
 
 class MainUI : public QObject
 {
@@ -25,7 +25,7 @@ public:
     bool setup(QQmlEngine* engine);
 
     inline QQmlComponent* getComponent() const {return m_component;}
-    VLC_USED
+    Q_REQUIRED_RESULT
     QQuickItem* createRootItem();
 
 private slots:
