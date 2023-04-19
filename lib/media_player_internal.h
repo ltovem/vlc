@@ -38,6 +38,9 @@ struct libvlc_media_player_t
     struct vlc_object_t obj;
     vlc_atomic_rc_t    rc;
 
+    const struct libvlc_media_player_cbs *cbs;
+    void *cbs_opaque;
+
     const struct libvlc_media_player_provider_cbs *provider_cbs;
     void *provider_cbs_opaque;
 
@@ -49,7 +52,6 @@ struct libvlc_media_player_t
     struct libvlc_instance_t * p_libvlc_instance; /* Parent instance */
     libvlc_media_t * p_md; /* current media descriptor */
     libvlc_media_t * p_next_md; /* next media descriptor */
-    libvlc_event_manager_t event_manager;
 
     struct {
         vlc_player_timer_id *id;

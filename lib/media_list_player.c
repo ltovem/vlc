@@ -381,7 +381,9 @@ provider_get_next(void *opaque)
  *         new (Public)
  **************************************************************************/
 libvlc_media_list_player_t *
-libvlc_media_list_player_new(libvlc_instance_t * p_instance)
+libvlc_media_list_player_new(libvlc_instance_t * p_instance, unsigned cbs_version,
+                             const struct libvlc_media_player_cbs *cbs,
+                             void *cbs_opaque)
 {
     static const struct libvlc_media_player_provider_cbs provider_cbs = {
         .get_next = provider_get_next,
@@ -400,7 +402,7 @@ libvlc_media_list_player_new(libvlc_instance_t * p_instance)
     libvlc_event_manager_init(&p_mlp->event_manager, p_mlp);
 
     /* Create the underlying media_player */
-    p_mlp->p_mi = libvlc_media_player_new(p_instance);
+    p_mlp->p_mi = libvlc_media_player_new(p_instance, cbs_version, cbs, cbs_opaque);
     if( p_mlp->p_mi == NULL )
         goto error;
 
