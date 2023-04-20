@@ -933,6 +933,7 @@ vlc_player_SetAtoBLoop
 vlc_player_SetCategoryDelay
 vlc_player_SetCurrentMedia
 vlc_player_SetEsIdDelay
+vlc_player_SetMediaProvider
 vlc_player_SetMediaStoppedAction
 vlc_player_SetRecordingEnabled
 vlc_player_SetRenderer
