@@ -54,17 +54,26 @@ static void libvlc_media_player_destroy( libvlc_media_player_t *p_mi );
 // player callbacks
 
 static void
-on_current_media_changed(vlc_player_t *player, input_item_t *new_media,
+on_current_media_changed(vlc_player_t *player, input_item_t *new_item,
                          void *data)
 {
     (void) player;
 
     libvlc_media_player_t *mp = data;
 
-    libvlc_media_t *libmedia;
-    if (new_media != NULL)
+    if ((mp->p_md == NULL || mp->p_md->p_input_item != new_item)
+     && (mp->p_next_md != NULL && mp->p_next_md->p_input_item == new_item))
     {
-        libmedia = new_media->libvlc_owner;
+        /* Playing the next media from the provider */
+        libvlc_media_release(mp->p_md);
+        mp->p_md = mp->p_next_md;
+        mp->p_next_md = NULL;
+    }
+
+    libvlc_media_t *libmedia;
+    if (new_item != NULL)
+    {
+        libmedia = new_item->libvlc_owner;
         assert(libmedia != NULL);
     }
     else
@@ -768,8 +777,11 @@ libvlc_media_player_new( libvlc_instance_t *instance )
     /* variables for signalling creation of new files */
     var_Create(mp, "record-file", VLC_VAR_STRING);
 
+    mp->provider_cbs = NULL;
+    mp->provider_cbs_opaque = NULL;
+
     mp->timer.id = NULL;
-    mp->p_md = NULL;
+    mp->p_md = mp->p_next_md = NULL;
     mp->p_libvlc_instance = instance;
     /* use a reentrant lock to allow calling libvlc functions from callbacks */
     mp->player = vlc_player_New(VLC_OBJECT(mp), VLC_PLAYER_LOCK_REENTRANT,
@@ -870,6 +882,7 @@ static void libvlc_media_player_destroy( libvlc_media_player_t *p_mi )
 
     libvlc_event_manager_destroy(&p_mi->event_manager);
     libvlc_media_release( p_mi->p_md );
+    libvlc_media_release( p_mi->p_next_md );
 
     libvlc_instance_t *instance = p_mi->p_libvlc_instance;
     vlc_object_delete(p_mi);
@@ -934,6 +947,8 @@ void libvlc_media_player_set_media(
     vlc_player_Lock(p_mi->player);
 
     libvlc_media_release( p_mi->p_md );
+    libvlc_media_release( p_mi->p_next_md );
+    p_mi->p_next_md = NULL;
 
     if( p_md )
         libvlc_media_retain( p_md );
@@ -959,6 +974,57 @@ libvlc_media_player_get_media( libvlc_media_player_t *p_mi )
     vlc_player_Unlock(p_mi->player);
 
     return p_m;
+}
+
+static input_item_t*
+media_provider_get_next(vlc_player_t *player, void *data)
+{
+    (void) player;
+    libvlc_media_player_t *mp = data;
+
+    assert(mp->p_next_md == NULL);
+
+    mp->p_next_md = mp->provider_cbs->get_next(mp->provider_cbs_opaque);
+    return mp->p_next_md == NULL ? NULL
+                                 : input_item_Hold(mp->p_next_md->p_input_item);
+}
+
+void
+libvlc_media_player_set_media_provider( libvlc_media_player_t *p_mi,
+                                        unsigned cbs_version,
+                                        const struct libvlc_media_player_provider_cbs *cbs,
+                                        void *cbs_opaque )
+{
+    assert(cbs == NULL || cbs->get_next != NULL);
+
+    /* No different versions to handle for now */
+    (void) cbs_version;
+
+    static const struct vlc_player_media_provider core_cbs = {
+        .get_next = media_provider_get_next,
+    };
+
+    vlc_player_Lock(p_mi->player);
+
+    p_mi->provider_cbs = cbs;
+    p_mi->provider_cbs_opaque = cbs_opaque;
+
+    if (cbs != NULL)
+        vlc_player_SetMediaProvider(p_mi->player, &core_cbs, p_mi);
+    else
+        vlc_player_SetMediaProvider(p_mi->player, NULL, NULL);
+
+    vlc_player_Unlock(p_mi->player);
+}
+
+void
+libvlc_media_player_invalidate_next_media( libvlc_media_player_t *p_mi )
+{
+    vlc_player_Lock(p_mi->player);
+    vlc_player_InvalidateNextMedia(p_mi->player);
+    libvlc_media_release(p_mi->p_next_md);
+    p_mi->p_next_md = NULL;
+    vlc_player_Unlock(p_mi->player);
 }
 
 /**************************************************************************

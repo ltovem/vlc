@@ -258,6 +258,79 @@ LIBVLC_API void libvlc_media_player_signal( libvlc_media_player_t *mp );
 LIBVLC_API libvlc_media_player_t *libvlc_media_player_retain( libvlc_media_player_t *p_mi );
 
 /**
+ * Initial version of the struct defining callbacks for
+ * libvlc_media_player_set_media_provider()
+ */
+#define LIBVLC_MEDIA_PLAYER_PROVIDER_CBS_VER_0 0
+
+/**
+ * Last version of the struct defining callbacks for
+ * libvlc_media_player_set_media_provider()
+ */
+#define LIBVLC_MEDIA_PLAYER_PROVIDER_CBS_VER_LATEST \
+    LIBVLC_MEDIA_PLAYER_PROVIDER_CBS_VER_0
+
+/**
+ * struct defining callbacks for the media provider
+ */
+struct libvlc_media_player_provider_cbs
+{
+    /**
+     * Callback prototype called when the player requires a new media
+     *
+     * \note The returned media must be already held with libvlc_media_retain()
+     *
+     * It is possible to cancel/invalidate the next media returned by this
+     * callback, by calling libvlc_media_player_invalidate_next_media()
+     * anytime.
+     *
+     * \param opaque opaque pointer set by
+     * libvlc_media_player_set_media_provider()
+     * \return the next media to play, held by the callee with
+     * libvlc_media_retain()
+     */
+    libvlc_media_t *(*get_next)(void *opaque);
+};
+
+/**
+ * Set the media provider
+ *
+ * The media provider callbacks can be used to control the player flow. It
+ * allows to play medias one after the other without having to wait for the
+ * previous one to end (and without calling libvlc_media_player_set_media()).
+ *
+ * \param p_mi media player object
+ * \param cbs_version version of the struct defining callbacks, should be
+ * \ref LIBVLC_MEDIA_PLAYER_PROVIDER_CBS_VER_LATEST
+ * \param cbs callback to listen to events (can be NULL)
+ * \param cbs_opaque opaque pointer used by the callbacks
+ *
+ * \version libvlc 4.0.0 or later
+ */
+LIBVLC_API void
+libvlc_media_player_set_media_provider( libvlc_media_player_t *p_mi,
+                                        unsigned cbs_version,
+                                        const struct libvlc_media_player_provider_cbs *cbs,
+                                        void *cbs_opaque );
+
+/**
+ * Invalidate the next media.
+ *
+ * This function can be used to invalidate the media returned by the \ref
+ * libvlc_media_player_provider_cbs.get_next callback. This can be used when
+ * the next media from a playlist was changed by the user.
+ *
+ * Calling this function will trigger the
+ * \ref libvlc_media_player_provider_cbs.get_next callback to be called again.
+ *
+ * \param p_mi media player object
+ *
+ * \version libvlc 4.0.0 or later
+ */
+LIBVLC_API void
+libvlc_media_player_invalidate_next_media( libvlc_media_player_t *p_mi );
+
+/**
  * Set the media that will be used by the media_player. If any,
  * previous md will be released.
  *
