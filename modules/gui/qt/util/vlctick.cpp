@@ -76,7 +76,7 @@ QString VLCTick::formatHMS() const
                     .arg(sec, 2, 10, QChar('0'));
     }
     else
-        return qtr("%1 ms").arg(MS_FROM_VLC_TICK(m_ticks));
+        return "00:00";
 }
 
 QString VLCTick::formatLong() const
@@ -113,7 +113,7 @@ QString VLCTick::formatLong() const
 
     }
     else
-        return qtr("%1 ms").arg(t_ms);
+        return "00:00";
 }
 
 QString VLCTick::formatShort() const
@@ -148,7 +148,7 @@ QString VLCTick::formatShort() const
 
     }
     else
-        return qtr("%1ms").arg(t_ms);
+        return "00:00";
 }
 
 VLCTick VLCTick::scale(float scalar) const
