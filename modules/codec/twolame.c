@@ -52,17 +52,15 @@ static block_t *Encode   ( encoder_t *, block_t * );
 
 #define ENC_QUALITY_TEXT N_("Encoding quality")
 #define ENC_QUALITY_LONGTEXT N_( \
-  "Force a specific encoding quality between 0.0 (high) and 50.0 (low), " \
-  "instead of specifying a particular bitrate. " \
-  "This will produce a VBR stream." )
+  "Force a specific encoding quality, instead of specifying a particular " \
+  "bitrate. This will produce a VBR stream. (0.0 is high, 50.0 is low)." )
 #define ENC_MODE_TEXT N_("Stereo mode")
 #define ENC_MODE_LONGTEXT N_( "Handling mode for stereo streams" )
 #define ENC_VBR_TEXT N_("VBR mode")
 #define ENC_VBR_LONGTEXT N_( \
   "Use Variable BitRate. Default is to use Constant BitRate (CBR)." )
 #define ENC_PSY_TEXT N_("Psycho-acoustic model")
-#define ENC_PSY_LONGTEXT N_( \
-  "Integer from -1 (no model) to 4." )
+#define ENC_PSY_LONGTEXT N_("Use -1 for none.")
 
 static const int pi_stereo_values[] = { 0, 1, 2 };
 static const char *const ppsz_stereo_descriptions[] =
@@ -78,6 +76,7 @@ vlc_module_begin ()
 
     add_float( ENC_CFG_PREFIX "quality", 0.0, ENC_QUALITY_TEXT,
                ENC_QUALITY_LONGTEXT )
+        change_float_range( 0.0, 50.0 )
     add_integer( ENC_CFG_PREFIX "mode", 0, ENC_MODE_TEXT,
                  ENC_MODE_LONGTEXT )
         change_integer_list( pi_stereo_values, ppsz_stereo_descriptions );
@@ -85,6 +84,7 @@ vlc_module_begin ()
               ENC_VBR_LONGTEXT )
     add_integer( ENC_CFG_PREFIX "psy", 3, ENC_PSY_TEXT,
                  ENC_PSY_LONGTEXT )
+        change_integer_range( -1, 4 )
 vlc_module_end ()
 
 static const char *const ppsz_enc_options[] = {

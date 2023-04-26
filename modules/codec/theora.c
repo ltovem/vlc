@@ -117,6 +117,7 @@ vlc_module_begin ()
     add_shortcut( "theora" )
 #   define DEC_CFG_PREFIX "theora-"
     add_integer( DEC_CFG_PREFIX "postproc", -1, ENC_POSTPROCESS_TEXT, NULL )
+        change_integer_range( -1, INT_MAX )
 
     add_submodule ()
     set_description( N_("Theora video packetizer") )
@@ -134,6 +135,7 @@ vlc_module_begin ()
 #   define ENC_CFG_PREFIX "sout-theora-"
     add_integer( ENC_CFG_PREFIX "quality", 2, ENC_QUALITY_TEXT,
                  ENC_QUALITY_LONGTEXT )
+        change_integer_range( 0, 10 )
 #endif
 vlc_module_end ()
 
@@ -694,8 +696,6 @@ static int OpenEncoder( vlc_object_t *p_this )
     config_ChainParse( p_enc, ENC_CFG_PREFIX, ppsz_enc_options, p_enc->p_cfg );
 
     i_quality = var_GetInteger( p_enc, ENC_CFG_PREFIX "quality" );
-    if( i_quality > 10 ) i_quality = 10;
-    if( i_quality < 0 ) i_quality = 0;
 
     th_info_init( &p_sys->ti );
 

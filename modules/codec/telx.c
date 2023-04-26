@@ -29,6 +29,7 @@
 #endif
 #include <assert.h>
 #include <stdint.h>
+#include <limits.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -74,6 +75,7 @@ vlc_module_begin ()
 
     add_integer( "telx-override-page", -1,
                  OVERRIDE_PAGE_TEXT, OVERRIDE_PAGE_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_bool( "telx-ignore-subtitle-flag", false,
               IGNORE_SUB_FLAG_TEXT, IGNORE_SUB_FLAG_LONGTEXT )
     add_bool( "telx-french-workaround", false,
