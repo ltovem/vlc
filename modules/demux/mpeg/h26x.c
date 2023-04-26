@@ -33,6 +33,7 @@
 #include <vlc_plugin.h>
 #include <vlc_demux.h>
 #include <vlc_codec.h>
+#include <float.h>
 #include "../../packetizer/hevc_nal.h" /* definitions, inline helpers */
 #include "../../packetizer/h264_nal.h" /* definitions, inline helpers */
 
@@ -44,7 +45,7 @@ static int  OpenHEVC ( vlc_object_t * );
 static void Close( vlc_object_t * );
 
 #define FPS_TEXT N_("Frames per Second")
-#define FPS_LONGTEXT N_("Desired frame rate for the stream.")
+#define FPS_LONGTEXT N_("Desired frame rate for the stream. (Use 0.0 to request default).")
 
 vlc_module_begin ()
     set_shortname( "H264")
@@ -53,6 +54,7 @@ vlc_module_begin ()
     set_capability( "demux", 8 )
     set_section( N_("H264 video demuxer" ), NULL )
     add_float( "h264-fps", 0.0, FPS_TEXT, FPS_LONGTEXT )
+        change_float_range( 0.0, FLT_MAX )
     set_callbacks( OpenH264, Close )
     add_shortcut( "h264" )
     add_file_extension("h264")
@@ -64,6 +66,7 @@ vlc_module_begin ()
         set_capability( "demux", 8 )
         set_section( N_("HEVC/H.265 video demuxer" ), NULL )
         add_float( "hevc-fps", 0.0, FPS_TEXT, FPS_LONGTEXT )
+            change_float_range( 0.0, FLT_MAX )
         set_callbacks( OpenHEVC, Close )
         add_shortcut( "hevc", "h265" )
 

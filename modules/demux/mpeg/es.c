@@ -30,6 +30,7 @@
 # include "config.h"
 #endif
 
+#include <float.h>
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_demux.h>
@@ -73,7 +74,8 @@ vlc_module_begin ()
     set_description( N_("MPEG-4 video" ) )
     set_capability( "demux", 7 )
     set_callbacks( OpenVideo, Close )
-    add_float( "es-fps", 25, FPS_TEXT, FPS_LONGTEXT )
+    add_float( "es-fps", 25.0, FPS_TEXT, FPS_LONGTEXT )
+        change_float_range( 0.0, FLT_MAX )
 
     add_shortcut( "m4v" )
     add_shortcut( "mp4v" )

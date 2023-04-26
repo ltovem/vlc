@@ -29,6 +29,8 @@
 #endif
 
 #include <assert.h>
+#include <limits.h>
+#include <float.h>
 
 #include <vlc_common.h>
 #include <vlc_plugin.h>
@@ -78,14 +80,17 @@ vlc_module_begin()
     set_shortname(N_("Image"))
     set_subcategory(SUBCAT_INPUT_DEMUX)
     add_integer("image-id", -1, ID_TEXT, ID_LONGTEXT)
+        change_integer_range( -1, INT_MAX )
         change_safe()
     add_integer("image-group", 0, GROUP_TEXT, GROUP_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
         change_safe()
     add_bool("image-decode", true, DECODE_TEXT, DECODE_LONGTEXT)
         change_safe()
     add_string("image-chroma", "", CHROMA_TEXT, CHROMA_LONGTEXT)
         change_safe()
-    add_float("image-duration", 10, DURATION_TEXT, DURATION_LONGTEXT)
+    add_float("image-duration", 10.0, DURATION_TEXT, DURATION_LONGTEXT)
+        change_float_range( 0.0, FLT_MAX )
         change_safe()
     add_string("image-fps", "10/1", FPS_TEXT, FPS_LONGTEXT)
         change_safe()

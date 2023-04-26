@@ -31,6 +31,8 @@
 # include "config.h"
 #endif
 
+#include <float.h>
+
 #include <vlc_common.h>
 #include <vlc_plugin.h>
 #include <vlc_demux.h>
@@ -53,6 +55,7 @@ vlc_module_begin ()
     set_callback( Open )
     set_subcategory( SUBCAT_INPUT_DEMUX )
     add_float( "mjpeg-fps", 0.0, FPS_TEXT, FPS_LONGTEXT )
+        change_float_range( 0.0, FLT_MAX )
 vlc_module_end ()
 
 /*****************************************************************************
