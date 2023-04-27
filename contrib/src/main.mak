@@ -471,7 +471,7 @@ CMAKE += -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 endif
 
 MESONFLAGS = $(BUILD_DIR) $< --default-library static --prefix "$(PREFIX)" \
-	--backend ninja -Dlibdir=lib
+	--backend ninja -Dlibdir=lib --prefer-static
 ifndef WITH_OPTIMIZATION
 MESONFLAGS += --buildtype debug
 else
