@@ -46,6 +46,10 @@ T.Pane {
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              implicitContentHeight + topPadding + bottomPadding)
 
+    readonly property real minimumWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                                                  volumeBtn.implicitWidth + leftPadding + rightPadding)
+    readonly property real preferredWidth: minimumWidth + volControl.preferredWidth
+
     contentWidth: volumeWidget.implicitWidth
     contentHeight: volumeWidget.implicitHeight
 
@@ -95,8 +99,10 @@ T.Pane {
             id: volControl
 
             // FIXME: use VLCStyle
-            implicitWidth: VLCStyle.dp(100, VLCStyle.scale)
+            readonly property real preferredWidth: VLCStyle.dp(100, VLCStyle.scale)
+            readonly property real minimumWidth: VLCStyle.dp(50, VLCStyle.scale)
 
+            Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.margins: VLCStyle.margin_xsmall
 
@@ -116,7 +122,8 @@ T.Pane {
             to: root._maxvolpos
             opacity: _player.muted ? 0.5 : 1
 
-            enabled: !root.paintOnly // disables event handling depending on this
+            enabled: visible && !root.paintOnly // disables event handling depending on paintOnly
+            visible: root.width > (volumeBtn.implicitWidth + minimumWidth)
 
             toolTipTextProvider: function (value) {
                 // the real value i.e 'Player.volume' bounds can be different
