@@ -33,7 +33,6 @@
 #include <vlc/libvlc_media_list.h>
 #include <vlc/libvlc_media_player.h>
 #include <vlc/libvlc_media_list_player.h>
-#include <vlc/libvlc_events.h>
 #include <assert.h>
 
 #include <vlc_common.h>
@@ -57,7 +56,6 @@
 
 struct libvlc_media_list_player_t
 {
-    libvlc_event_manager_t      event_manager;
     bool                        dead;
     libvlc_media_list_path_t    current_playing_item_path;
     libvlc_media_t *            p_current_playing_item;
@@ -352,24 +350,6 @@ provider_get_next(void *opaque)
 
     libvlc_media_list_unlock(p_mlp->p_mlist);
 
-    if (path == NULL)
-    {
-        /* Send list played event */
-        libvlc_event_t event = {
-            .type = libvlc_MediaListPlayerPlayed
-        };
-        libvlc_event_send(&p_mlp->event_manager, &event);
-    }
-    else
-    {
-        /* Send the next item event */
-        libvlc_event_t event = {
-            .type = libvlc_MediaListPlayerNextItemSet,
-            .u.media_list_player_next_item_set.item = md,
-        };
-        libvlc_event_send(&p_mlp->event_manager, &event);
-    }
-
     return md;
 }
 
@@ -399,7 +379,6 @@ libvlc_media_list_player_new(libvlc_instance_t * p_instance, unsigned cbs_versio
 
     vlc_atomic_rc_init(&p_mlp->rc);
     p_mlp->dead = false;
-    libvlc_event_manager_init(&p_mlp->event_manager, p_mlp);
 
     /* Create the underlying media_player */
     p_mlp->p_mi = libvlc_media_player_new(p_instance, cbs_version, cbs, cbs_opaque);
@@ -411,7 +390,6 @@ libvlc_media_list_player_new(libvlc_instance_t * p_instance, unsigned cbs_versio
 
     return p_mlp;
 error:
-    libvlc_event_manager_destroy(&p_mlp->event_manager);
     free(p_mlp);
     return NULL;
 }
@@ -432,7 +410,6 @@ void libvlc_media_list_player_release(libvlc_media_list_player_t * p_mlp)
     if (p_mlp->p_mlist)
         libvlc_media_list_release(p_mlp->p_mlist);
 
-    libvlc_event_manager_destroy(&p_mlp->event_manager);
     free(p_mlp->current_playing_item_path);
     free(p_mlp);
 }
@@ -445,15 +422,6 @@ libvlc_media_list_player_t *libvlc_media_list_player_retain(libvlc_media_list_pl
     assert(p_mlp);
     vlc_atomic_rc_inc(&p_mlp->rc);
     return p_mlp;
-}
-
-/**************************************************************************
- *        event_manager (Public)
- **************************************************************************/
-libvlc_event_manager_t *
-libvlc_media_list_player_event_manager(libvlc_media_list_player_t * p_mlp)
-{
-    return &p_mlp->event_manager;
 }
 
 /**************************************************************************
@@ -547,16 +515,6 @@ int libvlc_media_list_player_play_item_at_index(libvlc_media_list_player_t * p_m
     libvlc_media_player_play(p_mlp->p_mi);
     unlock(p_mlp);
 
-    if (ret != 0)
-        return -1;
-
-    /* Send the next item event */
-    libvlc_media_t *p_md = libvlc_media_player_get_media(p_mlp->p_mi);
-    libvlc_event_t event;
-    event.type = libvlc_MediaListPlayerNextItemSet;
-    event.u.media_list_player_next_item_set.item = p_md;
-    libvlc_event_send(&p_mlp->event_manager, &event);
-    libvlc_media_release(p_md);
     return ret;
 }
 
@@ -591,11 +549,6 @@ static void stop(libvlc_media_list_player_t * p_mlp)
 
     free(p_mlp->current_playing_item_path);
     p_mlp->current_playing_item_path = NULL;
-
-    /* Send the event */
-    libvlc_event_t event;
-    event.type = libvlc_MediaListPlayerStopped;
-    libvlc_event_send(&p_mlp->event_manager, &event);
 }
 
 /**************************************************************************
@@ -658,10 +611,6 @@ static int set_relative_playlist_position_and_play(
     if (!path || ret != 0)
     {
         libvlc_media_list_unlock(p_mlp->p_mlist);
-        /* Send list played event */
-        libvlc_event_t event;
-        event.type = libvlc_MediaListPlayerPlayed;
-        libvlc_event_send(&p_mlp->event_manager, &event);
         return -1;
     }
 
@@ -669,13 +618,6 @@ static int set_relative_playlist_position_and_play(
 
     libvlc_media_list_unlock(p_mlp->p_mlist);
 
-    /* Send the next item event */
-    libvlc_event_t event;
-    event.type = libvlc_MediaListPlayerNextItemSet;
-    libvlc_media_t * p_md = libvlc_media_list_item_at_path(p_mlp->p_mlist, path);
-    event.u.media_list_player_next_item_set.item = p_md;
-    libvlc_event_send(&p_mlp->event_manager, &event);
-    libvlc_media_release(p_md);
     return 0;
 }
 
