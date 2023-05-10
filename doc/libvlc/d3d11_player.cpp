@@ -500,6 +500,10 @@ static void CleanupDevice_cb( void *opaque )
 // receive the libvlc callback to call when we want to change the libvlc output size
 static void SetResize_cb( void *opaque,
                           libvlc_video_output_resize_cb report_size_change,
+                          libvlc_video_output_mouse_move_cb report_mouse_move,
+                          libvlc_video_output_mouse_press_cb report_mouse_press,
+                          libvlc_video_output_mouse_release_cb report_mouse_release,
+                          libvlc_video_output_mouse_double_click_cb report_mouse_dblclick,
                           void *report_opaque )
 {
     struct render_context *ctx = static_cast<struct render_context *>( opaque );
