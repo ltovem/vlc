@@ -144,9 +144,11 @@ Widgets.Slider {
 
         parent: root.background
 
-        x : parent.width * _fullvolpos
-        width: VLCStyle.dp(1, VLCStyle.scale)
-        height: parent.height
+        x : root.horizontal ? parent.width * _fullvolpos : 0
+        y : root.horizontal ? 0 : parent.height * (1 - _fullvolpos)
+        width: root.horizontal ? VLCStyle.dp(1, VLCStyle.scale) : parent.width
+        height: root.horizontal ? parent.height : VLCStyle.dp(1, VLCStyle.scale)
+
         radius: VLCStyle.dp(2, VLCStyle.scale)
 
         // NOTE: This shouldn't be visible when the volume stops before a 100.
@@ -232,7 +234,7 @@ Widgets.Slider {
         function adjustVolume(mouse) {
             mouse.accepted = true
 
-            const pos = mouse.x * _maxvolpos / width
+            const pos = root.horizontal ? mouse.x * _maxvolpos / width : (height - mouse.y) * _maxvolpos / height
 
             if (pos < 0.25)
                 root.value = 0
