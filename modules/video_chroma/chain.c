@@ -66,46 +66,9 @@ static void EsFormatMergeSize( es_format_t *p_dst,
                                const es_format_t *p_base,
                                const es_format_t *p_size );
 
-#define ALLOWED_CHROMAS_YUV10 \
-    VLC_CODEC_I420_10L, \
-    VLC_CODEC_I420_10B, \
-    VLC_CODEC_I420_16L \
-
-static const vlc_fourcc_t pi_allowed_chromas_yuv[] = {
-    VLC_CODEC_I420,
-    VLC_CODEC_I422,
-    ALLOWED_CHROMAS_YUV10,
-    VLC_CODEC_RGB32,
-    VLC_CODEC_RGB24,
-    VLC_CODEC_BGRA,
-    0
-};
-
-static const vlc_fourcc_t pi_allowed_chromas_yuv10[] = {
-    ALLOWED_CHROMAS_YUV10,
-    VLC_CODEC_I420,
-    VLC_CODEC_I422,
-    VLC_CODEC_RGB32,
-    VLC_CODEC_RGB24,
-    VLC_CODEC_BGRA,
-    0
-};
-
 static const vlc_fourcc_t *get_allowed_chromas( filter_t *p_filter )
 {
-    switch (p_filter->fmt_out.video.i_chroma)
-    {
-        case VLC_CODEC_I420_10L:
-        case VLC_CODEC_I420_10B:
-        case VLC_CODEC_I420_16L:
-        case VLC_CODEC_CVPX_P010:
-        case VLC_CODEC_D3D9_OPAQUE_10B:
-        case VLC_CODEC_D3D11_OPAQUE_10B:
-        case VLC_CODEC_VAAPI_420_10BPP:
-            return pi_allowed_chromas_yuv10;
-        default:
-            return pi_allowed_chromas_yuv;
-    }
+    return vlc_fourcc_GetFallback( p_filter->fmt_out.video.i_chroma );
 }
 
 typedef struct
