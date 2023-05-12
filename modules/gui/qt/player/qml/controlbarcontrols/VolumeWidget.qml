@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Templates 2.12 as T
 import QtGraphicalEffects 1.12
@@ -41,11 +42,23 @@ T.Pane {
                                                   volumeBtn.implicitWidth + leftPadding + rightPadding)
     readonly property real preferredWidth: minimumWidth + volumeSlider.preferredWidth
 
+    readonly property ColorContext colorContext: ColorContext {
+
+    }
+
     contentWidth: volumeWidget.implicitWidth
     contentHeight: volumeWidget.implicitHeight
 
     Keys.priority: Keys.AfterItem
     Keys.onPressed: Navigation.defaultKeyAction(event)
+
+    onVisibleChanged: popup.hide()
+
+    Connections {
+        target: VLCStyle
+        onAppWidthChanged: popup.hide()
+        onAppHeightChanged: popup.hide()
+    }
 
     RowLayout {
         id: volumeWidget
@@ -69,8 +82,19 @@ T.Pane {
                     VLCIcons.volume_medium
                 else
                     VLCIcons.volume_high
-            text: I18n.qtr("Mute")
-            onClicked: Player.muted = !Player.muted
+
+            readonly property bool popupEnabled: !(volumeSlider.item && volumeSlider.item.enabled)
+
+            text: popupEnabled ? I18n.qtr("Volume") : I18n.qtr("Mute")
+            onClicked: {
+                if( popupEnabled ) {
+                    popup.active = true
+                    popup.item.visible = !popup.item.visible
+                    return
+                }
+
+                Player.muted = !Player.muted
+            }
 
             Accessible.onIncreaseAction: {
                 Player.muted = false
@@ -110,6 +134,59 @@ T.Pane {
                 paintOnly: root.paintOnly
 
                 opacity: _player.muted ? 0.5 : 1
+            }
+        }
+
+        Loader {
+            id: popup
+
+            active: false
+
+            function hide() {
+                if (item) item.visible = false
+            }
+
+            sourceComponent: T.Popup {
+                visible: false
+
+                verticalPadding: VLCStyle.margin_xsmall
+                horizontalPadding: 0
+
+                height: VLCStyle.dp(100, VLCStyle.scale)
+                width: VLCStyle.margin_large
+                y: -height - VLCStyle.margin_xsmall
+
+                modal: true
+                closePolicy: (Popup.CloseOnPressOutside | Popup.CloseOnEscape)
+                Overlay.modal: null
+
+                ColorContext {
+                    id: popupTheme
+                    palette: root.colorContext.palette
+                    colorSet: ColorContext.Window
+                }
+
+                contentItem: Widgets.VolumeSlider {
+                    id: popupSlider
+                    colorContext.palette: theme.palette
+
+                    paintOnly: root.paintOnly
+
+                    orientation: Qt.Vertical
+                }
+
+                onOpened: {
+                    controlLayout.requestLockUnlockAutoHide(true)
+                }
+
+                onClosed: {
+                    controlLayout.requestLockUnlockAutoHide(false)
+                }
+
+                background: Rectangle {
+                    color: popupTheme.bg.secondary
+                    radius: VLCStyle.dp(4, VLCStyle.scale)
+                }
             }
         }
     }
