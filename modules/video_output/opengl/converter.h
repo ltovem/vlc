@@ -173,7 +173,7 @@ typedef struct {
     PFNGLTEXPARAMETERFPROC  TexParameterf;
     PFNGLTEXPARAMETERIPROC  TexParameteri;
     PFNGLTEXSUBIMAGE2DPROC  TexSubImage2D;
-#ifdef HAVE_LIBPLACEBO
+#ifdef HAVE_LIBLCMS2
     PFNGLTEXIMAGE3DPROC     TexImage3D;
 #endif
     PFNGLVIEWPORTPROC       Viewport;
@@ -343,7 +343,7 @@ struct opengl_tex_converter_t
     struct pl_shader *pl_sh;
     const struct pl_shader_res *pl_sh_res;
 
-#ifdef HAVE_LIBPLACEBO
+#ifdef HAVE_LIBLCMS2
      /* Data needed to the icc color correction LUT (Texture3D)
      * Initialized in opengl_init_program */
     GLint clutId;

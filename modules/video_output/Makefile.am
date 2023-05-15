@@ -8,8 +8,8 @@ OPENGL_COMMONSOURCES = video_output/opengl/vout_helper.c \
 	video_output/opengl/internal.h video_output/opengl/fragment_shaders.c \
 	video_output/opengl/converter_sw.c
 
-OPENGL_COMMONCLFAGS = $(LIBPLACEBO_CFLAGS) -llcms2
-OPENGL_COMMONLIBS = $(LIBPLACEBO_LIBS)
+OPENGL_COMMONCLFAGS = $(LIBPLACEBO_CFLAGS) $(LIBLCMS2_CFLAGS)
+OPENGL_COMMONLIBS = $(LIBPLACEBO_LIBS) $(LIBLCMS2_LIBS)
 
 if HAVE_DECKLINK
 libdecklinkoutput_plugin_la_SOURCES = video_output/decklink.cpp

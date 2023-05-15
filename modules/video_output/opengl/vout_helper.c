@@ -572,7 +572,9 @@ opengl_deinit_program(vout_display_opengl_t *vgl, struct prgm *prgm)
     FREENULL(tc->uloc.pl_vars);
     if (tc->pl_ctx)
         pl_context_destroy(&tc->pl_ctx);
-    
+#endif
+
+#ifdef HAVE_LIBLCMS2
     if ( tc->g_3dlut != NULL )
         free( tc->g_3dlut );
 #endif
@@ -642,49 +644,55 @@ opengl_init_program(vout_display_opengl_t *vgl, struct prgm *prgm,
             tc->pl_sh = pl_shader_alloc(tc->pl_ctx, NULL, 0, 0);
 #   endif
         }
-    /* Icc file reading, GLSL version check, 3D LUT allocation */
-    tc->g_3dlut = NULL;
-    tc->clut_is_active = false;
+    }
+#endif
 
-    char *filename = var_InheritString( tc->gl, "icc_profile" );
-    if ( filename != NULL )
+#ifdef HAVE_LIBLCMS2
+    /* Icc file reading, GLSL version check, 3D LUT allocation */
+    if (!subpics)
     {
-        char *glsl_version;
-        glsl_version = (char*) tc->vt->GetString(GL_SHADING_LANGUAGE_VERSION );
-        msg_Dbg( tc->gl, "Available GLSL version %s", glsl_version );
-        if ( atof( glsl_version ) < 2.99 )
+        tc->g_3dlut = NULL;
+        tc->clut_is_active = false;
+
+        char *filename = var_InheritString( tc->gl, "icc_profile" );
+        if ( filename != NULL )
         {
-            msg_Dbg( tc->gl, "Max available GLSL version %s too old for color\
-            correction (needs version > 3.3 )",\
-                    glsl_version );
-        }
-        else
-        {
-            tc->g_3dlut = ( GLushort* ) malloc( sizeof(GLushort) * \
-                        g_3d_lut_size * g_3d_lut_size * g_3d_lut_size * 3 );
-            if ( tc->g_3dlut == NULL )
+            char *glsl_version;
+            glsl_version = (char*) tc->vt->GetString(GL_SHADING_LANGUAGE_VERSION );
+            msg_Dbg( tc->gl, "Available GLSL version %s", glsl_version );
+            if ( atof( glsl_version ) < 2.99 )
             {
-                msg_Dbg( tc->gl, "Could not allocate color correction table");
+              msg_Dbg( tc->gl, "Max available GLSL version %s too old for color\
+               correction (needs version > 3.3 )",\
+                     glsl_version );
             }
             else
             {
-                int err = CreateCorrectionLUT( tc->g_3dlut, tc->gl, fmt, filename );
-                if ( err != VLC_SUCCESS )
+                tc->g_3dlut = ( GLushort* ) malloc( sizeof(GLushort) * \
+                            g_3d_lut_size * g_3d_lut_size * g_3d_lut_size * 3 );
+                if ( tc->g_3dlut == NULL )
                 {
-                    msg_Dbg( tc->gl, "Could not create Color Correction LUT, \
-                    disabling color correction" );
-                    free( tc->g_3dlut );
-                    tc->g_3dlut = NULL;
+                    msg_Dbg( tc->gl, "Could not allocate color correction table");
                 }
                 else
-                    tc->clut_is_active = true;
+                {
+                    int err = CreateCorrectionLUT( tc->g_3dlut, tc->gl, fmt, filename );
+                    if ( err != VLC_SUCCESS )
+                    {
+                        msg_Dbg( tc->gl, "Could not create Color Correction LUT, \
+                        disabling color correction" );
+                        free( tc->g_3dlut );
+                        tc->g_3dlut = NULL;
+                    }
+                    else
+                        tc->clut_is_active = true;
+                }
             }
         }
-    }
-    else {
-        msg_Dbg( tc->gl, "Absent or invalid path to icc correction profile, \
-        disabling color correction" );
-    }
+        else {
+            msg_Dbg( tc->gl, "Absent or invalid path to icc correction profile, \
+            disabling color correction" );
+        }
     }
 #endif
 
@@ -784,7 +792,7 @@ ResizeFormatToGLMaxTexSize(video_format_t *fmt, unsigned int max_tex_size)
 
 /* Creates the 3D-LUT from image/video reported colorspace, icc profile file
  * and lcms2 functions */
-#ifdef HAVE_LIBPLACEBO
+#ifdef HAVE_LIBLCMS2
 int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
                          const video_format_t *fmt, char *filename )
 {
@@ -1058,7 +1066,7 @@ vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
     GET_PROC_ADDR_CORE(TexParameterf);
     GET_PROC_ADDR_CORE(TexParameteri);
     GET_PROC_ADDR_CORE(TexSubImage2D);
-#ifdef HAVE_LIBPLACEBO
+#ifdef HAVE_LIBLCMS2
     GET_PROC_ADDR_CORE(TexImage3D);
 #endif
     GET_PROC_ADDR_CORE(Viewport);
@@ -1221,8 +1229,8 @@ vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
             return NULL;
         }
     }
-    /* Color correction texture */
-#ifdef HAVE_LIBPLACEBO
+/* Color correction texture */
+#ifdef HAVE_LIBLCMS2
     if ( vgl->prgm->tc->g_3dlut != NULL )
     {
         vgl->vt.GenTextures(1, &vgl->prgm->tc->clut_tex);
@@ -1886,7 +1894,7 @@ static void DrawWithShaders(vout_display_opengl_t *vgl, struct prgm *prgm)
                                      0, 0, 0);
     }
 
-#ifdef HAVE_LIBPLACEBO
+#ifdef HAVE_LIBLCMS2
     if ( vgl->prgm->tc->clut_is_active )
     {
         vgl->vt.ActiveTexture(GL_TEXTURE0 + vgl->prgm->tc->tex_count );

@@ -31,10 +31,8 @@
 
 #include "converter.h"
 
-#ifdef HAVE_LIBPLACEBO
-#include <libplacebo/shaders/colorspace.h>
+#ifdef HAVE_LIBLCMS2
 #include <lcms2.h>
-
 static const int g_3d_lut_size = 64;
 
 enum icc_bp_mode {
@@ -52,8 +50,33 @@ static const char * const icc_bp_mode_text[] = {
     "User defined value"
 };
 
+enum icc_intent {
+    ICC_INTENT_PERCEPTUAL= 0,\
+    ICC_INTENT_RELATIVE_COLORIMETRIC=1,\
+    ICC_INTENT_SATURATION= 2,\
+    ICC_INTENT_ABSOLUTE_COLORIMETRIC=3
+};
+
+static const int icc_intent_list[] = {
+    ICC_INTENT_PERCEPTUAL,\
+    ICC_INTENT_RELATIVE_COLORIMETRIC,\
+    ICC_INTENT_SATURATION,\
+    ICC_INTENT_ABSOLUTE_COLORIMETRIC
+};
+
+static const char * const icc_intent_text[] = {
+    "Perceptual",\
+    "Relative Colorimetric",\
+    "Saturation",\
+    "Absolute Colorimetric"
+};
+
 int CreateCorrectionLUT( GLushort *g_3dlut, vlc_gl_t *gl, \
                      const video_format_t *fmt, char *filename );
+#endif
+
+#ifdef HAVE_LIBPLACEBO
+#include <libplacebo/shaders/colorspace.h>
 
 # if PL_MAJOR_VER >= 5
 # define pl_context_create pl_log_create
@@ -228,23 +251,6 @@ static const char * const dither_text[] = {
 
 #define add_glopts_placebo() \
     set_section("Colorspace conversion", NULL) \
-    add_loadfile("icc_profile", "", "File path to display icc profile",\
-                 "File path to an icc profile (.icc, .icm) for color\
-                  correction by a 3DLut generated at video beginning\
-                   (can take a few seconds, depending on your machine).", true )\
-    add_integer("icc_bp_offset_mode", ICC_BP_MODE_DEFAULT, "Black point offset mode",\
-    "Black point offset mode, change this if image constrast\
-    is not satisfactory.", true) \
-    change_integer_list( icc_bp_mode_list, icc_bp_mode_text) \
-    add_integer("icc_contrast", 2000, "Display source contrast", "Modify this \
-    if image is too dark (decrease it), or too light (increase it). This is an\
-    assumption on the contrast ratio of the display used for the video creation\
-     (enter 0 if you watch a computer generated test chart). It is used to\
-      compute the black point compensation.",\
-     true ) \
-     add_bool("force_bt709", false, "Force BT709 colorspace (HDTV) for the\
-    source", "Try this with hdmi or usb sources via v4l2 (webcam...),\
-      if colors seem wrong.", true)\
     add_integer("rendering-intent", pl_color_map_default_params.intent, \
                 RENDER_INTENT_TEXT, RENDER_INTENT_LONGTEXT, false) \
             change_integer_list(intent_values, intent_text) \
@@ -268,12 +274,38 @@ static const char * const dither_text[] = {
 #define add_glopts_placebo()
 #endif
 
+#ifdef HAVE_LIBLCMS2
+#define add_glopts_color_correction() \
+    set_section("Display color correction", NULL) \
+    add_loadfile("icc_profile", "", "File path to display icc profile",\
+                 "File path to an icc profile (.icc, .icm) for color\
+                  correction by a 3DLut generated at video beginning\
+                   (can take a few seconds, depending on your machine).", true )\
+    add_integer("icc_bp_offset_mode", ICC_BP_MODE_DEFAULT, "Black point offset mode",\
+    "Black point offset mode, change this if image constrast\
+    is not satisfactory.", true) \
+    change_integer_list( icc_bp_mode_list, icc_bp_mode_text) \
+    add_integer("icc_intent", ICC_INTENT_PERCEPTUAL, "Rendering intent",\
+    "Usual values are perceptual or relative colorimetric.", true) \
+    change_integer_list( icc_intent_list, icc_intent_text) \
+    add_integer("icc_contrast", 2000, "Display source contrast", "Modify this \
+    if image is too dark (decrease it), or too light (increase it). This is an\
+    assumption on the contrast ratio of the display used for the video creation\
+     (enter 0 if you watch a computer generated test chart). It is used to\
+      compute the black point compensation.",\
+     true ) \
+     add_bool("force_bt709", false, "Force BT709 colorspace (HDTV) for the\
+    source", "Try this with hdmi or usb sources via v4l2 (webcam...),\
+      if colors seem wrong.", true)
+#endif
+
 #define GLCONV_TEXT "Open GL/GLES hardware converter"
 #define GLCONV_LONGTEXT "Force a \"glconv\" module."
 
 #define add_glopts() \
     add_module ("glconv", "glconv", NULL, GLCONV_TEXT, GLCONV_LONGTEXT, true) \
     add_glopts_placebo ()
+    add_glopts_color_correction()
 
 static const vlc_fourcc_t gl_subpicture_chromas[] = {
     VLC_CODEC_RGBA,
