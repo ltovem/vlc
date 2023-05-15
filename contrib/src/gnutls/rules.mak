@@ -1,7 +1,8 @@
 # GnuTLS
 
-GNUTLS_VERSION := 3.6.16
-GNUTLS_URL := $(GNUGPG)/gnutls/v3.6/gnutls-$(GNUTLS_VERSION).tar.xz
+GNUTLS_VERSION_MAJ := 3.7
+GNUTLS_VERSION := $(GNUTLS_VERSION_MAJ).9
+GNUTLS_URL := $(GNUGPG)/gnutls/v$(GNUTLS_VERSION_MAJ)/gnutls-$(GNUTLS_VERSION).tar.xz
 
 ifdef BUILD_NETWORK
 ifndef HAVE_DARWIN_OS
@@ -19,10 +20,6 @@ $(TARBALLS)/gnutls-$(GNUTLS_VERSION).tar.xz:
 
 gnutls: gnutls-$(GNUTLS_VERSION).tar.xz .sum-gnutls
 	$(UNPACK)
-	$(APPLY) $(SRC)/gnutls/gnutls-fix-mangling.patch
-
-	# backport gnulib patch
-	$(APPLY) $(SRC)/gnutls/0001-Don-t-assume-that-UNICODE-is-not-defined.patch
 
 	# fix forbidden UWP call which can't be upstreamed as they won't
 	# differentiate for winstore, only _WIN32_WINNT
@@ -33,19 +30,6 @@ gnutls: gnutls-$(GNUTLS_VERSION).tar.xz .sum-gnutls
 
 	# disable the dllimport in static linking (pkg-config --static doesn't handle Cflags.private)
 	sed -i.orig -e s/"_SYM_EXPORT __declspec(dllimport)"/"_SYM_EXPORT"/g $(UNPACK_DIR)/lib/includes/gnutls/gnutls.h.in
-
-	# fix i686 UWP builds as they were using CertEnumCRLsInStore via invalid LoadLibrary
-	$(APPLY) $(SRC)/gnutls/0001-fix-mingw64-detection.patch
-
-	# fix AArch64 builds for Apple OS by removing unsupported compiler flag (gnutls#1347, gnutls#1317)
-ifdef HAVE_DARWIN_OS
-	$(APPLY) $(SRC)/gnutls/gnutls-fix-aarch64-compilation-appleos.patch
-endif
-ifdef HAVE_ANDROID
-	$(APPLY) $(SRC)/gnutls/gnutls-fix-aarch64-compilation-appleos.patch
-endif
-
-	$(APPLY) $(SRC)/gnutls/0001-windows-Avoid-Wint-conversion-errors.patch
 
 	# use CreateFile2 in Win8 as CreateFileW is forbidden in UWP
 	$(APPLY) $(SRC)/gnutls/0001-Use-CreateFile2-in-UWP-builds.patch
