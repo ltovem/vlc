@@ -1,5 +1,5 @@
 # GCRYPT
-GCRYPT_VERSION := 1.10.1
+GCRYPT_VERSION := 1.10.2
 GCRYPT_URL := $(GNUGPG)/libgcrypt/libgcrypt-$(GCRYPT_VERSION).tar.bz2
 
 PKGS += gcrypt
