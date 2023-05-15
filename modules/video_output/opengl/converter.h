@@ -173,6 +173,9 @@ typedef struct {
     PFNGLTEXPARAMETERFPROC  TexParameterf;
     PFNGLTEXPARAMETERIPROC  TexParameteri;
     PFNGLTEXSUBIMAGE2DPROC  TexSubImage2D;
+#ifdef HAVE_LIBPLACEBO
+    PFNGLTEXIMAGE3DPROC     TexImage3D;
+#endif
     PFNGLVIEWPORTPROC       Viewport;
 
     /* GL only core functions: NULL for GLES2 */
@@ -339,6 +342,15 @@ struct opengl_tex_converter_t
 
     struct pl_shader *pl_sh;
     const struct pl_shader_res *pl_sh_res;
+
+#ifdef HAVE_LIBPLACEBO
+     /* Data needed to the icc color correction LUT (Texture3D)
+     * Initialized in opengl_init_program */
+    GLint clutId;
+    GLuint clut_tex;
+    GLushort *g_3dlut;
+    bool clut_is_active;
+#endif
 
     /* Private context */
     void *priv;

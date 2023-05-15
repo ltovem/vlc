@@ -8,7 +8,7 @@ OPENGL_COMMONSOURCES = video_output/opengl/vout_helper.c \
 	video_output/opengl/internal.h video_output/opengl/fragment_shaders.c \
 	video_output/opengl/converter_sw.c
 
-OPENGL_COMMONCLFAGS = $(LIBPLACEBO_CFLAGS)
+OPENGL_COMMONCLFAGS = $(LIBPLACEBO_CFLAGS) -llcms2
 OPENGL_COMMONLIBS = $(LIBPLACEBO_LIBS)
 
 if HAVE_DECKLINK

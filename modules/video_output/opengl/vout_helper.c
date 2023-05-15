@@ -572,6 +572,9 @@ opengl_deinit_program(vout_display_opengl_t *vgl, struct prgm *prgm)
     FREENULL(tc->uloc.pl_vars);
     if (tc->pl_ctx)
         pl_context_destroy(&tc->pl_ctx);
+    
+    if ( tc->g_3dlut != NULL )
+        free( tc->g_3dlut );
 #endif
 
     vlc_object_release(tc);
@@ -639,6 +642,49 @@ opengl_init_program(vout_display_opengl_t *vgl, struct prgm *prgm,
             tc->pl_sh = pl_shader_alloc(tc->pl_ctx, NULL, 0, 0);
 #   endif
         }
+    /* Icc file reading, GLSL version check, 3D LUT allocation */
+    tc->g_3dlut = NULL;
+    tc->clut_is_active = false;
+
+    char *filename = var_InheritString( tc->gl, "icc_profile" );
+    if ( filename != NULL )
+    {
+        char *glsl_version;
+        glsl_version = (char*) tc->vt->GetString(GL_SHADING_LANGUAGE_VERSION );
+        msg_Dbg( tc->gl, "Available GLSL version %s", glsl_version );
+        if ( atof( glsl_version ) < 2.99 )
+        {
+            msg_Dbg( tc->gl, "Max available GLSL version %s too old for color\
+            correction (needs version > 3.3 )",\
+                    glsl_version );
+        }
+        else
+        {
+            tc->g_3dlut = ( GLushort* ) malloc( sizeof(GLushort) * \
+                        g_3d_lut_size * g_3d_lut_size * g_3d_lut_size * 3 );
+            if ( tc->g_3dlut == NULL )
+            {
+                msg_Dbg( tc->gl, "Could not allocate color correction table");
+            }
+            else
+            {
+                int err = CreateCorrectionLUT( tc->g_3dlut, tc->gl, fmt, filename );
+                if ( err != VLC_SUCCESS )
+                {
+                    msg_Dbg( tc->gl, "Could not create Color Correction LUT, \
+                    disabling color correction" );
+                    free( tc->g_3dlut );
+                    tc->g_3dlut = NULL;
+                }
+                else
+                    tc->clut_is_active = true;
+            }
+        }
+    }
+    else {
+        msg_Dbg( tc->gl, "Absent or invalid path to icc correction profile, \
+        disabling color correction" );
+    }
     }
 #endif
 
@@ -736,6 +782,223 @@ ResizeFormatToGLMaxTexSize(video_format_t *fmt, unsigned int max_tex_size)
     }
 }
 
+/* Creates the 3D-LUT from image/video reported colorspace, icc profile file
+ * and lcms2 functions */
+#ifdef HAVE_LIBPLACEBO
+int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
+                         const video_format_t *fmt, char *filename )
+{
+    /* Some colorimetric data for BT601/709/2020 and sRGB standards which are
+     * the only provided by VLC video format
+     * D65 whitepoint is common to all these standards
+     * The primaries and tone response curve (TRC) differ between BT and sRGB
+     * We use LittleCMS to compute the correction 3DLUT
+     * Video profile is built with LCMS routines
+     * Display profile is read from the path given by the user in the advanced
+     * configuration parameters. */
+
+    struct trc_param {
+        uint8_t          type_nb;
+        cmsFloat64Number param[10];
+    };
+
+    static cmsCIExyY d65_wp = { 0.3127, 0.3290, 1.0 };
+
+    static cmsCIExyYTRIPLE bt709_prim = { { 0.640, 0.330, 1.00 }, \
+                                          { 0.300, 0.600, 1.00 }, \
+                                          { 0.150, 0.060, 1.00 } };
+
+    static cmsCIExyYTRIPLE bt601_525_prim = { { 0.630, 0.340, 1.00 }, \
+                                              { 0.310, 0.595, 1.00 }, \
+                                              { 0.155, 0.070, 1.00 } };
+
+    static cmsCIExyYTRIPLE bt601_625_prim = { { 0.640, 0.330, 1.00 }, \
+                                              { 0.290, 0.600, 1.00 }, \
+                                              { 0.150, 0.060, 1.00 } };
+
+    static cmsCIExyYTRIPLE bt2020_prim = { { 0.708, 0.292, 1.0 }, \
+                                           { 0.170, 0.797, 1.0 }, \
+                                           { 0.131, 0.046, 1.0 } };
+
+    static struct trc_param srgb_trc_params = { \
+        4, { 2.4, 1.0 / 1.055, 0.055 / 1.055, 1.0 / 12.92, 0.04045 } };
+
+    /* The Tone Response Curve values are the same for BT709, BT601 and BT2020
+     * They depend on the display black point luminance, according to BT1886,
+     * one per color component. Below are default values, but they will be
+     * computed at correction initialisation */
+    static struct trc_param bt_trc_params = { 6, { 2.4, 0.94, 0.06, 0. } };
+
+
+
+    /* Icc profile correction cLUT computation
+     * First, read the user icc file */
+
+    msg_Dbg( gl, "User icc profile path %s", filename );
+    cmsHPROFILE  hOutProfile = cmsOpenProfileFromFile( filename, "r");
+    if ( hOutProfile == NULL ) {
+        msg_Dbg( gl, "Could not read user display icc profile" );
+        return VLC_ENOMEM;
+    }
+
+    /* Create the video profile using Lcms, from video format reported by VLC */
+    msg_Dbg(gl, "Create source colorspace profile from video format");
+    cmsToneCurve *trc[3];
+
+    cmsContext cms_ctx = cmsCreateContext(NULL, NULL);
+
+    if ( cms_ctx == NULL) {
+        msg_Dbg( gl,"Could not create cms context\n" );
+        return VLC_ENOMEM;
+    }
+
+    /* Building TRC curve for BT standards according to BT 1886 recommendations
+    *  It requires the black point of the source display to build a modified
+    *  gamma 2.4 curve. */
+    int user_contrast;
+    double bp_offset;
+    int icc_bp_offset_mode = var_InheritInteger(gl, "icc_bp_offset_mode");
+    msg_Dbg( gl, "Black point offset mode = %s",\
+                  icc_bp_mode_text[ icc_bp_offset_mode ]  );
+
+    switch ( icc_bp_offset_mode )
+    {
+        case ICC_BP_MODE_USER:
+            user_contrast = var_InheritInteger(gl, "icc_contrast");
+            msg_Dbg( gl, "Contrast provided by user = %i", user_contrast );
+            if ( user_contrast < 1 )
+                bp_offset = 0.0;
+            else
+                bp_offset = 1.0 / user_contrast;
+
+            msg_Dbg( gl, "Black point offset provided from user contrast = %lf",\
+            bp_offset );
+            break;
+
+        default:
+            bp_offset = 0.0005;
+    }
+
+    /* Compute BT 1886 curve */
+    bt_trc_params.param[0] = 2.4;
+    bt_trc_params.param[3] = 0.0;
+
+    bt_trc_params.param[2] = powf( bp_offset, 1.0 / bt_trc_params.param[0] );
+    msg_Dbg( gl, "Gamma corrected black point offset = %f",\
+             bt_trc_params.param[2] );
+    bt_trc_params.param[1] = 1.0 - bt_trc_params.param[2];
+
+    for (int i = 0; i < 3 ; i++ ) {
+        trc[i] = cmsBuildParametricToneCurve( cms_ctx, bt_trc_params.type_nb,\
+        bt_trc_params.param );
+    }
+
+    cmsCIExyYTRIPLE *m_prim;
+    int colorspace = fmt->space;
+    if ( var_InheritBool(gl, "force_bt709") ) {
+        colorspace = COLOR_SPACE_BT709;
+    }
+
+    switch ( colorspace ) {
+
+        case COLOR_SPACE_UNDEF:
+            msg_Dbg( gl, "Image colorspace is undefined, taking sRGB\n" );
+            trc[0] = cmsBuildParametricToneCurve( cms_ctx,\
+                                                  srgb_trc_params.type_nb, \
+                                                  srgb_trc_params.param );
+            trc[1] = cmsBuildParametricToneCurve( cms_ctx,\
+                                                  srgb_trc_params.type_nb, \
+                                                  srgb_trc_params.param );
+            trc[2] = cmsBuildParametricToneCurve( cms_ctx,\
+                                                  srgb_trc_params.type_nb, \
+                                                  srgb_trc_params.param );
+            // BT709 and sRGB have the same primaries
+            m_prim = &bt709_prim;
+            break;
+
+        case COLOR_SPACE_BT601:
+            msg_Dbg( gl, "Image colorspace is BT 601" );
+
+            if ( fmt->i_height > 500 ) {
+                msg_Dbg( gl, "Detected PAL, adjusting RGB primaries" );
+                m_prim = &bt601_625_prim;
+            }
+            else {
+                msg_Dbg( gl, "Detected NTSC, adjusting RGB primaries" );
+                m_prim = &bt601_525_prim;
+            }
+            break;
+
+        case COLOR_SPACE_BT2020:
+            msg_Dbg( gl, "Image colorspace is BT 2020" );
+            m_prim = &bt2020_prim;
+            break;
+
+        case COLOR_SPACE_BT709:
+            msg_Dbg( gl, "Image colorspace is BT 709" );
+            m_prim = &bt709_prim;
+            break;
+
+        default:
+            msg_Dbg( gl, "Default image colorspace is BT 709" );
+            m_prim = &bt709_prim;
+
+    }
+    /* Creation of the source profile */
+    cmsHPROFILE hInProfile = cmsCreateRGBProfile( &d65_wp, m_prim, trc );
+    if ( hInProfile == NULL ) {
+        msg_Dbg( gl, "Could not create image colorspace profile" );
+        return VLC_EGENERIC;
+    }
+
+    int icc_user_intent = var_InheritInteger(gl, "rendering-intent");
+    msg_Dbg( gl, "User rendering intent = %s", intent_text[icc_user_intent] );
+
+
+    msg_Dbg(gl, "Creating lcms Transform");
+    cmsHTRANSFORM hTransform = cmsCreateTransform( \
+        hInProfile,  TYPE_RGB_16, \
+        hOutProfile, TYPE_RGB_16, \
+        icc_user_intent, cmsFLAGS_HIGHRESPRECALC | \
+                           cmsFLAGS_BLACKPOINTCOMPENSATION );
+
+    msg_Dbg(gl, "Creating lut table");
+    uint64_t index;
+    uint16_t *rgb = (uint16_t*) malloc( sizeof(uint16_t) * g_3d_lut_size *\
+                                        g_3d_lut_size * g_3d_lut_size * 3 );
+    if (rgb == NULL )
+    {
+        msg_Dbg( gl, "Could not allocate color correction intermediate buffer" );
+        return VLC_ENOMEM;
+    }
+    int max_uint16 = ( 1 << (sizeof(uint16_t) * 8 ) ) - 1;
+    int scale = max_uint16  / ( g_3d_lut_size - 1 );
+    for ( int b = 0 ; b < g_3d_lut_size ; b++ )
+    {
+        for ( int g = 0 ; g < g_3d_lut_size ; g++ )
+        {
+            for ( int r = 0 ; r < g_3d_lut_size ; r++ )
+            {
+                index = 3 * ( ( b * g_3d_lut_size + g ) * g_3d_lut_size \
+                                    + r );
+                rgb[ index ]     = r * scale;
+                rgb[ index + 1 ] = g * scale;
+                rgb[ index + 2 ] = b * scale;
+            }
+
+        }
+    }
+    cmsDoTransform( hTransform, rgb, lut, \
+                    g_3d_lut_size * g_3d_lut_size * g_3d_lut_size );
+    msg_Dbg(gl, "3D color LUT created");
+    cmsDeleteTransform( hTransform );
+    cmsCloseProfile(hInProfile);
+    cmsCloseProfile(hOutProfile);
+    cmsFreeToneCurveTriple(trc);
+    return VLC_SUCCESS;
+}
+#endif
+
 vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
                                                const vlc_fourcc_t **subpicture_chromas,
                                                vlc_gl_t *gl,
@@ -795,6 +1058,9 @@ vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
     GET_PROC_ADDR_CORE(TexParameterf);
     GET_PROC_ADDR_CORE(TexParameteri);
     GET_PROC_ADDR_CORE(TexSubImage2D);
+#ifdef HAVE_LIBPLACEBO
+    GET_PROC_ADDR_CORE(TexImage3D);
+#endif
     GET_PROC_ADDR_CORE(Viewport);
 
     GET_PROC_ADDR_CORE_GL(GetTexLevelParameteriv);
@@ -955,7 +1221,25 @@ vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
             return NULL;
         }
     }
-
+    /* Color correction texture */
+#ifdef HAVE_LIBPLACEBO
+    if ( vgl->prgm->tc->g_3dlut != NULL )
+    {
+        vgl->vt.GenTextures(1, &vgl->prgm->tc->clut_tex);
+        vgl->vt.BindTexture(GL_TEXTURE_3D, vgl->prgm->tc->clut_tex);
+        vgl->vt.TexImage3D( GL_TEXTURE_3D, 0, GL_RGB,\
+                            g_3d_lut_size, g_3d_lut_size, g_3d_lut_size, 0,\
+                            GL_RGB, GL_UNSIGNED_SHORT, vgl->prgm->tc->g_3dlut );
+        /* Set sampling parameters, clamp to edge, weird colors otherwise */
+        vgl->vt.TexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        vgl->vt.TexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        vgl->vt.TexParameterf(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        vgl->vt.TexParameterf(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        vgl->vt.TexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        msg_Dbg(gl, "Icc correction texture allocated");
+    }
+#endif
+    
     /* */
     vgl->vt.Disable(GL_BLEND);
     vgl->vt.Disable(GL_DEPTH_TEST);
@@ -1601,6 +1885,14 @@ static void DrawWithShaders(vout_display_opengl_t *vgl, struct prgm *prgm)
         vgl->vt.VertexAttribPointer(prgm->aloc.MultiTexCoord[j], 2, GL_FLOAT,
                                      0, 0, 0);
     }
+
+#ifdef HAVE_LIBPLACEBO
+    if ( vgl->prgm->tc->clut_is_active )
+    {
+        vgl->vt.ActiveTexture(GL_TEXTURE0 + vgl->prgm->tc->tex_count );
+        vgl->vt.BindTexture(GL_TEXTURE_3D, vgl->prgm->tc->clut_tex );
+    }
+#endif
 
     vgl->vt.BindBuffer(GL_ARRAY_BUFFER, vgl->vertex_buffer_object);
     vgl->vt.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, vgl->index_buffer_object);

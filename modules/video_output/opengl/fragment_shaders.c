@@ -363,6 +363,13 @@ tc_base_fetch_locations(opengl_tex_converter_t *tc, GLuint program)
         struct pl_shader_var sv = res->variables[i];
         tc->uloc.pl_vars[i] = tc->vt->GetUniformLocation(program, sv.var.name);
     }
+
+    /* color correction */
+    if ( tc->clut_is_active ) {
+        tc->clutId = tc->vt->GetUniformLocation(program, "clut3d");
+        if (tc->clutId == -1)
+            return VLC_EGENERIC;
+    }
 #endif
 
     return VLC_SUCCESS;
@@ -429,6 +436,9 @@ tc_base_prepare_shader(const opengl_tex_converter_t *tc,
             break;
         }
     }
+
+    if ( tc->clut_is_active )
+        tc->vt->Uniform1i(tc->clutId, tc->tex_count );
 #endif
 }
 
@@ -599,6 +609,23 @@ opengl_fragment_shader_init_impl(opengl_tex_converter_t *tc, GLenum tex_target,
     struct vlc_memstream ms;
     if (vlc_memstream_open(&ms) != 0)
         return 0;
+/* Color correction
+ * Forcing GLSL 3.3 to be able to use TexImage3D */
+#ifdef HAVE_LIBPLACEBO
+    if ( tc->clut_is_active ) {
+        if ( tc->glsl_version < 300 ) {
+            msg_Warn(tc->gl,"GLSL version used by VLC is %u", tc->glsl_version);
+            tc->glsl_version = 330;
+            msg_Warn(tc->gl,"Forcing the use of %u glsl version", \
+            tc->glsl_version);
+        }
+
+        else {
+           msg_Dbg(tc->gl,"Using %u glsl version, \n%s", tc->glsl_version, \
+            tc->glsl_precision_header);
+        }
+    }
+#endif
 
 #define ADD(x) vlc_memstream_puts(&ms, x)
 #define ADDF(x, ...) vlc_memstream_printf(&ms, x, ##__VA_ARGS__)
@@ -703,6 +730,11 @@ opengl_fragment_shader_init_impl(opengl_tex_converter_t *tc, GLenum tex_target,
     if (is_yuv)
         ADD("uniform vec4 Coefficients[4];\n");
 
+#ifdef HAVE_LIBPLACEBO
+    if ( tc->clut_is_active )
+        ADD("uniform sampler3D clut3d ;\n");
+#endif
+
     ADD("uniform vec4 FillColor;\n"
         "void main(void) {\n"
         " float val;vec4 colors;\n");
@@ -771,6 +803,9 @@ opengl_fragment_shader_init_impl(opengl_tex_converter_t *tc, GLenum tex_target,
         assert(res->output == PL_SHADER_SIG_COLOR);
         ADDF(" result = %s(result);\n", res->name);
     }
+    /* Color correction processing */
+    if ( tc->clut_is_active )
+        ADD(" result.rgb = texture( clut3d, result.rgb ).rgb;\n" );
 #endif
 
     ADD(" gl_FragColor = result * FillColor;\n"
