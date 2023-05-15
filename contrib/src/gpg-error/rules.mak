@@ -59,9 +59,9 @@ GPGERROR_CONF := \
 	--disable-doc
 
 .gpg-error: libgpg-error
-	$(RECONF)
-	cd $< && $(HOSTVARS) ./configure $(HOSTCONF) $(GPGERROR_CONF)
+	$(MAKEBUILDDIR)
+	$(MAKECONFIGURE) $(GPGERROR_CONF)
 	# pre_mkheader_cmds would delete our lock-obj-pub-native.h
-	$(MAKE) -C $< pre_mkheader_cmds=true bin_PROGRAMS=
-	$(MAKE) -C $< pre_mkheader_cmds=true bin_PROGRAMS= install
+	+$(MAKEBUILD) pre_mkheader_cmds=true bin_PROGRAMS=
+	+$(MAKEBUILD) pre_mkheader_cmds=true bin_PROGRAMS= install
 	touch $@
