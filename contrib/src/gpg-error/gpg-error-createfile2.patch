@@ -1,62 +1,118 @@
---- libgpg-error/src/estream.c.uwp	2023-05-23 09:53:33.222246200 +0200
-+++ libgpg-error/src/estream.c	2023-05-22 12:00:18.105186500 +0200
-@@ -4561,6 +4561,17 @@ tmpfd (void)
- #else
-       strcpy (p, ".tmp");
- #endif
-+#if _WIN32_WINNT >= 0x0602 // _WIN32_WINNT_WIN8
-+      CREATEFILE2_EXTENDED_PARAMETERS params;
-+      memset (&params, 0, sizeof params);
-+      params.dwSize = sizeof(params);
-+      params.dwFileFlags = FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE;
+From d61db45487a3d0177432693180593f83465336cb Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 09:24:32 +0200
+Subject: [PATCH 2/5] use CreateFile2 in Win8 as CreateFileW is forbidden in
+ UWP
+
+---
+ src/estream.c     | 24 ++++++++++++++++++++++++
+ src/spawn-w32.c   |  7 +++++++
+ src/w32-gettext.c |  5 +++++
+ 3 files changed, 36 insertions(+)
+
+diff --git a/src/estream.c b/src/estream.c
+index 4c25618..b112221 100644
+--- a/src/estream.c
++++ b/src/estream.c
+@@ -2010,6 +2010,13 @@ func_file_create_w32 (void **cookie, HANDLE *rethd, const char *path,
+   else
+     creation_distribution |= OPEN_EXISTING;
+ 
++#if _WIN32_WINNT >= _WIN32_WINNT_WIN8
++  hd = CreateFile2 (wpath,
++                    desired_access,
++                    share_mode,
++                    creation_distribution,
++                    NULL); /* template file  */
++#else
+   hd = CreateFileW (wpath,
+                     desired_access,
+                     share_mode,
+@@ -2017,6 +2024,7 @@ func_file_create_w32 (void **cookie, HANDLE *rethd, const char *path,
+                     creation_distribution,
+                     0,     /* flags and attributes  */
+                     NULL); /* template file  */
++#endif
+   if (hd == INVALID_HANDLE_VALUE)
+     {
+       _set_errno (map_w32_to_errno (GetLastError ()));
+@@ -5023,6 +5031,9 @@ tmpfd (void)
+   int pid = GetCurrentProcessId ();
+   unsigned int value;
+   int i;
++#if _WIN32_WINNT >= _WIN32_WINNT_WIN8
++      CREATEFILE2_EXTENDED_PARAMETERS createExParams;
++#endif
+ 
+   n = GetTempPathW (MAX_PATH+1, buffer);
+   if (!n || n > MAX_PATH || mystrlen (buffer) > MAX_PATH)
+@@ -5049,6 +5060,18 @@ tmpfd (void)
+           value <<= 4;
+         }
+       wcscpy (p, L".tmp");
++#if _WIN32_WINNT >= _WIN32_WINNT_WIN8
++      CREATEFILE2_EXTENDED_PARAMETERS createExParams;
++      ZeroMemory(&createExParams, sizeof(createExParams));
++      createExParams.dwSize = sizeof(createExParams);
++      createExParams.dwFileAttributes = FILE_ATTRIBUTE_TEMPORARY;
++      createExParams.dwFileFlags = FILE_FLAG_DELETE_ON_CLOSE;
 +      file = CreateFile2 (buffer,
 +                         GENERIC_READ | GENERIC_WRITE,
 +                         0,
 +                         CREATE_NEW,
-+                         &params);
++                         &createExParams);
 +#else
-       file = CreateFile (buffer,
+       file = CreateFileW (buffer,
                           GENERIC_READ | GENERIC_WRITE,
                           0,
-@@ -4568,6 +4579,7 @@ tmpfd (void)
+@@ -5056,6 +5079,7 @@ tmpfd (void)
                           CREATE_NEW,
                           FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
                           NULL);
 +#endif
        if (file != INVALID_HANDLE_VALUE)
          {
- #ifdef HAVE_W32CE_SYSTEM
---- libgpg-error/src/w32-gettext.c.uwp	2023-05-23 09:53:33.184247600 +0200
-+++ libgpg-error/src/w32-gettext.c	2023-05-22 11:45:24.077340000 +0200
-@@ -53,7 +53,7 @@
- #include "init.h"
- #include "gpg-error.h"
+           int fd = _open_osfhandle ((intptr_t)file, 0);
+diff --git a/src/spawn-w32.c b/src/spawn-w32.c
+index f9cb4cd..106d165 100644
+--- a/src/spawn-w32.c
++++ b/src/spawn-w32.c
+@@ -272,10 +272,17 @@ w32_open_null (int for_write)
+ {
+   HANDLE hfile;
  
--#if defined(HAVE_W32CE_SYSTEM) || WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_APP)
-+#if defined(HAVE_W32CE_SYSTEM) || !WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
- /* Forward declaration.  */
- static wchar_t *utf8_to_wchar (const char *string, size_t length, size_t *retlen);
- 
-@@ -72,9 +72,22 @@ MyCreateFileA (LPCSTR lpFileName, DWORD
-   if (!filename)
-     return INVALID_HANDLE_VALUE;
- 
-+#if !WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
-+  CREATEFILE2_EXTENDED_PARAMETERS createExParams;
-+  createExParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
-+  createExParams.dwFileAttributes = dwFlagsAndAttributes & 0xFFFF;
-+  createExParams.dwFileFlags = dwFlagsAndAttributes & 0xFFF00000;
-+  createExParams.dwSecurityQosFlags = dwFlagsAndAttributes & 0x000F0000;
-+  createExParams.lpSecurityAttributes = lpSecurityAttributes;
-+  createExParams.hTemplateFile = hTemplateFile;
-+
-+  result = CreateFile2 (filename, dwDesiredAccess, dwSharedMode,
-+			dwCreationDisposition, &createExParams);
++#if _WIN32_WINNT >= _WIN32_WINNT_WIN8
++  hfile = CreateFile2 (L"nul",
++                       for_write? GENERIC_WRITE : GENERIC_READ,
++                       FILE_SHARE_READ | FILE_SHARE_WRITE,
++                       OPEN_EXISTING, NULL);
 +#else
-   result = CreateFileW (filename, dwDesiredAccess, dwSharedMode,
- 			lpSecurityAttributes, dwCreationDisposition,
- 			dwFlagsAndAttributes, hTemplateFile);
+   hfile = CreateFileW (L"nul",
+                        for_write? GENERIC_WRITE : GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        NULL, OPEN_EXISTING, 0, NULL);
 +#endif
- 
-   err = GetLastError ();
-   free (filename);
+   if (hfile == INVALID_HANDLE_VALUE)
+     _gpgrt_log_debug ("can't open 'nul': ec=%d\n", (int)GetLastError ());
+   return hfile;
+diff --git a/src/w32-gettext.c b/src/w32-gettext.c
+index 6f7855a..b8b2b94 100644
+--- a/src/w32-gettext.c
++++ b/src/w32-gettext.c
+@@ -1220,8 +1220,13 @@ load_domain (const char *filename)
+     if (!wfilename)
+       fh = INVALID_HANDLE_VALUE;
+     else
++#if _WIN32_WINNT >= _WIN32_WINNT_WIN8
++      fh = CreateFile2 (wfilename, GENERIC_READ, FILE_SHARE_WRITE,
++                        OPEN_EXISTING, NULL);
++#else
+       fh = CreateFileW (wfilename, GENERIC_READ, FILE_SHARE_WRITE, NULL,
+                         OPEN_EXISTING, 0, NULL);
++#endif
+     xfree (wfilename);
+   }
+   if (fh == INVALID_HANDLE_VALUE)
+-- 
+2.37.3.windows.1
+

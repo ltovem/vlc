@@ -1,0 +1,42 @@
+From c0ad8533152077fd3184fb9683a387dabdff36e6 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 10:10:08 +0200
+Subject: [PATCH 5/5] Favor GetCurrentProcessId() on Windows
+
+getpid() is not available in UWP [1] builds but GetCurrentProcessId() is.
+It's available since Windows XP [2].
+
+[1] https://learn.microsoft.com/en-us/cpp/cppcx/crt-functions-not-supported-in-universal-windows-platform-apps
+[2] https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessid
+---
+ src/logging.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/logging.c b/src/logging.c
+index 9008ba4..36adc52 100644
+--- a/src/logging.c
++++ b/src/logging.c
+@@ -779,13 +779,18 @@ print_prefix (int level, int leading_backspace)
+           unsigned long pidsuf;
+           int pidfmt;
+ 
++#ifdef _WIN32
++          unsigned int pid = GetCurrentProcessId ();
++#else
++          unsigned int pid = getpid ();
++#endif
+           if (get_pid_suffix_cb && (pidfmt=get_pid_suffix_cb (&pidsuf)))
+             rc = _gpgrt_fprintf_unlocked (logstream,
+                                           pidfmt == 1? "[%u.%lu]":"[%u.%lx]",
+-                                          (unsigned int)getpid (), pidsuf);
++                                          pid, pidsuf);
+           else
+             rc = _gpgrt_fprintf_unlocked (logstream, "[%u]",
+-                                          (unsigned int)getpid ());
++                                          pid);
+           if (rc > 0)
+             length += rc;
+         }
+-- 
+2.37.3.windows.1
+

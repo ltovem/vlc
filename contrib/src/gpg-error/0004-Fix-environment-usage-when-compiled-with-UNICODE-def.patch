@@ -1,0 +1,54 @@
+From 8eeefc39682b367d898f73b422a0873272640421 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 10:05:04 +0200
+Subject: [PATCH 4/5] Fix environment usage when compiled with UNICODE define
+
+---
+ src/sysutils.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/sysutils.c b/src/sysutils.c
+index b66d43e..a913dc5 100644
+--- a/src/sysutils.c
++++ b/src/sysutils.c
+@@ -68,7 +68,7 @@ _gpgrt_getenv (const char *name)
+     int len, size;
+     char *result;
+ 
+-    len = GetEnvironmentVariable (name, NULL, 0);
++    len = GetEnvironmentVariableA (name, NULL, 0);
+     if (!len && GetLastError () == ERROR_ENVVAR_NOT_FOUND)
+       {
+         _gpg_err_set_errno (0);
+@@ -79,7 +79,7 @@ _gpgrt_getenv (const char *name)
+     result = _gpgrt_malloc (size);
+     if (!result)
+       return NULL;
+-    len = GetEnvironmentVariable (name, result, size);
++    len = GetEnvironmentVariableA (name, result, size);
+     if (len >= size)
+       {
+         /* Changed in the meantime - retry.  */
+@@ -145,7 +145,7 @@ _gpgrt_setenv (const char *name, const char *value, int overwrite)
+          * putenv tell us that one may use "NAME=" to unset an envvar,
+          * this seems not to be correct.  Thus we do the same as what
+          * we do in Unix (or well in GNU libc) and use just "NAME". */
+-        if (!SetEnvironmentVariable (name, NULL))
++        if (!SetEnvironmentVariableA (name, NULL))
+           return GPG_ERR_EINVAL;
+         if (getenv (name))
+           {
+@@ -159,8 +159,8 @@ _gpgrt_setenv (const char *name, const char *value, int overwrite)
+         return 0;
+       }
+ 
+-    exists = GetEnvironmentVariable (name, tmpbuf, sizeof tmpbuf);
+-    if ((! exists || overwrite) && !SetEnvironmentVariable (name, value))
++    exists = GetEnvironmentVariableA (name, tmpbuf, sizeof tmpbuf);
++    if ((! exists || overwrite) && !SetEnvironmentVariableA (name, value))
+       return GPG_ERR_EINVAL; /* (Might also be ENOMEM.) */
+     if (overwrite || !getenv (name))
+       {
+-- 
+2.37.3.windows.1
+

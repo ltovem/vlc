@@ -1,0 +1,90 @@
+From eb6ecb1fb05cd21225b9863c5808b4cae5cde1af Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 11:17:43 +0200
+Subject: [PATCH] Disable execv/fork calls on tvOS
+
+---
+ src/spawn-posix.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/src/spawn-posix.c b/src/spawn-posix.c
+index 8e36ee1..186e424 100644
+--- a/src/spawn-posix.c
++++ b/src/spawn-posix.c
+@@ -54,6 +54,12 @@
+ # include <dirent.h>
+ #endif /*__linux__ */
+ 
++#ifdef __APPLE__
++#include <TargetConditionals.h>
++#else
++#define TARGET_OS_TV 0
++#endif
++
+ #include "gpgrt-int.h"
+ 
+ 
+@@ -322,7 +328,9 @@ do_exec (const char *pgmname, const char *argv[],
+   if (!(flags & GPGRT_SPAWN_INHERIT_FILE))
+     _gpgrt_close_all_fds (3, except);
+ 
++#if TARGET_OS_TV
+   execv (pgmname, arg_list);
++#endif
+   /* No way to print anything, as we have may have closed all streams. */
+   _exit (127);
+ }
+@@ -502,8 +510,12 @@ _gpgrt_spawn_process (const char *pgmname, const char *argv[],
+     }
+ 
+   _gpgrt_pre_syscall ();
++#if TARGET_OS_TV
++  pid = (pid_t)(-1);
++#else
+   pid = fork ();
+   _gpgrt_post_syscall ();
++#endif
+   if (pid == (pid_t)(-1))
+     {
+       err = _gpg_err_code_from_syserror ();
+@@ -577,8 +589,12 @@ _gpgrt_spawn_process_fd (const char *pgmname, const char *argv[],
+ 
+   *r_process_id = convert_from_pid (-1);
+   _gpgrt_pre_syscall ();
++#if TARGET_OS_TV
++  pid = (pid_t)(-1);
++#else
+   pid = fork ();
+   _gpgrt_post_syscall ();
++#endif
+   if (pid == (pid_t)(-1))
+     {
+       err = _gpg_err_code_from_syserror ();
+@@ -873,8 +889,12 @@ _gpgrt_spawn_process_detached (const char *pgmname, const char *argv[],
+     return _gpg_err_code_from_syserror ();
+ 
+   _gpgrt_pre_syscall ();
++#if TARGET_OS_TV
++  pid = (pid_t)(-1);
++#else
+   pid = fork ();
+   _gpgrt_post_syscall ();
++#endif
+   if (pid == (pid_t)(-1))
+     {
+       ec = _gpg_err_code_from_syserror ();
+@@ -890,7 +910,11 @@ _gpgrt_spawn_process_detached (const char *pgmname, const char *argv[],
+       if (setsid() == -1 || chdir ("/"))
+         _exit (1);
+ 
++#if TARGET_OS_TV
++      pid2 = (pid_t)(-1);
++#else
+       pid2 = fork (); /* Double fork to let init take over the new child. */
++#endif
+       if (pid2 == (pid_t)(-1))
+         _exit (1);
+       if (pid2)
+-- 
+2.37.3.windows.1
+
