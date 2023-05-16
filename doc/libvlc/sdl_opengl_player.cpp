@@ -107,7 +107,10 @@ public:
             "--verbose=4"
         };
         m_vlc = libvlc_new(sizeof(args) / sizeof(*args), args);
-        m_ctx = SDL_GL_CreateContext(window);
+        m_win = SDL_CreateWindow("offscreen",
+                                 0, 0, 1, 1,
+                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+        m_ctx = SDL_GL_CreateContext(m_win);
     }
 
     ~VLCVideo()
@@ -115,6 +118,10 @@ public:
         stop();
         if (m_vlc)
             libvlc_release(m_vlc);
+        if (m_ctx)
+            SDL_GL_DeleteContext(m_ctx);
+        if (m_win)
+            SDL_DestroyWindow(m_win);
     }
 
     bool playMedia(const char* url)
