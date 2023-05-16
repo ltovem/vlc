@@ -257,9 +257,7 @@ int main(int argc, char** argv)
     glewInit();
 
     VLCVideo video(wnd);
-
-    SDL_Renderer* rdr = SDL_CreateRenderer(
-        wnd, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    SDL_GL_MakeCurrent(wnd, glc);
 
     // Create Vertex Array Object
     GLuint vao;
