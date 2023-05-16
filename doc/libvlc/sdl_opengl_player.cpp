@@ -139,7 +139,7 @@ public:
         }
         // Define the opengl rendering callbacks
         libvlc_video_set_output_callbacks(m_mp, libvlc_video_engine_opengl,
-            setup, cleanup, nullptr, resize, swap,
+            setup, cleanup, set_window_callbacks, resize, swap,
             make_current, get_proc_address, nullptr, nullptr,
             this);
 
@@ -187,9 +187,6 @@ public:
             that->m_tex_display = std::make_shared<VLCTexture>(cfg->width, cfg->height);
             that->m_updated = false;
 
-            that->m_width = cfg->width;
-            that->m_height = cfg->height;
-
             that->m_tex_render->bind();
         }
 
@@ -208,8 +205,6 @@ public:
                       libvlc_video_setup_device_info_t *out)
     {
         VLCVideo* that = static_cast<VLCVideo*>(*data);
-        that->m_width = 0;
-        that->m_height = 0;
         that->m_updated = false;
         return true;
     }
@@ -240,17 +235,88 @@ public:
     static bool make_current(void* data, bool current)
     {
         VLCVideo* that = static_cast<VLCVideo*>(data);
+        int ret;
         if (current)
-            return SDL_GL_MakeCurrent(that->m_win, that->m_ctx) == 0;
+            ret = SDL_GL_MakeCurrent(that->m_win, that->m_ctx);
         else
-            return SDL_GL_MakeCurrent(that->m_win, 0) == 0;
+            ret = SDL_GL_MakeCurrent(that->m_win, 0);
+        return ret == 0;
     }
 
     // This callback is called by VLC to get OpenGL functions.
     static void* get_proc_address(void* /*data*/, const char* current)
     {
+        if (strncmp(current, "egl", 3) == 0)
+            return nullptr;
         return SDL_GL_GetProcAddress(current);
     }
+
+
+    // This callback is called by VLC to provide functions to report window size and mouse events
+    static void set_window_callbacks(void* data,
+        libvlc_video_output_resize_cb report_size_change,
+        libvlc_video_output_mouse_move_cb report_mouse_move,
+        libvlc_video_output_mouse_press_cb report_mouse_press,
+        libvlc_video_output_mouse_release_cb report_mouse_release,
+        libvlc_video_output_mouse_double_click_cb report_mouse_dblclick,
+        void* reportOpaque)
+    {
+        VLCVideo* that = static_cast<VLCVideo*>(data);
+        std::lock_guard<std::mutex> lock(that->m_window_lock);
+        that->m_reportOpaque = reportOpaque;
+        that->m_report_size_change = report_size_change;
+        that->m_report_mouse_move = report_mouse_move;
+        that->m_report_mouse_press = report_mouse_press;
+        that->m_report_mouse_release = report_mouse_release;
+        that->m_report_mouse_dblclick = report_mouse_dblclick;
+
+        //report initial size
+        if (that->m_report_size_change)
+            that->m_report_size_change(that->m_reportOpaque, that->m_width, that->m_height);
+    }
+
+    void onResize(int width, int height)
+    {
+        std::lock_guard<std::mutex> lock(m_window_lock);
+        m_width = width;
+        m_height = height;
+        if (!m_report_size_change)
+            return;
+        m_report_size_change(m_reportOpaque, width, height);
+    }
+
+    void onMouseMove(int x, int y)
+    {
+        std::lock_guard<std::mutex> lock(m_window_lock);
+        if (!m_report_mouse_move)
+            return;
+        m_report_mouse_move(m_reportOpaque, x, y);
+    }
+
+    void onMousePress(libvlc_video_output_mouse_button_t button)
+    {
+        std::lock_guard<std::mutex> lock(m_window_lock);
+        if (!m_report_mouse_press)
+            return;
+        m_report_mouse_press(m_reportOpaque, button);
+    }
+
+    void onMouseRelease(libvlc_video_output_mouse_button_t button)
+    {
+        std::lock_guard<std::mutex> lock(m_window_lock);
+        if (!m_report_mouse_press)
+            return;
+        m_report_mouse_release(m_reportOpaque, button);
+    }
+
+    void onMouseDoubleClick(libvlc_video_output_mouse_button_t button)
+    {
+        std::lock_guard<std::mutex> lock(m_window_lock);
+        if (!m_report_mouse_dblclick)
+            return;
+        m_report_mouse_dblclick(m_reportOpaque, button);
+    }
+
 
 private:
     //VLC objects
@@ -266,6 +332,15 @@ private:
     std::shared_ptr<VLCTexture> m_tex_swap;
     std::shared_ptr<VLCTexture> m_tex_display;
     bool m_updated = false;
+
+    //window callbacks
+    std::mutex m_window_lock;
+    void* m_reportOpaque = nullptr;
+    libvlc_video_output_resize_cb m_report_size_change = nullptr;
+    libvlc_video_output_mouse_move_cb m_report_mouse_move = nullptr;
+    libvlc_video_output_mouse_press_cb m_report_mouse_press = nullptr;
+    libvlc_video_output_mouse_release_cb m_report_mouse_release = nullptr;
+    libvlc_video_output_mouse_double_click_cb m_report_mouse_dblclick = nullptr;
 
     //SDL context
     SDL_Window* m_win;
@@ -292,7 +367,7 @@ int main(int argc, char** argv)
 
     SDL_Window* wnd = SDL_CreateWindow("test",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+        640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 
 
@@ -314,10 +389,10 @@ int main(int argc, char** argv)
 
     //vertex X, vertex Y, UV X, UV Y
     GLfloat vertices[] = {
-        -0.5f,  0.5f, 0.f, 1.f,
-        -0.5f, -0.5f, 0.f, 0.f,
-         0.5f,  0.5f, 1.f, 1.f,
-         0.5f, -0.5f, 1.f, 0.f
+        -1.f,  1.f, 0.f, 1.f,
+        -1.f, -1.f, 0.f, 0.f,
+         1.f,  1.f, 1.f, 1.f,
+         1.f, -1.f, 1.f, 0.f
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -407,14 +482,86 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    Uint32 windowID = SDL_GetWindowID(wnd);
     bool updated = false;
     bool quit = false;
     std::shared_ptr<VLCTexture> vlcTexture;
     while(!quit) {
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
-            if(e.type == SDL_QUIT)
+            switch (e.type) {
+            case SDL_QUIT:
                 quit = true;
+                break;
+
+            case SDL_WINDOWEVENT: {
+                if (e.window.windowID == windowID)  {
+                    switch (e.window.event) {
+                    case SDL_WINDOWEVENT_EXPOSED: {
+                        int width;
+                        int height;
+                        SDL_GL_GetDrawableSize(wnd, &width, &height);
+                        video.onResize(width, height);
+                        break;
+                    }
+                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
+
+                        int width;
+                        int height;
+                        SDL_GL_GetDrawableSize(wnd, &width, &height);
+                        video.onResize(width, height);
+
+                        //SDL seems to loose the current context after a resize
+                        SDL_GL_MakeCurrent(wnd, glc);
+                        glViewport(0, 0, width, height);
+
+                        break;
+                    }
+
+                    case SDL_WINDOWEVENT_CLOSE: {
+                        e.type = SDL_QUIT;
+                        SDL_PushEvent(&e);
+                        break;
+                    }
+                    }
+                }
+                break;
+            }
+
+            case SDL_MOUSEMOTION: {
+                video.onMouseMove(e.motion.x, e.motion.y);
+                break;
+            }
+
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEBUTTONDOWN: {
+                libvlc_video_output_mouse_button_t button;
+                bool ok = true;
+                switch (e.button.button) {
+                case SDL_BUTTON_LEFT:
+                    button = libvlc_video_output_mouse_button_left;
+                    break;
+                case SDL_BUTTON_MIDDLE:
+                    button = libvlc_video_output_mouse_button_middle;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    button = libvlc_video_output_mouse_button_right;
+                    break;
+                default:
+                    ok = false;
+                    break;
+                }
+                if (!ok)
+                    break;
+
+                if (e.button.state == SDL_PRESSED)
+                    video.onMousePress(button);
+                else
+                    video.onMouseRelease(button);
+
+                break;
+            }
+            }
         }
 
         // Clear the screen to black
