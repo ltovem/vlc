@@ -8,6 +8,7 @@
 
 #include <exception>
 #include <mutex>
+#include <memory>
 #include <vector>
 
 #include <GL/glew.h>
@@ -42,6 +43,59 @@ const GLchar* fragmentSource =
     "{                             \n"
     "    gl_FragColor = texture2D(u_videotex, v_TexCoordinate); \n"
     "}                             \n";
+
+class VLCTexture
+{
+public:
+    VLCTexture(unsigned width, unsigned height)
+    {
+        static unsigned textCount = 0;
+
+        texId = ++textCount;
+        glGenTextures(1, &m_tex);
+        glGenFramebuffers(1, &m_fbo);
+
+        glBindTexture(GL_TEXTURE_2D, m_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, 0);
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            printf("invalid FBO\n");
+        }
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    ~VLCTexture()
+    {
+        glDeleteTextures(1, &m_tex);
+        glDeleteFramebuffers(1, &m_fbo);
+    }
+
+    void bind()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    }
+
+    GLuint texture()
+    {
+        return m_tex;
+    }
+
+    unsigned texId = 0;
+private:
+    GLuint m_tex = 0;
+    GLuint m_fbo = 0;
+};
 
 class VLCVideo
 {
@@ -101,16 +155,16 @@ public:
     }
 
     /// return the texture to be displayed
-    GLuint getVideoFrame(bool* out_updated)
+    std::shared_ptr<VLCTexture> getVideoFrame(bool* out_updated)
     {
         std::lock_guard<std::mutex> lock(m_text_lock);
         if (out_updated)
             *out_updated = m_updated;
         if (m_updated) {
-            std::swap(m_idx_swap, m_idx_display);
+            std::swap(m_tex_swap, m_tex_display);
             m_updated = false;
         }
-        return m_tex[m_idx_display];
+        return m_tex_display;
     }
 
     /// this callback will create the surfaces and FBO used by VLC to perform its rendering
@@ -118,35 +172,19 @@ public:
                        libvlc_video_output_cfg_t *render_cfg)
     {
         VLCVideo* that = static_cast<VLCVideo*>(data);
-        if (cfg->width != that->m_width || cfg->height != that->m_height)
-            cleanup(data);
 
-        glGenTextures(3, that->m_tex);
-        glGenFramebuffers(3, that->m_fbo);
+        {
+            std::lock_guard<std::mutex> lock(that->m_text_lock);
+            that->m_tex_render = std::make_shared<VLCTexture>(cfg->width, cfg->height);
+            that->m_tex_swap = std::make_shared<VLCTexture>(cfg->width, cfg->height);
+            that->m_tex_display = std::make_shared<VLCTexture>(cfg->width, cfg->height);
+            that->m_updated = false;
 
-        for (int i = 0; i < 3; i++) {
-            glBindTexture(GL_TEXTURE_2D, that->m_tex[i]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg->width, cfg->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            that->m_width = cfg->width;
+            that->m_height = cfg->height;
 
-            glBindFramebuffer(GL_FRAMEBUFFER, that->m_fbo[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, that->m_tex[i], 0);
+            that->m_tex_render->bind();
         }
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
-            return false;
-        }
-
-        that->m_width = cfg->width;
-        that->m_height = cfg->height;
-
-        glBindFramebuffer(GL_FRAMEBUFFER, that->m_fbo[that->m_idx_render]);
 
         render_cfg->opengl_format = GL_RGBA;
         render_cfg->full_range = true;
@@ -165,6 +203,7 @@ public:
         VLCVideo* that = static_cast<VLCVideo*>(*data);
         that->m_width = 0;
         that->m_height = 0;
+        that->m_updated = false;
         return true;
     }
 
@@ -173,11 +212,9 @@ public:
     static void cleanup(void* data)
     {
         VLCVideo* that = static_cast<VLCVideo*>(data);
-        if (that->m_width == 0 && that->m_height == 0)
-            return;
-
-        glDeleteTextures(3, that->m_tex);
-        glDeleteFramebuffers(3, that->m_fbo);
+        that->m_tex_render.reset();
+        that->m_tex_swap.reset();
+        that->m_tex_display.reset();
     }
 
     //This callback is called after VLC performs drawing calls
@@ -185,9 +222,11 @@ public:
     {
         VLCVideo* that = static_cast<VLCVideo*>(data);
         std::lock_guard<std::mutex> lock(that->m_text_lock);
+        //ensure we finish drawing before sharing the texture
+        glFinish();
         that->m_updated = true;
-        std::swap(that->m_idx_swap, that->m_idx_render);
-        glBindFramebuffer(GL_FRAMEBUFFER, that->m_fbo[that->m_idx_render]);
+        std::swap(that->m_tex_swap, that->m_tex_render);
+        that->m_tex_render->bind();
     }
 
     // This callback is called to set the OpenGL context
@@ -216,11 +255,9 @@ private:
     unsigned m_width = 0;
     unsigned m_height = 0;
     std::mutex m_text_lock;
-    GLuint m_tex[3];
-    GLuint m_fbo[3];
-    size_t m_idx_render = 0;
-    size_t m_idx_swap = 1;
-    size_t m_idx_display = 2;
+    std::shared_ptr<VLCTexture> m_tex_render;
+    std::shared_ptr<VLCTexture> m_tex_swap;
+    std::shared_ptr<VLCTexture> m_tex_display;
     bool m_updated = false;
 
     //SDL context
@@ -365,6 +402,7 @@ int main(int argc, char** argv)
 
     bool updated = false;
     bool quit = false;
+    std::shared_ptr<VLCTexture> vlcTexture;
     while(!quit) {
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -376,14 +414,21 @@ int main(int argc, char** argv)
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+
         // Get the current video texture and bind it
-        GLuint tex = video.getVideoFrame(&updated);
-        glBindTexture(GL_TEXTURE_2D, tex);
+        auto newTexture = video.getVideoFrame(&updated);
+        if (updated)
+            vlcTexture = newTexture;
 
-        // Draw the video rectangle
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        if (vlcTexture)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, vlcTexture->texture());
 
+            // Draw the video rectangle
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
         SDL_GL_SwapWindow(wnd);
     };
 
