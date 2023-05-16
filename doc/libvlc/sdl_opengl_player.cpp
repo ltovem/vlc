@@ -10,8 +10,9 @@
 #include <mutex>
 #include <vector>
 
+#include <GL/glew.h>
+
 #include <SDL2/SDL.h>
-#define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
 #include <vlc/vlc.h>
 
@@ -248,6 +249,8 @@ int main(int argc, char** argv)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     SDL_GLContext glc = SDL_GL_CreateContext(wnd);
+    SDL_GL_MakeCurrent(wnd, glc);
+    glewInit();
 
     VLCVideo video(wnd);
 
