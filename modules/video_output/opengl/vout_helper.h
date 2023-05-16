@@ -41,19 +41,19 @@ enum icc_bp_mode {
 };
 
 static const int icc_bp_mode_list[] = {
-    ICC_BP_MODE_DEFAULT,\
+    ICC_BP_MODE_DEFAULT,
     ICC_BP_MODE_USER
 };
 
 static const char * const icc_bp_mode_text[] = {
-    "Default value (2000)",\
+    "Default value (2000)",
     "User defined value"
 };
 
 enum icc_intent {
-    ICC_INTENT_PERCEPTUAL= 0,\
-    ICC_INTENT_RELATIVE_COLORIMETRIC=1,\
-    ICC_INTENT_SATURATION= 2,\
+    ICC_INTENT_PERCEPTUAL= 0,
+    ICC_INTENT_RELATIVE_COLORIMETRIC=1,
+    ICC_INTENT_SATURATION= 2,
     ICC_INTENT_ABSOLUTE_COLORIMETRIC=3
 };
 
@@ -278,25 +278,24 @@ static const char * const dither_text[] = {
 #define add_glopts_color_correction() \
     set_section("Display color correction", NULL) \
     add_loadfile("icc_profile", "", "File path to display icc profile",\
-                 "File path to an icc profile (.icc, .icm) for color\
-                  correction by a 3DLut generated at video beginning\
-                   (can take a few seconds, depending on your machine).", true )\
+                "File path to your display icc profile (.icc, .icm) for color\
+                correction.", true ) \
     add_integer("icc_bp_offset_mode", ICC_BP_MODE_DEFAULT, "Black point offset mode",\
-    "Black point offset mode, change this if image constrast\
-    is not satisfactory.", true) \
+                "Black point offset mode, change to user value if image constrast\
+                is not satisfactory.", true) \
     change_integer_list( icc_bp_mode_list, icc_bp_mode_text) \
+    add_integer("icc_contrast", 2000, "Display source contrast",\
+                "This is an assumption on the contrast ratio of the display\
+                used for the video creation. Used to compute the black point\
+                compensation.", true ) \
     add_integer("icc_intent", ICC_INTENT_PERCEPTUAL, "Rendering intent",\
-    "Usual values are perceptual or relative colorimetric.", true) \
+                "Usual values are perceptual or relative colorimetric.", true) \
     change_integer_list( icc_intent_list, icc_intent_text) \
-    add_integer("icc_contrast", 2000, "Display source contrast", "Modify this \
-    if image is too dark (decrease it), or too light (increase it). This is an\
-    assumption on the contrast ratio of the display used for the video creation\
-     (enter 0 if you watch a computer generated test chart). It is used to\
-      compute the black point compensation.",\
-     true ) \
-     add_bool("force_bt709", false, "Force BT709 colorspace (HDTV) for the\
-    source", "Try this with hdmi or usb sources via v4l2 (webcam...),\
-      if colors seem wrong.", true)
+    add_bool("force_bt709", false, "Force BT709 colorspace (HDTV) for the source",\
+            "Try this with hdmi or usb sources (webcam...) if colors seem wrong.",\
+            true)
+#else
+#define add_glopts_color_correction()
 #endif
 
 #define GLCONV_TEXT "Open GL/GLES hardware converter"
@@ -304,8 +303,8 @@ static const char * const dither_text[] = {
 
 #define add_glopts() \
     add_module ("glconv", "glconv", NULL, GLCONV_TEXT, GLCONV_LONGTEXT, true) \
+    add_glopts_color_correction()\
     add_glopts_placebo ()
-    add_glopts_color_correction()
 
 static const vlc_fourcc_t gl_subpicture_chromas[] = {
     VLC_CODEC_RGBA,

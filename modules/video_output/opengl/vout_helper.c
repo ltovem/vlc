@@ -668,7 +668,7 @@ opengl_init_program(vout_display_opengl_t *vgl, struct prgm *prgm,
             }
             else
             {
-                tc->g_3dlut = ( GLushort* ) malloc( sizeof(GLushort) * \
+                tc->g_3dlut = malloc( sizeof(GLushort) * \
                             g_3d_lut_size * g_3d_lut_size * g_3d_lut_size * 3 );
                 if ( tc->g_3dlut == NULL )
                 {
@@ -679,8 +679,8 @@ opengl_init_program(vout_display_opengl_t *vgl, struct prgm *prgm,
                     int err = CreateCorrectionLUT( tc->g_3dlut, tc->gl, fmt, filename );
                     if ( err != VLC_SUCCESS )
                     {
-                        msg_Dbg( tc->gl, "Could not create Color Correction LUT, \
-                        disabling color correction" );
+                        msg_Dbg( tc->gl, "Could not create Color Correction LUT,\
+                                        disabling color correction" );
                         free( tc->g_3dlut );
                         tc->g_3dlut = NULL;
                     }
@@ -690,8 +690,8 @@ opengl_init_program(vout_display_opengl_t *vgl, struct prgm *prgm,
             }
         }
         else {
-            msg_Dbg( tc->gl, "Absent or invalid path to icc correction profile, \
-            disabling color correction" );
+            msg_Dbg( tc->gl, "Absent or invalid path to icc correction profile,\
+                            disabling color correction" );
         }
     }
 #endif
@@ -855,8 +855,9 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
 
     cmsContext cms_ctx = cmsCreateContext(NULL, NULL);
 
-    if ( cms_ctx == NULL) {
+    if ( cms_ctx == NULL ) {
         msg_Dbg( gl,"Could not create cms context\n" );
+        cmsCloseProfile(hOutProfile);
         return VLC_ENOMEM;
     }
 
@@ -899,6 +900,12 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
     for (int i = 0; i < 3 ; i++ ) {
         trc[i] = cmsBuildParametricToneCurve( cms_ctx, bt_trc_params.type_nb,\
         bt_trc_params.param );
+
+        if ( trc[i] == NULL ) {
+            cmsDeleteContext(cms_ctx) ;
+            cmsCloseProfile(hOutProfile);
+            return VLC_ENOMEM;
+        }
     }
 
     cmsCIExyYTRIPLE *m_prim;
@@ -910,16 +917,19 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
     switch ( colorspace ) {
 
         case COLOR_SPACE_UNDEF:
-            msg_Dbg( gl, "Image colorspace is undefined, taking sRGB\n" );
-            trc[0] = cmsBuildParametricToneCurve( cms_ctx,\
-                                                  srgb_trc_params.type_nb, \
-                                                  srgb_trc_params.param );
-            trc[1] = cmsBuildParametricToneCurve( cms_ctx,\
-                                                  srgb_trc_params.type_nb, \
-                                                  srgb_trc_params.param );
-            trc[2] = cmsBuildParametricToneCurve( cms_ctx,\
-                                                  srgb_trc_params.type_nb, \
-                                                  srgb_trc_params.param );
+            msg_Dbg( gl, "Image colorspace is undefined, taking sRGB" );
+
+            for (int i = 0; i < 3 ; i++ ) {
+                trc[i] = cmsBuildParametricToneCurve( cms_ctx,\
+                            srgb_trc_params.type_nb, srgb_trc_params.param );
+
+                if ( trc[i] == NULL ) {
+                    cmsDeleteContext(cms_ctx) ;
+                    cmsCloseProfile(hOutProfile);
+                    return VLC_ENOMEM;
+                }
+            }
+
             // BT709 and sRGB have the same primaries
             m_prim = &bt709_prim;
             break;
@@ -928,11 +938,11 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
             msg_Dbg( gl, "Image colorspace is BT 601" );
 
             if ( fmt->i_height > 500 ) {
-                msg_Dbg( gl, "Detected PAL, adjusting RGB primaries" );
+                msg_Dbg( gl, "Detected PAL" );
                 m_prim = &bt601_625_prim;
             }
             else {
-                msg_Dbg( gl, "Detected NTSC, adjusting RGB primaries" );
+                msg_Dbg( gl, "Detected NTSC" );
                 m_prim = &bt601_525_prim;
             }
             break;
@@ -956,11 +966,14 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
     cmsHPROFILE hInProfile = cmsCreateRGBProfile( &d65_wp, m_prim, trc );
     if ( hInProfile == NULL ) {
         msg_Dbg( gl, "Could not create image colorspace profile" );
-        return VLC_EGENERIC;
+        cmsFreeToneCurveTriple(trc);
+        cmsDeleteContext(cms_ctx) ;
+        cmsCloseProfile(hOutProfile);
+        return VLC_ENOMEM;
     }
 
-    int icc_user_intent = var_InheritInteger(gl, "rendering-intent");
-    msg_Dbg( gl, "User rendering intent = %s", intent_text[icc_user_intent] );
+    int icc_user_intent = var_InheritInteger(gl, "icc_intent");
+    msg_Dbg( gl, "User rendering intent = %s", icc_intent_text[icc_user_intent] );
 
 
     msg_Dbg(gl, "Creating lcms Transform");
@@ -970,8 +983,16 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
         icc_user_intent, cmsFLAGS_HIGHRESPRECALC | \
                            cmsFLAGS_BLACKPOINTCOMPENSATION );
 
+    if ( hTransform == NULL ) {
+        cmsCloseProfile(hInProfile);
+        cmsFreeToneCurveTriple(trc);
+        cmsDeleteContext(cms_ctx) ;
+        cmsCloseProfile(hOutProfile);
+        return VLC_ENOMEM;
+    }
+
     msg_Dbg(gl, "Creating lut table");
-    uint64_t index;
+    size_t index;
     uint16_t *rgb = (uint16_t*) malloc( sizeof(uint16_t) * g_3d_lut_size *\
                                         g_3d_lut_size * g_3d_lut_size * 3 );
     if (rgb == NULL )
@@ -979,8 +1000,8 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
         msg_Dbg( gl, "Could not allocate color correction intermediate buffer" );
         return VLC_ENOMEM;
     }
-    int max_uint16 = ( 1 << (sizeof(uint16_t) * 8 ) ) - 1;
-    int scale = max_uint16  / ( g_3d_lut_size - 1 );
+
+    int scale = UINT16_MAX / ( g_3d_lut_size - 1 );
     for ( int b = 0 ; b < g_3d_lut_size ; b++ )
     {
         for ( int g = 0 ; g < g_3d_lut_size ; g++ )
@@ -1003,6 +1024,7 @@ int CreateCorrectionLUT( GLushort *lut, vlc_gl_t *gl, \
     cmsCloseProfile(hInProfile);
     cmsCloseProfile(hOutProfile);
     cmsFreeToneCurveTriple(trc);
+    cmsDeleteContext(cms_ctx);
     return VLC_SUCCESS;
 }
 #endif
@@ -1247,7 +1269,7 @@ vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
         msg_Dbg(gl, "Icc correction texture allocated");
     }
 #endif
-    
+
     /* */
     vgl->vt.Disable(GL_BLEND);
     vgl->vt.Disable(GL_DEPTH_TEST);
