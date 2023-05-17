@@ -1,8 +1,7 @@
 # asdcplib
 
-ASDCPLIB_VERSION := 2.7.19
-
-ASDCPLIB_URL := http://download.cinecert.com/asdcplib/asdcplib-$(ASDCPLIB_VERSION).tar.gz
+ASDCPLIB_VERSION := 2_12_3
+ASDCPLIB_URL := $(GITHUB)/cinecert/asdcplib/archive/refs/tags/rel_$(ASDCPLIB_VERSION).tar.gz
 
 ifndef HAVE_IOS
 ifndef HAVE_ANDROID
@@ -16,14 +15,17 @@ ifeq ($(call need_pkg,"asdcplib >= 1.12"),)
 PKGS_FOUND += asdcplib
 endif
 
-ASDCPLIB_CXXFLAGS := $(CXXFLAGS) -std=gnu++98
+ASDCPLIB_CXXFLAGS := $(CXXFLAGS) -Dregister=
+ifdef HAVE_WIN32
+ASDCPLIB_CXXFLAGS += -DKM_WIN32_UTF8
+endif
 
-$(TARBALLS)/asdcplib-$(ASDCPLIB_VERSION).tar.gz:
+$(TARBALLS)/asdcplib-rel_$(ASDCPLIB_VERSION).tar.gz:
 	$(call download_pkg,$(ASDCPLIB_URL),asdcplib)
 
-.sum-asdcplib: asdcplib-$(ASDCPLIB_VERSION).tar.gz
+.sum-asdcplib: asdcplib-rel_$(ASDCPLIB_VERSION).tar.gz
 
-asdcplib: asdcplib-$(ASDCPLIB_VERSION).tar.gz .sum-asdcplib
+asdcplib: asdcplib-rel_$(ASDCPLIB_VERSION).tar.gz .sum-asdcplib
 	$(UNPACK)
 	$(APPLY) $(SRC)/asdcplib/port-to-nettle.patch
 	$(APPLY) $(SRC)/asdcplib/static-programs.patch
