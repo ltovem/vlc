@@ -34,6 +34,8 @@ public:
             mContext->setShareContext(render_context);
             mContext->create();
 
+            mIsGLX = QStringLiteral("QGLXNativeContext") == mContext->nativeHandle().typeName();
+
             videoReady.release();
         });
     }
@@ -222,6 +224,14 @@ public:
     static void* get_proc_address(void* data, const char* current)
     {
         VLCVideo* that = static_cast<VLCVideo*>(data);
+
+        // glxGetProcAddress may return invalid function pointers when queried
+        // egl functions
+        // see https://code.videolan.org/videolan/vlc/-/issues/26813
+        // just blacklist them when using GLX
+        if (that->mIsGLX && (strncmp(current, "egl", 3) == 0))
+            return nullptr;
+
         /* Qt usual expects core symbols to be queryable, even though it's not
          * mentioned in the API. Cf QPlatformOpenGLContext::getProcAddress.
          * Thus, we don't need to wrap the function symbols here, but it might
@@ -251,6 +261,8 @@ private:
             return libvlc_video_output_mouse_button_left;
         }
     }
+
+    bool mIsGLX = false;
 
     QtVLCWidget *mWidget;
     QOpenGLContext *mContext;
