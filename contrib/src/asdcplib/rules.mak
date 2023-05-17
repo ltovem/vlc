@@ -5,10 +5,14 @@ ASDCPLIB_URL := $(GITHUB)/cinecert/asdcplib/archive/refs/tags/rel_$(ASDCPLIB_VER
 
 ifndef HAVE_IOS
 ifndef HAVE_ANDROID
-ifndef HAVE_WINSTORE # FIXME uses some fordbidden SetErrorModes, GetModuleFileName in fileio.cpp
 PKGS += asdcplib
 endif
 endif
+
+DEPS_asdcplib = nettle $(DEPS_nettle)
+ifdef HAVE_WINSTORE
+# asdcplib uses CreateFileW
+DEPS_asdcplib += alloweduwp $(DEPS_alloweduwp)
 endif
 
 ifeq ($(call need_pkg,"asdcplib >= 1.12"),)
@@ -33,8 +37,6 @@ asdcplib: asdcplib-rel_$(ASDCPLIB_VERSION).tar.gz .sum-asdcplib
 	$(APPLY) $(SRC)/asdcplib/win32-cross-compilation.patch
 	$(APPLY) $(SRC)/asdcplib/win32-dirent.patch
 	$(MOVE)
-
-DEPS_asdcplib = nettle $(DEPS_nettle)
 
 ASDCPLIB_CONF := --enable-freedist --enable-dev-headers --with-nettle=$(PREFIX)
 
