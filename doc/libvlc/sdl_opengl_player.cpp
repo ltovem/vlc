@@ -14,6 +14,7 @@
 #include <GL/glew.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_opengl.h>
 #include <vlc/vlc.h>
 
@@ -122,6 +123,11 @@ public:
             SDL_GL_DeleteContext(m_ctx);
         if (m_win)
             SDL_DestroyWindow(m_win);
+    }
+
+    void useX11(bool value)
+    {
+        m_useX11 = value;
     }
 
     bool playMedia(const char* url)
@@ -244,9 +250,13 @@ public:
     }
 
     // This callback is called by VLC to get OpenGL functions.
-    static void* get_proc_address(void* /*data*/, const char* current)
+    static void* get_proc_address(void* data, const char* current)
     {
-        if (strncmp(current, "egl", 3) == 0)
+        VLCVideo* that = static_cast<VLCVideo*>(data);
+        if (!current)
+            return nullptr;
+
+        if (that->m_useX11 && strncmp(current, "egl", 3) == 0)
             return nullptr;
         return SDL_GL_GetProcAddress(current);
     }
@@ -345,6 +355,7 @@ private:
     //SDL context
     SDL_Window* m_win;
     SDL_GLContext m_ctx;
+    bool m_useX11 = false;
 };
 
 int main(int argc, char** argv)
@@ -376,6 +387,16 @@ int main(int argc, char** argv)
     glewInit();
 
     VLCVideo video(wnd);
+    SDL_SysWMinfo wndInfo;
+    SDL_VERSION(&wndInfo.version);
+    bool ret = SDL_GetWindowWMInfo(wnd, &wndInfo);
+    if (ret
+        && wndInfo.subsystem == SDL_SYSWM_X11
+        && SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE) != SDL_TRUE)
+    {
+        video.useX11(true);
+    }
+
     SDL_GL_MakeCurrent(wnd, glc);
 
     // Create Vertex Array Object
