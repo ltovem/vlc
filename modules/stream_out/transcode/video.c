@@ -224,6 +224,12 @@ static int video_update_format_decoder( decoder_t *p_dec, vlc_video_context *vct
             id->pf_transcode_downstream_add( p_owner->p_stream,
                                              id->p_decoder->fmt_in,
                                              transcode_encoder_format_out( id->encoder ) );
+    if (!id->downstream_id)
+    {
+        msg_Err( p_owner->p_stream, "cannot output transcoded stream %4.4s",
+                            (char *) &id->p_enccfg->i_codec );
+        goto error;
+    }
     msg_Info( p_dec, "video format update succeed" );
 
 end:
