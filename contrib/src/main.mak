@@ -690,6 +690,7 @@ ifdef HAVE_ANDROID
 # Set it to "" right away to short-circuit this behaviour
 	CMAKE_TOOLCHAIN_ENV += CXX_SYSROOT_FLAG=
 	CMAKE_TOOLCHAIN_ENV += C_SYSROOT_FLAG=
+	CMAKE_TOOLCHAIN_ENV += EXTRA_TOOLCHAIN_FILE=$(ANDROID_NDK)/build/cmake/android.toolchain.cmake
 endif
 ifdef MSYS_BUILD
 	CMAKE_TOOLCHAIN_ENV += FIND_ROOT_PATH="$(shell cygpath -m $(PREFIX))"
