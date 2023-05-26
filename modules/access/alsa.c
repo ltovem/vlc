@@ -158,8 +158,6 @@ static void *Thread (void *data)
     size_t bytes;
     int canc, val;
 
-    vlc_thread_set_name("vlc-alsa");
-
     canc = vlc_savecancel ();
     bytes = snd_pcm_frames_to_bytes (pcm, sys->period_size);
     val = snd_pcm_start (pcm);
@@ -501,7 +499,7 @@ static int Open (vlc_object_t *obj)
     sys->es = es_out_Add (demux->out, &fmt);
     demux->p_sys = sys;
 
-    if (vlc_clone (&sys->thread, Thread, demux))
+    if (vlc_clone (&sys->thread, Thread, demux, "vlc-alsa"))
     {
         es_out_Del (demux->out, sys->es);
         goto error;

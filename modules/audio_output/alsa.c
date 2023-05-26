@@ -994,7 +994,7 @@ static int Start (audio_output_t *aout, audio_sample_format_t *restrict fmt)
     sys->draining = false;
     sys->state = PLAYING;
     sys->unrecoverable_error = false;
-    if (vlc_clone(&sys->thread, InjectionThread, aout))
+    if (vlc_clone(&sys->thread, InjectionThread, aout, "vlc-alsa-out"))
         goto error;
 
     vlc_sem_wait(&sys->init_sem);

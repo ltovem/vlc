@@ -741,22 +741,6 @@ VLC_API void *vlc_threadvar_get(vlc_threadvar_t);
 
 /** @} */
 
-/**
- * Creates and starts a new thread.
- *
- * The thread must be <i>joined</i> with vlc_join() to reclaim resources
- * when it is not needed anymore.
- *
- * @param th storage space for the handle of the new thread (cannot be NULL)
- *           [OUT]
- * @param entry entry point for the thread
- * @param data data parameter given to the entry point
- * @return 0 on success, a standard error code on error.
- * @note In case of error, the value of *th is undefined.
- */
-VLC_API int vlc_clone(vlc_thread_t *th, void *(*entry)(void *),
-                      void *data) VLC_USED;
-
 #if defined(__GNUC__)
 static
 VLC_UNUSED_FUNC
@@ -770,6 +754,26 @@ const char * vlc_thread_name_too_big( const char * thread_name )
     ((__builtin_constant_p(__builtin_strlen(thread_name) > 15) && \
       __builtin_strlen(thread_name) > 15) \
       ? vlc_thread_name_too_big(thread_name): thread_name)
+#endif
+
+/**
+ * Creates and starts a new thread.
+ *
+ * The thread must be <i>joined</i> with vlc_join() to reclaim resources
+ * when it is not needed anymore.
+ *
+ * @param th storage space for the handle of the new thread (cannot be NULL)
+ *           [OUT]
+ * @param entry entry point for the thread
+ * @param data data parameter given to the entry point
+ * @param name name of the thread
+ * @return 0 on success, a standard error code on error.
+ * @note In case of error, the value of *th is undefined.
+ */
+VLC_API int vlc_clone(vlc_thread_t *th, void *(*entry)(void *),
+                      void *data, const char* name) VLC_USED;
+#if defined(check_name_length)
+# define vlc_clone(th, entry, data, name)  vlc_clone(th, entry, data, check_name_length(name))
 #endif
 
 /**

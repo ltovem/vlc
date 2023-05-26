@@ -238,7 +238,7 @@ found:
     p_sys->b_ready = false;
     p_sys->p_input = NULL;
 
-    if( vlc_clone( &p_sys->thread, DecoderThread, p_dec ) )
+    if( vlc_clone( &p_sys->thread, DecoderThread, p_dec, "vlc-dmo" ) )
         goto error;
 
     vlc_mutex_lock( &p_sys->lock );
@@ -963,8 +963,6 @@ static void *DecoderThread( void *data )
 {
     decoder_t *p_dec = data;
     decoder_sys_t *p_sys = p_dec->p_sys;
-
-    vlc_thread_set_name("vlc-dmo");
 
     if( DecOpen( p_dec ) )
         return NULL; /* failed */

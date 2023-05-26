@@ -42,6 +42,8 @@
 #include <vlc_threads.h>
 #include <vlc_atomic.h>
 
+#include "../posix/thread.h"
+
 unsigned long vlc_thread_id(void)
 {
      static __thread pid_t tid = 0;
@@ -52,9 +54,9 @@ unsigned long vlc_thread_id(void)
      return tid;
 }
 
-void (vlc_thread_set_name)(const char *name)
+void posix_thread_set_name(pthread_t th, const char *name)
 {
-    prctl(PR_SET_NAME, name);
+    pthread_setname_np(th, name);
 }
 
 static int sys_futex(void *addr, int op, unsigned val,

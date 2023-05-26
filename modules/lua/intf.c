@@ -179,8 +179,6 @@ static char *StripPasswords( const char *psz_config )
 
 static void *Run(void *data)
 {
-    vlc_thread_set_name("vlc-lua-intf");
-
     intf_thread_t *p_intf = data;
     intf_sys_t *p_sys = p_intf->p_sys;
     lua_State *L = p_sys->L;
@@ -380,7 +378,7 @@ static int Start_LuaIntf( vlc_object_t *p_this, const char *name )
 
     p_sys->L = L;
 
-    if( vlc_clone( &p_sys->thread, Run, p_intf ) )
+    if( vlc_clone( &p_sys->thread, Run, p_intf, "vlc-lua-intf" ) )
         goto error_lua;
     free( namebuf );
     return VLC_SUCCESS;

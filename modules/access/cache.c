@@ -70,8 +70,6 @@ vlc_access_cache_Thread(void *data)
 {
     struct vlc_access_cache *cache = data;
 
-    vlc_thread_set_name("vlc-axs-cache");
-
     vlc_mutex_lock(&cache->lock);
     while (cache->running)
     {
@@ -110,7 +108,7 @@ vlc_access_cache_InitOnce(void *data)
     vlc_mutex_lock(&cache->lock);
 
     cache->running = true;
-    int ret = vlc_clone(&cache->thread, vlc_access_cache_Thread, cache);
+    int ret = vlc_clone(&cache->thread, vlc_access_cache_Thread, cache, "vlc-axs-cache");
     if (ret != 0)
         cache->running = false;
 

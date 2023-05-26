@@ -99,7 +99,7 @@ static int Open( vlc_object_t *p_this )
     vlc_sem_init( &p_intf->p_sys->init_wait, 0 );
     p_intf->p_sys->b_error = false;
 
-    if( vlc_clone( &p_intf->p_sys->thread, Run, p_intf ) )
+    if( vlc_clone( &p_intf->p_sys->thread, Run, p_intf, "vlc-skins2" ) )
     {
         free( p_intf->p_sys );
         return VLC_EGENERIC;
@@ -169,8 +169,6 @@ static void Close( vlc_object_t *p_this )
 //---------------------------------------------------------------------------
 static void *Run( void * p_obj )
 {
-    vlc_thread_set_name("vlc-skins2");
-
     intf_thread_t *p_intf = (intf_thread_t *)p_obj;
 
     bool b_error = false;

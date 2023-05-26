@@ -221,7 +221,7 @@ int DBMSDIOutput::Open()
 
     decklink_iterator->Release();
 
-    if(vlc_clone(&feeder.thread, feederThreadCallback, this))
+    if(vlc_clone(&feeder.thread, feederThreadCallback, this, "vlc-DBMSDI"))
         goto error;
 
     return VLC_SUCCESS;
@@ -580,8 +580,6 @@ int DBMSDIOutput::FeedAudio(vlc_tick_t start, vlc_tick_t preroll, bool b_truncat
 
 void * DBMSDIOutput::feederThreadCallback(void *me)
 {
-    vlc_thread_set_name("vlc-DBMSDI");
-
     reinterpret_cast<DBMSDIOutput *>(me)->feederThread();
     return NULL;
 }

@@ -353,8 +353,8 @@ __stdcall vlc_entry (void *p)
     return 0;
 }
 
-int vlc_clone (vlc_thread_t *p_handle, void *(*entry) (void *),
-               void *data)
+int (vlc_clone)(vlc_thread_t *p_handle, void *(*entry) (void *),
+               void *data, const char *name)
 {
     struct vlc_thread *th = malloc (sizeof (*th));
     if (unlikely(th == NULL))
@@ -379,6 +379,12 @@ int vlc_clone (vlc_thread_t *p_handle, void *(*entry) (void *),
     }
 
     th->id = h;
+    if (SetThreadDescription_)
+    {
+        wchar_t *wname = ToWide(name);
+        SetThreadDescription_(h, wname);
+        free(wname);
+    }
 
     if (p_handle != NULL)
         *p_handle = th;

@@ -228,7 +228,7 @@ static void decoder_destroy_trigger_update(decoder_t *dec)
     /* Use another thread to ensure we don't double-lock, but
      * at most deadlock instead. */
     vlc_thread_t thread;
-    int ret = vlc_clone(&thread, SendUpdateOutput, dec);
+    int ret = vlc_clone(&thread, SendUpdateOutput, dec, "tst-dec-update");
     assert(ret == VLC_SUCCESS);
     vlc_join(thread, NULL);
 }

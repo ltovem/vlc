@@ -175,7 +175,7 @@ int main(void)
     }
 
     vlc_thread_t th;
-    if (vlc_clone(&th, proxy_thread, lfd))
+    if (vlc_clone(&th, proxy_thread, lfd, "tunnel-test"))
         assert(!"Thread error");
 
     /* Test proxy error */

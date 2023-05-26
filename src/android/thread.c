@@ -46,6 +46,8 @@
 
 #include <vlc_atomic.h>
 
+#include "../posix/thread.h"
+
 /* debug */
 
 #ifndef NDEBUG
@@ -99,8 +101,8 @@ static void *joinable_thread(void *data)
     return result;
 }
 
-static int vlc_clone_attr (vlc_thread_t *th, void *(*entry) (void *),
-                           void *data)
+int vlc_clone_attr (vlc_thread_t *th, void *(*entry) (void *),
+                    void *data, const char *name)
 {
     vlc_thread_t thread = malloc (sizeof (*thread));
     if (unlikely(thread == NULL))
@@ -131,6 +133,9 @@ static int vlc_clone_attr (vlc_thread_t *th, void *(*entry) (void *),
     pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_JOINABLE);
 
     ret = pthread_create (&thread->thread, &attr, joinable_thread, thread);
+    if (ret == 0 && name)
+        posix_thread_set_name(thread->thread, name);
+
     pthread_attr_destroy (&attr);
 
     pthread_sigmask (SIG_SETMASK, &oldset, NULL);
@@ -138,7 +143,8 @@ static int vlc_clone_attr (vlc_thread_t *th, void *(*entry) (void *),
     return ret;
 }
 
-int vlc_clone (vlc_thread_t *th, void *(*entry) (void *), void *data)
+int (vlc_clone) (vlc_thread_t *th, void *(*entry) (void *), void *data,
+                 const char *name)
 {
     return vlc_clone_attr (th, entry, data);
 }

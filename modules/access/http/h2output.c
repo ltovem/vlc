@@ -261,8 +261,6 @@ static void *vlc_h2_output_thread(void *data)
     struct vlc_h2_output *out = data;
     struct vlc_h2_frame *frame;
 
-    vlc_thread_set_name("vlc-h2-send");
-
     while ((frame = vlc_h2_output_dequeue(out)) != NULL)
     {
         if (vlc_h2_frame_send(out->tls, frame))
@@ -290,8 +288,6 @@ static void *vlc_h2_client_output_thread(void *data)
 {
     static const char http2_hello[] = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
     struct vlc_h2_output *out = data;
-
-    vlc_thread_set_name("vlc-h2-csend");
 
     if (vlc_https_send(out->tls, http2_hello, 24) < 24)
     {
@@ -325,7 +321,8 @@ struct vlc_h2_output *vlc_h2_output_create(struct vlc_tls *tls, bool client)
 
     void *(*cb)(void *) = client ? vlc_h2_client_output_thread
                                  : vlc_h2_output_thread;
-    if (vlc_clone(&out->thread, cb, out))
+    const char* cb_name = client ? "vlc-h2-csend" : "vlc-h2-send";
+    if (vlc_clone(&out->thread, cb, out, cb_name))
     {
         free(out);
         out = NULL;

@@ -422,8 +422,6 @@ static void *PlaybackThread(void *data)
     aout_sys_t *sys = aout->sys;
     struct aout_stream_owner *owner = sys->stream;
 
-    vlc_thread_set_name("vlc-winstore");
-
     EnterMTA();
     vlc_mutex_lock(&sys->lock);
 
@@ -625,7 +623,7 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
     sys->stream = owner;
     sys->stopping = false;
 
-    if (vlc_clone(&sys->thread, PlaybackThread, aout))
+    if (vlc_clone(&sys->thread, PlaybackThread, aout, "vlc-winstore"))
     {
         aout_stream_owner_Stop(sys->stream);
         sys->stream = NULL;

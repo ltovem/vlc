@@ -125,8 +125,6 @@ static void cleanup_wl_display_read(void *data)
 /** Background thread for Wayland shell events handling */
 static void *Thread(void *data)
 {
-    vlc_thread_set_name("vlc-wayland-evt");
-
     vlc_window_t *wnd = data;
     vout_window_sys_t *sys = wnd->sys;
     struct wl_display *display = wnd->display.wl;
@@ -766,7 +764,7 @@ static int Open(vlc_window_t *wnd)
     wnd->display.wl = display;
     wnd->ops = &ops;
 
-    if (vlc_clone(&sys->thread, Thread, wnd))
+    if (vlc_clone(&sys->thread, Thread, wnd, "vlc-wayland-evt"))
         goto error;
 
     return VLC_SUCCESS;

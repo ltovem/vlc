@@ -40,7 +40,7 @@ Downloader::Downloader()
 bool Downloader::start()
 {
     if(!thread_handle_valid &&
-       vlc_clone(&thread_handle, downloaderThread, static_cast<void *>(this)))
+       vlc_clone(&thread_handle, downloaderThread, static_cast<void *>(this), "vlc-adapt-dl"))
     {
         return false;
     }
@@ -89,7 +89,6 @@ void Downloader::cancel(HTTPChunkBufferedSource *source)
 
 void * Downloader::downloaderThread(void *opaque)
 {
-    vlc_thread_set_name("vlc-adapt-dl");
     Downloader *instance = static_cast<Downloader *>(opaque);
     instance->Run();
     return nullptr;

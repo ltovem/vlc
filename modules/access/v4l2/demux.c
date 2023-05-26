@@ -66,8 +66,6 @@ static void *MmapThread(void *data)
     struct pollfd ufd[2];
     nfds_t numfds = 1;
 
-    vlc_thread_set_name("vlc-axs-v4lmmap");
-
     ufd[0].fd = fd;
     ufd[0].events = POLLIN;
 
@@ -118,8 +116,6 @@ static void *ReadThread(void *data)
     int fd = sys->fd;
     struct pollfd ufd[2];
     nfds_t numfds = 1;
-
-    vlc_thread_set_name("vlc-axs-v4l");
 
     ufd[0].fd = fd;
     ufd[0].events = POLLIN;
@@ -227,12 +223,14 @@ static int InitVideo (demux_t *demux, int fd, uint32_t caps)
 
     /* Init I/O method */
     void *(*entry) (void *);
+    const char *entry_name;
     if (caps & V4L2_CAP_STREAMING)
     {
         sys->pool = StartMmap(VLC_OBJECT(demux), fd);
         if (sys->pool == NULL)
             return -1;
         entry = MmapThread;
+        entry_name = "vlc-axs-v4lmmap";
         msg_Dbg(demux, "streaming with %zu memory-mapped buffers",
                 sys->pool->count);
     }
@@ -240,6 +238,7 @@ static int InitVideo (demux_t *demux, int fd, uint32_t caps)
     {
         sys->pool = NULL;
         entry = ReadThread;
+        entry_name = "vlc-axs-v4l";
         msg_Dbg (demux, "reading %"PRIu32" bytes at a time", sys->blocksize);
     }
     else
@@ -257,7 +256,7 @@ static int InitVideo (demux_t *demux, int fd, uint32_t caps)
     }
 #endif
 
-    if (vlc_clone (&sys->thread, entry, demux))
+    if (vlc_clone (&sys->thread, entry, demux, entry_name))
     {
 #ifdef ZVBI_COMPILED
         if (sys->vbi != NULL)

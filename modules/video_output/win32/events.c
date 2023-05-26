@@ -274,8 +274,6 @@ static void Win32VoutCloseWindow( struct event_thread_t *p_event )
  *****************************************************************************/
 static void *EventThread( void *p_this )
 {
-    vlc_thread_set_name("vlc-vout-hwnd");
-
     struct event_thread_t *p_event = p_this;
     MSG msg;
     int canc = vlc_savecancel ();
@@ -362,7 +360,7 @@ struct event_thread_t *EventThreadCreate( vlc_object_t *obj, vlc_window_t *paren
     p_event->init_width  = display->width;
     p_event->init_height = display->height;
 
-    if( vlc_clone( &p_event->thread, EventThread, p_event ) )
+    if( vlc_clone( &p_event->thread, EventThread, p_event, "vlc-vout-hwnd" ) )
     {
         msg_Err( obj, "cannot create Vout EventThread" );
         free(p_event);

@@ -53,8 +53,6 @@ struct vlc_timer
 
 static void *vlc_timer_thread (void *data)
 {
-    vlc_thread_set_name("vlc-timer");
-
     struct vlc_timer *timer = data;
 
     vlc_mutex_lock (&timer->lock);
@@ -121,7 +119,7 @@ int vlc_timer_create (vlc_timer_t *id, void (*func) (void *), void *data)
     timer->live = true;
     atomic_init(&timer->overruns, 0);
 
-    if (vlc_clone (&timer->thread, vlc_timer_thread, timer))
+    if (vlc_clone (&timer->thread, vlc_timer_thread, timer, "vlc-timer"))
     {
         free (timer);
         return ENOMEM;

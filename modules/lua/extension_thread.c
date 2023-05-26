@@ -114,7 +114,7 @@ int Activate(extension_t *p_ext)
     {
         vlc_debug(p_ext->logger, "Activating extension '%s'", p_ext->psz_title);
         sys->b_exiting = false;
-        if (vlc_clone(&sys->thread, Run, p_ext) != VLC_SUCCESS)
+        if (vlc_clone(&sys->thread, Run, p_ext, "vlc-lua-ext") != VLC_SUCCESS)
         {
             sys->b_exiting = true;
             return VLC_ENOMEM;
@@ -341,8 +341,6 @@ static void* Run( void *data )
     extension_t *p_ext = data;
     struct lua_extension *sys = p_ext->p_sys;
     extensions_manager_t *p_mgr = sys->p_mgr;
-
-    vlc_thread_set_name("vlc-lua-ext");
 
     vlc_mutex_lock(&sys->command_lock);
 

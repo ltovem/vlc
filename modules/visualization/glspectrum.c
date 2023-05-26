@@ -222,7 +222,7 @@ static int Open(vlc_object_t * p_this)
     vlc_gl_ReleaseCurrent(p_sys->gl);
 
     /* Create the thread */
-    if (vlc_clone(&p_sys->thread, Thread, p_filter)) {
+    if (vlc_clone(&p_sys->thread, Thread, p_filter, "vlc-glspectrum")) {
         vlc_gl_surface_Destroy(p_sys->gl);
         return VLC_ENOMEM;
     }
@@ -424,8 +424,6 @@ static void drawBars(filter_t *p_filter, float heights[])
  */
 static void *Thread( void *p_data )
 {
-    vlc_thread_set_name("vlc-glspectrum");
-
     filter_t  *p_filter = (filter_t*)p_data;
     filter_sys_t *p_sys = p_filter->p_sys;
     vlc_gl_t *gl = p_sys->gl;

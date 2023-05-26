@@ -504,7 +504,7 @@ static int Open(vlc_object_t *p_obj)
     }
     sd_bus_message_unref(reply);
 
-    if (vlc_clone(&p_sys->thread, Run, sd))
+    if (vlc_clone(&p_sys->thread, Run, sd, "vlc-udisks"))
         goto error;
     sd_bus_error_free(&err);
     return VLC_SUCCESS;

@@ -266,8 +266,6 @@ namespace SD
 static void *
 SearchThread( void *p_data )
 {
-    vlc_thread_set_name("vlc-upnp-servis");
-
     services_discovery_t *p_sd = ( services_discovery_t* )p_data;
     services_discovery_sys_t *p_sys = reinterpret_cast<services_discovery_sys_t *>( p_sd->p_sys );
 
@@ -324,7 +322,7 @@ static int OpenSD( vlc_object_t *p_this )
     /* XXX: Contrary to what the libupnp doc states, UpnpSearchAsync is
      * blocking (select() and send() are called). Therefore, Call
      * UpnpSearchAsync from an other thread. */
-    if ( vlc_clone( &p_sys->thread, SearchThread, p_this ) )
+    if ( vlc_clone( &p_sys->thread, SearchThread, p_this, "vlc-upnp-servis" ) )
     {
         p_sys->p_upnp->removeListener( p_sys->p_server_list );
         p_sys->p_upnp->release();
@@ -1604,8 +1602,6 @@ int MediaRendererList::onEvent( Upnp_EventType event_type,
 
 void *SearchThread(void *data)
 {
-    vlc_thread_set_name("vlc-upnp-render");
-
     vlc_renderer_discovery_t *p_rd = (vlc_renderer_discovery_t*)data;
     renderer_discovery_sys_t *p_sys = (renderer_discovery_sys_t*)p_rd->p_sys;
     int i_res;
@@ -1635,7 +1631,7 @@ try
     p_sys->p_renderer_list = std::make_shared<RD::MediaRendererList>( p_rd );
     p_sys->p_upnp->addListener( p_sys->p_renderer_list );
 
-    if( vlc_clone( &p_sys->thread, SearchThread, (void*)p_rd ) )
+    if( vlc_clone( &p_sys->thread, SearchThread, (void*)p_rd, "vlc-upnp-render" ) )
         {
             msg_Err( p_rd, "Can't run the lookup thread" );
             p_sys->p_upnp->removeListener( p_sys->p_renderer_list );
