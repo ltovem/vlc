@@ -456,6 +456,10 @@ CMAKE = cmake -S $< -DCMAKE_TOOLCHAIN_FILE=$(abspath toolchain.cmake) \
 ifdef HAVE_WIN32
 CMAKE += -DCMAKE_DEBUG_POSTFIX:STRING=
 endif
+ifdef HAVE_ANDROID
+CMAKE += -DANDROID_PLATFORM=$(ANDROID_API)
+CMAKE += -DCMAKE_MAKE_PROGRAM=$(shell command -v ninja)
+endif
 ifdef MSYS_BUILD
 CMAKE = PKG_CONFIG_LIBDIR="$(PKG_CONFIG_PATH)" $(CMAKE)
 CMAKE += -DCMAKE_LINK_LIBRARY_SUFFIX:STRING=.a
@@ -636,6 +640,9 @@ CMAKE_SYSTEM_NAME = $(error CMAKE_SYSTEM_NAME required for cross-compilation)
 endif
 ifdef HAVE_LINUX
 CMAKE_SYSTEM_NAME = Linux
+endif
+ifdef HAVE_ANDROID
+CMAKE_SYSTEM_NAME = Android
 endif
 ifdef HAVE_WIN32
 CMAKE_SYSTEM_NAME = Windows
