@@ -840,6 +840,21 @@ void icc_set_eotf_srgb( icc_eotf_data *eotf_data)
     }
 }
 
+/* Hermite spline function to compute the knee in bt2048 */
+float icc_hermite_spl( float x,
+               float x0, float p0, float m0,
+               float x1, float p1, float m1 )
+{
+    float a = ( x - x0 ) / ( x1 - x0 ),
+          a2 = a * a,
+          a3 = a2 * a;
+
+    return ( 2.0 * a3 - 3.0 * a2 + 1.0) * p0 +
+           (       a3 - 2.0 * a2 + a )  * ( x1 - x0 ) * m0 +
+           (-2.0 * a3 + 3.0 * a2 )      * p1 +
+           (       a3 -       a2 )      * ( x1 - x0 ) * m1;
+}
+
 void icc_hdr_to_hdr_lum_bt2408( icc_eotf_data *eotf_data )
 {
     /* Compute EETF wrt BT2408 for highlights */
@@ -849,21 +864,6 @@ void icc_hdr_to_hdr_lum_bt2408( icc_eotf_data *eotf_data )
     float master_lum = eotf_data->master_lum;
     float *trc = eotf_data->trc;
     size_t trc_size = eotf_data->trc_size;
-
-    /* Support function */
-    float hermite( float x,
-                   float x0, float p0, float m0,
-                   float x1, float p1, float m1 )
-    {
-        float a = ( x - x0 ) / ( x1 - x0 ),
-              a2 = a * a,
-              a3 = a2 * a;
-
-        return ( 2.0 * a3 - 3.0 * a2 + 1.0) * p0 +
-               (       a3 - 2.0 * a2 + a )  * ( x1 - x0 ) * m0 +
-               (-2.0 * a3 + 3.0 * a2 )      * p1 +
-               (       a3 -       a2 )      * ( x1 - x0 ) * m1;
-    }
 
     for ( uint i = 0 ; i < trc_size ; i++ )
     {
@@ -881,7 +881,7 @@ void icc_hdr_to_hdr_lum_bt2408( icc_eotf_data *eotf_data )
     {
         v = (float) i / ( (float) trc_size - 1.0 );
         if ( v > ks )
-            trc[i] = hermite( v, ks, ks,  (1.0 - ks),
+            trc[i] = icc_hermite_spl( v, ks, ks,  (1.0 - ks),
                                      1.0, max_lum, 0.0 );
         else
             trc[i] = v;

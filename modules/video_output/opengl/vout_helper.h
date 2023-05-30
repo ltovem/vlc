@@ -54,6 +54,8 @@ void icc_set_eotf_hlg( icc_eotf_data *eotf_data );
 void icc_set_eotf_bt1886( icc_eotf_data *eotf_data );
 void icc_hdr_to_hdr_lum_bt2408( icc_eotf_data *eotf_data );
 void icc_hdr_to_sdr_lum( icc_eotf_data *eotf_data ) ;
+float icc_hermite_spl( float x, float x0, float p0, float m0,
+                                float x1, float p1, float m1 );
 
 enum icc_bp_mode {
     ICC_BP_MODE_DEFAULT = 0,
