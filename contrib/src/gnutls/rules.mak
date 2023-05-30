@@ -50,7 +50,7 @@ endif
 	# use CreateFile2 in Win8 as CreateFileW is forbidden in UWP
 	$(APPLY) $(SRC)/gnutls/0001-Use-CreateFile2-in-UWP-builds.patch
 
-	$(UPDATE_AUTOCONFIG)
+	# $(UPDATE_AUTOCONFIG)
 	$(MOVE)
 
 GNUTLS_CONF := \
