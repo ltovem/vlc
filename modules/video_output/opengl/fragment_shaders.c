@@ -612,23 +612,6 @@ opengl_fragment_shader_init_impl(opengl_tex_converter_t *tc, GLenum tex_target,
     struct vlc_memstream ms;
     if (vlc_memstream_open(&ms) != 0)
         return 0;
-/* Color correction
- * Forcing GLSL 3.3 to be able to use TexImage3D */
-#ifdef HAVE_LIBLCMS2
-    if ( tc->clut_is_active ) {
-        if ( tc->glsl_version < 300 ) {
-            msg_Warn(tc->gl,"GLSL version used by VLC is %u", tc->glsl_version);
-            tc->glsl_version = 330;
-            msg_Warn(tc->gl,"Forcing the use of %u glsl version for display color correction", \
-            tc->glsl_version);
-        }
-
-        else {
-           msg_Dbg(tc->gl,"Using %u glsl version, \n%s", tc->glsl_version, \
-            tc->glsl_precision_header);
-        }
-    }
-#endif
 
 #define ADD(x) vlc_memstream_puts(&ms, x)
 #define ADDF(x, ...) vlc_memstream_printf(&ms, x, ##__VA_ARGS__)
@@ -810,7 +793,7 @@ opengl_fragment_shader_init_impl(opengl_tex_converter_t *tc, GLenum tex_target,
 
 #ifdef HAVE_LIBLCMS2
     if ( tc->clut_is_active )
-        ADD(" result.rgb = texture( clut3d, result.rgb ).rgb;\n" );
+        ADD(" result.rgb = texture3D( clut3d, result.rgb ).rgb;\n" );
 #endif
 
     ADD(" gl_FragColor = result * FillColor;\n"
