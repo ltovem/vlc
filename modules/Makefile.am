@@ -5,7 +5,7 @@ noinst_HEADERS =
 check_PROGRAMS =
 pkglibexec_PROGRAMS =
 EXTRA_DIST =
-
+CLEANFILES =
 
 SUBDIRS = .
 TESTS =
