@@ -20,7 +20,7 @@ diff --git a/Utilities/cmcurl/lib/vtls/sectransp.c b/Utilities/cmcurl/lib/vtls/s
 index 2e57d83785..87fefba263 100644
 --- a/Utilities/cmcurl/lib/vtls/sectransp.c
 +++ b/Utilities/cmcurl/lib/vtls/sectransp.c
-@@ -80,6 +80,7 @@
+@@ -82,6 +82,7 @@
  #define CURL_BUILD_MAC_10_9 MAC_OS_X_VERSION_MAX_ALLOWED >= 1090
  #define CURL_BUILD_MAC_10_11 MAC_OS_X_VERSION_MAX_ALLOWED >= 101100
  #define CURL_BUILD_MAC_10_13 MAC_OS_X_VERSION_MAX_ALLOWED >= 101300
@@ -28,22 +28,22 @@ index 2e57d83785..87fefba263 100644
  #define CURL_BUILD_MAC_10_15 MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
  /* These macros mean "the following code is present to allow runtime backward
     compatibility with at least this cat or earlier":
-@@ -1838,7 +1839,7 @@ static CURLcode sectransp_connect_step1(struct Curl_easy *data,
+@@ -1804,7 +1805,7 @@ static CURLcode sectransp_connect_step1(
    }
  #endif /* CURL_BUILD_MAC_10_8 || CURL_BUILD_IOS */
  
 -#if (CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
 +#if (CURL_BUILD_MAC_10_14 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
-   if(conn->bits.tls_enable_alpn) {
+   if(cf->conn->bits.tls_enable_alpn) {
      if(__builtin_available(macOS 10.13.4, iOS 11, tvOS 11, *)) {
        CFMutableArrayRef alpnArr = CFArrayCreateMutable(NULL, 0,
-@@ -2832,7 +2833,7 @@ sectransp_connect_step2(struct Curl_easy *data, struct connectdata *conn,
+@@ -2815,7 +2816,7 @@ check_handshake:
          break;
      }
  
 -#if(CURL_BUILD_MAC_10_13 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
 +#if(CURL_BUILD_MAC_10_14 || CURL_BUILD_IOS_11) && HAVE_BUILTIN_AVAILABLE == 1
-     if(conn->bits.tls_enable_alpn) {
+     if(cf->conn->bits.tls_enable_alpn) {
        if(__builtin_available(macOS 10.13.4, iOS 11, tvOS 11, *)) {
          CFArrayRef alpnArr = NULL;
 -- 
