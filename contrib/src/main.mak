@@ -456,6 +456,10 @@ CMAKE = cmake -S $< -DCMAKE_TOOLCHAIN_FILE=$(abspath toolchain.cmake) \
 ifdef HAVE_WIN32
 CMAKE += -DCMAKE_DEBUG_POSTFIX:STRING=
 endif
+ifdef HAVE_ANDROID
+CMAKE += -DANDROID_PLATFORM=$(ANDROID_API)
+CMAKE += -DCMAKE_MAKE_PROGRAM=$(shell command -v ninja)
+endif
 ifdef MSYS_BUILD
 CMAKE = PKG_CONFIG_LIBDIR="$(PKG_CONFIG_PATH)" $(CMAKE)
 CMAKE += -DCMAKE_LINK_LIBRARY_SUFFIX:STRING=.a
@@ -637,6 +641,9 @@ endif
 ifdef HAVE_LINUX
 CMAKE_SYSTEM_NAME = Linux
 endif
+ifdef HAVE_ANDROID
+CMAKE_SYSTEM_NAME = Android
+endif
 ifdef HAVE_WIN32
 CMAKE_SYSTEM_NAME = Windows
 ifdef HAVE_VISUALSTUDIO
@@ -690,6 +697,7 @@ ifdef HAVE_ANDROID
 # Set it to "" right away to short-circuit this behaviour
 	CMAKE_TOOLCHAIN_ENV += CXX_SYSROOT_FLAG=
 	CMAKE_TOOLCHAIN_ENV += C_SYSROOT_FLAG=
+	CMAKE_TOOLCHAIN_ENV += EXTRA_TOOLCHAIN_FILE=$(ANDROID_NDK)/build/cmake/android.toolchain.cmake
 endif
 ifdef MSYS_BUILD
 	CMAKE_TOOLCHAIN_ENV += FIND_ROOT_PATH="$(shell cygpath -m $(PREFIX))"
