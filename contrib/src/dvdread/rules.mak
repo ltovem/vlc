@@ -4,9 +4,7 @@ LIBDVDREAD_URL := $(VIDEOLAN)/libdvdread/$(LIBDVDREAD_VERSION)/libdvdread-$(LIBD
 
 ifdef BUILD_DISCS
 ifdef GPL
-ifndef HAVE_WINSTORE
 PKGS += dvdread
-endif
 endif
 endif
 ifeq ($(call need_pkg,"dvdread >= 6.1.0"),)
