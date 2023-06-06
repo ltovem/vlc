@@ -1,0 +1,38 @@
+From c433f2b2da101a2414a209d6d0961b31e254dbfe Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 6 Jun 2023 11:32:24 +0200
+Subject: [PATCH 4/4] Use LoadLibraryExW instead of LoadLibraryW
+
+They are both available since Windows XP. But the only the LoadLibraryExW call
+is available in Universal Windows Platform builds.
+
+In this call we need LOAD_LIBRARY_SEARCH_USER_DIRS to make sure the value set
+with SetDllDirectory() is used. It is included in
+LOAD_LIBRARY_SEARCH_DEFAULT_DIRS [1] which will also need in case the DLL needs
+to load some other DLLs in other locations.
+
+[1] https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw
+---
+ src/libbluray/bdj/bdj.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/libbluray/bdj/bdj.c b/src/libbluray/bdj/bdj.c
+index 359bc8f1..1fb05628 100644
+--- a/src/libbluray/bdj/bdj.c
++++ b/src/libbluray/bdj/bdj.c
+@@ -94,10 +94,10 @@ static void *_load_dll(const wchar_t *lib_path, const wchar_t *dll_search_path)
+             pRemoveDllDirectory(cookie);
+         }
+     } else {
+-        result = LoadLibraryW(lib_path);
++        result = LoadLibraryExW(lib_path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+         if (!result) {
+             SetDllDirectoryW(dll_search_path);
+-            result = LoadLibraryW(lib_path);
++            result = LoadLibraryExW(lib_path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+             SetDllDirectoryW(L"");
+         }
+     }
+-- 
+2.37.3.windows.1
+

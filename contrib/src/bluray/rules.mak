@@ -4,9 +4,7 @@ BLURAY_VERSION := 1.3.4
 BLURAY_URL := $(VIDEOLAN)/libbluray/$(BLURAY_VERSION)/libbluray-$(BLURAY_VERSION).tar.bz2
 
 ifdef BUILD_DISCS
-ifndef HAVE_WINSTORE
 PKGS += bluray
-endif
 endif
 ifeq ($(call need_pkg,"libbluray >= 1.1.0"),)
 PKGS_FOUND += bluray
@@ -27,6 +25,10 @@ endif
 endif
 
 DEPS_bluray = libxml2 $(DEPS_libxml2) freetype2 $(DEPS_freetype2)
+ifdef HAVE_WINSTORE
+# gnulib uses SetDllDirectoryW
+DEPS_bluray += alloweduwp $(DEPS_alloweduwp)
+endif
 
 BLURAY_CONF = --disable-examples  \
               --with-libxml2
@@ -49,12 +51,16 @@ $(TARBALLS)/libbluray-$(BLURAY_VERSION).tar.bz2:
 bluray: libbluray-$(BLURAY_VERSION).tar.bz2 .sum-bluray
 	$(UNPACK)
 	$(APPLY) $(SRC)/bluray/0001-install-bdjo_data-header.patch
+	$(APPLY) $(SRC)/bluray/0001-Disable-font-access-in-Universal-Windows-Platform-bu.patch
+	$(APPLY) $(SRC)/bluray/0002-Disable-SHGetFolderPathW-calls-in-Universal-Windows-.patch
+	$(APPLY) $(SRC)/bluray/0003-configure-don-t-force-the-_WIN32_WINNT-if-it-s-high-.patch
+	$(APPLY) $(SRC)/bluray/0004-Use-LoadLibraryExW-instead-of-LoadLibraryW.patch
 	$(call pkg_static,"src/libbluray.pc.in")
 	$(MOVE)
 
 .bluray: bluray
 	rm -rf $(PREFIX)/share/java/libbluray*.jar
-	cd $< && ./bootstrap
+	$(RECONF)
 	$(MAKEBUILDDIR)
 	$(MAKECONFIGURE) $(BLURAY_CONF)
 	+$(MAKEBUILD)
