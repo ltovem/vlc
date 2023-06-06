@@ -14,6 +14,10 @@ $(TARBALLS)/libdvdcss-$(DVDCSS_VERSION).tar.bz2:
 
 dvdcss: libdvdcss-$(DVDCSS_VERSION).tar.bz2 .sum-dvdcss
 	$(UNPACK)
+	$(APPLY) $(SRC)/dvdcss/0001-Use-wide-chars-explicitly-to-open-the-drive.patch
+	$(APPLY) $(SRC)/dvdcss/0002-Read-the-drive-handle-as-a-HANDLE.patch
+	$(APPLY) $(SRC)/dvdcss/0003-Use-CreateFile2-when-building-for-Win8.patch
+	$(APPLY) $(SRC)/dvdcss/0004-Disable-cache-for-in-Universal-Windows-Platform-buil.patch
 	$(MOVE)
 
 DVDCSS_CONF := --disable-doc
