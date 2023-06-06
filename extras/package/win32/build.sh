@@ -204,8 +204,6 @@ if [ ! -z "$BUILD_UCRT" ]; then
         CONTRIBFLAGS="$CONTRIBFLAGS --disable-modplug"
         # gettext uses sys/socket.h improperly
         CONTRIBFLAGS="$CONTRIBFLAGS --disable-gettext"
-        # fontconfig uses GetWindowsDirectory and SHGetFolderPath
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-fontconfig"
 
         # libdsm is not enabled by default
         CONTRIBFLAGS="$CONTRIBFLAGS --enable-libdsm"
