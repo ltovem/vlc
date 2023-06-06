@@ -198,12 +198,10 @@ if [ ! -z "$BUILD_UCRT" ]; then
 
     if [ ! -z "$WINSTORE" ]; then
         CONTRIBFLAGS="$CONTRIBFLAGS --disable-srt --disable-sdl --disable-SDL_image"
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-bluray --disable-cddb"
+        CONTRIBFLAGS="$CONTRIBFLAGS --disable-bluray"
         # FIXME enable discs ?
         # modplug uses GlobalAlloc/Free and lstrcpyA/wsprintfA/lstrcpynA
         CONTRIBFLAGS="$CONTRIBFLAGS --disable-modplug"
-        # gettext uses sys/socket.h improperly
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-gettext"
 
         # libdsm is not enabled by default
         CONTRIBFLAGS="$CONTRIBFLAGS --enable-libdsm"
