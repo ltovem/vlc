@@ -1,0 +1,28 @@
+From b34692aeb907d47d4c898c67b03b32c37e3d2dba Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 09:20:07 +0200
+Subject: [PATCH] Define WAVE_FORMAT_PCM when it's not defined
+
+When compiling for UWP it's not defined. We could force a DESKTOP build
+but it's cleaner to just redefine this common value.
+---
+ src/load_wav.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/load_wav.cpp b/src/load_wav.cpp
+index 48de613..b6eed5a 100644
+--- a/src/load_wav.cpp
++++ b/src/load_wav.cpp
+@@ -10,6 +10,9 @@
+ #ifndef WAVE_FORMAT_EXTENSIBLE
+ #define WAVE_FORMAT_EXTENSIBLE	0xFFFE
+ #endif
++#ifndef WAVE_FORMAT_PCM
++#define WAVE_FORMAT_PCM     1
++#endif
+ 
+ /////////////////////////////////////////////////////////////
+ // WAV file support
+-- 
+2.37.3.windows.1
+
