@@ -197,7 +197,6 @@ if [ ! -z "$BUILD_UCRT" ]; then
     fi
 
     if [ ! -z "$WINSTORE" ]; then
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-srt --disable-sdl --disable-SDL_image"
         # modplug uses GlobalAlloc/Free and lstrcpyA/wsprintfA/lstrcpynA
         CONTRIBFLAGS="$CONTRIBFLAGS --disable-modplug"
 

@@ -1,0 +1,34 @@
+From a43f93c9498d5fc246dc7d72b194a92fab0b529e Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 08:50:50 +0200
+Subject: [PATCH] Fix downversioning of _WIN32_WINNT
+
+Forcing the _WIN32_WINNT when the environment is already forcing a value
+results in a lot of warning.
+
+If the user compiles for a higher version of Windows, we don't need to force
+compilation for Vista.
+---
+ CMakeLists.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 21478c3..95712be 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -272,7 +272,11 @@ if(WIN32)
+ 	if(ENABLE_INET_PTON)
+ 		set(CMAKE_REQUIRED_LIBRARIES ws2_32)
+ 		check_function_exists(inet_pton HAVE_INET_PTON)
+-		add_definitions(-D_WIN32_WINNT=0x0600)
++		check_c_source_compiles("#include <windows.h>\n#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0600\n#error NOPE\n#endif\nint main(void) {return 0;}" COMPILES_VISTA)
++		if(NOT COMPILES_VISTA)
++			# default to targeting Vista
++			add_definitions(-D_WIN32_WINNT=0x0600)
++		endif()
+ 	else()
+ 		add_definitions(-D_WIN32_WINNT=0x0501)
+ 	endif()
+-- 
+2.37.3.windows.1
+

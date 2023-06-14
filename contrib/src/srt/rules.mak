@@ -15,6 +15,10 @@ DEPS_srt = gnutls $(DEPS_gnutls)
 ifdef HAVE_WIN32
 DEPS_srt += winpthreads $(DEPS_winpthreads)
 endif
+ifdef HAVE_WINSTORE
+# Needs FORMAT_MESSAGE_ALLOCATE_BUFFER
+DEPS_srt += alloweduwp $(DEPS_alloweduwp)
+endif
 
 
 $(TARBALLS)/srt-$(SRT_VERSION).tar.gz:
@@ -26,8 +30,9 @@ srt: srt-$(SRT_VERSION).tar.gz .sum-srt
 	$(UNPACK)
 	$(APPLY) $(SRC)/srt/0001-core-remove-MSG_TRUNC-logging.patch
 	$(APPLY) $(SRC)/srt/0001-build-always-use-GNUInstallDirs.patch
+	$(APPLY) $(SRC)/srt/0001-Fix-downversioning-of-_WIN32_WINNT.patch
 	$(call pkg_static,"scripts/srt.pc.in")
-	mv srt-$(SRT_VERSION) $@ && touch $@
+	$(MOVE)
 
 SRT_CONF := -DENABLE_SHARED=OFF -DUSE_ENCLIB=gnutls -DENABLE_CXX11=OFF -DENABLE_APPS=OFF
 
