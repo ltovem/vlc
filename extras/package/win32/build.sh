@@ -197,9 +197,6 @@ if [ ! -z "$BUILD_UCRT" ]; then
     fi
 
     if [ ! -z "$WINSTORE" ]; then
-        # modplug uses GlobalAlloc/Free and lstrcpyA/wsprintfA/lstrcpynA
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-modplug"
-
         # libdsm is not enabled by default
         CONTRIBFLAGS="$CONTRIBFLAGS --enable-libdsm"
 

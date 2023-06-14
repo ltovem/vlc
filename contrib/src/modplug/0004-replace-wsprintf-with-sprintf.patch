@@ -1,0 +1,54 @@
+From 104effc3cea8be2ebf0ee00820dbbe86b24dc53f Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 09:18:56 +0200
+Subject: [PATCH 4/6] replace wsprintf with sprintf
+
+This is the define used on other platforms.
+---
+ src/load_mod.cpp | 2 +-
+ src/load_psm.cpp | 2 +-
+ src/sndfile.cpp  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/load_mod.cpp b/src/load_mod.cpp
+index 8a2717b..2421885 100644
+--- a/src/load_mod.cpp
++++ b/src/load_mod.cpp
+@@ -470,7 +470,7 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
+ 	if (m_nChannels == 4)
+ 		strcpy((LPSTR)&bTab, "M.K.");
+ 	else
+-		wsprintf((LPSTR)&bTab, "%luCHN", m_nChannels);
++		sprintf((LPSTR)&bTab, "%luCHN", m_nChannels);
+ 	fwrite(bTab, 4, 1, f);
+ 	// Writing patterns
+ 	for (UINT ipat=0; ipat<nbp; ipat++) if (Patterns[ipat])
+diff --git a/src/load_psm.cpp b/src/load_psm.cpp
+index bdde62f..9d2103f 100644
+--- a/src/load_psm.cpp
++++ b/src/load_psm.cpp
+@@ -201,7 +201,7 @@ BOOL CSoundFile::ReadPSM(LPCBYTE lpStream, DWORD dwMemLength)
+ 				CHAR s[8], s2[64];
+ 				*(DWORD *)s = pchunk->id;
+ 				s[4] = 0;
+-				wsprintf(s2, "%s: %4d bytes @ %4d\n", s, pchunk->len, dwMemPos);
++				sprintf(s2, "%s: %4d bytes @ %4d\n", s, pchunk->len, dwMemPos);
+ 				OutputDebugString(s2);
+ 			}
+ 	#endif
+diff --git a/src/sndfile.cpp b/src/sndfile.cpp
+index 7d84313..167dc80 100644
+--- a/src/sndfile.cpp
++++ b/src/sndfile.cpp
+@@ -384,7 +384,7 @@ void CSoundFile::ResetMidiCfg()
+ 	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEOFF*32], "9c n 0");
+ 	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_PROGRAM*32], "Cc p");
+ 	strcpy(&m_MidiCfg.szMidiSFXExt[0], "F0F000z");
+-	for (int iz=0; iz<16; iz++) wsprintf(&m_MidiCfg.szMidiZXXExt[iz*32], "F0F001%02X", iz*8);
++	for (int iz=0; iz<16; iz++) sprintf(&m_MidiCfg.szMidiZXXExt[iz*32], "F0F001%02X", iz*8);
+ }
+ 
+ 
+-- 
+2.37.3.windows.1
+
