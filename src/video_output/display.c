@@ -105,9 +105,10 @@ static vout_display_t *vout_display_New(vlc_object_t *obj,
 
     vd->owner = *owner;
     
+    vd->clut.p_clut = NULL;
+    vd->clut.size = 0;
 #ifdef HAVE_LIBLCMS2
     /* Icc file reading, 3D LUT allocation */
-    vd->clut.p_clut = NULL;
     vd->clut.size = var_InheritInteger( vd, "icc_lsize" );
     if ( vd->clut.size < 1 )
         vd->clut.size = 64;

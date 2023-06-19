@@ -118,12 +118,10 @@ typedef struct {
     vlc_viewpoint_t viewpoint;
 } vout_display_cfg_t;
 
-#ifdef HAVE_LIBLCMS2
 struct vout_display_clut {
     uint16_t *p_clut;
     uint16_t  size;
 };
-#endif
 
 /**
  * Information from a vout_display_t to configure
@@ -351,9 +349,7 @@ struct vout_display_t {
      */
     vout_display_owner_t owner;
     
-#ifdef HAVE_LIBLCMS2
     struct vout_display_clut clut;
-#endif
 };
 
 static inline void vout_display_SendEvent(vout_display_t *vd, int query, ...)

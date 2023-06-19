@@ -244,18 +244,12 @@ static const vlc_fourcc_t gl_subpicture_chromas[] = {
 
 typedef struct vout_display_opengl_t vout_display_opengl_t;
 
-#ifdef HAVE_LIBLCMS2
+
 vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
                                                const vlc_fourcc_t **subpicture_chromas,
                                                vlc_gl_t *gl,
                                                const vlc_viewpoint_t *viewpoint,
                                                const struct vout_display_clut *clut );
-#else
-vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
-                                               const vlc_fourcc_t **subpicture_chromas,
-                                               vlc_gl_t *gl,
-                                               const vlc_viewpoint_t *viewpoint );
-#endif
 
 void vout_display_opengl_Delete(vout_display_opengl_t *vgl);
 

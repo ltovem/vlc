@@ -26,9 +26,7 @@
 #include <vlc_picture_pool.h>
 #include <vlc_opengl.h>
 
-#ifdef HAVE_LIBLCMS2
 #include <vlc_vout_display.h>
-#endif
 
 /* if USE_OPENGL_ES2 is defined, OpenGL ES version 2 will be used, otherwise
  * normal OpenGL will be used */
