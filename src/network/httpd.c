@@ -98,6 +98,7 @@ struct httpd_host_t
     size_t client_count;
     struct vlc_list clients;
     unsigned timeout_sec;
+    bool b_no_timeout;
 
     /* TLS data */
     vlc_tls_server_t *p_tls;
@@ -992,6 +993,12 @@ static httpd_host_t *httpd_HostCreate(vlc_object_t *p_this,
 
     vlc_mutex_init(&host->lock);
     atomic_init(&host->ref, 1);
+
+    host->b_no_timeout = var_Type(p_this, "http-no-timeout") != 0;
+    if (host->b_no_timeout) {
+        msg_Warn(p_this, "httpd timeout disabled");
+        timeout_sec = 0;
+    }
 
     char *hostname = var_InheritString(p_this, hostvar);
 
