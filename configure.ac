@@ -4215,7 +4215,7 @@ AC_ARG_ENABLE(color-correction,
       [disable display color correction support (default auto, disabled if
        --enable-gles2)])])
 
-AS_IF([test "$enable_gles2" != "yes" && test "${SYS}" != "mingw32"], [
+AS_IF([test "$enable_gles2" != "yes"], [
   AS_IF([test "$enable_color_correction" != "no"], [
     PKG_CHECK_MODULES([LIBLCMS2], [lcms2 >= 2.9], [
       AC_DEFINE([HAVE_LIBLCMS2], [1], [Define to 1 if liblcms2 is present.])

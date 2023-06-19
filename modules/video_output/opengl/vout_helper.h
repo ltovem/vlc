@@ -31,94 +31,6 @@
 
 #include "converter.h"
 
-#ifdef HAVE_LIBLCMS2
-#include <lcms2.h>
-static const int g_ICC_3D_LUT_SIZE = 64;
-static const float ICC_SDR_MASTER_LUM = 100.0;
-static const float ICC_SDR_MASTER_BP = 0.1;
-static const float ICC_HDR_MASTER_LUM = 1000.0;
-static const float ICC_HDR_MASTER_BP = 0.005;
-static const float ICC_HDR_LUM_THRESH = 500.0;
-static const int ICC_TRC_TAB_SIZE = 65536;
-
-typedef struct icc_eotf_data {
-    size_t  trc_size;
-    float *trc;
-    float master_lum; float master_bp;
-    float target_lum; float target_bp;
-} icc_eotf_data;
-
-void icc_set_eotf_srgb( icc_eotf_data *eotf_data );
-void icc_set_eotf_pq( icc_eotf_data *eotf_data );
-void icc_set_eotf_hlg( icc_eotf_data *eotf_data );
-void icc_set_eotf_bt1886( icc_eotf_data *eotf_data );
-void icc_hdr_to_hdr_lum_bt2408( icc_eotf_data *eotf_data );
-void icc_hdr_to_sdr_lum( icc_eotf_data *eotf_data ) ;
-float icc_hermite_spl( float x, float x0, float p0, float m0,
-                                float x1, float p1, float m1 );
-
-enum icc_bp_mode {
-    ICC_BP_MODE_DEFAULT = 0,
-    ICC_BP_MODE_USER = 1
-};
-
-static const int icc_bp_mode_list[] = {
-    ICC_BP_MODE_DEFAULT,
-    ICC_BP_MODE_USER
-};
-
-static const char * const icc_bp_mode_text[] = {
-    "Default value (1000)",
-    "User defined value"
-};
-
-enum icc_intent {
-    ICC_INTENT_PERCEPTUAL = 0,
-    ICC_INTENT_RELATIVE_COLORIMETRIC = 1,
-    ICC_INTENT_SATURATION = 2,
-    ICC_INTENT_ABSOLUTE_COLORIMETRIC = 3
-};
-
-static const int icc_intent_list[] = {
-    ICC_INTENT_PERCEPTUAL,
-    ICC_INTENT_RELATIVE_COLORIMETRIC,
-    ICC_INTENT_SATURATION,
-    ICC_INTENT_ABSOLUTE_COLORIMETRIC
-};
-
-static const char * const icc_intent_text[] = {
-    "Perceptual",
-    "Relative Colorimetric",
-    "Saturation",
-    "Absolute Colorimetric"
-};
-
-static const cmsCIExyY icc_d65_wp = { 0.3127, 0.3290, 1.0 };
-
-static const cmsCIExyYTRIPLE icc_bt709_prim = { { 0.640, 0.330, 1.00 },
-                                                { 0.300, 0.600, 1.00 },
-                                                { 0.150, 0.060, 1.00 } };
-
-static const cmsCIExyYTRIPLE icc_bt601_525_prim = { { 0.630, 0.340, 1.00 },
-                                                    { 0.310, 0.595, 1.00 },
-                                                    { 0.155, 0.070, 1.00 } };
-
-static const cmsCIExyYTRIPLE icc_bt601_625_prim = { { 0.640, 0.330, 1.00 },
-                                                    { 0.290, 0.600, 1.00 },
-                                                    { 0.150, 0.060, 1.00 } };
-
-static const cmsCIExyYTRIPLE icc_bt2020_prim = { { 0.708, 0.292, 1.0 },
-                                                 { 0.170, 0.797, 1.0 },
-                                                 { 0.131, 0.046, 1.0 } };
-
-static const cmsCIExyYTRIPLE icc_dcip3_prim = { { 0.68,  0.32, 1.0 },
-                                                { 0.265, 0.69, 1.0 },
-                                                { 0.15 , 0.06, 1.0 } };
-
-int SetCorrectionLUT( GLushort *g_3dlut, vlc_gl_t *gl,
-                     const video_format_t *fmt, char *filename );
-#endif
-
 #ifdef HAVE_LIBPLACEBO
 #include <libplacebo/shaders/colorspace.h>
 
@@ -318,36 +230,11 @@ static const char * const dither_text[] = {
 #define add_glopts_placebo()
 #endif
 
-#ifdef HAVE_LIBLCMS2
-#define add_glopts_color_correction() \
-    set_section("Display color correction", NULL) \
-    add_loadfile("icc_profile", "", "File path to display icc profile",\
-                "File path to your display icc profile (.icc, .icm) for color \
-                 correction.", true ) \
-    add_integer("icc_bp_offset_mode", ICC_BP_MODE_DEFAULT, "Black point offset mode",\
-                "Black point offset mode, change to user value if image constrast\
-                is not satisfactory.", true)\
-    change_integer_list( icc_bp_mode_list, icc_bp_mode_text) \
-    add_integer("icc_contrast", 2000, "Display source contrast",\
-                "This is an assumption on the contrast ratio of the display\
-                used for the video creation. Used to compute the black point\
-                compensation.", true ) \
-    add_integer("icc_intent", ICC_INTENT_PERCEPTUAL, "Rendering intent",\
-                "Usual values are perceptual or relative colorimetric.", true) \
-    change_integer_list( icc_intent_list, icc_intent_text) \
-    add_bool("force_bt709", false, "Force BT709 colorspace (HDTV) for the source",\
-            "Try this with hdmi or usb sources (webcam...) if colors seem wrong.",\
-            true)
-#else
-#define add_glopts_color_correction()
-#endif
-
 #define GLCONV_TEXT "Open GL/GLES hardware converter"
 #define GLCONV_LONGTEXT "Force a \"glconv\" module."
 
 #define add_glopts() \
     add_module ("glconv", "glconv", NULL, GLCONV_TEXT, GLCONV_LONGTEXT, true) \
-    add_glopts_color_correction()\
     add_glopts_placebo ()
 
 static const vlc_fourcc_t gl_subpicture_chromas[] = {
@@ -357,10 +244,19 @@ static const vlc_fourcc_t gl_subpicture_chromas[] = {
 
 typedef struct vout_display_opengl_t vout_display_opengl_t;
 
+#ifdef HAVE_LIBLCMS2
 vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
                                                const vlc_fourcc_t **subpicture_chromas,
                                                vlc_gl_t *gl,
-                                               const vlc_viewpoint_t *viewpoint);
+                                               const vlc_viewpoint_t *viewpoint,
+                                               const struct vout_display_clut *clut );
+#else
+vout_display_opengl_t *vout_display_opengl_New(video_format_t *fmt,
+                                               const vlc_fourcc_t **subpicture_chromas,
+                                               vlc_gl_t *gl,
+                                               const vlc_viewpoint_t *viewpoint );
+#endif
+
 void vout_display_opengl_Delete(vout_display_opengl_t *vgl);
 
 picture_pool_t *vout_display_opengl_GetPool(vout_display_opengl_t *vgl, unsigned);

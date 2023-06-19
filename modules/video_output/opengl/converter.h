@@ -26,6 +26,10 @@
 #include <vlc_picture_pool.h>
 #include <vlc_opengl.h>
 
+#ifdef HAVE_LIBLCMS2
+#include <vlc_vout_display.h>
+#endif
+
 /* if USE_OPENGL_ES2 is defined, OpenGL ES version 2 will be used, otherwise
  * normal OpenGL will be used */
 #ifdef __APPLE__
@@ -46,6 +50,9 @@
 #  include <GLES2/gl2ext.h>
 # else
 #  ifdef _WIN32
+#   ifndef GLEW_STATIC
+#    define GLEW_STATIC 1
+#   endif
 #   include <GL/glew.h>
 #  endif
 #  include <GL/gl.h>
@@ -347,12 +354,10 @@ struct opengl_tex_converter_t
     const struct pl_shader_res *pl_sh_res;
 
 #ifdef HAVE_LIBLCMS2
-     /* Data needed to the icc color correction LUT (Texture3D)
-     * Initialized in opengl_init_program */
-    GLint clutId;
-    GLuint clut_tex;
-    GLushort *g_3dlut;
-    bool clut_is_active;
+     /* Data needed to the display color correction LUT (Texture3D) */
+     GLint clutId;
+     GLuint clut_tex;
+     bool clut_is_active;
 #endif
 
     /* Private context */
