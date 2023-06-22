@@ -203,6 +203,9 @@ input_item_slave_GetType
 input_item_slave_New
 input_item_AddSlave
 input_Read
+input_item_GetMetaExtra
+input_item_GetMetaExtraNames
+input_item_SetMetaExtra
 input_resource_New
 input_resource_Release
 input_resource_TerminateVout
