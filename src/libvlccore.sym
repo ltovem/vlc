@@ -618,7 +618,7 @@ vlc_killed
 vlc_join
 vlc_list_children
 vlc_list_release
-vlc_meta_AddExtra
+vlc_meta_SetExtra
 vlc_meta_CopyExtraNames
 vlc_meta_Delete
 vlc_meta_Get
