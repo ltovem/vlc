@@ -1719,11 +1719,16 @@ static subpicture_t *bluraySubpictureCreate(bluray_overlay_t *p_ov)
 
     p_upd_sys->p_overlay = p_ov;
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = subpictureUpdaterValidate,
+        .update   = subpictureUpdaterUpdate,
+        .destroy  = subpictureUpdaterDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = subpictureUpdaterValidate,
-        .pf_update   = subpictureUpdaterUpdate,
-        .pf_destroy  = subpictureUpdaterDestroy,
-        .sys         = p_upd_sys,
+        .sys = p_upd_sys,
+        .ops = &spu_ops,
     };
 
     subpicture_t *p_pic = subpicture_New(&updater);
