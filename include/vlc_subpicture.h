@@ -142,6 +142,34 @@ VLC_API void subpicture_region_ChainDelete( subpicture_region_t *p_head );
 VLC_API subpicture_region_t *subpicture_region_Copy( subpicture_region_t *p_region );
 
 /**
+ * Subpicture updater operation virtual table.
+ *
+ * This structure gathers the operations that are implemented by a
+ * subpicture_updater_t instance. */
+struct vlc_spu_updater_ops
+{
+    /** Optional pre update callback, usually useful on video format
+      * change. If it returns VLC_SUCCESS, the subpicture won't be
+      * updated. Otherwise, it will delete every region before the call
+      * to vlc_spu_updater_ops::update. */
+    int  (*validate)(subpicture_t *,
+                     bool has_src_changed, const video_format_t *p_fmt_src,
+                     bool has_dst_changed, const video_format_t *p_fmt_dst,
+                     vlc_tick_t);
+
+    /** Mandatory callback called after pf_validate and doing
+      * the main job of creating the subpicture regions for the
+      * current video_format */
+    void (*update)(subpicture_t *,
+                   const video_format_t *p_fmt_src,
+                   const video_format_t *p_fmt_dst,
+                   vlc_tick_t);
+
+    /** Optional callback for subpicture private data cleanup */
+    void (*destroy)(subpicture_t *);
+};
+
+/**
  *
  */
 typedef struct
@@ -153,6 +181,7 @@ typedef struct
                          bool has_src_changed, const video_format_t *p_fmt_src,
                          bool has_dst_changed, const video_format_t *p_fmt_dst,
                          vlc_tick_t);
+
     /** Mandatory callback called after pf_validate and doing
       * the main job of creating the subpicture regions for the
       * current video_format */
@@ -160,9 +189,12 @@ typedef struct
                          const video_format_t *p_fmt_src,
                          const video_format_t *p_fmt_dst,
                          vlc_tick_t );
+
     /** Optional callback for subpicture private data cleanup */
     void (*pf_destroy) ( subpicture_t * );
+
     void *sys;
+    const struct vlc_spu_updater_ops *ops;
 } subpicture_updater_t;
 
 typedef struct subpicture_private_t subpicture_private_t;
