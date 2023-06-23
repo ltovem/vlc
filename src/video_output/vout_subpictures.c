@@ -2002,7 +2002,8 @@ subpicture_t *spu_Render(spu_t *spu,
         entry->subpic->i_start = entry->start;
         entry->subpic->i_stop = entry->stop;
 
-        if (!subpic->updater.pf_validate)
+        if (subpic->updater.pf_validate == NULL
+          && (subpic->updater.ops == NULL || subpic->updater.ops->validate == NULL))
             continue;
 
         subpicture_Update(subpic,
