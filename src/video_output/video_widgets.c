@@ -308,11 +308,16 @@ static void OSDWidget(vout_thread_t *vout, int channel, int type, int position)
     sys->type     = type;
     sys->position = position;
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = OSDWidgetValidate,
+        .update   = OSDWidgetUpdate,
+        .destroy  = OSDWidgetDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = OSDWidgetValidate,
-        .pf_update   = OSDWidgetUpdate,
-        .pf_destroy  = OSDWidgetDestroy,
-        .sys         = sys,
+        .sys = sys,
+        .ops = &spu_ops,
     };
     subpicture_t *subpic = subpicture_New(&updater);
     if (!subpic) {
