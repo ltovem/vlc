@@ -261,11 +261,16 @@ static int Decode(decoder_t *p_dec, block_t *p_block)
     p_spusys->i_pts = p_block->i_pts;
     memset(&p_spusys->render_result, 0, sizeof(p_spusys->render_result));
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = SubpictureValidate,
+        .update   = SubpictureUpdate,
+        .destroy  = SubpictureDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = SubpictureValidate,
-        .pf_update   = SubpictureUpdate,
-        .pf_destroy  = SubpictureDestroy,
-        .sys         = p_spusys,
+        .sys = p_spusys,
+        .ops = &spu_ops,
     };
 
     subpicture_t *p_spu = decoder_NewSubpicture(p_dec, &updater);
