@@ -1,4 +1,4 @@
-From 3bb20f93e8fa0de25fc73a7a4a38ada97c75154b Mon Sep 17 00:00:00 2001
+From 9fd72f6f6ac9897a6ea252390ed7fd376ad50a69 Mon Sep 17 00:00:00 2001
 From: Steve Lhomme <robux4@ycbcr.xyz>
 Date: Wed, 14 Jun 2023 09:15:15 +0200
 Subject: [PATCH 1/4] Fix bogus cast into potential WCHAR string

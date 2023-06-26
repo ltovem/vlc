@@ -1,4 +1,4 @@
-From 2d3a6eea5886a0f6da8c82fec4e7ea8854db67f7 Mon Sep 17 00:00:00 2001
+From f82fc2f44bbc497f8a6b5baa62bd82e4256969f0 Mon Sep 17 00:00:00 2001
 From: Steve Lhomme <robux4@ycbcr.xyz>
 Date: Wed, 14 Jun 2023 09:17:09 +0200
 Subject: [PATCH 2/4] replace lstrcpyn with strncpy
@@ -74,10 +74,10 @@ index 0ace71a..fa4d300 100644
  		pins->name[12] = 0;
  		pins->nGlobalVol = 64;
 diff --git a/src/sndfile.cpp b/src/sndfile.cpp
-index fc0119d..5dba706 100644
+index 24550de..d24d24c 100644
 --- a/src/sndfile.cpp
 +++ b/src/sndfile.cpp
-@@ -1790,7 +1790,7 @@ BOOL CSoundFile::SetPatternName(UINT nPat, LPCSTR lpszName)
+@@ -1789,7 +1789,7 @@ BOOL CSoundFile::SetPatternName(UINT nPat, LPCSTR lpszName)
  	if (nPat >= MAX_PATTERNS) return FALSE;
  	if (lpszName == NULL) return(FALSE);
  

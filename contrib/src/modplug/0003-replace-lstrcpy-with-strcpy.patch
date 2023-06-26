@@ -1,4 +1,4 @@
-From 9969e3611fe4e322da7ddd0f778ca22c6bf11082 Mon Sep 17 00:00:00 2001
+From 5361f3db7e333b10191def8a834303a8429cd5c7 Mon Sep 17 00:00:00 2001
 From: Steve Lhomme <robux4@ycbcr.xyz>
 Date: Wed, 14 Jun 2023 09:18:01 +0200
 Subject: [PATCH 3/4] replace lstrcpy with strcpy
@@ -37,10 +37,10 @@ index 4d5a493..266ca6b 100644
  	s[22] = 0x01;
  	fwrite(s, 23, 1, f);
 diff --git a/src/sndfile.cpp b/src/sndfile.cpp
-index 5dba706..f5189ff 100644
+index d24d24c..5a1096d 100644
 --- a/src/sndfile.cpp
 +++ b/src/sndfile.cpp
-@@ -377,12 +377,12 @@ void CSoundFile::ResetMidiCfg()
+@@ -376,12 +376,12 @@ void CSoundFile::ResetMidiCfg()
  //-----------------------------
  {
  	memset(&m_MidiCfg, 0, sizeof(m_MidiCfg));
