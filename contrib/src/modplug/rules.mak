@@ -25,7 +25,6 @@ $(TARBALLS)/libmodplug-$(MODPLUG_HASH).tar.xz:
 libmodplug: libmodplug-$(MODPLUG_HASH).tar.xz .sum-modplug
 	$(UNPACK)
 	$(APPLY) $(SRC)/modplug/modplug-win32-static.patch
-	$(APPLY) $(SRC)/modplug/fix-endianness-check.diff
 ifdef HAVE_MACOSX
 	$(APPLY) $(SRC)/modplug/mac-use-c-stdlib.patch
 endif
@@ -33,10 +32,9 @@ endif
 	$(call pkg_static,"libmodplug.pc.in")
 	$(MOVE)
 
-.modplug: libmodplug
-	$(RECONF)
-	$(MAKEBUILDDIR)
-	$(MAKECONFIGURE) $(MODPLUG_CONF)
-	+$(MAKEBUILD)
-	+$(MAKEBUILD) install
+.modplug: libmodplug toolchain.cmake
+	$(CMAKECLEAN)
+	$(HOSTVARS) $(CMAKE)
+	+$(CMAKEBUILD)
+	$(CMAKEINSTALL)
 	touch $@
