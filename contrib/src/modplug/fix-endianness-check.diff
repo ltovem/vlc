@@ -1,12 +1,31 @@
---- ./configure.ac.orig	2019-10-11 12:40:29.000000000 +0200
-+++ ./configure.ac	2019-10-11 12:40:50.000000000 +0200
-@@ -21,7 +21,9 @@ AC_DISABLE_STATIC([])
+From 80ce867aa9b6b47b920b880ef996a16969f5b196 Mon Sep 17 00:00:00 2001
+From: Marvin Scholz <epirat07@gmail.com>
+Date: Fri, 11 Oct 2019 12:27:55 +0200
+Subject: [PATCH] Fix endianness check
+
+The autoconf endianness check does not compile with a C++ compiler
+due to bogus casts, therefore it is needed to use the C compiler to
+check for the host endianness.
+
+This fixes the libmodplug contrib build for Android.
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index c51a591..8887b89 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -14,8 +14,8 @@ AM_MAINTAINER_MODE([enable])
+ dnl Checks for programs.
  AC_PROG_CC
  AC_PROG_CXX
- AC_LANG([C++])
-+AC_LANG_PUSH([C])
+-AC_LANG([C++])
  AC_C_BIGENDIAN
-+AC_LANG_POP([C])
++AC_LANG([C++])
  
- #AC_LIBTOOL_WIN32_DLL
- #AC_PROG_LIBTOOL
+ LT_INIT([win32-dll disable-static])
+ 
+-- 
+2.37.3.windows.1
+
