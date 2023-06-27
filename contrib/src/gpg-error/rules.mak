@@ -11,7 +11,7 @@ endif
 
 DEPS_gpg-error =
 ifdef HAVE_WINSTORE
-# gpg-error uses CreateFileW, GetFileSize
+# gpg-error uses CreateFileW, GetFileSize, GetThreadLocale
 DEPS_gpg-error += alloweduwp $(DEPS_alloweduwp)
 endif
 
@@ -20,7 +20,6 @@ endif
 libgpg-error: libgpg-error-$(GPGERROR_VERSION).tar.bz2 .sum-gpg-error
 	$(UNPACK)
 	$(APPLY) $(SRC)/gpg-error/windres-make.patch
-	$(APPLY) $(SRC)/gpg-error/winrt.patch
 	$(APPLY) $(SRC)/gpg-error/missing-unistd-include.patch
 	$(APPLY) $(SRC)/gpg-error/win32-unicode.patch
 	$(APPLY) $(SRC)/gpg-error/version-bump-gawk-5.patch

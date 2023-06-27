@@ -175,6 +175,7 @@ endif
 	install $</mingw-w64-headers/include/winreg.h       "$(PREFIX)/include"
 	install $</mingw-w64-headers/include/handleapi.h    "$(PREFIX)/include"
 	install $</mingw-w64-headers/include/wincrypt.h     "$(PREFIX)/include"
+	install $</mingw-w64-headers/include/winnls.h       "$(PREFIX)/include"
 
 	# Trick mingw-w64 into just building libwindowsapp.a
 	$(MAKEBUILDDIR)
