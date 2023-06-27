@@ -80,6 +80,7 @@ mingw64: mingw-w64-v$(MINGW64_VERSION).tar.bz2 .sum-mingw64
 	$(APPLY) $(SRC)/mingw64/0005-crt-use-wincrypt-API-from-windowsapp-in-Windows-10.patch
 	$(APPLY) $(SRC)/mingw64/0001-headers-allow-CreateFileW-A-in-19H1-UWP-builds.patch
 	$(APPLY) $(SRC)/mingw64/0001-headers-allow-GetFileSize-in-19H1-UWP-builds.patch
+	$(APPLY) $(SRC)/mingw64/0001-headers-allow-some-winnls-API-s-in-19H1-UWP-builds.patch
 	$(MOVE)
 
 .mingw64: mingw64
