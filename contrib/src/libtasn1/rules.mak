@@ -9,7 +9,7 @@ endif
 
 DEPS_libtasn1 :=
 ifdef HAVE_WINSTORE
-# gnulib uses GetFileInformationByHandle
+# gnulib uses GetFileInformationByHandle, CreateFileW
 DEPS_libtasn1 += alloweduwp $(DEPS_alloweduwp)
 endif
 
@@ -21,10 +21,6 @@ $(TARBALLS)/libtasn1-$(LIBTASN1_VERSION).tar.gz:
 
 libtasn1: libtasn1-$(LIBTASN1_VERSION).tar.gz .sum-libtasn1
 	$(UNPACK)
-
-	# use CreateFile2 in Win8 as CreateFileW is forbidden in UWP
-	$(APPLY) $(SRC)/libtasn1/0001-Use-CreateFile2-in-UWP-builds.patch
-
 	$(MOVE)
 
 LIBTASN1_CONF := --disable-doc

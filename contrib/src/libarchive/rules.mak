@@ -9,7 +9,7 @@ endif
 
 DEPS_libarchive = zlib $(DEPS_zlib)
 ifdef HAVE_WINSTORE
-# libarchive uses CreateHardLinkW and wincrypt
+# libarchive uses CreateHardLinkW, CreateFileW/A and wincrypt
 DEPS_libarchive += alloweduwp $(DEPS_alloweduwp)
 endif
 
@@ -42,8 +42,6 @@ libarchive: libarchive-$(LIBARCHIVE_VERSION).tar.gz .sum-libarchive
 	$(APPLY) $(SRC)/libarchive/0003-fix-the-CreateHardLinkW-signature-to-match-the-real-.patch
 	$(APPLY) $(SRC)/libarchive/0004-Don-t-call-GetOEMCP-in-Universal-Windows-Platform-bu.patch
 	$(APPLY) $(SRC)/libarchive/0005-tests-use-CreateFileA-for-char-filenames.patch
-	$(APPLY) $(SRC)/libarchive/0006-Use-CreateFile2-instead-of-CreateFileW-on-Win8-build.patch
-	$(APPLY) $(SRC)/libarchive/0007-Disable-CreateFileA-calls-in-UWP-builds.patch
 	$(APPLY) $(SRC)/libarchive/0008-Disable-program-call-with-stdin-stdout-usage-on-UWP-.patch
 	$(call pkg_static,"build/pkgconfig/libarchive.pc.in")
 	$(MOVE)
