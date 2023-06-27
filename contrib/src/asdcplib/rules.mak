@@ -36,6 +36,7 @@ asdcplib: asdcplib-rel_$(ASDCPLIB_VERSION).tar.gz .sum-asdcplib
 	$(APPLY) $(SRC)/asdcplib/adding-pkg-config-file.patch
 	$(APPLY) $(SRC)/asdcplib/win32-cross-compilation.patch
 	$(APPLY) $(SRC)/asdcplib/win32-dirent.patch
+	$(APPLY) $(SRC)/asdcplib/0001-call-GetModuleFileNameA-explicitly.patch
 	$(MOVE)
 
 ASDCPLIB_CONF := --enable-freedist --enable-dev-headers --with-nettle=$(PREFIX)
