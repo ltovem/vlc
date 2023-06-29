@@ -78,6 +78,9 @@ mingw64: mingw-w64-v$(MINGW64_VERSION).tar.bz2 .sum-mingw64
 	$(APPLY) $(SRC)/mingw64/0003-headers-allow-more-wincrypt-API-s-in-Win10-RS4-UWP-b.patch
 	$(APPLY) $(SRC)/mingw64/0004-headers-allow-more-wincrypt-API-s-in-Win10-19H1-UWP-.patch
 	$(APPLY) $(SRC)/mingw64/0005-crt-use-wincrypt-API-from-windowsapp-in-Windows-10.patch
+	$(APPLY) $(SRC)/mingw64/0001-headers-allow-CreateFileW-A-in-19H1-UWP-builds.patch
+	$(APPLY) $(SRC)/mingw64/0001-headers-allow-GetFileSize-in-19H1-UWP-builds.patch
+	$(APPLY) $(SRC)/mingw64/0001-headers-allow-some-winnls-API-s-in-19H1-UWP-builds.patch
 	$(MOVE)
 
 .mingw64: mingw64
@@ -172,6 +175,7 @@ endif
 	install $</mingw-w64-headers/include/winreg.h       "$(PREFIX)/include"
 	install $</mingw-w64-headers/include/handleapi.h    "$(PREFIX)/include"
 	install $</mingw-w64-headers/include/wincrypt.h     "$(PREFIX)/include"
+	install $</mingw-w64-headers/include/winnls.h       "$(PREFIX)/include"
 
 	# Trick mingw-w64 into just building libwindowsapp.a
 	$(MAKEBUILDDIR)

@@ -1,0 +1,46 @@
+From 8c920fb65fa49eb7829154f365add3be85075665 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 27 Jun 2023 13:55:31 +0200
+Subject: [PATCH] headers: allow some winnls API's in 19H1 UWP builds
+
+They're allowed by the WACK and available in windowsapp.lib since 19H1.
+They're not allowed by the Windows SDK headers.
+---
+ mingw-w64-headers/include/winnls.h | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/mingw-w64-headers/include/winnls.h b/mingw-w64-headers/include/winnls.h
+index cd8c6025b..ccbc199d8 100644
+--- a/mingw-w64-headers/include/winnls.h
++++ b/mingw-w64-headers/include/winnls.h
+@@ -1047,12 +1047,7 @@ extern "C" {
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   WINBASEAPI WINBOOL WINAPI SetUserGeoID (GEOID GeoId);
+   WINBASEAPI LCID WINAPI ConvertDefaultLocale (LCID Locale);
+-  WINBASEAPI LCID WINAPI GetThreadLocale (void);
+   WINBASEAPI WINBOOL WINAPI SetThreadLocale (LCID Locale);
+-  WINBASEAPI LANGID WINAPI GetSystemDefaultUILanguage (void);
+-  WINBASEAPI LANGID WINAPI GetSystemDefaultLangID (void);
+-  WINBASEAPI LCID WINAPI GetSystemDefaultLCID (void);
+-  WINBASEAPI LCID WINAPI GetUserDefaultLCID (void);
+   WINBASEAPI LANGID WINAPI SetThreadUILanguage (LANGID LangId);
+   WINBASEAPI WINBOOL WINAPI GetStringTypeA (LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType);
+   WINBASEAPI int WINAPI FoldStringA (DWORD dwMapFlags, LPCSTR lpSrcStr, int cchSrc, LPSTR lpDestStr, int cchDest);
+@@ -1097,6 +1092,14 @@ extern "C" {
+ 
+ #endif
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || NTDDI_VERSION >= NTDDI_WIN10_19H1
++  WINBASEAPI LANGID WINAPI GetSystemDefaultLangID (void);
++  WINBASEAPI LCID WINAPI GetSystemDefaultLCID (void);
++  WINBASEAPI LANGID WINAPI GetSystemDefaultUILanguage (void);
++  WINBASEAPI LCID WINAPI GetThreadLocale (void);
++  WINBASEAPI LCID WINAPI GetUserDefaultLCID (void);
++#endif
++
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_APP)
+   WINBASEAPI WINBOOL WINAPI GetStringTypeExA (LCID Locale, DWORD dwInfoType, LPCSTR lpSrcStr, int cchSrc, LPWORD lpCharType);
+   WINBASEAPI LANGID WINAPI GetUserDefaultUILanguage (void);
+-- 
+2.37.3.windows.1
+

@@ -1,0 +1,39 @@
+From 921e0db42fd45b8bd3e3a1379b9232dbf1764f5d Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 27 Jun 2023 13:30:10 +0200
+Subject: [PATCH] headers: allow GetFileSize in 19H1 UWP builds
+
+It's allowed by the WACK and available in windowsapp.lib since 19H1.
+It's not allowed by the Windows SDK headers.
+
+We need to remove it from windowsappcompat to avoid double definition
+when linking.
+---
+ mingw-w64-headers/include/fileapi.h            | 4 +---
+ 2 files changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/mingw-w64-headers/include/fileapi.h b/mingw-w64-headers/include/fileapi.h
+index 20940806f..0edb4a5f1 100644
+--- a/mingw-w64-headers/include/fileapi.h
++++ b/mingw-w64-headers/include/fileapi.h
+@@ -49,6 +49,7 @@ WINBASEAPI DWORD WINAPI SetFilePointer (HANDLE hFile, LONG lDistanceToMove, PLON
+   WINBASEAPI WINBOOL WINAPI GetFileInformationByHandle (HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
+   WINBASEAPI HANDLE WINAPI CreateFileA (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+   WINBASEAPI HANDLE WINAPI CreateFileW (LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
++  WINBASEAPI DWORD WINAPI GetFileSize (HANDLE hFile, LPDWORD lpFileSizeHigh);
+ #endif
+ 
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+@@ -61,9 +62,6 @@ WINBASEAPI DWORD WINAPI SetFilePointer (HANDLE hFile, LONG lDistanceToMove, PLON
+   WINBASEAPI WINBOOL WINAPI FindNextVolumeW (HANDLE hFindVolume, LPWSTR lpszVolumeName, DWORD cchBufferLength);
+   WINBASEAPI WINBOOL WINAPI FindVolumeClose (HANDLE hFindVolume);
+ #endif
+-#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || defined(WINSTORECOMPAT)
+-  WINBASEAPI DWORD WINAPI GetFileSize (HANDLE hFile, LPDWORD lpFileSizeHigh);
+-#endif
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || _WIN32_WINNT >= _WIN32_WINNT_WIN10
+   WINBASEAPI LONG WINAPI CompareFileTime (CONST FILETIME *lpFileTime1, CONST FILETIME *lpFileTime2);
+   WINBASEAPI WINBOOL WINAPI DeleteVolumeMountPointW (LPCWSTR lpszVolumeMountPoint);
+-- 
+2.37.3.windows.1
+
