@@ -123,6 +123,7 @@ public:
 
     Q_PROPERTY(VLCTick time READ getTime WRITE setTime NOTIFY timeChanged FINAL)
     Q_PROPERTY(VLCTick remainingTime READ getRemainingTime NOTIFY remainingTimeChanged FINAL)
+    Q_PROPERTY(VLCTick adjustedRemainingTime READ getAdjustedRemainingTime NOTIFY remainingTimeChanged FINAL)
     Q_PROPERTY(float position READ getPosition WRITE setPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(VLCTick length READ getLength NOTIFY lengthChanged FINAL)
 
@@ -287,6 +288,7 @@ public slots:
     VLCTick getTime() const;
     void setTime(VLCTick);
     VLCTick getRemainingTime() const;
+    VLCTick getAdjustedRemainingTime() const;
     float getPosition() const;
     void setPosition(float);
     VLCTick getLength() const;

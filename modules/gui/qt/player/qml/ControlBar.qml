@@ -141,6 +141,10 @@ T.Pane {
                     anchors.fill: parent
                     onClicked: MainCtx.showRemainingTime = !MainCtx.showRemainingTime
                 }
+
+                T.ToolTip.visible: (hovered && MainCtx.showRemainingTime) 
+                T.ToolTip.delay: VLCStyle.delayToolTipAppear
+                T.ToolTip.text: Player.adjustedRemainingTime.formatHMS() + ", " + Player.rate
             },
             SliderBar {
                 id: trackPositionSlider
