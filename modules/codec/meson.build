@@ -828,7 +828,7 @@ endif
 ## Hardware encoders
 
 # QSV encoder
-qsv_dep = dependency('libmfx', required: get_option('mfx'))
+qsv_dep = dependency('libvpl', required: get_option('vpl'))
 if qsv_dep.found()
     vlc_modules += {
         'name' : 'qsv',
