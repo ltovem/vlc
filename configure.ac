@@ -1838,6 +1838,27 @@ AS_IF([test "${enable_sout}" != "no"], [
 ])
 AM_CONDITIONAL([ENABLE_SOUT], [test "${enable_sout}" != "no"])
 
+dnl
+dnl Rust Modules
+dnl
+AC_ARG_ENABLE([rust],
+  AS_HELP_STRING([--enable-rust],
+    [enable building Rust modules (default disabled)]))
+AS_IF([test "${host_os}" = "linux-gnu" -a "${host_cpu}" = "x86_64"],[
+  AC_SUBST([RUST_TARGET], ["x86_64-unknown-linux-gnu"])
+],[
+  AC_MSG_WARN([no suitable rust target found (only x86_64 linux-gnu is currently supported, your is ${host_cpu} ${host_os})])
+  enable_rust = no
+])
+AS_IF([test "${enable_rust}" = "yes"],[
+  AC_CHECK_PROGS(CARGO, [cargo], [no])
+  AS_IF([test "$CARGO" = "no"],[
+    AC_MSG_ERROR([cargo not found. cargo is required to build rust modules])
+  ])
+  AC_DEFINE(ENABLE_RUST, 1, [Define to 1 for building rust modules.])
+])
+AM_CONDITIONAL([HAVE_RUST], [test "${enable_rust}" = "yes"])
+
 dnl Lua modules
 AC_ARG_ENABLE([lua],
   AS_HELP_STRING([--disable-lua],

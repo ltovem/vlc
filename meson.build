@@ -53,6 +53,9 @@ vlc_about = custom_target('vlc_about.h',
                                    '@INPUT2@',
                                    '@OUTPUT@'])
 
+cargo_rustc_static_libs = find_program('buildsystem/cargo-rustc-static-libs.py')
+cargo_output = find_program('buildsystem/cargo-output.py')
+
 add_project_arguments('-DHAVE_CONFIG_H=1', language: ['c', 'cpp', 'objc'])
 
 # If building with contribs, read the relevant paths from the machine file
@@ -1023,6 +1026,13 @@ subdir('bin')
 
 # VLC plugins
 subdir('modules')
+
+if get_option('rust')
+    warning('''
+    The Rust module support is currently EXPERIMENTAL.
+    Testing and reporting or contributing missing plugins and features is welcome!
+    ''')
+endif
 
 warning('''
     The Meson build system of VLC is currently EXPERIMENTAL and INCOMPLETE.

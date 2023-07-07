@@ -585,3 +585,10 @@ vlc_modules += {
     'name' : 'noseek',
     'sources' : files('filter/noseek.c')
 }
+
+# FLV Rust demuxer
+vlc_rust_modules += {
+    'name' : 'flv_rs',
+    'sources' : files('flv-rs/src/lib.rs'),
+    'cargo_toml' : files('flv-rs/Cargo.toml'),
+}
