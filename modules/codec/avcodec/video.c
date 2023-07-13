@@ -1519,6 +1519,9 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
             }
         }
 
+        if( p_context->pix_fmt == AV_PIX_FMT_PAL8 && p_pic->format.p_palette )
+            lavc_Frame8PaletteCopy( p_pic->format.p_palette, frame->data[1] );
+
         if( !p_dec->fmt_in->video.i_sar_num || !p_dec->fmt_in->video.i_sar_den )
         {
             /* Fetch again the aspect ratio in case it changed */
