@@ -630,9 +630,25 @@ static void Convert( filter_t *p_filter, struct SwsContext *ctx,
         static_assert(sizeof(srcpal->palette) == AVPALETTE_SIZE,
                       "Palette size mismatch between vlc and libavutil");
         if( srcpal )
-            memcpy( palette, srcpal->palette,
-                   __MIN( sizeof(srcpal->palette),
-                          srcpal->i_entries * ARRAY_SIZE(srcpal->palette) ) );
+        {
+            uint8_t *dstp = palette;
+            for(int i=0; i<srcpal->i_entries; i++)
+            {
+                // we want ARGB in host endianess from RGBA in byte order
+#ifdef WORDS_BIGENDIAN
+                dstp[0] = srcpal->palette[i][3];
+                dstp[1] = srcpal->palette[i][0];
+                dstp[2] = srcpal->palette[i][1];
+                dstp[3] = srcpal->palette[i][2];
+#else
+                dstp[0] = srcpal->palette[i][2];
+                dstp[1] = srcpal->palette[i][1];
+                dstp[2] = srcpal->palette[i][0];
+                dstp[3] = srcpal->palette[i][3];
+#endif
+                dstp += 4;
+            }
+        }
         else
             memset( palette, 0, sizeof(palette) );
         src[1] = palette;
