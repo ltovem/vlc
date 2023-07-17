@@ -74,7 +74,7 @@ RowLayout {
             x: (column.width - width) / 2
 
             text: I18n.qtr("Playback Speed")
-            iconText: (index === 0) ? I18n.qtr("%1x").arg(+Player.rate.toFixed(2))
+            iconText: (index === 0) ? I18n.qtr("%1x").arg(+MainPlayerController.rate.toFixed(2))
                                     : modelData.icon
 
             T.ToolTip.visible: (hovered || visualFocus)
@@ -98,7 +98,7 @@ RowLayout {
         //we store the model in a different property as functions can't be passed in modelData
         property var modelDefinition: [{
                 "title": I18n.qtr("Subtitle"),
-                "tracksModel": Player.subtitleTracks,
+                "tracksModel": MainPlayerController.subtitleTracks,
                 "menuIcon": VLCIcons.expand,
                 "menuText": I18n.qtr("Menu"),
                 "menuAction": function(menuPos) {
@@ -107,7 +107,7 @@ RowLayout {
 
             }, {
                 "title": I18n.qtr("Audio"),
-                "tracksModel": Player.audioTracks,
+                "tracksModel": MainPlayerController.audioTracks,
                 "menuIcon": VLCIcons.expand,
                 "menuText": I18n.qtr("Menu"),
                 "menuAction": function(menuPos) {
@@ -115,7 +115,7 @@ RowLayout {
                 }
             }, {
                 "title": I18n.qtr("Video Tracks"),
-                "tracksModel": Player.videoTracks,
+                "tracksModel": MainPlayerController.videoTracks,
                 "menuIcon": VLCIcons.add,
                 "menuText": I18n.qtr("Add"),
                 "menuAction": function(menuPos) {
@@ -267,7 +267,7 @@ RowLayout {
     QmlSubtitleMenu {
         id: menuSubtitle
 
-        player: Player
+        player: MainPlayerController
 
         onTriggered: {
             if (action === QmlSubtitleMenu.Open) {
@@ -277,7 +277,7 @@ RowLayout {
                 trackMenuController.requestSubtitlePage()
             }
             else if (action === QmlSubtitleMenu.Download) {
-                Player.openVLsub()
+                MainPlayerController.openVLsub()
             }
         }
     }

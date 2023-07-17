@@ -37,12 +37,12 @@ Widgets.IconControlButton {
     // NOTE: We want to pop the menu above the button.
     onClicked: menu.popup(this.mapToGlobal(0, 0), true)
 
-    enabled: (paintOnly === false && Player.hasPrograms)
+    enabled: (paintOnly === false && MainPlayerController.hasPrograms)
 
     QmlProgramMenu {
         id: menu
 
-        player: Player
+        player: MainPlayerController
 
         onAboutToShow: root.requestLockUnlockAutoHide(true)
         onAboutToHide: root.requestLockUnlockAutoHide(false)

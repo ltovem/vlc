@@ -91,7 +91,7 @@ TracksPage {
                 Navigation.rightItem: reset
 
                 Component.onCompleted: {
-                    value = Player.audioDelayMS
+                    value = MainPlayerController.audioDelayMS
 
                     update = true
                 }
@@ -100,16 +100,16 @@ TracksPage {
                     if (update === false)
                         return
 
-                    Player.audioDelayMS = value
+                    MainPlayerController.audioDelayMS = value
                 }
 
                 Connections {
-                    target: Player
+                    target: MainPlayerController
 
                     onAudioDelayChanged: {
                         spinBox.update = false
 
-                        spinBox.value = Player.audioDelayMS
+                        spinBox.value = MainPlayerController.audioDelayMS
 
                         spinBox.update = true
                     }

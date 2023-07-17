@@ -26,7 +26,7 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: chapterPreviousBtn
     iconText: VLCIcons.dvd_prev
-    onClicked: Player.chapterPrev()
-    enabled: Player.hasChapters
+    onClicked: MainPlayerController.chapterPrev()
+    enabled: MainPlayerController.hasChapters
     text: I18n.qtr("Previous chapter")
 }

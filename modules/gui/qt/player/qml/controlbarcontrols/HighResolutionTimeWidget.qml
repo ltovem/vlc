@@ -37,16 +37,16 @@ Control {
     Keys.onPressed: Navigation.defaultKeyAction(event)
 
     Accessible.role: Accessible.Indicator
-    Accessible.name:  paintOnly ? "00:00:00:00" : Player.highResolutionTime
+    Accessible.name:  paintOnly ? "00:00:00:00" : MainPlayerController.highResolutionTime
 
     function _adjustSMPTETimer(add) {
         if (typeof toolbarEditor !== "undefined") // FIXME: Can't use paintOnly because it is set later
             return
 
         if (add === true)
-            Player.requestAddSMPTETimer()
+            MainPlayerController.requestAddSMPTETimer()
         else if (add === false)
-            Player.requestRemoveSMPTETimer()
+            MainPlayerController.requestRemoveSMPTETimer()
     }
 
     Component.onCompleted: {
@@ -78,7 +78,7 @@ Control {
             id: label
             anchors.fill: parent
 
-            text: paintOnly ? "00:00:00:00" : Player.highResolutionTime
+            text: paintOnly ? "00:00:00:00" : MainPlayerController.highResolutionTime
             color: theme.fg.primary
 
             horizontalAlignment: Text.AlignHCenter

@@ -117,7 +117,7 @@ FocusScope {
                 return e.name === item.view.name
             })
 
-        if (Player.hasVideoOutput && MainCtx.hasEmbededVideo)
+        if (MainPlayerController.hasVideoOutput && MainCtx.hasEmbededVideo)
             _showMiniPlayer = true
     }
 
@@ -557,9 +557,9 @@ FocusScope {
         }
 
         Connections {
-            target: Player
+            target: MainPlayerController
             onHasVideoOutputChanged: {
-                if (Player.hasVideoOutput && MainCtx.hasEmbededVideo) {
+                if (MainPlayerController.hasVideoOutput && MainCtx.hasEmbededVideo) {
                     if (History.current.view !== "player")
                         g_mainDisplay.showPlayer()
                 } else {

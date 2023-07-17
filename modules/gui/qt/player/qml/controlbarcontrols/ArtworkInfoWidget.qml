@@ -130,9 +130,9 @@ AbstractButton {
 
                 source: {
                     if (!paintOnly
-                        && Player.artwork
-                        && Player.artwork.toString())
-                        Player.artwork
+                        && MainPlayerController.artwork
+                        && MainPlayerController.artwork.toString())
+                        MainPlayerController.artwork
                     else
                         VLCStyle.noArtAlbumCover
                 }
@@ -170,7 +170,7 @@ AbstractButton {
                     if (paintOnly)
                         I18n.qtr("Title")
                     else
-                        Player.title
+                        MainPlayerController.title
                 }
                 color: theme.fg.primary
             }
@@ -185,7 +185,7 @@ AbstractButton {
                     if (paintOnly)
                         I18n.qtr("Artist")
                     else
-                        Player.artist
+                        MainPlayerController.artist
                 }
                 color: theme.fg.secondary
             }
@@ -202,7 +202,7 @@ AbstractButton {
                     if (paintOnly)
                         " -- / -- "
                     else
-                        Player.time.formatHMS() + " / " + Player.length.formatHMS()
+                        MainPlayerController.time.formatHMS() + " / " + MainPlayerController.length.formatHMS()
                 }
                 color: theme.fg.secondary
             }

@@ -98,8 +98,8 @@ Item {
                 font.pixelSize: VLCStyle.icon_large
 
                 text: I18n.qtr("play/pause")
-                iconText: (Player.playingState !== Player.PLAYING_STATE_PAUSED
-                       && Player.playingState !== Player.PLAYING_STATE_STOPPED)
+                iconText: (MainPlayerController.playingState !== MainPlayerController.PLAYING_STATE_PAUSED
+                       && MainPlayerController.playingState !== MainPlayerController.PLAYING_STATE_STOPPED)
                       ? VLCIcons.pause
                       : VLCIcons.play
 

@@ -26,9 +26,9 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: fasterBtn
 
-    enabled: Player.ratechangable
+    enabled: MainPlayerController.ratechangable
 
     iconText: VLCIcons.faster
-    onClicked: Player.faster()
+    onClicked: MainPlayerController.faster()
     text: I18n.qtr("Faster")
 }

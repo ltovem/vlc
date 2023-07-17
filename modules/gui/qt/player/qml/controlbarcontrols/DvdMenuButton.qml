@@ -27,10 +27,10 @@ import org.videolan.vlc 0.1
 
 Widgets.IconControlButton {
 
-    enabled: Player.hasMenu
+    enabled: MainPlayerController.hasMenu
 
     iconText: VLCIcons.dvd_menu
     text: I18n.qtr("Menu")
 
-    onClicked: Player.sectionMenu()
+    onClicked: MainPlayerController.sectionMenu()
 }

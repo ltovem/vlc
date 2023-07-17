@@ -25,7 +25,7 @@ import "qrc:///style/"
 
 Widgets.IconControlButton {
     id: infoBtn
-    enabled: Player.isPlaying
+    enabled: MainPlayerController.isPlaying
     iconText: VLCIcons.info
     onClicked: DialogsProvider.mediaInfoDialog()
     text: I18n.qtr("Information")

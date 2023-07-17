@@ -179,7 +179,7 @@ T.Pane {
     readonly property list<Item> strayItems: [
         T.Label {
             id: mediaTime
-            text: Player.time.formatHMS()
+            text: MainPlayerController.time.formatHMS()
             color: theme.fg.primary
             font.pixelSize: (textPosition === ControlBar.TimeTextPosition.LeftRightSlider) ? VLCStyle.fontSize_small
                                                                                            : VLCStyle.fontSize_normal
@@ -190,9 +190,9 @@ T.Pane {
         T.Label {
             id: mediaRemainingTime
 
-            text: (MainCtx.showRemainingTime && Player.remainingTime.valid())
-                  ? "-" + Player.remainingTime.formatHMS()
-                  : Player.length.formatHMS()
+            text: (MainCtx.showRemainingTime && MainPlayerController.remainingTime.valid())
+                  ? "-" + MainPlayerController.remainingTime.formatHMS()
+                  : MainPlayerController.length.formatHMS()
             color: mediaTime.color
             font.pixelSize: mediaTime.font.pixelSize
 
@@ -209,7 +209,7 @@ T.Pane {
 
             barHeight: VLCStyle.heightBar_xxsmall
             Layout.fillWidth: true
-            enabled: Player.playingState === Player.PLAYING_STATE_PLAYING || Player.playingState === Player.PLAYING_STATE_PAUSED
+            enabled: MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PLAYING || MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PAUSED
 
             Navigation.parentItem: root
             Navigation.downItem: playerControlLayout

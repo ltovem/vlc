@@ -37,7 +37,7 @@ ControlBar {
             return false
     }
 
-    state: (Player.playingState === Player.PLAYING_STATE_STOPPED) ? "outViewport"
+    state: (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_STOPPED) ? "outViewport"
                                                                   : "inViewport"
 
     textPosition: (MainCtx.pinVideoControls) ? ControlBar.TimeTextPosition.LeftRightSlider

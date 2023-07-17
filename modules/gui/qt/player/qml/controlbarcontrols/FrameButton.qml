@@ -26,9 +26,9 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: frameBtn
 
-    enabled: Player.ratechangable
+    enabled: MainPlayerController.ratechangable
 
     iconText: VLCIcons.frame_by_frame
-    onClicked: Player.frameNext()
+    onClicked: MainPlayerController.frameNext()
     text: I18n.qtr("Next frame")
 }

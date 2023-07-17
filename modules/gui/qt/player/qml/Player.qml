@@ -44,7 +44,7 @@ FocusScope {
         if (MainPlaylistController.currentItem.artwork &&
             MainPlaylistController.currentItem.artwork.toString())
             MainPlaylistController.currentItem.artwork
-        else if (Player.hasVideoOutput)
+        else if (MainPlayerController.hasVideoOutput)
             VLCStyle.noArtVideoCover
         else
             VLCStyle.noArtAlbumCover
@@ -57,7 +57,7 @@ FocusScope {
 
     readonly property bool _autoHide: _lockAutoHide == 0
                                       && rootPlayer.hasEmbededVideo
-                                      && Player.hasVideoOutput
+                                      && MainPlayerController.hasVideoOutput
                                       && playlistpopup.state !== "visible"
 
     property bool _controlsUnderVideo: (MainCtx.pinVideoControls
@@ -465,7 +465,7 @@ FocusScope {
 
                 BindingCompat on visible {
                     delayed: true
-                    value: Player.videoTracks.count === 0 && centerContent.height > (audioControls.y + audioControls.height)
+                    value: MainPlayerController.videoTracks.count === 0 && centerContent.height > (audioControls.y + audioControls.height)
                 }
 
                 focus: visible
@@ -478,21 +478,21 @@ FocusScope {
                     Widgets.IconToolButton {
                         iconText: VLCIcons.skip_back
                         size: VLCStyle.icon_audioPlayerButton
-                        onClicked: Player.jumpBwd()
+                        onClicked: MainPlayerController.jumpBwd()
                         text: I18n.qtr("Step back")
                     }
 
                     Widgets.IconToolButton {
                         iconText: VLCIcons.visualization
                         size: VLCStyle.icon_audioPlayerButton
-                        onClicked: Player.toggleVisualization()
+                        onClicked: MainPlayerController.toggleVisualization()
                         text: I18n.qtr("Visualization")
                     }
 
                     Widgets.IconToolButton{
                         iconText: VLCIcons.skip_for
                         size: VLCStyle.icon_audioPlayerButton
-                        onClicked: Player.jumpFwd()
+                        onClicked: MainPlayerController.jumpFwd()
                         text: I18n.qtr("Step forward")
                     }
                 }
@@ -633,7 +633,7 @@ FocusScope {
 
             onRequestLockUnlockAutoHide: rootPlayer.lockUnlockAutoHide(lock)
 
-            identifier: (Player.hasVideoOutput) ? PlayerControlbarModel.Videoplayer
+            identifier: (MainPlayerController.hasVideoOutput) ? PlayerControlbarModel.Videoplayer
                                                 : PlayerControlbarModel.Audioplayer
 
             onHoveredChanged: rootPlayer.lockUnlockAutoHide(hovered)
