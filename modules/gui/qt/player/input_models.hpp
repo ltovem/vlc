@@ -48,7 +48,9 @@ class TrackListModel : public QAbstractListModel
     Q_PROPERTY(bool multiSelect READ getMultiSelect WRITE setMultiSelect NOTIFY multiSelectChanged FINAL)
 
 public:
-    TrackListModel(vlc_player_t* player, QObject* parent = nullptr);
+    TrackListModel(QObject* parent = nullptr);
+
+    void setPlayer(vlc_player_t* player);
 
     virtual Qt::ItemFlags flags(const QModelIndex &) const  override;
 
@@ -78,7 +80,7 @@ signals:
     void multiSelectChanged(bool multiSelect);
 
 private:
-    vlc_player_t* m_player;
+    vlc_player_t* m_player = nullptr;
     class Data {
     public:
         Data(const vlc_player_track *track_info);
@@ -114,7 +116,9 @@ class TitleListModel : public QAbstractListModel
 
 public:
 
-    TitleListModel(vlc_player_t* player, QObject* parent = nullptr);
+    TitleListModel(QObject* parent = nullptr);
+
+    void setPlayer(vlc_player_t* player);
 
     virtual Qt::ItemFlags flags(const QModelIndex &) const  override;
 
@@ -138,7 +142,7 @@ signals:
     void countChanged();
 
 private:
-    vlc_player_t* m_player;
+    vlc_player_t* m_player = nullptr;
     typedef vlc_shared_data_ptr_type(vlc_player_title_list, vlc_player_title_list_Hold, vlc_player_title_list_Release) PlayerTitleList;
     PlayerTitleList m_titleList;
     int m_current = -1;
@@ -169,7 +173,9 @@ public:
         EndPositionRole
     };
 public:
-    ChapterListModel(vlc_player_t* player, QObject* parent = nullptr);
+    ChapterListModel(QObject* parent = nullptr);
+
+    void setPlayer(vlc_player_t* player);
 
     virtual Qt::ItemFlags flags(const QModelIndex &) const  override;
 
@@ -219,7 +225,9 @@ class ProgramListModel : public QAbstractListModel
     Q_PROPERTY(int count READ getCount NOTIFY countChanged FINAL)
 
 public:
-    ProgramListModel(vlc_player_t* player, QObject* parent = nullptr);
+    ProgramListModel(QObject* parent = nullptr);
+
+    void setPlayer(vlc_player_t* player);
 
     Qt::ItemFlags flags(const QModelIndex &) const  override;
 
@@ -243,7 +251,7 @@ signals:
     void countChanged();
 
 private:
-    vlc_player_t* m_player;
+    vlc_player_t* m_player = nullptr;
     class Data {
     public:
         Data( const struct vlc_player_program* program );

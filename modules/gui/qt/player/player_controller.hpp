@@ -39,6 +39,19 @@ using vlc_player_locker = vlc_locker<vlc_player_t, vlc_player_Lock, vlc_player_U
 
 class QSignalMapper;
 
+class Player
+{
+public:
+    Player() = default;
+    explicit Player(vlc_player_t * const player)
+        : m_player(player)
+        { };
+
+    vlc_player_t * m_player = nullptr;
+};
+
+Q_DECLARE_METATYPE(Player)
+
 class IMEvent : public QEvent
 {
 public:
@@ -73,6 +86,7 @@ class PlayerController : public QObject
 {
     Q_OBJECT
     friend class VLCMenuBar;
+    friend class CoverArtLabel;
 
 public:
     enum ABLoopState {
@@ -109,6 +123,8 @@ public:
         TELE_INDEX = VLC_PLAYER_TELETEXT_KEY_INDEX
     };
     Q_ENUM(Telekeys)
+
+    Q_PROPERTY(Player player READ player WRITE setPlayer NOTIFY playerChanged FINAL)
 
     //playback
     Q_PROPERTY(PlayingState playingState READ getPlayingState NOTIFY playingStateChanged FINAL)
@@ -205,8 +221,6 @@ public slots:
     void reverse();
     void slower();
     void faster();
-    void littlefaster();
-    void littleslower();
     void normalRate();
 
     void jumpFwd();
@@ -247,8 +261,10 @@ public slots:
     void requestRemoveSMPTETimer();
 
 public:
-    PlayerController( qt_intf_t * );
-    ~PlayerController();
+    explicit PlayerController( QObject * parent = nullptr );
+    explicit PlayerController( const Player& player, QObject * parent = nullptr);
+    explicit PlayerController( vlc_player_t * player, QObject * parent = nullptr);
+    virtual ~PlayerController();
 
 public:
     static void vout_Hold_fct( vout_thread_t* vout ) { vout_Hold(vout); }
@@ -262,7 +278,7 @@ public:
 
 
 public:
-    vlc_player_t * getPlayer() const;
+    Player player() const;
 
     input_item_t *getInput();
 
@@ -271,14 +287,17 @@ public:
     PlayerController::AoutPtr getAout();
     int AddAssociatedMedia(enum es_format_category_e cat, const QString& uri, bool select, bool notify, bool check_ext);
 
-    void requestArtUpdate( input_item_t *p_item, bool b_forced );
     void setArt( input_item_t *p_item, QString fileUrl );
     static const QString decodeArtURL( input_item_t *p_item );
     void updatePosition();
     void updateTime(vlc_tick_t system_now, bool forceTimer);
 
+    void setPlayer(const Player& player);
+
     //getter/setters binded to a Q_PROPERTY
 public slots:
+    void setInputTitleFormat(const QString& string);
+
     //playback
     PlayingState getPlayingState() const;
     bool hasInput() const;
@@ -304,6 +323,7 @@ public slots:
     void restorePlaybackPos();
     void openVLsub();
     void acknowledgeRestoreCallback();
+    void setShortJumpSize(const int size);
 
     //tracks
     TrackListModel* getVideoTracks();
@@ -396,6 +416,8 @@ public slots:
     QUrl getArtwork() const;
 
 signals:
+    void playerChanged(const Player& player);
+
     //playback
     void playingStateChanged( PlayingState state );
     void inputChanged( bool hasInput );
@@ -489,9 +511,6 @@ private:
     QScopedPointer<PlayerControllerPrivate> d_ptr;
     QSignalMapper *menusAudioMapper; //used by VLCMenuBar
 
-    /* updateArt gui request */
-    struct vlc_metadata_cbs input_preparser_cbs;
-    static void onArtFetchEnded_callback(input_item_t *, bool fetched, void *userdata);
     void onArtFetchEnded(input_item_t *, bool fetched);
 };
 

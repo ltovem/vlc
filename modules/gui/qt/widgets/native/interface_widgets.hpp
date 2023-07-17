@@ -58,7 +58,7 @@ private:
 public slots:
     void showArtUpdate( const QString& );
     void showArtUpdate( input_item_t * );
-    void askForUpdate();
+    void requestArtUpdate();
     void setArtFromFile();
     void clear();
 };

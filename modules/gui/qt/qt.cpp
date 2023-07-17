@@ -57,6 +57,7 @@ extern "C" char **environ;
 #include "player/player_controller.hpp"    /* THEMIM destruction */
 #include "playlist/playlist_controller.hpp" /* THEMPL creation */
 #include "dialogs/dialogs_provider.hpp" /* THEDP creation */
+#include "dialogs/extensions/extensions_manager.hpp"
 #include "dialogs/dialogs/dialogmodel.hpp"
 #ifdef _WIN32
 # include "maininterface/mainctx_win32.hpp"
@@ -677,6 +678,7 @@ static inline void registerMetaTypes()
     qRegisterMetaType<NetworkTreeItem>();
     qRegisterMetaType<PlaylistPtr>();
     qRegisterMetaType<PlaylistItem>();
+    qRegisterMetaType<Player>();
     qRegisterMetaType<DialogId>();
     qRegisterMetaType<MLItemId>();
 }
@@ -783,8 +785,22 @@ static void *Thread( void *obj )
 
     /* Initialize the Dialog Provider and the Main Input Manager */
     DialogsProvider::getInstance( p_intf );
-    p_intf->p_mainPlayerController = new PlayerController(p_intf);
+    p_intf->p_mainPlayerController = new PlayerController(p_intf->p_player);
+    p_intf->p_mainPlayerController->setShortJumpSize(var_InheritInteger(p_intf, "short-jump-size"));
+    {
+        char * const inputTitleFormat = var_InheritString(p_intf, "input-title-format");
+        if (inputTitleFormat)
+        {
+            p_intf->p_mainPlayerController->setInputTitleFormat(inputTitleFormat);
+            free(inputTitleFormat);
+        }
+    }
     p_intf->p_mainPlaylistController = new vlc::playlist::PlaylistController(p_intf->p_playlist);
+    /* Also create the extensions manager because it can be
+       used by any player controller. It needs to be created
+       after the main player controller because
+       it accesses the main player controller */
+    ExtensionsManager::getInstance( p_intf );
 
 #ifdef UPDATE_CHECK
     /* Checking for VLC updates */

@@ -502,7 +502,7 @@ void MLBookmarkModel::setPlayer(PlayerController * player)
 
     connect(m_player_controller, &PlayerController::lengthChanged, this, &MLBookmarkModel::playerLengthChanged);
 
-    setPlayer(player->getPlayer());
+    setPlayer(player->player().m_player);
 }
 
 MediaLib* MLBookmarkModel::ml() const

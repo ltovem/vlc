@@ -39,18 +39,10 @@ static const struct vlc_player_aout_cbs player_aout_cbs = {
     on_player_aout_device_changed
 };
 
-AudioDeviceModel::AudioDeviceModel(vlc_player_t *player, QObject *parent)
+AudioDeviceModel::AudioDeviceModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_player(player)
 {
-    {
-        vlc_player_locker locker{m_player};
-        m_player_aout_listener = vlc_player_aout_AddListener(m_player, &player_aout_cbs, this);
-    }
 
-    m_aout = vlc_player_aout_Hold(m_player);
-    if (m_aout)
-        m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
 }
 
 AudioDeviceModel::~AudioDeviceModel()
@@ -69,6 +61,37 @@ AudioDeviceModel::~AudioDeviceModel()
 
     if (m_aout)
         aout_Release(m_aout);
+}
+
+void AudioDeviceModel::setPlayer(vlc_player_t *player)
+{
+    if (m_player)
+    {
+        assert(m_player_aout_listener);
+
+        {
+            vlc_player_locker locker{m_player};
+            vlc_player_aout_RemoveListener(m_player, m_player_aout_listener);
+        }
+
+        aout_Release(m_aout);
+        m_inputs = 0;
+    }
+
+    m_player = player;
+
+    if (m_player)
+    {
+        {
+            vlc_player_locker locker{m_player};
+            m_player_aout_listener = vlc_player_aout_AddListener(m_player, &player_aout_cbs, this);
+            assert(m_player_aout_listener);
+        }
+
+        m_aout = vlc_player_aout_Hold(m_player);
+        if (m_aout)
+            m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
+    }
 }
 
 Qt::ItemFlags AudioDeviceModel::flags(const QModelIndex &) const
