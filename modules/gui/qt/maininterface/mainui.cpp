@@ -274,6 +274,8 @@ void MainUI::registerQMLTypes()
         qmlRegisterType<PlaylistListModel>( uri, versionMajor, versionMinor, "PlaylistListModel" );
         qmlRegisterType<PlaylistController>( uri, versionMajor, versionMinor, "PlaylistController" );
 
+        qmlRegisterType<PlayerController>( uri, versionMajor, versionMinor, "PlayerController" );
+
         qmlRegisterType<AboutModel>( uri, versionMajor, versionMinor, "AboutModel" );
 
         qmlRegisterType<DialogModel>(uri, versionMajor, versionMinor, "DialogModel");
