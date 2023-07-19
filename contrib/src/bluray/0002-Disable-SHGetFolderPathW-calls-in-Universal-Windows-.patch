@@ -1,0 +1,75 @@
+From 342874c1f11c0ae6d7f3b3295fd3854569bba0fb Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 6 Jun 2023 10:53:43 +0200
+Subject: [PATCH 2/4] Disable SHGetFolderPathW calls in Universal Windows
+ Platform builds
+
+The call is forbidden. It's possible to use the Windows.Storage.ApplicationData
+which is a bit tricky to call in C.
+
+https://learn.microsoft.com/en-us/uwp/api/windows.storage.applicationdata
+---
+ src/file/dirs_win32.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/file/dirs_win32.c b/src/file/dirs_win32.c
+index e165feac..f8457d6c 100644
+--- a/src/file/dirs_win32.c
++++ b/src/file/dirs_win32.c
+@@ -36,6 +36,9 @@
+ 
+ char *win32_get_font_dir(const char *font_file)
+ {
++#if !WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
++    return NULL;
++#else /* WINAPI_PARTITION_DESKTOP */
+     wchar_t wdir[MAX_PATH];
+     if (S_OK != SHGetFolderPathW(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT, wdir)) {
+         int lenght = GetWindowsDirectoryW(wdir, MAX_PATH);
+@@ -58,6 +61,7 @@ char *win32_get_font_dir(const char *font_file)
+         strcpy(path + len, font_file);
+     }
+     return path;
++#endif /* WINAPI_PARTITION_DESKTOP */
+ }
+ 
+ char *file_get_config_home(void)
+@@ -67,6 +71,7 @@ char *file_get_config_home(void)
+ 
+ char *file_get_data_home(void)
+ {
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+     wchar_t wdir[MAX_PATH];
+ 
+     /* Get the "Application Data" folder for the user */
+@@ -79,7 +84,7 @@ char *file_get_data_home(void)
+         }
+         return appdir;
+     }
+-
++#endif /* WINAPI_PARTITION_DESKTOP */
+     BD_DEBUG(DBG_FILE, "Can't find user configuration directory !\n");
+     return NULL;
+ }
+@@ -100,6 +105,7 @@ const char *file_get_config_system(const char *dir)
+         if (appdir)
+             return appdir;
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+         /* Get the "Application Data" folder for all users */
+         if (S_OK == SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA | CSIDL_FLAG_CREATE,
+                     NULL, SHGFP_TYPE_CURRENT, wdir)) {
+@@ -109,7 +115,9 @@ const char *file_get_config_system(const char *dir)
+                 WideCharToMultiByte (CP_UTF8, 0, wdir, -1, appdir, len, NULL, NULL);
+             }
+             return appdir;
+-        } else {
++        } else
++#endif
++        {
+             BD_DEBUG(DBG_FILE, "Can't find common configuration directory !\n");
+             return NULL;
+         }
+-- 
+2.37.3.windows.1
+

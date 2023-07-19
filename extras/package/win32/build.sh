@@ -204,15 +204,6 @@ if [ ! -z "$BUILD_UCRT" ]; then
     fi
 
     if [ ! -z "$WINSTORE" ]; then
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-disc --disable-srt --disable-sdl --disable-SDL_image"
-        # FIXME enable discs ?
-        # modplug uses GlobalAlloc/Free and lstrcpyA/wsprintfA/lstrcpynA
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-modplug"
-        # gettext uses sys/socket.h improperly
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-gettext"
-        # fontconfig uses GetWindowsDirectory and SHGetFolderPath
-        CONTRIBFLAGS="$CONTRIBFLAGS --disable-fontconfig"
-
         # libdsm is not enabled by default
         CONTRIBFLAGS="$CONTRIBFLAGS --enable-libdsm"
 

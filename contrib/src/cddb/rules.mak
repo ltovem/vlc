@@ -28,7 +28,11 @@ ifdef HAVE_WIN32
 endif
 	$(MOVE)
 
-DEPS_cddb = regex $(DEPS_regex) gettext $(DEPS_gettext)
+DEPS_cddb = regex $(DEPS_regex)
+ifndef HAVE_WINSTORE
+# gettext doesn't build properly in UWP and we don't need it
+DEPS_cddb += gettext $(DEPS_gettext)
+endif
 
 CDDB_CONF := --without-iconv
 

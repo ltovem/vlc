@@ -23,6 +23,12 @@ libmodplug: libmodplug-$(MODPLUG_VERSION).tar.gz .sum-modplug
 ifdef HAVE_MACOSX
 	$(APPLY) $(SRC)/modplug/mac-use-c-stdlib.patch
 endif
+	$(APPLY) $(SRC)/modplug/0001-Fix-bogus-cast-into-potential-WCHAR-string.patch
+	$(APPLY) $(SRC)/modplug/0002-replace-lstrcpyn-with-strncpy.patch
+	$(APPLY) $(SRC)/modplug/0003-replace-lstrcpy-with-strcpy.patch
+	$(APPLY) $(SRC)/modplug/0004-replace-wsprintf-with-sprintf.patch
+	$(APPLY) $(SRC)/modplug/0005-Define-WAVE_FORMAT_PCM-when-it-s-not-defined.patch
+	$(APPLY) $(SRC)/modplug/0006-Replace-GlobalAllocPtr-calls-with-calloc.patch
 	$(call pkg_static,"libmodplug.pc.in")
 	$(MOVE)
 
