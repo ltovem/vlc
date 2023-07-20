@@ -26,9 +26,9 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: slowerBtn
 
-    enabled: Player.ratechangable
+    enabled: MainPlayerController.ratechangable
 
     iconText: VLCIcons.slower
-    onClicked: Player.slower()
+    onClicked: MainPlayerController.slower()
     text: I18n.qtr("Slower")
 }

@@ -195,8 +195,8 @@ Item {
 
             if (urls.length > 0) {
                 /* D&D of a subtitles file, add it on the fly */
-                if (Player.isPlaying && urls.length == 1) {
-                    if (Player.associateSubtitleFile(urls[0])) {
+                if (MainPlayerController.isPlaying && urls.length == 1) {
+                    if (MainPlayerController.associateSubtitleFile(urls[0])) {
                         drop.accept()
                         return
                     }
@@ -213,9 +213,9 @@ Item {
             focus: true
 
             Connections {
-                target: Player
+                target: MainPlayerController
                 onPlayingStateChanged: {
-                    if (Player.playingState === Player.PLAYING_STATE_STOPPED
+                    if (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_STOPPED
                             && History.current.name === "player") {
                         if (History.previousEmpty)
                             _pushHome()

@@ -25,8 +25,8 @@ import "qrc:///style/"
 
 Widgets.IconControlButton {
     id: fullScreenBtn
-    enabled: Player.hasVideoOutput
-    iconText: Player.fullscreen ? VLCIcons.defullscreen :VLCIcons.fullscreen
-    onClicked: Player.fullscreen = !Player.fullscreen
+    enabled: MainPlayerController.hasVideoOutput
+    iconText: MainPlayerController.fullscreen ? VLCIcons.defullscreen :VLCIcons.fullscreen
+    onClicked: MainPlayerController.fullscreen = !MainPlayerController.fullscreen
     text: I18n.qtr("fullscreen")
 }

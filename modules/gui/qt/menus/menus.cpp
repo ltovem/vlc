@@ -34,6 +34,7 @@
 #include <vlc_intf_strings.h>
 #include <vlc_aout.h>                             /* audio_output_t */
 #include <vlc_interface.h>
+#include <vlc_actions.h>           /* ACTION_ID */
 
 #include "menus.hpp"
 
@@ -616,6 +617,8 @@ void VLCMenuBar::PopupMenuPlaylistEntries( QMenu *menu, qt_intf_t *p_intf )
 void VLCMenuBar::PopupMenuControlEntries( QMenu *menu, qt_intf_t *p_intf,
                                         bool b_normal )
 {
+    assert(p_intf);
+
     QAction *action;
     QMenu *rateMenu = new QMenu( qtr( "Sp&eed" ), menu );
     rateMenu->setTearOffEnabled( true );
@@ -631,13 +634,17 @@ void VLCMenuBar::PopupMenuControlEntries( QMenu *menu, qt_intf_t *p_intf,
     }
 
     action = rateMenu->addAction( QIcon( ":/menu/faster.svg" ), qtr( "Faster (fine)" ), THEMIM,
-                              &PlayerController::littlefaster );
+                                 [p_intf]() {
+                                     var_SetInteger( p_intf, "key-action", ACTIONID_RATE_FASTER_FINE );
+                                 } );
 
     action = rateMenu->addAction( qtr( "N&ormal Speed" ), THEMIM,
                               &PlayerController::normalRate );
 
     action = rateMenu->addAction( QIcon( ":/menu/slower.svg" ), qtr( "Slower (fine)" ), THEMIM,
-                              &PlayerController::littleslower );
+                                 [p_intf]() {
+                                     var_SetInteger( p_intf, "key-action", ACTIONID_RATE_FASTER_FINE );
+                                 } );
 
     if( b_normal )
     {

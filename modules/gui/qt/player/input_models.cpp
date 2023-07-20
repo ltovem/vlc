@@ -23,10 +23,14 @@
 //  track list model
 //***************************
 
-TrackListModel::TrackListModel(vlc_player_t *player, QObject *parent)
+TrackListModel::TrackListModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_player(player)
 {
+}
+
+void TrackListModel::setPlayer(vlc_player_t *player)
+{
+    m_player = player;
 }
 
 Qt::ItemFlags TrackListModel::flags(const QModelIndex &) const
@@ -53,6 +57,8 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const
 
 bool TrackListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    assert(m_player);
+
     int row = index.row();
     if (row >= m_data.size())
         return false;
@@ -202,10 +208,14 @@ void TrackListModel::Data::update(const vlc_player_track *track_info)
 //***************************
 
 
-TitleListModel::TitleListModel(vlc_player_t *player, QObject *parent)
+TitleListModel::TitleListModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_player(player)
 {
+}
+
+void TitleListModel::setPlayer(vlc_player_t *player)
+{
+    m_player = player;
 }
 
 Qt::ItemFlags TitleListModel::flags(const QModelIndex &) const
@@ -244,6 +254,7 @@ bool TitleListModel::setData(const QModelIndex &index, const QVariant &value, in
     bool select = value.toBool();
     if (select)
     {
+        assert(m_player);
         vlc_player_locker lock{ m_player };
         const vlc_player_title* title = getTitleAt(row);
         if (!title)
@@ -298,10 +309,14 @@ QHash<int, QByteArray> TitleListModel::roleNames() const
 //  ChapterListModel
 //***************************
 
-ChapterListModel::ChapterListModel(vlc_player_t *player, QObject *parent)
+ChapterListModel::ChapterListModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_player(player)
 {
+}
+
+void ChapterListModel::setPlayer(vlc_player_t *player)
+{
+    m_player = player;
 }
 
 Qt::ItemFlags ChapterListModel::flags(const QModelIndex &) const
@@ -349,6 +364,7 @@ bool ChapterListModel::setData(const QModelIndex &index, const QVariant &value, 
     bool select = value.toBool();
     if (select)
     {
+        assert(m_player);
         vlc_player_locker lock{ m_player };
         vlc_player_SelectChapter(m_player, m_title, row);
     }
@@ -396,6 +412,7 @@ void ChapterListModel::selectChapter(int index)
     if (!m_title || index < 0 || static_cast<size_t>(index) >= m_title->chapter_count)
         return;
     {
+        assert(m_player);
         vlc_player_locker lock{ m_player };
         vlc_player_SelectChapter(m_player, m_title, index);
     }
@@ -467,10 +484,14 @@ int ChapterListModel::getClosestChapterFromPos(float pos, float threshold) const
 //***************************
 
 
-ProgramListModel::ProgramListModel(vlc_player_t *player, QObject *parent)
+ProgramListModel::ProgramListModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_player(player)
 {
+}
+
+void ProgramListModel::setPlayer(vlc_player_t *player)
+{
+    m_player = player;
 }
 
 Qt::ItemFlags ProgramListModel::flags(const QModelIndex &) const
@@ -497,6 +518,7 @@ QVariant ProgramListModel::data(const QModelIndex &index, int role) const
 
 bool ProgramListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    assert(m_player);
     int row = index.row();
     if (row >= m_data.size())
         return false;

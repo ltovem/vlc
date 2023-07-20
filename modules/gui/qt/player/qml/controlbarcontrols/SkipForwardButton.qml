@@ -26,9 +26,9 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: stepfwdBtn
 
-    enabled: Player.seekable
+    enabled: MainPlayerController.seekable
 
     iconText: VLCIcons.skip_for
-    onClicked: Player.jumpFwd()
+    onClicked: MainPlayerController.jumpFwd()
     text: I18n.qtr("Step forward")
 }

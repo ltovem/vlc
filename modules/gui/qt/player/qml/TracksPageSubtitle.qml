@@ -99,7 +99,7 @@ TracksPage {
                 Navigation.rightItem: resetA
 
                 Component.onCompleted: {
-                    value = Player.subtitleDelayMS
+                    value = MainPlayerController.subtitleDelayMS
 
                     update = true
                 }
@@ -108,16 +108,16 @@ TracksPage {
                     if (update === false)
                         return
 
-                    Player.subtitleDelayMS = value
+                    MainPlayerController.subtitleDelayMS = value
                 }
 
                 Connections {
-                    target: Player
+                    target: MainPlayerController
 
                     onSubtitleDelayChanged: {
                         spinBoxA.update = false
 
-                        spinBoxA.value = Player.subtitleDelayMS
+                        spinBoxA.value = MainPlayerController.subtitleDelayMS
 
                         spinBoxA.update = true
                     }
@@ -174,7 +174,7 @@ TracksPage {
                 Navigation.rightItem: resetB
 
                 Component.onCompleted: {
-                    value = Player.secondarySubtitleDelayMS
+                    value = MainPlayerController.secondarySubtitleDelayMS
 
                     update = true
                 }
@@ -183,16 +183,16 @@ TracksPage {
                     if (update === false)
                         return
 
-                    Player.secondarySubtitleDelayMS = value
+                    MainPlayerController.secondarySubtitleDelayMS = value
                 }
 
                 Connections {
-                    target: Player
+                    target: MainPlayerController
 
                     onSecondarySubtitleDelayChanged: {
                         spinBoxB.update = false
 
-                        spinBoxB.value = Player.secondarySubtitleDelayMS
+                        spinBoxB.value = MainPlayerController.secondarySubtitleDelayMS
 
                         spinBoxB.update = true
                     }
@@ -248,7 +248,7 @@ TracksPage {
                 Navigation.rightItem: resetC
 
                 Component.onCompleted: {
-                    value = Player.subtitleFPS * 10
+                    value = MainPlayerController.subtitleFPS * 10
 
                     update = true
                 }
@@ -257,16 +257,16 @@ TracksPage {
                     if (update === false)
                         return
 
-                    Player.subtitleFPS = value / 10
+                    MainPlayerController.subtitleFPS = value / 10
                 }
 
                 Connections {
-                    target: Player
+                    target: MainPlayerController
 
                     onSecondarySubtitleDelayChanged: {
                         spinBoxC.update = false
 
-                        value = Player.subtitleFPS / 10
+                        value = MainPlayerController.subtitleFPS / 10
 
                         spinBoxC.update = true
                     }

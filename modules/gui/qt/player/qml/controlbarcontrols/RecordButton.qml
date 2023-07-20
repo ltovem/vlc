@@ -27,12 +27,12 @@ import "qrc:///style/"
 Widgets.IconToolButton {
     id: control
 
-    enabled: !paintOnly && Player.isPlaying
+    enabled: !paintOnly && MainPlayerController.isPlaying
 
     color: "red" //red means recording
     text: I18n.qtr("record")
 
-    onClicked: Player.toggleRecord()
+    onClicked: MainPlayerController.toggleRecord()
 
     contentItem: T.Label {
         anchors.centerIn: parent
@@ -50,7 +50,7 @@ Widgets.IconToolButton {
             duration: 1000
             loops: Animation.Infinite
             easing.type: Easing.InOutSine
-            running: control.enabled && Player.recording
+            running: control.enabled && MainPlayerController.recording
 
             onStopped: {
                 control.contentItem.color = control.color

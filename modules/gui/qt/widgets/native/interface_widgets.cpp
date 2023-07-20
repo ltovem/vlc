@@ -42,6 +42,7 @@
 #include <cassert>
 
 #include <vlc_player.h>
+#include <vlc_input_item.h>
 
 CoverArtLabel::CoverArtLabel( QWidget *parent, qt_intf_t *_p_i )
     : QLabel( parent ), p_intf( _p_i )
@@ -56,7 +57,7 @@ CoverArtLabel::CoverArtLabel( QWidget *parent, qt_intf_t *_p_i )
     setAlignment( Qt::AlignCenter );
 
     QAction *action = new QAction( qtr( "Download cover art" ), this );
-    connect( action, &QAction::triggered, this, &CoverArtLabel::askForUpdate );
+    connect( action, &QAction::triggered, this, &CoverArtLabel::requestArtUpdate );
     addAction( action );
 
     action = new QAction( qtr( "Add cover art from file" ), this );
@@ -120,9 +121,45 @@ void CoverArtLabel::showArtUpdate( input_item_t *_p_item )
     showArtUpdate( url );
 }
 
-void CoverArtLabel::askForUpdate()
+void CoverArtLabel::requestArtUpdate()
 {
-    THEMIM->requestArtUpdate( p_item.get(), true );
+    input_item_t *item = p_item.get();
+
+    if ( !item )
+    {
+        /* default to current item */
+        vlc_player_locker lock{ p_intf->p_player };
+        if ( vlc_player_IsStarted( p_intf->p_player ) )
+            item = vlc_player_GetCurrentMedia( p_intf->p_player );
+    }
+
+    if ( item )
+    {
+        static const struct vlc_metadata_cbs input_preparser_cbs {
+            // on_preparse_ended
+            NULL,
+            // on_art_fetch_ended
+            [](input_item_t *p_item, bool fetched, void *userdata) {
+                const auto data = reinterpret_cast<CoverArtLabel *>(userdata);
+
+                const SharedInputItem sharedInputItem{ p_item };
+
+                PlayerController * const playerController = data->p_intf->p_mainPlayerController;
+
+                QMetaObject::invokeMethod( playerController, [playerController, sharedInputItem, fetched]() {
+                        playerController->onArtFetchEnded( sharedInputItem.get(), fetched );
+                    }, Qt::QueuedConnection );
+            },
+            // on_subtree_added
+            NULL
+        };
+
+        libvlc_MetadataRequest( vlc_object_instance(p_intf),
+                                item,
+                                META_REQUEST_OPTION_FETCH_LOCAL,
+                                &input_preparser_cbs, this, 0, NULL );
+    }
+
 }
 
 void CoverArtLabel::setArtFromFile()

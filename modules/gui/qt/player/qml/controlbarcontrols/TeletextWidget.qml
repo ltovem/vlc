@@ -82,13 +82,13 @@ T.Pane {
 
                 focus: true
 
-                checked: Player.teletextEnabled
+                checked: MainPlayerController.teletextEnabled
 
                 Navigation.parentItem: root
                 Navigation.rightItem: teleTransparencyBtn
                 Navigation.downItem: teleTransparencyBtn
 
-                onCheckedChanged: Player.teletextEnabled = checked
+                onCheckedChanged: MainPlayerController.teletextEnabled = checked
             }
         }
 
@@ -103,7 +103,7 @@ T.Pane {
 
                 enabled: teleActivateBtn.checked
 
-                checked: Player.teletextTransparency
+                checked: MainPlayerController.teletextTransparency
 
                 iconText: VLCIcons.transparency
                 text: I18n.qtr("Teletext transparency")
@@ -114,7 +114,7 @@ T.Pane {
                 Navigation.upItem: teleActivateBtn
                 Navigation.downItem: indexKeyBtn
 
-                onClicked: Player.teletextTransparency = !Player.teletextTransparency
+                onClicked: MainPlayerController.teletextTransparency = !MainPlayerController.teletextTransparency
             }
 
             Widgets.SpinBoxExt{
@@ -146,19 +146,19 @@ T.Pane {
                 onValueChanged: {
                     if (inhibitPageUpdate)
                         return
-                    Player.teletextPage = value
+                    MainPlayerController.teletextPage = value
                 }
 
                 Component.onCompleted: {
-                    value = Player.teletextPage
+                    value = MainPlayerController.teletextPage
                     inhibitPageUpdate = false
                 }
 
                 Connections {
-                    target: Player
+                    target: MainPlayerController
                     onTeletextPageChanged: {
                         telePageNumber.inhibitPageUpdate = true
-                        telePageNumber.value = Player.teletextPage
+                        telePageNumber.value = MainPlayerController.teletextPage
                         telePageNumber.inhibitPageUpdate = false
                     }
                 }
@@ -187,7 +187,7 @@ T.Pane {
                 Navigation.rightItem: redKeyBtn
                 Navigation.upItem: teleTransparencyBtn
 
-                onClicked: Player.teletextPage = Player.TELE_INDEX
+                onClicked: MainPlayerController.teletextPage = MainPlayerController.TELE_INDEX
             }
 
             TeletextColorButton {
@@ -206,7 +206,7 @@ T.Pane {
                 Navigation.rightItem: greenKeyBtn
                 Navigation.upItem: teleTransparencyBtn
 
-                onClicked: Player.teletextPage = Player.TELE_RED
+                onClicked: MainPlayerController.teletextPage = MainPlayerController.TELE_RED
             }
 
             TeletextColorButton {
@@ -225,7 +225,7 @@ T.Pane {
                 Navigation.rightItem: yellowKeyBtn
                 Navigation.upItem: teleTransparencyBtn
 
-                onClicked: Player.teletextPage = Player.TELE_GREEN
+                onClicked: MainPlayerController.teletextPage = MainPlayerController.TELE_GREEN
             }
 
             TeletextColorButton {
@@ -244,7 +244,7 @@ T.Pane {
                 Navigation.rightItem: blueKeyBtn
                 Navigation.upItem: teleTransparencyBtn
 
-                onClicked: Player.teletextPage = Player.TELE_YELLOW
+                onClicked: MainPlayerController.teletextPage = MainPlayerController.TELE_YELLOW
             }
 
             TeletextColorButton {
@@ -262,7 +262,7 @@ T.Pane {
                 Navigation.leftItem: yellowKeyBtn
                 Navigation.upItem: teleTransparencyBtn
 
-                onClicked: Player.teletextPage = Player.TELE_BLUE
+                onClicked: MainPlayerController.teletextPage = MainPlayerController.TELE_BLUE
             }
         }
     }

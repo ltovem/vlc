@@ -99,7 +99,7 @@ Templates.Pane {
             focus: (item && item.enabled)
 
             // NOTE: We display the 'menu button' as a placeholder for the customize dialog.
-            source: (Player.hasMenu || root.paintOnly) ? root._controlPath + "DvdMenuButton.qml"
+            source: (MainPlayerController.hasMenu || root.paintOnly) ? root._controlPath + "DvdMenuButton.qml"
                                                        : ""
 
             Navigation.parentItem: root
@@ -126,7 +126,7 @@ Templates.Pane {
 
             focus: (item && item.enabled && loaderA.focus === false)
 
-            source: (Player.hasPrograms
+            source: (MainPlayerController.hasPrograms
                      &&
                      root.paintOnly === false) ? root._controlPath + "ProgramButton.qml" : ""
 
@@ -148,7 +148,7 @@ Templates.Pane {
 
             focus: (item && item.enabled && (loaderA.focus === false && loaderB.focus === false))
 
-            source: (Player.isTeletextAvailable
+            source: (MainPlayerController.isTeletextAvailable
                      &&
                      root.paintOnly == false) ? _controlPath + "TeletextButton.qml" : ""
 

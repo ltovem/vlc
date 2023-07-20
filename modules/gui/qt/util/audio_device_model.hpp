@@ -34,9 +34,11 @@ class AudioDeviceModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    AudioDeviceModel(vlc_player_t *player, QObject *parent = nullptr);
+    AudioDeviceModel(QObject *parent = nullptr);
 
     ~AudioDeviceModel();
+
+    void setPlayer(vlc_player_t * player);
 
     virtual Qt::ItemFlags flags(const QModelIndex &) const  override;
 
@@ -57,7 +59,7 @@ private:
     QString m_current;
     vlc_player_aout_listener_id* m_player_aout_listener = nullptr;
     audio_output_t* m_aout = nullptr;
-    vlc_player_t *m_player;
+    vlc_player_t *m_player = nullptr;
 };
 
 #endif // AUDIO_DEVICE_MODEL_HPP

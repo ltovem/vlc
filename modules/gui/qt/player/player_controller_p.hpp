@@ -24,18 +24,19 @@
 #include "input_models.hpp"
 #include "util/varchoicemodel.hpp"
 #include "util/shared_input_item.hpp"
+#include "util/vlctick.hpp"
 
 #include <QTimer>
 #include <QUrl>
 
-class PlayerControllerPrivate {
+class PlayerControllerPrivate final {
     Q_DISABLE_COPY(PlayerControllerPrivate)
 public:
     Q_DECLARE_PUBLIC(PlayerController)
     PlayerController * const q_ptr;
 
 public:
-    PlayerControllerPrivate(PlayerController* playercontroller, qt_intf_t* p_intf);
+    PlayerControllerPrivate(PlayerController* playercontroller);
     PlayerControllerPrivate() = delete;
     ~PlayerControllerPrivate();
 
@@ -63,8 +64,9 @@ public:
     }
 
 public:
-    qt_intf_t           *p_intf;
-    vlc_player_t            *m_player;
+    vlc_player_t* m_player = nullptr;
+
+    QString m_inputTitleFormat = "$Z";
 
     //callbacks
     vlc_player_listener_id* m_player_listener = nullptr;
@@ -90,6 +92,8 @@ public:
     bool            m_canRestorePlayback = false;
 
     int             m_capabilities = 0;
+
+    int             m_shortJumpSize = 10;
 
     //tracks
     TrackListModel m_videoTracks;

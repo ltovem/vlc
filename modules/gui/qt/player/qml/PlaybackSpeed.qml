@@ -66,7 +66,7 @@ ColumnLayout {
 
     // Events
 
-    Component.onCompleted: _updateValue(Player.rate)
+    Component.onCompleted: _updateValue(MainPlayerController.rate)
 
     // Function
 
@@ -133,7 +133,7 @@ ColumnLayout {
 
         _update = false
 
-        Player.rate = value
+        MainPlayerController.rate = value
 
         _updateComboBox(value)
 
@@ -147,9 +147,9 @@ ColumnLayout {
     // Connections
 
     Connections {
-        target: Player
+        target: MainPlayerController
 
-        onRateChanged: _updateValue(Player.rate)
+        onRateChanged: _updateValue(MainPlayerController.rate)
     }
 
     // Children

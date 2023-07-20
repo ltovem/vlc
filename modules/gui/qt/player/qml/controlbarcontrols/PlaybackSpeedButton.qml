@@ -47,7 +47,7 @@ ControlButtonPopup {
 
         font.pixelSize: VLCStyle.fontSize_normal
 
-        text: !root.paintOnly ? I18n.qtr("%1x").arg(+Player.rate.toFixed(2))
+        text: !root.paintOnly ? I18n.qtr("%1x").arg(+MainPlayerController.rate.toFixed(2))
                               : I18n.qtr("1x")
 
         // IconToolButton.background is a AnimatedBackground

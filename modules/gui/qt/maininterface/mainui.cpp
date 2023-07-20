@@ -230,7 +230,7 @@ void MainUI::registerQMLTypes()
         qmlRegisterSingletonType<MainCtx>(uri, versionMajor, versionMinor, "MainCtx", SingletonRegisterHelper<MainCtx>::callback);
 
         qmlRegisterSingletonType<NavigationHistory>(uri, versionMajor, versionMinor, "History", SingletonRegisterHelper<NavigationHistory>::callback);
-        qmlRegisterSingletonType<PlayerController>(uri, versionMajor, versionMinor, "Player", SingletonRegisterHelper<PlayerController>::callback);
+        qmlRegisterSingletonType<PlayerController>(uri, versionMajor, versionMinor, "MainPlayerController", SingletonRegisterHelper<PlayerController>::callback);
         qmlRegisterSingletonType<I18n>(uri, versionMajor, versionMinor, "I18n", SingletonRegisterHelper<I18n>::callback);
         qmlRegisterSingletonType<DialogsProvider>(uri, versionMajor, versionMinor, "DialogsProvider", SingletonRegisterHelper<DialogsProvider>::callback);
         qmlRegisterSingletonType<DialogErrorModel>(uri, versionMajor, versionMinor, "DialogErrorModel", SingletonRegisterHelper<DialogErrorModel>::callback);
@@ -273,6 +273,8 @@ void MainUI::registerQMLTypes()
         qmlRegisterUncreatableType<PlaylistItem>(uri, versionMajor, versionMinor, "PlaylistItem", "");
         qmlRegisterType<PlaylistListModel>( uri, versionMajor, versionMinor, "PlaylistListModel" );
         qmlRegisterType<PlaylistController>( uri, versionMajor, versionMinor, "PlaylistController" );
+
+        qmlRegisterType<PlayerController>( uri, versionMajor, versionMinor, "PlayerController" );
 
         qmlRegisterType<AboutModel>( uri, versionMajor, versionMinor, "AboutModel" );
 

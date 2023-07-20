@@ -92,7 +92,7 @@ Item {
         model: MLBookmarkModel {
             id: modelBookmark
 
-            player: Player
+            player: MainPlayerController
 
             ml: MediaLib
         }

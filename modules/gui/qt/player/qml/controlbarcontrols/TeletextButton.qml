@@ -30,7 +30,7 @@ ControlButtonPopup {
 
     // Settings
 
-    enabled: Player.isTeletextAvailable
+    enabled: MainPlayerController.isTeletextAvailable
 
     iconText: VLCIcons.tvtelx
 

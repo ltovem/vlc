@@ -63,8 +63,8 @@ T.Control {
     Accessible.role: Accessible.Button
     Accessible.name: I18n.qtr("Play/Pause")
     Accessible.checkable: true
-    Accessible.checked: Player.playingState !== Player.PLAYING_STATE_PAUSED
-                        && Player.playingState !== Player.PLAYING_STATE_STOPPED
+    Accessible.checked: MainPlayerController.playingState !== MainPlayerController.PLAYING_STATE_PAUSED
+                        && MainPlayerController.playingState !== MainPlayerController.PLAYING_STATE_STOPPED
     Accessible.onPressAction: MainPlaylistController.togglePlayPause()
     Accessible.onToggleAction: MainPlaylistController.togglePlayPause()
 
@@ -129,7 +129,7 @@ T.Control {
             if (!event.isAutoRepeat) {
                 _keyOkPressed = false
                 keyHoldTimer.stop()
-                if (Player.playingState !== Player.PLAYING_STATE_STOPPED)
+                if (MainPlayerController.playingState !== MainPlayerController.PLAYING_STATE_STOPPED)
                     MainPlaylistController.togglePlayPause()
             }
             event.accepted = true
@@ -198,11 +198,11 @@ T.Control {
 
     contentItem: T.Label {
         text: {
-            const state = Player.playingState
+            const state = MainPlayerController.playingState
 
             if (!paintOnly
-                    && state !== Player.PLAYING_STATE_PAUSED
-                    && state !== Player.PLAYING_STATE_STOPPED)
+                    && state !== MainPlayerController.PLAYING_STATE_PAUSED
+                    && state !== MainPlayerController.PLAYING_STATE_STOPPED)
                 return VLCIcons.pause
             else
                 return VLCIcons.play

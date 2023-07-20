@@ -45,11 +45,11 @@ Slider {
 
     property color backgroundColor: theme.bg.primary
 
-    Keys.onRightPressed: Player.jumpFwd()
-    Keys.onLeftPressed: Player.jumpBwd()
+    Keys.onRightPressed: MainPlayerController.jumpFwd()
+    Keys.onLeftPressed: MainPlayerController.jumpBwd()
 
-    Accessible.onIncreaseAction: Player.jumpFwd()
-    Accessible.onDecreaseAction: Player.jumpBwd()
+    Accessible.onIncreaseAction: MainPlayerController.jumpFwd()
+    Accessible.onDecreaseAction: MainPlayerController.jumpBwd()
 
     function showChapterMarks() {
         _isSeekPointsShown = true
@@ -67,7 +67,7 @@ Slider {
 
     Timer {
         id: seekpointTimer
-        running: Player.hasChapters && !control.hovered && _isSeekPointsShown
+        running: MainPlayerController.hasChapters && !control.hovered && _isSeekPointsShown
         interval: 3000
         onTriggered: control._isSeekPointsShown = false
     }
@@ -84,12 +84,12 @@ Slider {
             let _text
 
             if (sliderRectMouseArea.containsMouse)
-                _text = Player.length.scale(pos.x / control.width).formatHMS()
+                _text = MainPlayerController.length.scale(pos.x / control.width).formatHMS()
             else
-                _text = Player.time.formatHMS()
+                _text = MainPlayerController.time.formatHMS()
 
-            if (Player.hasChapters)
-                _text += " - " + Player.chapters.getNameAtPosition(control._tooltipPosition)
+            if (MainPlayerController.hasChapters)
+                _text += " - " + MainPlayerController.chapters.getNameAtPosition(control._tooltipPosition)
 
             return _text
         }
@@ -126,13 +126,13 @@ Slider {
             position = Helpers.clamp(position, 0., 1.)
             control.value = position
             if (!forcePrecise) {
-                const chapter = Player.chapters.getClosestChapterFromPos(position, threshold)
+                const chapter = MainPlayerController.chapters.getClosestChapterFromPos(position, threshold)
                 if (chapter !== -1) {
-                    Player.chapters.selectChapter(chapter)
+                    MainPlayerController.chapters.selectChapter(chapter)
                     return
                 }
             }
-            Player.position = position
+            MainPlayerController.position = position
         }
 
         Util.FSMState {
@@ -176,7 +176,7 @@ Slider {
             id: fsmHeldWrongInput
 
             function enter() {
-                fsm._setPositionFromValue(Player.position)
+                fsm._setPositionFromValue(MainPlayerController.position)
             }
 
             transitions: ({
@@ -191,12 +191,12 @@ Slider {
     }
 
     Connections {
-        target: Player
-        onPositionChanged: fsm.playerUpdatePosition(Player.position)
+        target: MainPlayerController
+        onPositionChanged: fsm.playerUpdatePosition(MainPlayerController.position)
         onInputChanged: fsm.inputChanged()
     }
 
-    Component.onCompleted: value = Player.position
+    Component.onCompleted: value = MainPlayerController.position
 
     implicitHeight: control.barHeight
     height: implicitHeight
@@ -212,7 +212,7 @@ Slider {
 
         Rectangle {
             id: sliderRect
-            visible: !Player.hasChapters
+            visible: !MainPlayerController.hasChapters
             color: control.backgroundColor
             anchors.fill: parent
             radius: implicitHeight
@@ -234,11 +234,11 @@ Slider {
             onPositionChanged: fsm.moveControl(mouse.x / width, mouse.modifiers === Qt.ShiftModifier)
 
             onEntered: {
-                if(Player.hasChapters)
+                if(MainPlayerController.hasChapters)
                     control._isSeekPointsShown = true
             }
             onExited: {
-                if(Player.hasChapters)
+                if(MainPlayerController.hasChapters)
                     seekpointTimer.restart()
             }
         }
@@ -249,9 +249,9 @@ Slider {
             anchors.left: parent.left
             anchors.right: parent.right
             height: control.barHeight
-            visible: Player.hasChapters
+            visible: MainPlayerController.hasChapters
 
-            model: Player.chapters
+            model: MainPlayerController.chapters
             Item {
                 Rectangle {
                     id: seekpointsRect
@@ -335,7 +335,7 @@ Slider {
         Rectangle {
             id: progressRect
             width: control.visualPosition * parent.width
-            visible: !Player.hasChapters
+            visible: !MainPlayerController.hasChapters
             color: theme.fg.primary
             height: control.barHeight
             radius: control._seekPointsRadius
@@ -367,7 +367,7 @@ Slider {
                 },
                 State {
                     name: "buffering not started"
-                    when: control.visible && Player.buffering === 0
+                    when: control.visible && MainPlayerController.buffering === 0
                     PropertyChanges {
                         target: bufferRect
                         width: bufferAnimWidth
@@ -378,10 +378,10 @@ Slider {
                 },
                 State {
                     name: "time to start playing known"
-                    when: control.visible && Player.buffering < 1
+                    when: control.visible && MainPlayerController.buffering < 1
                     PropertyChanges {
                         target: bufferRect
-                        width: Player.buffering * parent.width
+                        width: MainPlayerController.buffering * parent.width
                         visible: true
                         x: 0
                         animateLoading: false
@@ -389,10 +389,10 @@ Slider {
                 },
                 State {
                     name: "playing from buffer"
-                    when: control.visible && Player.buffering === 1
+                    when: control.visible && MainPlayerController.buffering === 1
                     PropertyChanges {
                         target: bufferRect
-                        width: Player.buffering * parent.width
+                        width: MainPlayerController.buffering * parent.width
                         visible: false
                         x: 0
                         animateLoading: false
@@ -476,7 +476,7 @@ Slider {
         ]
 
         state: (control.hovered || control.activeFocus)
-               ? ((control._currentChapterHovered || (Player.hasChapters && fsm._state == fsm.fsmHeld)) ? "visibleLarge" : "visible")
+               ? ((control._currentChapterHovered || (MainPlayerController.hasChapters && fsm._state == fsm.fsmHeld)) ? "visibleLarge" : "visible")
                : "hidden"
     }
 }

@@ -144,9 +144,9 @@ T.ItemDelegate {
             Accessible.name: I18n.qtr("Cover")
             Accessible.description: {
                 if (model.isCurrent) {
-                    if (Player.playingState === Player.PLAYING_STATE_PLAYING)
+                    if (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PLAYING)
                         return I18n.qtr("Playing")
-                    else if (Player.playingState === Player.PLAYING_STATE_PAUSED)
+                    else if (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PAUSED)
                         return I18n.qtr("Paused")
                 }
                 return I18n.qtr("Media cover")
@@ -183,9 +183,9 @@ T.ItemDelegate {
                 visible: (model.isCurrent && text !== "")
                 color: theme.accent
                 text: {
-                    if (Player.playingState === Player.PLAYING_STATE_PLAYING)
+                    if (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PLAYING)
                         return VLCIcons.volume_high
-                    else if (Player.playingState === Player.PLAYING_STATE_PAUSED)
+                    else if (MainPlayerController.playingState === MainPlayerController.PLAYING_STATE_PAUSED)
                         return VLCIcons.pause
                     else
                         return ""

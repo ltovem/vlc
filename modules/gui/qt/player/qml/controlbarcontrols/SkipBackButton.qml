@@ -26,9 +26,9 @@ import "qrc:///style/"
 Widgets.IconControlButton {
     id: stepBackBtn
 
-    enabled: Player.seekable
+    enabled: MainPlayerController.seekable
 
     iconText: VLCIcons.skip_back
-    onClicked: Player.jumpBwd()
+    onClicked: MainPlayerController.jumpBwd()
     text: I18n.qtr("Step back")
 }
