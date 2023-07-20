@@ -157,16 +157,16 @@ static void lavc_Frame8PaletteCopy( video_palette_t *dst, const uint8_t *src )
         // we want RGBA byte order storage
 #ifdef WORDS_BIGENDIAN
         // AV mem is ARGB in byte order
-        dst->palette[i][0] = srcp[1];
-        dst->palette[i][1] = srcp[2];
-        dst->palette[i][2] = srcp[3];
-        dst->palette[i][3] = srcp[0];
+        dst->palette[i].rgba.r = srcp[1];
+        dst->palette[i].rgba.g = srcp[2];
+        dst->palette[i].rgba.b = srcp[3];
+        dst->palette[i].rgba.a = srcp[0];
 #else
         // AV mem is BGRA in byte order
-        dst->palette[i][0] = srcp[2];
-        dst->palette[i][1] = srcp[1];
-        dst->palette[i][2] = srcp[0];
-        dst->palette[i][3] = srcp[3];
+        dst->palette[i].rgba.r = srcp[2];
+        dst->palette[i].rgba.g = srcp[1];
+        dst->palette[i].rgba.b = srcp[0];
+        dst->palette[i].rgba.a = srcp[3];
 #endif
         srcp += 4;
     }
@@ -1312,10 +1312,10 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
                 uint8_t *pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
                 if (pal) {
                     const video_palette_t *p_palette = p_dec->fmt_in->video.p_palette;
-                    for (size_t i=0; i<sizeof(p_palette->palette[0]); i++)
+                    for (size_t i=0; i<ARRAY_SIZE(p_palette->palette); i++)
                     {
-                        memcpy(pal, p_palette->palette[i], ARRAY_SIZE(p_palette->palette));
-                        pal += ARRAY_SIZE(p_palette->palette);
+                        memcpy(pal, &p_palette->palette[i].rgba, 4);
+                        pal += 4;
                     }
                     p_sys->palette_sent = true;
                 }

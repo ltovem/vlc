@@ -398,13 +398,13 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
     {
         vlc_palette_color pi = TO_PALETTE_COLOR( 0, 0x80, 0x80,
                                                  (int)pi_gamma[i] * i_alpha / 255);
-        memcpy( fmt.p_palette->palette[i],&pi, 4 );
+        fmt.p_palette->palette[i] = pi;
     }
     for( i = 8; i < fmt.p_palette->i_entries; i++ )
     {
         vlc_palette_color pi = TO_PALETTE_COLOR( i * 16 * i_y / 256, i_u, i_v,
                                                  (int)pi_gamma[i] * i_alpha / 255);
-        memcpy( fmt.p_palette->palette[i], &pi, 4 );
+        fmt.p_palette->palette[i] = pi;
     }
 
     p_dst = p_region->p_picture->Y_PIXELS;

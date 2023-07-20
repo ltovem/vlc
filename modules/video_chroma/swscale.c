@@ -636,15 +636,15 @@ static void Convert( filter_t *p_filter, struct SwsContext *ctx,
             {
                 // we want ARGB in host endianess from RGBA in byte order
 #ifdef WORDS_BIGENDIAN
-                dstp[0] = srcpal->palette[i][3];
-                dstp[1] = srcpal->palette[i][0];
-                dstp[2] = srcpal->palette[i][1];
-                dstp[3] = srcpal->palette[i][2];
+                dstp[0] = srcpal->palette[i].rgba.a;
+                dstp[1] = srcpal->palette[i].rgba.r;
+                dstp[2] = srcpal->palette[i].rgba.g;
+                dstp[3] = srcpal->palette[i].rgba.b;
 #else
-                dstp[0] = srcpal->palette[i][2];
-                dstp[1] = srcpal->palette[i][1];
-                dstp[2] = srcpal->palette[i][0];
-                dstp[3] = srcpal->palette[i][3];
+                dstp[0] = srcpal->palette[i].rgba.b;
+                dstp[1] = srcpal->palette[i].rgba.g;
+                dstp[2] = srcpal->palette[i].rgba.r;
+                dstp[3] = srcpal->palette[i].rgba.a;
 #endif
                 dstp += 4;
             }

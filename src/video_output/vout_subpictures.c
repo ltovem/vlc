@@ -907,15 +907,15 @@ static void SpuRenderRegion(spu_t *spu,
         new_palette.i_entries = 4;
         for (int i = 0; i < 4; i++)
         {
-            memcpy(new_palette.palette[i], &sys->palette.palette[i], 4);
-            b_opaque |= (new_palette.palette[i][3] > 0x00);
+            new_palette.palette[i] = sys->palette.palette[i];
+            b_opaque |= (new_palette.palette[i].rgba.a > 0x00);
         }
 
         if (old_palette->i_entries == new_palette.i_entries) {
             for (int i = 0; i < old_palette->i_entries; i++)
             {
-                changed_palette |= memcmp(old_palette->palette[i], new_palette.palette[i], 4);
-                b_old_opaque |= (old_palette->palette[i][3] > 0x00);
+                changed_palette |= memcmp(&old_palette->palette[i], &new_palette.palette[i], 4);
+                b_old_opaque |= (old_palette->palette[i].rgba.a > 0x00);
             }
         } else {
             changed_palette = true;
@@ -928,9 +928,9 @@ static void SpuRenderRegion(spu_t *spu,
             if( !b_old_opaque )
             {
                 /* replace with new one and fixed alpha */
-                old_palette->palette[1][3] = 0x80;
-                old_palette->palette[2][3] = 0x80;
-                old_palette->palette[3][3] = 0x80;
+                old_palette->palette[1].rgba.a = 0x80;
+                old_palette->palette[2].rgba.a = 0x80;
+                old_palette->palette[3].rgba.a = 0x80;
             }
             /* keep old visible palette */
             else changed_palette = false;

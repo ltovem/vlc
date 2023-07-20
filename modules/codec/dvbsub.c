@@ -1603,10 +1603,7 @@ static subpicture_t *render( decoder_t *p_dec )
         p_color = ( p_region->i_depth == 1 ) ? p_clut->c_2b :
             ( ( p_region->i_depth == 2 ) ? p_clut->c_4b : p_clut->c_8b );
         for( j = 0; j < fmt.p_palette->i_entries; j++ )
-        {
-            vlc_palette_color pi = TO_PALETTE_COLOR(&p_color[j]);
-            memcpy(fmt.p_palette->palette[j], &pi, 4);
-        }
+            fmt.p_palette->palette[j] = TO_PALETTE_COLOR(&p_color[j]);
 
         p_spu_region = subpicture_region_New( &fmt );
         fmt.p_palette = NULL; /* was stack var */
@@ -1816,18 +1813,17 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
                 a = p_region->p_picture->p[3].p_pixels[i];
                 for( j = 0; j < p_fmt->p_palette->i_entries; j++ )
                 {
-                    if( abs((int)p_fmt->p_palette->palette[j][0] - (int)y) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][1] - (int)u) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][2] - (int)v) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][3] - (int)a) <= i_tolerance / 2 )
+                    if( abs((int)p_fmt->p_palette->palette[j].yuva.y - (int)y) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.u - (int)u) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.v - (int)v) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.a - (int)a) <= i_tolerance / 2 )
                     {
                         break;
                     }
                 }
                 if( j == p_fmt->p_palette->i_entries )
                 {
-                    vlc_palette_color pi = YUVA_TO_PALETTE_COLOR(y,u,v,a);
-                    memcpy(p_fmt->p_palette->palette[j], &pi, 4);
+                    p_fmt->p_palette->palette[j] = YUVA_TO_PALETTE_COLOR(y,u,v,a);
                     p_fmt->p_palette->i_entries++;
                 }
                 if( p_fmt->p_palette->i_entries >= i_max_entries )
@@ -1896,10 +1892,10 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
                 {
                     int i_dist = 0;
 
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][0] - y);
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][1] - u);
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][2] - v);
-                    i_dist += 2 * abs((int)p_fmt->p_palette->palette[j][3] - a);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.y - y);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.u - u);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.v - v);
+                    i_dist += 2 * abs((int)p_fmt->p_palette->palette[j].yuva.a - a);
 
                     if( i_dist < i_mindist )
                     {
@@ -1915,10 +1911,10 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
 #ifdef RANDOM_DITHERING
                 i_seed = (i_seed * 0x1283837) ^ 0x789479 ^ (i_seed >> 13);
 #else
-                i_ydelta = y - (int)p_fmt->p_palette->palette[i_best][0];
-                i_udelta = u - (int)p_fmt->p_palette->palette[i_best][1];
-                i_vdelta = v - (int)p_fmt->p_palette->palette[i_best][2];
-                i_adelta = a - (int)p_fmt->p_palette->palette[i_best][3];
+                i_ydelta = y - (int)p_fmt->p_palette->palette[i_best].yuva.y;
+                i_udelta = u - (int)p_fmt->p_palette->palette[i_best].yuva.u;
+                i_vdelta = v - (int)p_fmt->p_palette->palette[i_best].yuva.v;
+                i_adelta = a - (int)p_fmt->p_palette->palette[i_best].yuva.a;
                 pi_delta[ n * 4 ] = i_ydelta * 3 / 8;
                 pi_delta[ n * 4 + 1 ] = i_udelta * 3 / 8;
                 pi_delta[ n * 4 + 2 ] = i_vdelta * 3 / 8;
@@ -1936,7 +1932,7 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
 
         /* pad palette */
         for( i = p_fmt->p_palette->i_entries; i < i_max_entries; i++ )
-            memset(p_fmt->p_palette->palette[i], 0, sizeof(p_fmt->p_palette->palette[i]));
+            memset(&p_fmt->p_palette->palette[i], 0, sizeof(p_fmt->p_palette->palette[i]));
         p_fmt->p_palette->i_entries = i_max_entries;
 #ifdef DEBUG_DVBSUB1
         /* p_enc not valid here */
@@ -2164,7 +2160,7 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
     {
         pal.i_entries = 4;
         for( int i = 0; i < 4; i++ )
-            memset(pal.palette[i], 0, sizeof(pal.palette[i]));
+            memset(&pal.palette[i], 0, sizeof(pal.palette[i]));
         p_pal = &pal;
     }
 
@@ -2185,11 +2181,11 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
         bs_write( s, 1, p_pal->i_entries == 256 ); /* 8bit/entry flag */
         bs_write( s, 4, 0 ); /* Reserved */
         bs_write( s, 1, 1 ); /* Full range flag */
-        bs_write( s, 8, p_pal->palette[i][3] ?  /* Y value */
-                  (p_pal->palette[i][0] ? p_pal->palette[i][0] : 16) : 0 );
-        bs_write( s, 8, p_pal->palette[i][1] ); /* Cr value */
-        bs_write( s, 8, p_pal->palette[i][2] ); /* Cb value */
-        bs_write( s, 8, 0xff - p_pal->palette[i][3] ); /* T value */
+        bs_write( s, 8, p_pal->palette[i].yuva.a ?  /* Y value */
+                  (p_pal->palette[i].yuva.y ? p_pal->palette[i].yuva.y : 16) : 0 );
+        bs_write( s, 8, p_pal->palette[i].yuva.u ); /* Cr value */
+        bs_write( s, 8, p_pal->palette[i].yuva.v ); /* Cb value */
+        bs_write( s, 8, 0xff - p_pal->palette[i].yuva.a ); /* T value */
     }
 }
 
@@ -2222,7 +2218,7 @@ static void encode_region_composition( encoder_t *p_enc, bs_t *s,
 
             for( i_bg = 0; i_bg < p_pal->i_entries; i_bg++ )
             {
-                if( !p_pal->palette[i_bg][3] ) break;
+                if( !p_pal->palette[i_bg].yuva.a ) break;
             }
         }
 

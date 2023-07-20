@@ -155,7 +155,7 @@ static void ParsePXCTLI( decoder_t *p_dec, const subpicture_data_t *p_spu_data,
                 int i_index = VIDEO_PALETTE_COLORS_MAX;
                 for( int k = p_palette->i_entries; k > 0; k-- )
                 {
-                    if( !memcmp( p_palette->palette[k], &yuvaentry, 4 ) )
+                    if( !memcmp( &p_palette->palette[k], &yuvaentry, 4 ) )
                     {
                         i_index = i;
                         break;
@@ -171,7 +171,7 @@ static void ParsePXCTLI( decoder_t *p_dec, const subpicture_data_t *p_spu_data,
                         return;
                     }
                     i_index = p_palette->i_entries++;
-                    memcpy( p_palette->palette[ i_index ], &yuvaentry, 4 );
+                    memcpy( &p_palette->palette[ i_index ], &yuvaentry, 4 );
                 }
                 index_map[j] = i_index;
             }
@@ -861,11 +861,8 @@ static int Render( decoder_t *p_dec, subpicture_t *p_spu,
     fmt.p_palette = &palette;
     fmt.p_palette->i_entries = 4;
     for( i_x = 0; i_x < fmt.p_palette->i_entries; i_x++ )
-    {
-        vlc_palette_color pi = TO_PALETTE_COLOR( p_spu_data->pi_yuv[i_x],
-                                                 p_spu_data->pi_alpha[i_x] );
-        memcpy( fmt.p_palette->palette[i_x], &pi, 4 );
-    }
+        fmt.p_palette->palette[i_x] = TO_PALETTE_COLOR( p_spu_data->pi_yuv[i_x],
+                                                        p_spu_data->pi_alpha[i_x] );
 
     p_spu->p_region = subpicture_region_New( &fmt );
     if( !p_spu->p_region )

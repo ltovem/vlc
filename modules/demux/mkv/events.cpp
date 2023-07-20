@@ -322,9 +322,8 @@ void event_thread_t::HandleMouseEvent( EventInfo const& event )
                     uint32_t i_yuv = 0xFF;//p_sys->clut[(hl.palette>>(16+i*4))&0x0f];
                     uint8_t i_alpha = (i_palette>>(i*4))&0x0f;
                     i_alpha = i_alpha == 0xf ? 0xff : i_alpha << 4;
-                    vlc_palette_color pi = TO_PALETTE_COLOR(i_yuv, i_alpha);
 
-                    memcpy(spu_hl.palette.palette[i], &pi, 4);
+                    spu_hl.palette.palette[i] = TO_PALETTE_COLOR(i_yuv, i_alpha);
                 }
 
                 /* TODO: only control relevant SPU_ES given who fired the event */

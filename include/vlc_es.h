@@ -53,7 +53,7 @@ typedef union
 struct video_palette_t
 {
     int i_entries;                         /**< number of in-use palette entries */
-    uint8_t palette[VIDEO_PALETTE_COLORS_MAX][4];  /**< 4-byte RGBA/YUVA palette */
+    vlc_palette_color palette[VIDEO_PALETTE_COLORS_MAX];  /**< 4-byte RGBA/YUVA palette */
 };
 
 /**

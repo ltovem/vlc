@@ -1967,10 +1967,7 @@ static void blurayDrawOverlay(demux_t *p_demux, const BD_OVERLAY* const eventov)
     if (eventov->palette) {
         p_reg->fmt.p_palette->i_entries = 256;
         for (size_t i = 0; i < 256; ++i)
-        {
-            vlc_palette_color pi = TO_PALETTE_COLOR(&eventov->palette[i]);
-            memcpy(p_reg->fmt.p_palette->palette[i], &pi, 4);
-        }
+            p_reg->fmt.p_palette->palette[i] = TO_PALETTE_COLOR(&eventov->palette[i]);
     }
 
     vlc_mutex_unlock(&ov->lock);

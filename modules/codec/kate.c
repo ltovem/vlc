@@ -701,10 +701,7 @@ static void CreateKatePalette( video_palette_t *fmt_palette, const kate_palette 
 
     fmt_palette->i_entries = palette->ncolors;
     for( n=0; n<palette->ncolors; ++n )
-    {
-        vlc_palette_color pi = TO_PALETTE_COLOR(&palette->colors[n]);
-        memcpy(fmt_palette->palette[n], &pi, 4);
-    }
+        fmt_palette->palette[n] = TO_PALETTE_COLOR(&palette->colors[n]);
 }
 
 static void SetupText( decoder_t *p_dec, subpicture_t *p_spu, const kate_event *ev )

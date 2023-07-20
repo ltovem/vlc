@@ -86,8 +86,17 @@ static inline void SetYUVPPixel(picture_t *picture, int x, int y, int value)
     picture->p->p_pixels[y * picture->p->i_pitch + x] = value;
 }
 
-#define TO_PALETTE_COLOR(col) \
-    { (col)->y, (col)->u, (col)->v, (col)->alpha }
+static inline vlc_palette_color TO_PALETTE_COLOR(const scte27_color_t *col)
+{
+    return (vlc_palette_color) {
+        .yuva = {
+            .y = col->y,
+            .u = col->u,
+            .v = col->v,
+            .a = col->alpha
+        }
+    };
+}
 
 static subpicture_region_t *DecodeSimpleBitmap(decoder_t *dec,
                                                const uint8_t *data, int size)

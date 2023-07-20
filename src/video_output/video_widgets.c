@@ -50,7 +50,7 @@
 #define COL_FILL_SHADE  3
 
 #define SET_PALETTE_COLOR(id, rgb, alpha) \
-    memcpy( palette.palette[id], &((vlc_palette_color) { .yuva = { HEX2YUV(rgb), alpha } }), 4);
+    palette.palette[id] = (vlc_palette_color) { .yuva = { HEX2YUV(rgb), alpha } };
 
 /**
  * Draws a rectangle at the given position in the region.

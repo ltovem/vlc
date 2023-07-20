@@ -127,10 +127,10 @@ static subpicture_region_t * vout_OSDEpgSlider(int x, int y,
     video_palette_t palette = {
         .i_entries = 4,
         .palette = {
-            [0] = { HEX2YUV(RGB_COLOR1), 0x20 }, /* Bar fill remain/background */
-            [1] = { HEX2YUV(0x00ff00), 0xff },
-            [2] = { HEX2YUV(RGB_COLOR1), 0xC0 }, /* Bar fill */
-            [3] = { HEX2YUV(0xffffff), 0xff }, /* Bar outline */
+            [0] = (vlc_palette_color) { .yuva = { HEX2YUV(RGB_COLOR1), 0x20 } }, /* Bar fill remain/background */
+            [1] = (vlc_palette_color) { .yuva = { HEX2YUV(0x00ff00),   0xff } },
+            [2] = (vlc_palette_color) { .yuva = { HEX2YUV(RGB_COLOR1), 0xC0 } }, /* Bar fill */
+            [3] = (vlc_palette_color) { .yuva = { HEX2YUV(0xffffff),   0xff } }, /* Bar outline */
         },
     };
 
