@@ -40,6 +40,16 @@
 #define VIDEO_PALETTE_COLORS_MAX 256
 #define VIDEO_PALETTE_CLUT_COUNT 16
 
+typedef union
+{
+    struct {
+        uint8_t r,g,b,a;
+    } rgba;
+    struct {
+        uint8_t y,u,v,a;
+    } yuva;
+} vlc_palette_color; /**< 4-byte RGBA/YUVA palette in  byte order */
+
 struct video_palette_t
 {
     int i_entries;                         /**< number of in-use palette entries */
