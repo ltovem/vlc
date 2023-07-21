@@ -1472,6 +1472,15 @@ static void free_all( decoder_t *p_dec )
     p_sys->p_page = NULL;
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(const dvbsub_color_t *col)
+{
+    return (vlc_palette_color) {
+        .yuva = {
+            .y = col->Y, .u = col->Cb, .v = col->Cr, .a = (0xff - col->T)
+        }
+    };
+}
+
 static subpicture_t *render( decoder_t *p_dec )
 {
     decoder_sys_t *p_sys = p_dec->p_sys;
@@ -1595,10 +1604,8 @@ static subpicture_t *render( decoder_t *p_dec )
             ( ( p_region->i_depth == 2 ) ? p_clut->c_4b : p_clut->c_8b );
         for( j = 0; j < fmt.p_palette->i_entries; j++ )
         {
-            fmt.p_palette->palette[j][0] = p_color[j].Y;
-            fmt.p_palette->palette[j][1] = p_color[j].Cb; /* U == Cb */
-            fmt.p_palette->palette[j][2] = p_color[j].Cr; /* V == Cr */
-            fmt.p_palette->palette[j][3] = 0xff - p_color[j].T;
+            vlc_palette_color pi = TO_PALETTE_COLOR(&p_color[j]);
+            memcpy(fmt.p_palette->palette[j], &pi, 4);
         }
 
         p_spu_region = subpicture_region_New( &fmt );
@@ -1733,6 +1740,11 @@ static int OpenEncoder( vlc_object_t *p_this )
     return VLC_SUCCESS;
 }
 
+static inline vlc_palette_color YUVA_TO_PALETTE_COLOR(uint8_t y, uint8_t u, uint8_t v, uint8_t a)
+{
+    return (vlc_palette_color) { .yuva = { .y = y, .u = u, .v = v, .a = a } };
+}
+
 /* FIXME: this routine is a hack to convert VLC_CODEC_YUVA
  *        into VLC_CODEC_YUVP
  */
@@ -1814,10 +1826,8 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
                 }
                 if( j == p_fmt->p_palette->i_entries )
                 {
-                    p_fmt->p_palette->palette[j][0] = y;
-                    p_fmt->p_palette->palette[j][1] = u;
-                    p_fmt->p_palette->palette[j][2] = v;
-                    p_fmt->p_palette->palette[j][3] = a;
+                    vlc_palette_color pi = YUVA_TO_PALETTE_COLOR(y,u,v,a);
+                    memcpy(p_fmt->p_palette->palette[j], &pi, 4);
                     p_fmt->p_palette->i_entries++;
                 }
                 if( p_fmt->p_palette->i_entries >= i_max_entries )

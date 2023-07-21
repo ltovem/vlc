@@ -337,6 +337,11 @@ error:
     return VLC_ENOMEM;
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(uint8_t y, uint8_t u, uint8_t v, uint8_t a)
+{
+    return (vlc_palette_color) { .yuva = { .y = y, .u = u, .v = v, .a = a } };
+}
+
 /*****************************************************************************
  * RenderYUVP: place string in picture
  *****************************************************************************
@@ -391,17 +396,15 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
     fmt.p_palette->i_entries = 16;
     for( i = 0; i < 8; i++ )
     {
-        fmt.p_palette->palette[i][0] = 0;
-        fmt.p_palette->palette[i][1] = 0x80;
-        fmt.p_palette->palette[i][2] = 0x80;
-        fmt.p_palette->palette[i][3] = (int)pi_gamma[i] * i_alpha / 255;
+        vlc_palette_color pi = TO_PALETTE_COLOR( 0, 0x80, 0x80,
+                                                 (int)pi_gamma[i] * i_alpha / 255);
+        memcpy( fmt.p_palette->palette[i],&pi, 4 );
     }
     for( i = 8; i < fmt.p_palette->i_entries; i++ )
     {
-        fmt.p_palette->palette[i][0] = i * 16 * i_y / 256;
-        fmt.p_palette->palette[i][1] = i_u;
-        fmt.p_palette->palette[i][2] = i_v;
-        fmt.p_palette->palette[i][3] = (int)pi_gamma[i] * i_alpha / 255;
+        vlc_palette_color pi = TO_PALETTE_COLOR( i * 16 * i_y / 256, i_u, i_v,
+                                                 (int)pi_gamma[i] * i_alpha / 255);
+        memcpy( fmt.p_palette->palette[i], &pi, 4 );
     }
 
     p_dst = p_region->p_picture->Y_PIXELS;

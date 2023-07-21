@@ -229,6 +229,16 @@ void event_thread_t::HandleKeyEvent( EventInfo const& ev )
     }
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(uint32_t i_yuv, uint8_t i_alpha) // same as dvdnav
+{
+    return (vlc_palette_color) { .yuva = {
+        (uint8_t)((i_yuv >> 16) & 0xff),
+        (uint8_t)((i_yuv >>  0) & 0xff),
+        (uint8_t)((i_yuv >>  8) & 0xff),
+        i_alpha
+    } };
+}
+
 void event_thread_t::HandleMouseEvent( EventInfo const& event )
 {
     demux_sys_t* p_sys = (demux_sys_t*)p_demux->p_sys;
@@ -312,11 +322,9 @@ void event_thread_t::HandleMouseEvent( EventInfo const& event )
                     uint32_t i_yuv = 0xFF;//p_sys->clut[(hl.palette>>(16+i*4))&0x0f];
                     uint8_t i_alpha = (i_palette>>(i*4))&0x0f;
                     i_alpha = i_alpha == 0xf ? 0xff : i_alpha << 4;
+                    vlc_palette_color pi = TO_PALETTE_COLOR(i_yuv, i_alpha);
 
-                    spu_hl.palette.palette[i][0] = (i_yuv >> 16) & 0xff;
-                    spu_hl.palette.palette[i][1] = (i_yuv >> 0) & 0xff;
-                    spu_hl.palette.palette[i][2] = (i_yuv >> 8) & 0xff;
-                    spu_hl.palette.palette[i][3] = i_alpha;
+                    memcpy(spu_hl.palette.palette[i], &pi, 4);
                 }
 
                 /* TODO: only control relevant SPU_ES given who fired the event */

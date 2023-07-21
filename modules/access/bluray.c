@@ -1882,6 +1882,11 @@ static void blurayInitOverlay(demux_t *p_demux, int plane, int width, int height
     p_sys->bdj.p_overlays[plane] = ov;
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(const BD_PG_PALETTE_ENTRY *col)
+{
+    return (vlc_palette_color) { .yuva = { col->Y, col->Cb, col->Cr, col->T } };
+}
+
 /*
  * This will draw to the overlay by adding a region to our region list
  * This will have to be copied to the subpicture used to render the overlay.
@@ -1961,11 +1966,10 @@ static void blurayDrawOverlay(demux_t *p_demux, const BD_OVERLAY* const eventov)
 
     if (eventov->palette) {
         p_reg->fmt.p_palette->i_entries = 256;
-        for (int i = 0; i < 256; ++i) {
-            p_reg->fmt.p_palette->palette[i][0] = eventov->palette[i].Y;
-            p_reg->fmt.p_palette->palette[i][1] = eventov->palette[i].Cb;
-            p_reg->fmt.p_palette->palette[i][2] = eventov->palette[i].Cr;
-            p_reg->fmt.p_palette->palette[i][3] = eventov->palette[i].T;
+        for (size_t i = 0; i < 256; ++i)
+        {
+            vlc_palette_color pi = TO_PALETTE_COLOR(&eventov->palette[i]);
+            memcpy(p_reg->fmt.p_palette->palette[i], &pi, 4);
         }
     }
 

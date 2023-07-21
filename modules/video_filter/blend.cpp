@@ -495,20 +495,28 @@ struct convertYuvpToYuva8 : public convertYuvpToAny {
         palette = *src->p_palette;
     }
 };
+
+static inline vlc_palette_color Yuv2Rgb(const uint8_t packed_yuva[8])
+{
+    int r, g, b;
+    yuv_to_rgb(&r, &g, &b,
+               packed_yuva[0],
+               packed_yuva[1],
+               packed_yuva[2]);
+    return (vlc_palette_color) {
+        .rgba {
+            (uint8_t)r, (uint8_t)g, (uint8_t)b, packed_yuva[3]
+        },
+    };
+}
+
 struct convertYuvpToRgba : public convertYuvpToAny {
     convertYuvpToRgba(const video_format_t *, const video_format_t *src)
     {
         const video_palette_t *p = src->p_palette;
         for (int i = 0; i < p->i_entries; i++) {
-            int r, g, b;
-            yuv_to_rgb(&r, &g, &b,
-                       p->palette[i][0],
-                       p->palette[i][1],
-                       p->palette[i][2]);
-            palette.palette[i][0] = r;
-            palette.palette[i][1] = g;
-            palette.palette[i][2] = b;
-            palette.palette[i][3] = p->palette[i][3];
+            vlc_palette_color pi = Yuv2Rgb(palette.palette[i]);
+            memcpy(palette.palette[i], &pi, 4);
         }
     }
 };

@@ -86,6 +86,9 @@ static inline void SetYUVPPixel(picture_t *picture, int x, int y, int value)
     picture->p->p_pixels[y * picture->p->i_pitch + x] = value;
 }
 
+#define TO_PALETTE_COLOR(col) \
+    { (col)->y, (col)->u, (col)->v, (col)->alpha }
+
 static subpicture_region_t *DecodeSimpleBitmap(decoder_t *dec,
                                                const uint8_t *data, int size)
 {
@@ -222,30 +225,10 @@ static subpicture_region_t *DecodeSimpleBitmap(decoder_t *dec,
     video_palette_t palette = {
         .i_entries = 4,
         .palette = {
-            [COLOR_FRAME] = {
-                frame_color.y,
-                frame_color.u,
-                frame_color.v,
-                frame_color.alpha
-            },
-            [COLOR_CHARACTER] = {
-                character_color.y,
-                character_color.u,
-                character_color.v,
-                character_color.alpha
-            },
-            [COLOR_OUTLINE] = {
-                outline_color.y,
-                outline_color.u,
-                outline_color.v,
-                outline_color.alpha
-            },
-            [COLOR_SHADOW] = {
-                shadow_color.y,
-                shadow_color.u,
-                shadow_color.v,
-                shadow_color.alpha
-            },
+            [COLOR_FRAME]     = TO_PALETTE_COLOR(&frame_color),
+            [COLOR_CHARACTER] = TO_PALETTE_COLOR(&character_color),
+            [COLOR_OUTLINE]   = TO_PALETTE_COLOR(&outline_color),
+            [COLOR_SHADOW]    = TO_PALETTE_COLOR(&shadow_color),
         },
     };
     video_format_t fmt = {
