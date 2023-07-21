@@ -201,8 +201,8 @@ FocusScope {
         }
 
         onMousePressed: {
-            if (!Player.isInteractive)
-                mainPlaylistController.togglePlayPause()
+            if (MainCtx.pauseOnClick && !Player.isInteractive)
+                MainPlaylistController.togglePlayPause()
         }
     }
 

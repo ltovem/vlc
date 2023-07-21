@@ -127,6 +127,7 @@ class MainCtx : public QObject
     Q_PROPERTY(bool useGlobalShortcuts READ getUseGlobalShortcuts WRITE setUseGlobalShortcuts NOTIFY useGlobalShortcutsChanged FINAL)
     Q_PROPERTY(int maxVolume READ maxVolume NOTIFY maxVolumeChanged FINAL)
     Q_PROPERTY(float safeArea READ safeArea NOTIFY safeAreaChanged FINAL)
+    Q_PROPERTY(bool pauseOnClick READ pauseOnClick WRITE setPauseOnClick NOTIFY pauseOnClickChanged FINAL)
 
     Q_PROPERTY(CSDButtonModel *csdButtonModel READ csdButtonModel CONSTANT FINAL)
 
@@ -229,6 +230,7 @@ public:
     inline bool getUseGlobalShortcuts() const { return m_useGlobalShortcuts; }
     void setUseGlobalShortcuts(bool useGlobalShortcuts );
     inline int maxVolume() const { return m_maxVolume; }
+    inline bool pauseOnClick() const { return m_pauseOnClick; }
 
     inline float safeArea() const { return m_safeArea; }
 
@@ -352,6 +354,8 @@ protected:
 
     bool m_windowSuportExtendedFrame = false;
     unsigned m_windowExtendedMargin = 0;
+    
+    bool m_pauseOnClick = false;
 
     std::unique_ptr<CSDButtonModel> m_csdButtonModel;
 
@@ -383,6 +387,7 @@ public slots:
     void updateIntfScaleFactor();
     void onWindowVisibilityChanged(QWindow::Visibility);
     void setHasAcrylicSurface(bool);
+    void setPauseOnClick(bool);
 
     void sendHotkey(Qt::Key key, Qt::KeyboardModifiers modifiers );
 
@@ -459,6 +464,8 @@ signals:
 
     void windowSuportExtendedFrameChanged();
     void windowExtendedMarginChanged(unsigned margin);
+
+    void pauseOnClickChanged();
 
 private:
     void loadPrefs(bool callSignals);

@@ -354,6 +354,8 @@ void MainCtx::loadPrefs(const bool callSignals)
     loadFromVLCOption(m_pinOpacity, "qt-fs-opacity", &MainCtx::pinOpacityChanged);
 
     loadFromVLCOption(m_safeArea, "qt-safe-area", &MainCtx::safeAreaChanged);
+
+    loadFromVLCOption(m_pauseOnClick, "qt-pause-on-click", &MainCtx::pauseOnClickChanged);
 }
 
 void MainCtx::loadFromSettingsImpl(const bool callSignals)
@@ -873,6 +875,15 @@ void MainCtx::setPreferHotkeys(bool enable)
     m_preferHotkeys = enable;
 
     emit preferHotkeysChanged();
+}
+
+void MainCtx::setPauseOnClick(bool enable)
+{
+    if (m_pauseOnClick == enable)
+        return;
+
+    m_pauseOnClick = enable;
+    emit pauseOnClickChanged();
 }
 
 QWindow *MainCtx::intfMainWindow() const
