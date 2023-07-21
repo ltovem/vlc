@@ -492,6 +492,8 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             assert(imageNode);
             imageNode->setOwnsTexture(true);
         }
+
+        m_dirty = true;
     }
 
     if (m_dirty)
