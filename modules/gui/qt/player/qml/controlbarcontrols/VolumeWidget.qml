@@ -96,6 +96,14 @@ T.Pane {
                 Player.muted = !Player.muted
             }
 
+            Widgets.VolumeMouseArea {
+                anchors.fill: parent
+
+                acceptedButtons: Qt.NoButton
+
+                enabled: !( (popup.item && popup.item.visible) || (volumeSlider.item && volumeSlider.item.visible) )
+            }
+
             Accessible.onIncreaseAction: {
                 Player.muted = false
                 Player.setVolumeUp()
