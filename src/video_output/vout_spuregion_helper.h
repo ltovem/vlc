@@ -41,26 +41,37 @@ spuregion_CreateVGradientPalette( video_palette_t *p_palette, uint8_t i_splits,
         uint32_t r = ((((rgb1 >> 16) * (i_splits - i)) + (rgb2 >> 16) * i)) / i_splits;
         uint32_t g = (((((rgb1 >> 8) & 0xFF) * (i_splits - i)) + ((rgb2 >> 8) & 0xFF) * i)) / i_splits;
         uint32_t b = ((((rgb1 & 0xFF) * (i_splits - i)) + (rgb2 & 0xFF) * i)) / i_splits;
-        uint8_t entry[4] = { RGB2YUV( r,g,b ), argb1 >> 24 };
-        memcpy( p_palette->palette[i], entry, 4 );
+        p_palette->palette[i][0] = r;
+        p_palette->palette[i][1] = g;
+        p_palette->palette[i][2] = b;
+        p_palette->palette[i][3] = argb1 >> 24;
     }
     p_palette->i_entries = i_splits;
 }
 
 static inline void
-spuregion_CreateVGradientFill( plane_t *p, uint8_t i_splits )
+spuregion_CreateVGradientFill( plane_t *p, const video_palette_t *p_palette )
 {
+    uint8_t i_splits = p_palette->i_entries;
     const int i_split = p->i_visible_lines / i_splits;
     const int i_left = p->i_visible_lines % i_splits + p->i_lines - p->i_visible_lines;
     for( int i = 0; i<i_splits; i++ )
     {
-        memset( &p->p_pixels[p->i_pitch * (i * i_split)],
-                i,
-                p->i_pitch * i_split );
+        for ( int x=0; x<p->i_pitch * i_split; x+=4)
+        {
+            p->p_pixels[p->i_pitch * (i * i_split) + x + 0] = p_palette->palette[i][0];
+            p->p_pixels[p->i_pitch * (i * i_split) + x + 1] = p_palette->palette[i][1];
+            p->p_pixels[p->i_pitch * (i * i_split) + x + 2] = p_palette->palette[i][2];
+            p->p_pixels[p->i_pitch * (i * i_split) + x + 3] = p_palette->palette[i][3];
+        }
     }
-    memset( &p->p_pixels[p->i_pitch * (i_splits - 1) * i_split],
-            i_splits - 1,
-            p->i_pitch * i_left );
+    for ( int x=0; x<p->i_pitch * i_left; x+=4)
+    {
+        p->p_pixels[p->i_pitch * (i_splits - 1) * i_split + x + 0] = p_palette->palette[i_splits - 1][0];
+        p->p_pixels[p->i_pitch * (i_splits - 1) * i_split + x + 1] = p_palette->palette[i_splits - 1][1];
+        p->p_pixels[p->i_pitch * (i_splits - 1) * i_split + x + 2] = p_palette->palette[i_splits - 1][2];
+        p->p_pixels[p->i_pitch * (i_splits - 1) * i_split + x + 3] = p_palette->palette[i_splits - 1][3];
+    }
 }
 
 
