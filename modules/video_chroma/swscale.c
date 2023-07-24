@@ -632,7 +632,7 @@ static void Convert( filter_t *p_filter, struct SwsContext *ctx,
         if( srcpal )
         {
             uint8_t *dstp = palette;
-            for(int i=0; i<srcpal->i_entries; i++)
+            for(size_t i=0; i<srcpal->i_entries; i++)
             {
                 // we want ARGB in host endianess from RGBA in byte order
 #ifdef WORDS_BIGENDIAN

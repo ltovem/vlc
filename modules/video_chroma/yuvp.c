@@ -132,7 +132,7 @@ static void Convert( filter_t *p_filter, picture_t *p_source,
 
             for( unsigned int x = 0; x < p_filter->fmt_in.video.i_width; x++ )
             {
-                const int v = p_line[x];
+                const size_t v = p_line[x];
 
                 if( v > p_yuvp->i_entries )  /* maybe assert ? */
                     continue;
@@ -160,7 +160,7 @@ static void Convert( filter_t *p_filter, picture_t *p_source,
         }
         /* Create a RGBA palette */
         rgbp.i_entries = p_yuvp->i_entries;
-        for( int i = 0; i < p_yuvp->i_entries; i++ )
+        for( size_t i = 0; i < p_yuvp->i_entries; i++ )
         {
             if( p_yuvp->palette[i].rgba.a == 0 )
             {
@@ -177,7 +177,7 @@ static void Convert( filter_t *p_filter, picture_t *p_source,
 
             for( unsigned int x = 0; x < p_filter->fmt_in.video.i_width; x++ )
             {
-                const int v = p_line[x];
+                const size_t v = p_line[x];
 
                 if( v >= rgbp.i_entries )  /* maybe assert ? */
                     continue;

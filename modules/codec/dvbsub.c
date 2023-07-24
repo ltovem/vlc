@@ -1489,6 +1489,7 @@ static subpicture_t *render( decoder_t *p_dec )
     int i, j;
     int i_base_x;
     int i_base_y;
+    size_t e;
 
     /* Allocate the subpicture internal data. */
     p_spu = decoder_NewSubpicture( p_dec, NULL );
@@ -1602,8 +1603,8 @@ static subpicture_t *render( decoder_t *p_dec )
             ( ( p_region->i_depth == 2 ) ? 16 : 256 );
         p_color = ( p_region->i_depth == 1 ) ? p_clut->c_2b :
             ( ( p_region->i_depth == 2 ) ? p_clut->c_4b : p_clut->c_8b );
-        for( j = 0; j < fmt.p_palette->i_entries; j++ )
-            fmt.p_palette->palette[j] = TO_PALETTE_COLOR(&p_color[j]);
+        for( e = 0; e < fmt.p_palette->i_entries; e++ )
+            fmt.p_palette->palette[e] = TO_PALETTE_COLOR(&p_color[e]);
 
         p_spu_region = subpicture_region_New( &fmt );
         fmt.p_palette = NULL; /* was stack var */
@@ -1754,8 +1755,9 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
     for( p_region = p_subpic->p_region; p_region; p_region = p_region->p_next )
     {
         video_format_t *p_fmt = &p_region->fmt;
-        int i = 0, j = 0, n = 0, p = 0;
-        int i_max_entries = 256;
+        int i = 0, n = 0, p = 0;
+        size_t j;
+        const size_t i_max_entries = 256;
 
 #ifdef RANDOM_DITHERING
         int i_seed = 0xdeadbeef; /* random seed */
@@ -1931,8 +1933,8 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
 #endif
 
         /* pad palette */
-        for( i = p_fmt->p_palette->i_entries; i < i_max_entries; i++ )
-            memset(&p_fmt->p_palette->palette[i], 0, sizeof(p_fmt->p_palette->palette[i]));
+        for( j = p_fmt->p_palette->i_entries; j < i_max_entries; j++ )
+            memset(&p_fmt->p_palette->palette[j], 0, sizeof(p_fmt->p_palette->palette[j]));
         p_fmt->p_palette->i_entries = i_max_entries;
 #ifdef DEBUG_DVBSUB1
         /* p_enc not valid here */
@@ -1989,7 +1991,7 @@ static block_t *Encode( encoder_t *p_enc, subpicture_t *p_subpic )
             case 256:
                 break;
             default:
-                msg_Err( p_enc, "subpicture palette (%d) not handled",
+                msg_Err( p_enc, "subpicture palette (%zu) not handled",
                             p_region->fmt.p_palette->i_entries );
                 return NULL;
         }
@@ -2173,7 +2175,7 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
     bs_write( s, 4, p_sys->i_clut_ver++ );
     bs_write( s, 4, 0 ); /* Reserved */
 
-    for( int i = 0; i < p_pal->i_entries; i++ )
+    for( size_t i = 0; i < p_pal->i_entries; i++ )
     {
         bs_write( s, 8, i ); /* Clut entry id */
         bs_write( s, 1, p_pal->i_entries == 4 );   /* 2bit/entry flag */
@@ -2199,7 +2201,8 @@ static void encode_region_composition( encoder_t *p_enc, bs_t *s,
     for( i_region = 0, p_region = p_subpic->p_region; p_region;
          p_region = p_region->p_next, i_region++ )
     {
-        int i_entries = 4, i_depth = 0x1, i_bg = 0;
+        size_t i_entries = 4, i_bg = 0;
+        uint32_t i_depth = 0x1;
         bool b_text =
             ( p_region->fmt.i_chroma == VLC_CODEC_TEXT );
 
@@ -2387,7 +2390,7 @@ static void encode_pixel_data( encoder_t *p_enc, bs_t *s,
             break;
 
         default:
-            msg_Err( p_enc, "subpicture palette (%i) not handled",
+            msg_Err( p_enc, "subpicture palette (%zu) not handled",
                      p_region->fmt.p_palette->i_entries );
             break;
         }

@@ -510,7 +510,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, block_t *p_data )
     subpicture_region_t *p_region;
     video_format_t fmt;
     video_palette_t palette;
-    int i;
+    size_t i;
 
     /* Allocate the subpicture internal data. */
     p_spu = decoder_NewSubpicture( p_dec, NULL );

@@ -514,7 +514,7 @@ struct convertYuvpToRgba : public convertYuvpToAny {
     convertYuvpToRgba(const video_format_t *, const video_format_t *src)
     {
         const video_palette_t *p = src->p_palette;
-        for (int i = 0; i < p->i_entries; i++) {
+        for (size_t i = 0; i < p->i_entries; i++) {
             palette.palette[i] = Yuv2Rgb(&palette.palette[i]);
         }
     }

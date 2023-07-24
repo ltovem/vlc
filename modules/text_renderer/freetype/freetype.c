@@ -361,6 +361,7 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
     uint8_t *p_dst;
     video_format_t fmt;
     int i, i_pitch;
+    size_t j;
     unsigned int x, y;
     uint8_t i_y, i_u, i_v; /* YUV values, derived from incoming RGB */
 
@@ -394,17 +395,17 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
 
     /* Build palette */
     fmt.p_palette->i_entries = 16;
-    for( i = 0; i < 8; i++ )
+    for( j = 0; j < 8; j++ )
     {
         vlc_palette_color pi = TO_PALETTE_COLOR( 0, 0x80, 0x80,
-                                                 (int)pi_gamma[i] * i_alpha / 255);
-        fmt.p_palette->palette[i] = pi;
+                                                 (int)pi_gamma[j] * i_alpha / 255);
+        fmt.p_palette->palette[j] = pi;
     }
-    for( i = 8; i < fmt.p_palette->i_entries; i++ )
+    for( j = 8; j < fmt.p_palette->i_entries; j++ )
     {
-        vlc_palette_color pi = TO_PALETTE_COLOR( i * 16 * i_y / 256, i_u, i_v,
-                                                 (int)pi_gamma[i] * i_alpha / 255);
-        fmt.p_palette->palette[i] = pi;
+        vlc_palette_color pi = TO_PALETTE_COLOR( j * 16 * i_y / 256, i_u, i_v,
+                                                 (int)pi_gamma[j] * i_alpha / 255);
+        fmt.p_palette->palette[j] = pi;
     }
 
     p_dst = p_region->p_picture->Y_PIXELS;
