@@ -1064,7 +1064,8 @@ libqt_plugin_la_QML = \
 	gui/qt/widgets/qml/DropShadowImage.qml \
 	gui/qt/widgets/qml/DoubleShadow.qml \
 	gui/qt/widgets/qml/FadingEdgeListView.qml \
-	gui/qt/widgets/qml/VolumeSlider.qml
+	gui/qt/widgets/qml/VolumeSlider.qml \
+	gui/qt/widgets/qml/VolumeMouseArea.qml
 
 lib_qt_plugin_la_QRC = gui/qt/vlc.qrc
 
