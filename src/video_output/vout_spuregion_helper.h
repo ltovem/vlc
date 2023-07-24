@@ -26,6 +26,8 @@
 
 #define HEX2YUV( rgb ) \
     RGB2YUV( (rgb >> 16), ((rgb & 0xFF00) >> 8), (rgb & 0xFF) )
+#define HEX2RGB( rgb ) \
+    (rgb >> 16), ((rgb & 0xFF00) >> 8), (rgb & 0xFF)
 
 static inline void
 spuregion_CreateVGradientPalette( video_palette_t *p_palette, uint8_t i_splits,

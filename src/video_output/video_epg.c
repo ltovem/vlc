@@ -127,20 +127,19 @@ static subpicture_region_t * vout_OSDEpgSlider(int x, int y,
     video_palette_t palette = {
         .i_entries = 4,
         .palette = {
-            [0] = { HEX2YUV(RGB_COLOR1), 0x20 }, /* Bar fill remain/background */
-            [1] = { HEX2YUV(0x00ff00), 0xff },
-            [2] = { HEX2YUV(RGB_COLOR1), 0xC0 }, /* Bar fill */
-            [3] = { HEX2YUV(0xffffff), 0xff }, /* Bar outline */
+            [0] = { HEX2RGB(RGB_COLOR1), 0x20 }, /* Bar fill remain/background */
+            [1] = { HEX2RGB(0x00ff00),   0xff },
+            [2] = { HEX2RGB(RGB_COLOR1), 0xC0 }, /* Bar fill */
+            [3] = { HEX2RGB(0xffffff),   0xff }, /* Bar outline */
         },
     };
 
     video_format_t fmt;
-    video_format_Init(&fmt, VLC_CODEC_YUVP);
+    video_format_Init(&fmt, VLC_CODEC_RGBA);
     fmt.i_width  = fmt.i_visible_width  = width;
     fmt.i_height = fmt.i_visible_height = height;
     fmt.i_sar_num = 1;
     fmt.i_sar_den = 1;
-    fmt.p_palette = &palette;
 
     subpicture_region_t *region = subpicture_region_New(&fmt);
     if (!region)
@@ -166,20 +165,37 @@ static subpicture_region_t * vout_OSDEpgSlider(int x, int y,
                              i < 3 || i > width  - 4 ||
                              i < filled_part_width;
 
-            uint8_t color = 2 * is_border + is_outline;
+            size_t color_index = (is_border ? 2 : 0) + (is_outline ? 1 : 0);
             if(i >= 3 && i < width - 4)
             {
                 if(filled_part_width > 4)
-                    memset(&picture->p->p_pixels[picture->p->i_pitch * j + i],
-                           color, filled_part_width - 4);
+                {
+                    for (int x=0; x<filled_part_width - 4; x+=4)
+                    {
+                        picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + x + 0] = palette.palette[color_index][0];
+                        picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + x + 1] = palette.palette[color_index][1];
+                        picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + x + 2] = palette.palette[color_index][2];
+                        picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + x + 3] = palette.palette[color_index][3];
+                    }
+                }
                 if(width > filled_part_width + 4)
-                    memset(&picture->p->p_pixels[picture->p->i_pitch * j + filled_part_width],
-                           color, width - filled_part_width - 4);
+                {
+                    for (int x=0; x<width - filled_part_width - 4 - 4; x+=4)
+                    {
+                        picture->p->p_pixels[picture->p->i_pitch * j + filled_part_width + x + 0] = palette.palette[color_index][0];
+                        picture->p->p_pixels[picture->p->i_pitch * j + filled_part_width + x + 1] = palette.palette[color_index][1];
+                        picture->p->p_pixels[picture->p->i_pitch * j + filled_part_width + x + 2] = palette.palette[color_index][2];
+                        picture->p->p_pixels[picture->p->i_pitch * j + filled_part_width + x + 3] = palette.palette[color_index][3];
+                    }
+                }
                 i = __MAX(i+1, filled_part_width - 1);
             }
             else
             {
-                picture->p->p_pixels[picture->p->i_pitch * j + i] = color;
+                picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + 0] = palette.palette[color_index][0];
+                picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + 1] = palette.palette[color_index][1];
+                picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + 2] = palette.palette[color_index][2];
+                picture->p->p_pixels[picture->p->i_pitch * j + i * 4 + 2] = palette.palette[color_index][3];
                 i++;
             }
         }
