@@ -86,10 +86,8 @@ T.Pane {
             Navigation.rightItem: volumeSlider
         }
 
-        Widgets.VolumeSlider {
+        Loader {
             id: volumeSlider
-
-            paintOnly: root.paintOnly
 
             // FIXME: use VLCStyle
             readonly property real preferredWidth: VLCStyle.dp(100, VLCStyle.scale)
@@ -99,13 +97,20 @@ T.Pane {
             Layout.fillHeight: true
             Layout.margins: VLCStyle.margin_xsmall
 
-            opacity: _player.muted ? 0.5 : 1
-
             enabled: visible && !root.paintOnly // disables event handling depending on paintOnly
             visible: root.width > (volumeBtn.implicitWidth + minimumWidth)
 
+            active: false
+            onVisibleChanged: if (visible) active = true
+
             Navigation.leftItem: volumeBtn
             Navigation.parentItem: root
+
+            sourceComponent: Widgets.VolumeSlider {
+                paintOnly: root.paintOnly
+
+                opacity: _player.muted ? 0.5 : 1
+            }
         }
     }
 }
