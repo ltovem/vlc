@@ -267,7 +267,7 @@
 #define VLC_CODEC_J440            VLC_FOURCC('J','4','4','0')
 /* Planar YUV 4:4:4 Y:U:V full scale */
 #define VLC_CODEC_J444            VLC_FOURCC('J','4','4','4')
-/* Palettized YUV with palette element Y:U:V:A */
+/* Palettized YUV with palette 8-bit Y:U:V:A in memory order */
 #define VLC_CODEC_YUVP            VLC_FOURCC('Y','U','V','P')
 
 /* Planar YUV 4:4:4 Y:U:V:A */
@@ -341,7 +341,7 @@
 
 /* RGB / RGBA */
 
-/* Palettized RGB with palette element R:G:B */
+/* Palettized 8-bit RGB with palette element 8-bit R:G:B:A in memory order */
 #define VLC_CODEC_RGBP            VLC_FOURCC('R','G','B','P')
 /* 8-bit RGB (using explicit masks) */
 #define VLC_CODEC_RGB8            VLC_FOURCC('R','G','B','8')

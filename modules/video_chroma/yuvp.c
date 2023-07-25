@@ -50,7 +50,7 @@ vlc_module_end ()
 /****************************************************************************
  * Local prototypes
  ****************************************************************************/
-static void Yuv2Rgb( uint8_t *r, uint8_t *g, uint8_t *b, int y1, int u1, int v1 );
+static vlc_palette_color Yuv2Rgb( const vlc_palette_color *yuva );
 
 VIDEO_FILTER_WRAPPER( Convert )
 
@@ -82,6 +82,30 @@ static int Open( filter_t *p_filter )
     return VLC_SUCCESS;
 }
 
+static vlc_palette_color Yuv2ARGB(const vlc_palette_color *p)
+{
+    vlc_palette_color tmp = Yuv2Rgb(p);
+    return (vlc_palette_color) { .rgba = { tmp.rgba.a, tmp.rgba.r, tmp.rgba.g, tmp.rgba.b } };
+}
+
+static vlc_palette_color Yuv2RGBA(const vlc_palette_color *p)
+{
+    vlc_palette_color tmp = Yuv2Rgb(p);
+    return (vlc_palette_color) { .rgba = { tmp.rgba.r, tmp.rgba.g, tmp.rgba.b, tmp.rgba.a } };
+}
+
+static vlc_palette_color Yuv2BGRA(const vlc_palette_color *p)
+{
+    vlc_palette_color tmp = Yuv2Rgb(p);
+    return (vlc_palette_color) { .rgba = { tmp.rgba.b, tmp.rgba.g, tmp.rgba.r, tmp.rgba.a } };
+}
+
+static vlc_palette_color Yuv2ABGR(const vlc_palette_color *p)
+{
+    vlc_palette_color tmp = Yuv2Rgb(p);
+    return (vlc_palette_color) { .rgba = { tmp.rgba.a, tmp.rgba.b, tmp.rgba.g, tmp.rgba.r } };
+}
+
 /****************************************************************************
  * Filter: the whole thing
  ****************************************************************************/
@@ -108,44 +132,42 @@ static void Convert( filter_t *p_filter, picture_t *p_source,
 
             for( unsigned int x = 0; x < p_filter->fmt_in.video.i_width; x++ )
             {
-                const int v = p_line[x];
+                const size_t v = p_line[x];
 
                 if( v > p_yuvp->i_entries )  /* maybe assert ? */
                     continue;
 
-                p_y[x] = p_yuvp->palette[v][0];
-                p_u[x] = p_yuvp->palette[v][1];
-                p_v[x] = p_yuvp->palette[v][2];
-                p_a[x] = p_yuvp->palette[v][3];
+                p_y[x] = p_yuvp->palette[v].yuva.y;
+                p_u[x] = p_yuvp->palette[v].yuva.u;
+                p_v[x] = p_yuvp->palette[v].yuva.v;
+                p_a[x] = p_yuvp->palette[v].yuva.a;
             }
         }
     }
     else
     {
         video_palette_t rgbp;
-        int r, g, b, a;
+        vlc_palette_color (*conv)(const vlc_palette_color *);
 
         switch( p_filter->fmt_out.video.i_chroma )
         {
-            case VLC_CODEC_ARGB: r = 1, g = 2, b = 3, a = 0; break;
-            case VLC_CODEC_RGBA: r = 0, g = 1, b = 2, a = 3; break;
-            case VLC_CODEC_BGRA: r = 2, g = 1, b = 0, a = 3; break;
-            case VLC_CODEC_ABGR: r = 3, g = 2, b = 1, a = 0; break;
+            case VLC_CODEC_ARGB: conv = Yuv2ARGB; break;
+            case VLC_CODEC_RGBA: conv = Yuv2RGBA; break;
+            case VLC_CODEC_BGRA: conv = Yuv2BGRA; break;
+            case VLC_CODEC_ABGR: conv = Yuv2ABGR; break;
             default:
                 vlc_assert_unreachable();
         }
         /* Create a RGBA palette */
         rgbp.i_entries = p_yuvp->i_entries;
-        for( int i = 0; i < p_yuvp->i_entries; i++ )
+        for( size_t i = 0; i < p_yuvp->i_entries; i++ )
         {
-            if( p_yuvp->palette[i][3] == 0 )
+            if( p_yuvp->palette[i].rgba.a == 0 )
             {
-                memset( rgbp.palette[i], 0, sizeof( rgbp.palette[i] ) );
+                memset( &rgbp.palette[i], 0, sizeof( rgbp.palette[i] ) );
                 continue;
             }
-            Yuv2Rgb( &rgbp.palette[i][r], &rgbp.palette[i][g], &rgbp.palette[i][b],
-                     p_yuvp->palette[i][0], p_yuvp->palette[i][1], p_yuvp->palette[i][2] );
-            rgbp.palette[i][a] = p_yuvp->palette[i][3];
+            rgbp.palette[i] = conv( &p_yuvp->palette[i] );
         }
 
         for( unsigned int y = 0; y < p_filter->fmt_in.video.i_height; y++ )
@@ -155,15 +177,15 @@ static void Convert( filter_t *p_filter, picture_t *p_source,
 
             for( unsigned int x = 0; x < p_filter->fmt_in.video.i_width; x++ )
             {
-                const int v = p_line[x];
+                const size_t v = p_line[x];
 
                 if( v >= rgbp.i_entries )  /* maybe assert ? */
                     continue;
 
-                p_pixels[4*x+0] = rgbp.palette[v][0];
-                p_pixels[4*x+1] = rgbp.palette[v][1];
-                p_pixels[4*x+2] = rgbp.palette[v][2];
-                p_pixels[4*x+3] = rgbp.palette[v][3];
+                p_pixels[4*x+0] = rgbp.palette[v].rgba.r;
+                p_pixels[4*x+1] = rgbp.palette[v].rgba.g;
+                p_pixels[4*x+2] = rgbp.palette[v].rgba.b;
+                p_pixels[4*x+3] = rgbp.palette[v].rgba.a;
             }
         }
 
@@ -179,8 +201,12 @@ static inline uint8_t vlc_uint8( int v )
         return 0;
     return v;
 }
-static void Yuv2Rgb( uint8_t *r, uint8_t *g, uint8_t *b, int y1, int u1, int v1 )
+static vlc_palette_color Yuv2Rgb( const vlc_palette_color *yuva )
 {
+    int y1 = yuva->yuva.y;
+    int u1 = yuva->yuva.u;
+    int v1 = yuva->yuva.v;
+    uint8_t a1 = yuva->yuva.a;
     /* macros used for YUV pixel conversions */
 #   define SCALEBITS 10
 #   define ONE_HALF  (1 << (SCALEBITS - 1))
@@ -195,8 +221,13 @@ static void Yuv2Rgb( uint8_t *r, uint8_t *g, uint8_t *b, int y1, int u1, int v1 
             - FIX(0.71414*255.0/224.0) * cr + ONE_HALF;
     b_add = FIX(1.77200*255.0/224.0) * cb + ONE_HALF;
     y = (y1 - 16) * FIX(255.0/219.0);
-    *r = vlc_uint8( (y + r_add) >> SCALEBITS );
-    *g = vlc_uint8( (y + g_add) >> SCALEBITS );
-    *b = vlc_uint8( (y + b_add) >> SCALEBITS );
+    return (vlc_palette_color) {
+        .rgba = {
+            .r = vlc_uint8( (y + r_add) >> SCALEBITS ),
+            .g = vlc_uint8( (y + g_add) >> SCALEBITS ),
+            .b = vlc_uint8( (y + b_add) >> SCALEBITS ),
+            .a = a1,
+        }
+    };
 #undef FIX
 }

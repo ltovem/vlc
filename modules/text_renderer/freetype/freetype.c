@@ -337,6 +337,11 @@ error:
     return VLC_ENOMEM;
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(uint8_t y, uint8_t u, uint8_t v, uint8_t a)
+{
+    return (vlc_palette_color) { .yuva = { .y = y, .u = u, .v = v, .a = a } };
+}
+
 /*****************************************************************************
  * RenderYUVP: place string in picture
  *****************************************************************************
@@ -356,6 +361,7 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
     uint8_t *p_dst;
     video_format_t fmt;
     int i, i_pitch;
+    size_t j;
     unsigned int x, y;
     uint8_t i_y, i_u, i_v; /* YUV values, derived from incoming RGB */
 
@@ -389,19 +395,17 @@ static int RenderYUVP( filter_t *p_filter, subpicture_region_t *p_region,
 
     /* Build palette */
     fmt.p_palette->i_entries = 16;
-    for( i = 0; i < 8; i++ )
+    for( j = 0; j < 8; j++ )
     {
-        fmt.p_palette->palette[i][0] = 0;
-        fmt.p_palette->palette[i][1] = 0x80;
-        fmt.p_palette->palette[i][2] = 0x80;
-        fmt.p_palette->palette[i][3] = (int)pi_gamma[i] * i_alpha / 255;
+        vlc_palette_color pi = TO_PALETTE_COLOR( 0, 0x80, 0x80,
+                                                 (int)pi_gamma[j] * i_alpha / 255);
+        fmt.p_palette->palette[j] = pi;
     }
-    for( i = 8; i < fmt.p_palette->i_entries; i++ )
+    for( j = 8; j < fmt.p_palette->i_entries; j++ )
     {
-        fmt.p_palette->palette[i][0] = i * 16 * i_y / 256;
-        fmt.p_palette->palette[i][1] = i_u;
-        fmt.p_palette->palette[i][2] = i_v;
-        fmt.p_palette->palette[i][3] = (int)pi_gamma[i] * i_alpha / 255;
+        vlc_palette_color pi = TO_PALETTE_COLOR( j * 16 * i_y / 256, i_u, i_v,
+                                                 (int)pi_gamma[j] * i_alpha / 255);
+        fmt.p_palette->palette[j] = pi;
     }
 
     p_dst = p_region->p_picture->Y_PIXELS;

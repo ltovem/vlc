@@ -481,10 +481,10 @@ struct convertYuvpToAny {
     void operator()(CPixel &p)
     {
         unsigned index = p.i;
-        p.i = palette.palette[index][0];
-        p.j = palette.palette[index][1];
-        p.k = palette.palette[index][2];
-        p.a = palette.palette[index][3];
+        p.i = palette.palette[index].yuva.y;
+        p.j = palette.palette[index].yuva.u;
+        p.k = palette.palette[index].yuva.v;
+        p.a = palette.palette[index].yuva.a;
     }
 protected:
     video_palette_t palette;
@@ -495,20 +495,27 @@ struct convertYuvpToYuva8 : public convertYuvpToAny {
         palette = *src->p_palette;
     }
 };
+
+static inline vlc_palette_color Yuv2Rgb(const vlc_palette_color *packed_yuva)
+{
+    int r, g, b;
+    yuv_to_rgb(&r, &g, &b,
+               packed_yuva->yuva.y,
+               packed_yuva->yuva.u,
+               packed_yuva->yuva.v);
+    return (vlc_palette_color) {
+        .rgba {
+            (uint8_t)r, (uint8_t)g, (uint8_t)b, packed_yuva->yuva.a
+        },
+    };
+}
+
 struct convertYuvpToRgba : public convertYuvpToAny {
     convertYuvpToRgba(const video_format_t *, const video_format_t *src)
     {
         const video_palette_t *p = src->p_palette;
-        for (int i = 0; i < p->i_entries; i++) {
-            int r, g, b;
-            yuv_to_rgb(&r, &g, &b,
-                       p->palette[i][0],
-                       p->palette[i][1],
-                       p->palette[i][2]);
-            palette.palette[i][0] = r;
-            palette.palette[i][1] = g;
-            palette.palette[i][2] = b;
-            palette.palette[i][3] = p->palette[i][3];
+        for (size_t i = 0; i < p->i_entries; i++) {
+            palette.palette[i] = Yuv2Rgb(&palette.palette[i]);
         }
     }
 };

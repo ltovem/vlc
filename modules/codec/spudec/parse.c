@@ -104,6 +104,16 @@ static void CLUTIdxToYUV(const struct subs_format_t *subs,
     }
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(const uint8_t yuv[3], uint8_t alpha)
+{
+    return (vlc_palette_color) { .yuva = {
+        .y = yuv[0],
+        .u = yuv[1],
+        .v = yuv[2],
+        alpha * 0x11
+    } };
+}
+
 static void ParsePXCTLI( decoder_t *p_dec, const subpicture_data_t *p_spu_data,
                          subpicture_t *p_spu )
 {
@@ -138,18 +148,14 @@ static void ParsePXCTLI( decoder_t *p_dec, const subpicture_data_t *p_spu_data,
             alpha[0] = i_contrast&0x0f;
 
             /* Create a new YUVA palette entries for the picture */
-            int index_map[4];
+            size_t index_map[4];
             for( int j=0; j<4; j++ )
             {
-                uint8_t yuvaentry[4];
-                yuvaentry[0] = yuv[j][0];
-                yuvaentry[1] = yuv[j][1];
-                yuvaentry[2] = yuv[j][2];
-                yuvaentry[3] = alpha[j] * 0x11;
-                int i_index = VIDEO_PALETTE_COLORS_MAX;
-                for( int k = p_palette->i_entries; k > 0; k-- )
+                vlc_palette_color yuvaentry = TO_PALETTE_COLOR(yuv[j], alpha[j]);
+                size_t i_index = VIDEO_PALETTE_COLORS_MAX;
+                for( size_t k = p_palette->i_entries; k > 0; k-- )
                 {
-                    if( !memcmp( p_palette->palette[k], yuvaentry, sizeof(uint8_t [4]) ) )
+                    if( !memcmp( &p_palette->palette[k], &yuvaentry, 4 ) )
                     {
                         i_index = i;
                         break;
@@ -165,7 +171,7 @@ static void ParsePXCTLI( decoder_t *p_dec, const subpicture_data_t *p_spu_data,
                         return;
                     }
                     i_index = p_palette->i_entries++;
-                    memcpy( p_palette->palette[ i_index ], yuvaentry, sizeof(uint8_t [4]) );
+                    memcpy( &p_palette->palette[ i_index ], &yuvaentry, 4 );
                 }
                 index_map[j] = i_index;
             }
@@ -854,13 +860,9 @@ static int Render( decoder_t *p_dec, subpicture_t *p_spu,
     fmt.i_x_offset = fmt.i_y_offset = 0;
     fmt.p_palette = &palette;
     fmt.p_palette->i_entries = 4;
-    for( i_x = 0; i_x < fmt.p_palette->i_entries; i_x++ )
-    {
-        fmt.p_palette->palette[i_x][0] = p_spu_data->pi_yuv[i_x][0];
-        fmt.p_palette->palette[i_x][1] = p_spu_data->pi_yuv[i_x][1];
-        fmt.p_palette->palette[i_x][2] = p_spu_data->pi_yuv[i_x][2];
-        fmt.p_palette->palette[i_x][3] = p_spu_data->pi_alpha[i_x] * 0x11;
-    }
+    for( size_t i = 0; i < fmt.p_palette->i_entries; i++ )
+        fmt.p_palette->palette[i] = TO_PALETTE_COLOR( p_spu_data->pi_yuv[i],
+                                                      p_spu_data->pi_alpha[i] );
 
     p_spu->p_region = subpicture_region_New( &fmt );
     if( !p_spu->p_region )

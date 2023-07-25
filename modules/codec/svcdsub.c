@@ -101,7 +101,7 @@ typedef struct
                                     image when displayed */
   uint16_t i_width, i_height;    /* dimensions in pixels of image */
 
-  uint8_t p_palette[4][4];       /* Palette of colors used in subtitle */
+  vlc_palette_color p_palette[4]; /* Palette of colors used in subtitle */
 } decoder_sys_t;
 
 static int OpenCommon( vlc_object_t *p_this, bool b_packetizer )
@@ -393,10 +393,10 @@ static void ParseHeader( decoder_t *p_dec, block_t *p_block )
 
     for( i = 0; i < 4; i++ )
     {
-        p_sys->p_palette[i][0] = *p++; /* Y */
-        p_sys->p_palette[i][2] = *p++; /* Cr / V */
-        p_sys->p_palette[i][1] = *p++; /* Cb / U */
-        p_sys->p_palette[i][3] = *p++; /* T */
+        p_sys->p_palette[i].yuva.y = *p++; /* Y */
+        p_sys->p_palette[i].yuva.v = *p++; /* Cr / V */
+        p_sys->p_palette[i].yuva.u = *p++; /* Cb / U */
+        p_sys->p_palette[i].yuva.a = *p++; /* T */
     }
 
     i_cmd = *p++;
@@ -430,8 +430,8 @@ static void ParseHeader( decoder_t *p_dec, block_t *p_block )
     for( i = 0; i < 4; i++ )
     {
         msg_Dbg( p_dec, "palette[%d]= T: %2x, Y: %2x, u: %2x, v: %2x", i,
-                 p_sys->p_palette[i][3], p_sys->p_palette[i][0],
-                 p_sys->p_palette[i][1], p_sys->p_palette[i][2] );
+                 p_sys->p_palette[i].yuva.a, p_sys->p_palette[i].yuva.y,
+                 p_sys->p_palette[i].yuva.u, p_sys->p_palette[i].yuva.v );
     }
 #endif
 }
@@ -449,7 +449,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, block_t *p_data )
     subpicture_region_t *p_region;
     video_format_t fmt;
     video_palette_t palette;
-    int i;
+    size_t i;
 
     /* Allocate the subpicture internal data. */
     p_spu = decoder_NewSubpicture( p_dec, NULL );
@@ -479,12 +479,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, block_t *p_data )
     fmt.p_palette = &palette;
     fmt.p_palette->i_entries = 4;
     for( i = 0; i < fmt.p_palette->i_entries; i++ )
-    {
-        fmt.p_palette->palette[i][0] = p_sys->p_palette[i][0];
-        fmt.p_palette->palette[i][1] = p_sys->p_palette[i][1];
-        fmt.p_palette->palette[i][2] = p_sys->p_palette[i][2];
-        fmt.p_palette->palette[i][3] = p_sys->p_palette[i][3];
-    }
+        fmt.p_palette->palette[i] = p_sys->p_palette[i];
 
     p_region = subpicture_region_New( &fmt );
     fmt.p_palette = NULL;

@@ -170,10 +170,12 @@ static inline int ParseBitmapInfoHeader( VLC_BITMAPINFOHEADER *p_bih, size_t i_b
             if ( fmt->video.p_palette )
             {
                 fmt->video.p_palette->i_entries = __MIN(i_bihextra/4, 256);
-                for( int k = 0; k < fmt->video.p_palette->i_entries; k++ )
+                for( size_t k = 0; k < fmt->video.p_palette->i_entries; k++ )
                 {
-                    for( int j = 0; j < 4; j++ )
-                        fmt->video.p_palette->palette[k][j] = p_bihextra[4*k+j];
+                    fmt->video.p_palette->palette[k].rgba.r = p_bihextra[4*k+0];
+                    fmt->video.p_palette->palette[k].rgba.g = p_bihextra[4*k+1];
+                    fmt->video.p_palette->palette[k].rgba.b = p_bihextra[4*k+2];
+                    fmt->video.p_palette->palette[k].rgba.a = p_bihextra[4*k+3];
                 }
             }
         }
@@ -294,8 +296,13 @@ static inline VLC_BITMAPINFOHEADER * CreateBitmapInfoHeader( const es_format_t *
     }
     else if( fmt->i_codec == VLC_CODEC_RGBP )
     {
-        for( int i = 0; i < fmt->video.p_palette->i_entries; i++ )
-            memcpy( &p_bmiColors[i * 4], fmt->video.p_palette->palette[i], 4 );
+        for( size_t i = 0; i < fmt->video.p_palette->i_entries; i++ )
+        {
+            p_bmiColors[i * 4 + 0] = fmt->video.p_palette->palette[i].rgba.r;
+            p_bmiColors[i * 4 + 1] = fmt->video.p_palette->palette[i].rgba.g;
+            p_bmiColors[i * 4 + 2] = fmt->video.p_palette->palette[i].rgba.b;
+            p_bmiColors[i * 4 + 3] = fmt->video.p_palette->palette[i].rgba.a;
+        }
         p_bih->biClrUsed = fmt->video.p_palette->i_entries;
     }
     else if( fmt->i_extra )

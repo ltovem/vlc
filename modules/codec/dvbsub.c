@@ -1472,6 +1472,15 @@ static void free_all( decoder_t *p_dec )
     p_sys->p_page = NULL;
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(const dvbsub_color_t *col)
+{
+    return (vlc_palette_color) {
+        .yuva = {
+            .y = col->Y, .u = col->Cb, .v = col->Cr, .a = (0xff - col->T)
+        }
+    };
+}
+
 static subpicture_t *render( decoder_t *p_dec )
 {
     decoder_sys_t *p_sys = p_dec->p_sys;
@@ -1480,6 +1489,7 @@ static subpicture_t *render( decoder_t *p_dec )
     int i, j;
     int i_base_x;
     int i_base_y;
+    size_t e;
 
     /* Allocate the subpicture internal data. */
     p_spu = decoder_NewSubpicture( p_dec, NULL );
@@ -1593,13 +1603,8 @@ static subpicture_t *render( decoder_t *p_dec )
             ( ( p_region->i_depth == 2 ) ? 16 : 256 );
         p_color = ( p_region->i_depth == 1 ) ? p_clut->c_2b :
             ( ( p_region->i_depth == 2 ) ? p_clut->c_4b : p_clut->c_8b );
-        for( j = 0; j < fmt.p_palette->i_entries; j++ )
-        {
-            fmt.p_palette->palette[j][0] = p_color[j].Y;
-            fmt.p_palette->palette[j][1] = p_color[j].Cb; /* U == Cb */
-            fmt.p_palette->palette[j][2] = p_color[j].Cr; /* V == Cr */
-            fmt.p_palette->palette[j][3] = 0xff - p_color[j].T;
-        }
+        for( e = 0; e < fmt.p_palette->i_entries; e++ )
+            fmt.p_palette->palette[e] = TO_PALETTE_COLOR(&p_color[e]);
 
         p_spu_region = subpicture_region_New( &fmt );
         fmt.p_palette = NULL; /* was stack var */
@@ -1733,6 +1738,11 @@ static int OpenEncoder( vlc_object_t *p_this )
     return VLC_SUCCESS;
 }
 
+static inline vlc_palette_color YUVA_TO_PALETTE_COLOR(uint8_t y, uint8_t u, uint8_t v, uint8_t a)
+{
+    return (vlc_palette_color) { .yuva = { .y = y, .u = u, .v = v, .a = a } };
+}
+
 /* FIXME: this routine is a hack to convert VLC_CODEC_YUVA
  *        into VLC_CODEC_YUVP
  */
@@ -1745,8 +1755,9 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
     for( p_region = p_subpic->p_region; p_region; p_region = p_region->p_next )
     {
         video_format_t *p_fmt = &p_region->fmt;
-        int i = 0, j = 0, n = 0, p = 0;
-        int i_max_entries = 256;
+        int i = 0, n = 0, p = 0;
+        size_t j;
+        const size_t i_max_entries = 256;
 
 #ifdef RANDOM_DITHERING
         int i_seed = 0xdeadbeef; /* random seed */
@@ -1804,20 +1815,17 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
                 a = p_region->p_picture->p[3].p_pixels[i];
                 for( j = 0; j < p_fmt->p_palette->i_entries; j++ )
                 {
-                    if( abs((int)p_fmt->p_palette->palette[j][0] - (int)y) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][1] - (int)u) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][2] - (int)v) <= i_tolerance &&
-                        abs((int)p_fmt->p_palette->palette[j][3] - (int)a) <= i_tolerance / 2 )
+                    if( abs((int)p_fmt->p_palette->palette[j].yuva.y - (int)y) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.u - (int)u) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.v - (int)v) <= i_tolerance &&
+                        abs((int)p_fmt->p_palette->palette[j].yuva.a - (int)a) <= i_tolerance / 2 )
                     {
                         break;
                     }
                 }
                 if( j == p_fmt->p_palette->i_entries )
                 {
-                    p_fmt->p_palette->palette[j][0] = y;
-                    p_fmt->p_palette->palette[j][1] = u;
-                    p_fmt->p_palette->palette[j][2] = v;
-                    p_fmt->p_palette->palette[j][3] = a;
+                    p_fmt->p_palette->palette[j] = YUVA_TO_PALETTE_COLOR(y,u,v,a);
                     p_fmt->p_palette->i_entries++;
                 }
                 if( p_fmt->p_palette->i_entries >= i_max_entries )
@@ -1886,10 +1894,10 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
                 {
                     int i_dist = 0;
 
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][0] - y);
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][1] - u);
-                    i_dist += abs((int)p_fmt->p_palette->palette[j][2] - v);
-                    i_dist += 2 * abs((int)p_fmt->p_palette->palette[j][3] - a);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.y - y);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.u - u);
+                    i_dist += abs((int)p_fmt->p_palette->palette[j].yuva.v - v);
+                    i_dist += 2 * abs((int)p_fmt->p_palette->palette[j].yuva.a - a);
 
                     if( i_dist < i_mindist )
                     {
@@ -1905,10 +1913,10 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
 #ifdef RANDOM_DITHERING
                 i_seed = (i_seed * 0x1283837) ^ 0x789479 ^ (i_seed >> 13);
 #else
-                i_ydelta = y - (int)p_fmt->p_palette->palette[i_best][0];
-                i_udelta = u - (int)p_fmt->p_palette->palette[i_best][1];
-                i_vdelta = v - (int)p_fmt->p_palette->palette[i_best][2];
-                i_adelta = a - (int)p_fmt->p_palette->palette[i_best][3];
+                i_ydelta = y - (int)p_fmt->p_palette->palette[i_best].yuva.y;
+                i_udelta = u - (int)p_fmt->p_palette->palette[i_best].yuva.u;
+                i_vdelta = v - (int)p_fmt->p_palette->palette[i_best].yuva.v;
+                i_adelta = a - (int)p_fmt->p_palette->palette[i_best].yuva.a;
                 pi_delta[ n * 4 ] = i_ydelta * 3 / 8;
                 pi_delta[ n * 4 + 1 ] = i_udelta * 3 / 8;
                 pi_delta[ n * 4 + 2 ] = i_vdelta * 3 / 8;
@@ -1925,13 +1933,8 @@ static subpicture_t *YuvaYuvp( subpicture_t *p_subpic )
 #endif
 
         /* pad palette */
-        for( i = p_fmt->p_palette->i_entries; i < i_max_entries; i++ )
-        {
-            p_fmt->p_palette->palette[i][0] = 0;
-            p_fmt->p_palette->palette[i][1] = 0;
-            p_fmt->p_palette->palette[i][2] = 0;
-            p_fmt->p_palette->palette[i][3] = 0;
-        }
+        for( j = p_fmt->p_palette->i_entries; j < i_max_entries; j++ )
+            memset(&p_fmt->p_palette->palette[j], 0, sizeof(p_fmt->p_palette->palette[j]));
         p_fmt->p_palette->i_entries = i_max_entries;
 #ifdef DEBUG_DVBSUB1
         /* p_enc not valid here */
@@ -1988,7 +1991,7 @@ static block_t *Encode( encoder_t *p_enc, subpicture_t *p_subpic )
             case 256:
                 break;
             default:
-                msg_Err( p_enc, "subpicture palette (%d) not handled",
+                msg_Err( p_enc, "subpicture palette (%zu) not handled",
                             p_region->fmt.p_palette->i_entries );
                 return NULL;
         }
@@ -2159,12 +2162,7 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
     {
         pal.i_entries = 4;
         for( int i = 0; i < 4; i++ )
-        {
-            pal.palette[i][0] = 0;
-            pal.palette[i][1] = 0;
-            pal.palette[i][2] = 0;
-            pal.palette[i][3] = 0;
-        }
+            memset(&pal.palette[i], 0, sizeof(pal.palette[i]));
         p_pal = &pal;
     }
 
@@ -2177,7 +2175,7 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
     bs_write( s, 4, p_sys->i_clut_ver++ );
     bs_write( s, 4, 0 ); /* Reserved */
 
-    for( int i = 0; i < p_pal->i_entries; i++ )
+    for( size_t i = 0; i < p_pal->i_entries; i++ )
     {
         bs_write( s, 8, i ); /* Clut entry id */
         bs_write( s, 1, p_pal->i_entries == 4 );   /* 2bit/entry flag */
@@ -2185,11 +2183,11 @@ static void encode_clut( encoder_t *p_enc, bs_t *s, subpicture_t *p_subpic )
         bs_write( s, 1, p_pal->i_entries == 256 ); /* 8bit/entry flag */
         bs_write( s, 4, 0 ); /* Reserved */
         bs_write( s, 1, 1 ); /* Full range flag */
-        bs_write( s, 8, p_pal->palette[i][3] ?  /* Y value */
-                  (p_pal->palette[i][0] ? p_pal->palette[i][0] : 16) : 0 );
-        bs_write( s, 8, p_pal->palette[i][1] ); /* Cr value */
-        bs_write( s, 8, p_pal->palette[i][2] ); /* Cb value */
-        bs_write( s, 8, 0xff - p_pal->palette[i][3] ); /* T value */
+        bs_write( s, 8, p_pal->palette[i].yuva.a ?  /* Y value */
+                  (p_pal->palette[i].yuva.y ? p_pal->palette[i].yuva.y : 16) : 0 );
+        bs_write( s, 8, p_pal->palette[i].yuva.u ); /* Cr value */
+        bs_write( s, 8, p_pal->palette[i].yuva.v ); /* Cb value */
+        bs_write( s, 8, 0xff - p_pal->palette[i].yuva.a ); /* T value */
     }
 }
 
@@ -2203,7 +2201,8 @@ static void encode_region_composition( encoder_t *p_enc, bs_t *s,
     for( i_region = 0, p_region = p_subpic->p_region; p_region;
          p_region = p_region->p_next, i_region++ )
     {
-        int i_entries = 4, i_depth = 0x1, i_bg = 0;
+        size_t i_entries = 4, i_bg = 0;
+        uint32_t i_depth = 0x1;
         bool b_text =
             ( p_region->fmt.i_chroma == VLC_CODEC_TEXT );
 
@@ -2222,7 +2221,7 @@ static void encode_region_composition( encoder_t *p_enc, bs_t *s,
 
             for( i_bg = 0; i_bg < p_pal->i_entries; i_bg++ )
             {
-                if( !p_pal->palette[i_bg][3] ) break;
+                if( !p_pal->palette[i_bg].yuva.a ) break;
             }
         }
 
@@ -2391,7 +2390,7 @@ static void encode_pixel_data( encoder_t *p_enc, bs_t *s,
             break;
 
         default:
-            msg_Err( p_enc, "subpicture palette (%i) not handled",
+            msg_Err( p_enc, "subpicture palette (%zu) not handled",
                      p_region->fmt.p_palette->i_entries );
             break;
         }

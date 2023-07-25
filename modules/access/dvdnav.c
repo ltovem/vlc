@@ -1320,6 +1320,16 @@ static void DemuxTitles( demux_t *p_demux )
     }
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(uint32_t i_yuv, uint8_t i_alpha)
+{
+    return (vlc_palette_color) { .yuva = {
+        (uint8_t)((i_yuv >> 16) & 0xff),
+        (uint8_t)((i_yuv >>  0) & 0xff),
+        (uint8_t)((i_yuv >>  8) & 0xff),
+        i_alpha
+    } };
+}
+
 /*****************************************************************************
  * Update functions:
  *****************************************************************************/
@@ -1376,10 +1386,7 @@ static void ButtonUpdate( demux_t *p_demux, bool b_mode )
             uint32_t i_yuv = p_sys->clut[(hl.palette>>(16+i*4))&0x0f];
             uint8_t i_alpha = ( (hl.palette>>(i*4))&0x0f ) * 0xff / 0xf;
 
-            spu_hl.palette.palette[i][0] = (i_yuv >> 16) & 0xff;
-            spu_hl.palette.palette[i][1] = (i_yuv >> 0) & 0xff;
-            spu_hl.palette.palette[i][2] = (i_yuv >> 8) & 0xff;
-            spu_hl.palette.palette[i][3] = i_alpha;
+            spu_hl.palette.palette[i] = TO_PALETTE_COLOR(i_yuv, i_alpha);
         }
 
         i_ret = es_out_Control( p_sys->p_tf_out, ES_OUT_SPU_SET_HIGHLIGHT,

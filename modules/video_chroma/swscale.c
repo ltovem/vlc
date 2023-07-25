@@ -624,22 +624,33 @@ static void Convert( filter_t *p_filter, struct SwsContext *ctx,
                p_src, i_plane_count, b_swap_uvi );
     if( p_filter->fmt_in.video.i_chroma == VLC_CODEC_RGBP )
     {
-        if( p_filter->fmt_in.video.p_palette )
+        const video_palette_t *srcpal = p_src->format.p_palette ?
+                                        p_src->format.p_palette :
+                                        p_filter->fmt_in.video.p_palette;
+        static_assert(sizeof(srcpal->palette) == AVPALETTE_SIZE,
+                      "Palette size mismatch between vlc and libavutil");
+        if( srcpal )
         {
-            const video_palette_t *p_palette = p_filter->fmt_in.video.p_palette;
-            static_assert(sizeof(p_palette->palette) == AVPALETTE_SIZE,
-                          "Palette size mismatch between vlc and libavutil");
-            uint8_t *dst = palette;
-            for (size_t i=0; i<sizeof(p_palette->palette[0]); i++)
+            uint8_t *dstp = palette;
+            for(size_t i=0; i<srcpal->i_entries; i++)
             {
-                memcpy(dst, p_palette->palette[i], ARRAY_SIZE(p_palette->palette));
-                dst += ARRAY_SIZE(p_palette->palette);
+                // we want ARGB in host endianess from RGBA in byte order
+#ifdef WORDS_BIGENDIAN
+                dstp[0] = srcpal->palette[i].rgba.a;
+                dstp[1] = srcpal->palette[i].rgba.r;
+                dstp[2] = srcpal->palette[i].rgba.g;
+                dstp[3] = srcpal->palette[i].rgba.b;
+#else
+                dstp[0] = srcpal->palette[i].rgba.b;
+                dstp[1] = srcpal->palette[i].rgba.g;
+                dstp[2] = srcpal->palette[i].rgba.r;
+                dstp[3] = srcpal->palette[i].rgba.a;
+#endif
+                dstp += 4;
             }
         }
         else
-        {
-            memset( &palette, 0, sizeof(palette) );
-        }
+            memset( palette, 0, sizeof(palette) );
         src[1] = palette;
         src_stride[1] = 4;
     }

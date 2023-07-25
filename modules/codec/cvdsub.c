@@ -99,8 +99,8 @@ typedef struct
                                     image when displayed */
   uint16_t i_width, i_height;    /* dimensions in pixels of image */
 
-  uint8_t p_palette[4][4];       /* Palette of colors used in subtitle */
-  uint8_t p_palette_highlight[4][4];
+  vlc_palette_color p_palette[4]; /* Palette of colors used in subtitle */
+  vlc_palette_color p_palette_highlight[4];
 } decoder_sys_t;
 
 static int OpenCommon( vlc_object_t *p_this, bool b_packetizer )
@@ -407,9 +407,9 @@ static void ParseMetaInfo( decoder_t *p_dec, block_t *p_spu  )
                      v, p[1], p[2], p[3] );
 #endif
 
-            p_sys->p_palette[v][0] = p[1]; /* Y */
-            p_sys->p_palette[v][1] = p[3]; /* Cr / V */
-            p_sys->p_palette[v][2] = p[2]; /* Cb / U */
+            p_sys->p_palette[v].yuva.y = p[1]; /* Y */
+            p_sys->p_palette[v].yuva.v = p[3]; /* Cr / V */
+            p_sys->p_palette[v].yuva.u = p[2]; /* Cb / U */
             break;
         }
 
@@ -427,41 +427,41 @@ static void ParseMetaInfo( decoder_t *p_dec, block_t *p_spu  )
 #endif
 
             /* Highlight Palette */
-            p_sys->p_palette_highlight[v][0] = p[1]; /* Y */
-            p_sys->p_palette_highlight[v][1] = p[3]; /* Cr / V */
-            p_sys->p_palette_highlight[v][2] = p[2]; /* Cb / U */
+            p_sys->p_palette_highlight[v].yuva.y = p[1]; /* Y */
+            p_sys->p_palette_highlight[v].yuva.v = p[3]; /* Cr / V */
+            p_sys->p_palette_highlight[v].yuva.u = p[2]; /* Cb / U */
             break;
         }
 
         case 0x37:
             /* transparency for primary palette */
-            p_sys->p_palette[0][3] = (p[3] & 0x0f) << 4;
-            p_sys->p_palette[1][3] = (p[3] >> 4) << 4;
-            p_sys->p_palette[2][3] = (p[2] & 0x0f) << 4;
-            p_sys->p_palette[3][3] = (p[2] >> 4) << 4;
+            p_sys->p_palette[0].yuva.a = (p[3] & 0x0f) << 4;
+            p_sys->p_palette[1].yuva.a = (p[3] >> 4) << 4;
+            p_sys->p_palette[2].yuva.a = (p[2] & 0x0f) << 4;
+            p_sys->p_palette[3].yuva.a = (p[2] >> 4) << 4;
 
 #ifdef DEBUG_CVDSUB
             msg_Dbg( p_dec, "transparency for primary palette 0..3: "
                      "0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8,
-                     p_sys->p_palette[0][3], p_sys->p_palette[1][3],
-                     p_sys->p_palette[2][3], p_sys->p_palette[3][3]);
+                     p_sys->p_palette[0].yuva.a, p_sys->p_palette[1].yuva.a,
+                     p_sys->p_palette[2].yuva.a, p_sys->p_palette[3].yuva.a);
 #endif
             break;
 
         case 0x3f:
             /* transparency for highlight palette */
-            p_sys->p_palette_highlight[0][3] = (p[2] & 0x0f) << 4;
-            p_sys->p_palette_highlight[1][3] = (p[2] >> 4) << 4;
-            p_sys->p_palette_highlight[2][3] = (p[1] & 0x0f) << 4;
-            p_sys->p_palette_highlight[3][3] = (p[1] >> 4) << 4;
+            p_sys->p_palette_highlight[0].yuva.a = (p[2] & 0x0f) << 4;
+            p_sys->p_palette_highlight[1].yuva.a = (p[2] >> 4) << 4;
+            p_sys->p_palette_highlight[2].yuva.a = (p[1] & 0x0f) << 4;
+            p_sys->p_palette_highlight[3].yuva.a = (p[1] >> 4) << 4;
 
 #ifdef DEBUG_CVDSUB
             msg_Dbg( p_dec, "transparency for highlight palette 0..3: "
                      "0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8,
-                     p_sys->p_palette_highlight[0][3],
-                     p_sys->p_palette_highlight[1][3],
-                     p_sys->p_palette_highlight[2][3],
-                     p_sys->p_palette_highlight[3][3] );
+                     p_sys->p_palette_highlight[0].yuva.a,
+                     p_sys->p_palette_highlight[1].yuva.a,
+                     p_sys->p_palette_highlight[2].yuva.a,
+                     p_sys->p_palette_highlight[3].yuva.a );
 #endif
             break;
 
@@ -510,7 +510,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, block_t *p_data )
     subpicture_region_t *p_region;
     video_format_t fmt;
     video_palette_t palette;
-    int i;
+    size_t i;
 
     /* Allocate the subpicture internal data. */
     p_spu = decoder_NewSubpicture( p_dec, NULL );
@@ -530,12 +530,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, block_t *p_data )
     fmt.p_palette = &palette;
     fmt.p_palette->i_entries = 4;
     for( i = 0; i < fmt.p_palette->i_entries; i++ )
-    {
-        fmt.p_palette->palette[i][0] = p_sys->p_palette[i][0];
-        fmt.p_palette->palette[i][1] = p_sys->p_palette[i][1];
-        fmt.p_palette->palette[i][2] = p_sys->p_palette[i][2];
-        fmt.p_palette->palette[i][3] = p_sys->p_palette[i][3];
-    }
+        fmt.p_palette->palette[i] = p_sys->p_palette[i];
 
     p_region = subpicture_region_New( &fmt );
     if( !p_region )

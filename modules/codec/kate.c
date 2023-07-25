@@ -688,19 +688,20 @@ static void CreateKateBitmap( picture_t *pic, const kate_bitmap *bitmap )
     }
 }
 
+static inline vlc_palette_color TO_PALETTE_COLOR(const kate_color *col)
+{
+    uint8_t y, u, v;
+    rgb_to_yuv( &y, &u, &v, col->r, col->g, col->b);
+    return (vlc_palette_color) { .yuva = { .y = y, .u = u, .v = v, .a = col->a } };
+}
+
 static void CreateKatePalette( video_palette_t *fmt_palette, const kate_palette *palette )
 {
     size_t n;
 
     fmt_palette->i_entries = palette->ncolors;
     for( n=0; n<palette->ncolors; ++n )
-    {
-        rgb_to_yuv(
-            &fmt_palette->palette[n][0], &fmt_palette->palette[n][1], &fmt_palette->palette[n][2],
-            palette->colors[n].r, palette->colors[n].g, palette->colors[n].b
-        );
-        fmt_palette->palette[n][3] = palette->colors[n].a;
-    }
+        fmt_palette->palette[n] = TO_PALETTE_COLOR(&palette->colors[n]);
 }
 
 static void SetupText( decoder_t *p_dec, subpicture_t *p_spu, const kate_event *ev )
