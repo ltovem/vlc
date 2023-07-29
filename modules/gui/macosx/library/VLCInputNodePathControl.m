@@ -28,17 +28,14 @@
 
 - (void)appendInputNodePathControlItem:(VLCInputNodePathControlItem *)inputNodePathControlItem
 {
-    NSParameterAssert(inputNodePathControlItem != nil);
-    NSParameterAssert(inputNodePathControlItem.image != nil);
-    NSParameterAssert(inputNodePathControlItem.image.accessibilityDescription != nil);
-    NSParameterAssert(![inputNodePathControlItem.image.accessibilityDescription isEqualToString:@""]);
+    NSString * const inputNodeMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:inputNodePathControlItem];
+    NSParameterAssert(![inputNodeMRL isEqualToString:@""]);
 
     if (_inputNodePathControlItems == nil) {
         _inputNodePathControlItems = [NSMutableDictionary dictionary];
     }
 
-    [_inputNodePathControlItems setObject:inputNodePathControlItem
-                                   forKey:inputNodePathControlItem.image.accessibilityDescription];
+    [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodeMRL];
 
     NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
     [pathItems addObject:inputNodePathControlItem];
@@ -54,10 +51,11 @@
 
     NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
     NSPathControlItem *lastItem = pathItems.lastObject;
+    NSString * const lastItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:lastItem];
 
     [pathItems removeLastObject];
     self.pathItems = pathItems;
-    [_inputNodePathControlItems removeObjectForKey:lastItem.image.accessibilityDescription];
+    [_inputNodePathControlItems removeObjectForKey:lastItemMRL];
 }
 
 - (void)clearInputNodePathControlItems
@@ -68,12 +66,14 @@
 
 - (void)clearPathControlItemsAheadOf:(NSPathControlItem *)item
 {
-    if ([item.image.accessibilityDescription isEqualToString:@""]) {
+    NSString * const itemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:item];
+    if ([itemMRL isEqualToString:@""]) {
         return;
     }
 
     NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem *searchItem, NSUInteger idx, BOOL *stop) {
-        return [searchItem.image.accessibilityDescription isEqualToString:item.image.accessibilityDescription];
+        NSString * const searchItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
+        return [searchItemMRL isEqualToString:itemMRL];
     }];
 
     if (indexOfItem == NSNotFound) {
@@ -85,7 +85,7 @@
     NSMutableArray<NSString *> *itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
 
     for (NSPathControlItem *searchItem in itemsToRemove) {
-        NSString *searchItemMrl = searchItem.image.accessibilityDescription;
+        NSString * const searchItemMrl = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
         [itemMrlsToRemove addObject:searchItemMrl];
     };
 

@@ -27,6 +27,15 @@
 
 @implementation VLCInputNodePathControlItem
 
++ (NSString *)MRLFromPathControlItem:(NSPathControlItem *)pathControlItem
+{
+    if (pathControlItem == nil || pathControlItem.image == nil || pathControlItem.image.accessibilityDescription == nil) {
+        return @"";
+    }
+
+    return pathControlItem.image.accessibilityDescription;
+}
+
 - (instancetype)initWithInputNode:(VLCInputNode *)inputNode
 {
     self = [super init];

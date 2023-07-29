@@ -512,7 +512,7 @@ referenceSizeForHeaderInSection:(NSInteger)section
     }
 
     NSPathControlItem * const selectedItem = _pathControl.clickedPathItem;
-    NSString * const itemNodeMrl = selectedItem.image.accessibilityDescription;
+    NSString * const itemNodeMrl = [VLCInputNodePathControlItem MRLFromPathControlItem:selectedItem];
 
     VLCInputNodePathControlItem * const matchingItem = [_pathControl.inputNodePathControlItems objectForKey:itemNodeMrl];
     if (matchingItem != nil) {
