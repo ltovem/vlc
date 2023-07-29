@@ -37,7 +37,7 @@
 
     [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodeMRL];
 
-    NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
+    NSMutableArray * const pathItems = [NSMutableArray arrayWithArray:self.pathItems];
     [pathItems addObject:inputNodePathControlItem];
     self.pathItems = pathItems;
 }
@@ -49,8 +49,8 @@
         return;
     }
 
-    NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
-    NSPathControlItem *lastItem = pathItems.lastObject;
+    NSMutableArray * const pathItems = [NSMutableArray arrayWithArray:self.pathItems];
+    NSPathControlItem * const lastItem = pathItems.lastObject;
     NSString * const lastItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:lastItem];
 
     [pathItems removeLastObject];
@@ -71,7 +71,7 @@
         return;
     }
 
-    NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem *searchItem, NSUInteger idx, BOOL *stop) {
+    NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem * const searchItem, const NSUInteger idx, BOOL * const stop) {
         NSString * const searchItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
         return [searchItemMRL isEqualToString:itemMRL];
     }];
@@ -80,11 +80,11 @@
         return;
     }
 
-    NSMutableArray<NSPathControlItem *> *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
-    NSArray<NSPathControlItem *> *itemsToRemove = [pathItems subarrayWithRange:NSMakeRange(indexOfItem + 1, pathItems.count - indexOfItem - 1)];
-    NSMutableArray<NSString *> *itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
+    NSMutableArray<NSPathControlItem *> * const pathItems = [NSMutableArray arrayWithArray:self.pathItems];
+    NSArray<NSPathControlItem *> * const itemsToRemove = [pathItems subarrayWithRange:NSMakeRange(indexOfItem + 1, pathItems.count - indexOfItem - 1)];
+    NSMutableArray<NSString *> * const itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
 
-    for (NSPathControlItem *searchItem in itemsToRemove) {
+    for (NSPathControlItem * const searchItem in itemsToRemove) {
         NSString * const searchItemMrl = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
         [itemMrlsToRemove addObject:searchItemMrl];
     };
