@@ -30,14 +30,15 @@
 {
     NSParameterAssert(inputNodePathControlItem != nil);
     NSParameterAssert(inputNodePathControlItem.image != nil);
-    NSParameterAssert(inputNodePathControlItem.image.name != nil);
-    NSParameterAssert(![inputNodePathControlItem.image.name isEqualToString:@""]);
+    NSParameterAssert(inputNodePathControlItem.image.accessibilityDescription != nil);
+    NSParameterAssert(![inputNodePathControlItem.image.accessibilityDescription isEqualToString:@""]);
 
     if (_inputNodePathControlItems == nil) {
         _inputNodePathControlItems = [NSMutableDictionary dictionary];
     }
 
-    [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodePathControlItem.image.name];
+    [_inputNodePathControlItems setObject:inputNodePathControlItem
+                                   forKey:inputNodePathControlItem.image.accessibilityDescription];
 
     NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
     [pathItems addObject:inputNodePathControlItem];
@@ -56,7 +57,7 @@
 
     [pathItems removeLastObject];
     self.pathItems = pathItems;
-    [_inputNodePathControlItems removeObjectForKey:lastItem.image.name];
+    [_inputNodePathControlItems removeObjectForKey:lastItem.image.accessibilityDescription];
 }
 
 - (void)clearInputNodePathControlItems
@@ -67,12 +68,12 @@
 
 - (void)clearPathControlItemsAheadOf:(NSPathControlItem *)item
 {
-    if ([item.image.name isEqualToString:@""]) {
+    if ([item.image.accessibilityDescription isEqualToString:@""]) {
         return;
     }
 
     NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem *searchItem, NSUInteger idx, BOOL *stop) {
-        return [searchItem.image.name isEqualToString:item.image.name];
+        return [searchItem.image.accessibilityDescription isEqualToString:item.image.accessibilityDescription];
     }];
 
     if (indexOfItem == NSNotFound) {
@@ -84,7 +85,7 @@
     NSMutableArray<NSString *> *itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
 
     for (NSPathControlItem *searchItem in itemsToRemove) {
-        NSString *searchItemMrl = searchItem.image.name;
+        NSString *searchItemMrl = searchItem.image.accessibilityDescription;
         [itemMrlsToRemove addObject:searchItemMrl];
     };
 
