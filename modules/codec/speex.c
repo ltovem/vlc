@@ -329,16 +329,16 @@ static block_t *DecodeBlock( decoder_t *p_dec, block_t **pp_block )
 
     if( block != NULL )
     {
-        if( block->i_flags & (BLOCK_FLAG_CORRUPTED|BLOCK_FLAG_DISCONTINUITY) )
-        {
+        if( block->i_flags & BLOCK_FLAG_DISCONTINUITY )
             Flush( p_dec );
-            if( block->i_flags & BLOCK_FLAG_CORRUPTED )
-            {
-                block_Release( block );
-                *pp_block = NULL;
-                return NULL;
-            }
+
+        if( block->i_flags & BLOCK_FLAG_CORRUPTED )
+        {
+            block_Release( block );
+            *pp_block = NULL;
+            return NULL;
         }
+
         /* Block to Ogg packet */
         oggpacket.packet = block->p_buffer;
         oggpacket.bytes = block->i_buffer;

@@ -337,15 +337,14 @@ static block_t *Packetize( decoder_t *p_dec, block_t **pp_block )
     p_block = *pp_block;
     *pp_block = NULL; /* So the packet doesn't get re-sent */
 
-    if( p_block->i_flags & (BLOCK_FLAG_CORRUPTED|BLOCK_FLAG_DISCONTINUITY) )
-    {
+    if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
         Flush( p_dec );
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            block_Release( p_block );
-            *pp_block = NULL;
-            return NULL;
-        }
+
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        block_Release( p_block );
+        *pp_block = NULL;
+        return NULL;
     }
 
     /* Date management */

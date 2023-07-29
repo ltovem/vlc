@@ -181,12 +181,12 @@ static subpicture_t *DecodeBlock(decoder_t *dec, block_t **block_ptr)
 
     block_t *block = *block_ptr;
 
-    if (block->i_flags & (BLOCK_FLAG_DISCONTINUITY | BLOCK_FLAG_CORRUPTED)) {
-        if (block->i_flags & BLOCK_FLAG_CORRUPTED) {
-            Flush(dec);
-            block_Release(block);
-            return NULL;
-        }
+    if (block->i_flags & BLOCK_FLAG_DISCONTINUITY)
+        Flush(dec);
+
+    if (block->i_flags & BLOCK_FLAG_CORRUPTED) {
+        block_Release(block);
+        return NULL;
     }
 
     if (block->i_buffer <= 0) {

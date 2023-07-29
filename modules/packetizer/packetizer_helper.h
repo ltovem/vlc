@@ -113,7 +113,7 @@ static block_t *packetizer_PacketizeBlock( packetizer_t *p_pack, block_t **pp_bl
     if( p_block == NULL && p_pack->bytestream.p_block == NULL )
         return NULL;
 
-    if( p_block && unlikely( p_block->i_flags&(BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) ) )
+    if( p_block && unlikely( p_block->i_flags&BLOCK_FLAG_DISCONTINUITY ) )
     {
         block_t *p_drained = packetizer_PacketizeBlock( p_pack, NULL );
         if( p_drained )

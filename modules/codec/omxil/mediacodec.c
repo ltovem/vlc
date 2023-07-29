@@ -1642,16 +1642,17 @@ static int DecodeBlock(decoder_t *p_dec, block_t *p_in_block)
         goto end;
     }
 
-    if (p_in_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED))
+    if (p_in_block->i_flags & BLOCK_FLAG_DISCONTINUITY)
     {
         if (p_sys->b_output_ready)
             QueueBlockLocked(p_dec, NULL, true);
         DecodeFlushLocked(p_sys);
         if (p_sys->b_aborted)
             goto end;
-        if (p_in_block->i_flags & BLOCK_FLAG_CORRUPTED)
-            goto end;
     }
+
+    if (p_in_block->i_flags & BLOCK_FLAG_CORRUPTED)
+        goto end;
 
     if (p_in_block->i_flags & BLOCK_FLAG_INTERLACED_MASK
      && !(p_sys->api.i_quirks & MC_API_VIDEO_QUIRKS_SUPPORT_INTERLACED))

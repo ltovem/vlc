@@ -769,14 +769,13 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
 
         /* reset the decoder when seeking as the decode in progress is invalid */
         /* discard the block as it is just a null magic block */
-        if( p_block->i_flags & (BLOCK_FLAG_CORRUPTED|BLOCK_FLAG_DISCONTINUITY) )
-        {
+        if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
             Flush( p_dec );
-            if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-            {
-                block_Release( p_block );
-                return VLCDEC_SUCCESS;
-            }
+
+        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+        {
+            block_Release( p_block );
+            return VLCDEC_SUCCESS;
         }
 
         SchroBuffer *p_schrobuffer;

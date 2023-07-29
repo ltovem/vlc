@@ -466,14 +466,13 @@ static block_t *ProcessPacket( decoder_t *p_dec, ogg_packet *p_oggpacket,
     if( !p_block )
         return NULL;
 
-    if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) )
-    {
+    if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
         Flush( p_dec );
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            block_Release(p_block);
-            return NULL;
-        }
+
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        block_Release(p_block);
+        return NULL;
     }
 
     /* Date management */

@@ -717,17 +717,13 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
     if( !p_block ) /* No Drain */
         return VLCDEC_SUCCESS;
 
-    if( unlikely( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY |
-                    BLOCK_FLAG_CORRUPTED ) ) )
-    {
-        if( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY )
-            Flush( p_dec );
+    if( unlikely( p_block->i_flags & BLOCK_FLAG_DISCONTINUITY ) )
+        Flush( p_dec );
 
-        if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
-        {
-            block_Release( p_block );
-            goto done;
-        }
+    if( p_block->i_flags & BLOCK_FLAG_CORRUPTED )
+    {
+        block_Release( p_block );
+        goto done;
     }
 
     if( likely( p_block->i_buffer ) )
