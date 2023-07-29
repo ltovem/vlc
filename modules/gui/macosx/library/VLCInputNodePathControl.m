@@ -32,7 +32,7 @@
     NSParameterAssert(![inputNodeMRL isEqualToString:@""]);
 
     if (_inputNodePathControlItems == nil) {
-        _inputNodePathControlItems = [NSMutableDictionary dictionary];
+        _inputNodePathControlItems = NSMutableDictionary.dictionary;
     }
 
     [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodeMRL];
@@ -45,7 +45,7 @@
 - (void)removeLastInputNodePathControlItem
 {
     if (self.pathItems.count == 0) {
-        _inputNodePathControlItems = [NSMutableDictionary dictionary];
+        _inputNodePathControlItems = NSMutableDictionary.dictionary;
         return;
     }
 
@@ -60,7 +60,7 @@
 
 - (void)clearInputNodePathControlItems
 {
-    _inputNodePathControlItems = [NSMutableDictionary dictionary];
+    _inputNodePathControlItems = NSMutableDictionary.dictionary;
     self.pathItems = @[];
 }
 
