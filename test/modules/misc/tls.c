@@ -32,7 +32,9 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
+#ifdef HAVE_POLL_H
 #include <poll.h>
+#endif
 
 #include <vlc_common.h>
 #include <vlc_modules.h>

@@ -100,10 +100,15 @@ check_HEADERS = libvlc/test.h libvlc/libvlc_additions.h libvlc/media_utils.h \
 
 TESTS = $(check_PROGRAMS) check_POTFILES.sh
 
-AM_CFLAGS = -DSRCDIR=\"$(srcdir)\"
+AM_CFLAGS = $(CFLAGS_vlc)
+AM_CPPFLAGS = -DSRCDIR=\"$(srcdir)\" $(CPPFLAGS_vlc)
 AM_LDFLAGS = -no-install $(LDFLAGS_vlc)
 LIBVLCCORE = -L../src/ -lvlccore
 LIBVLC = -L../lib -lvlc
+
+if HAVE_WIN32
+AM_LDFLAGS += -mwindows -Wc,-static
+endif
 
 test_libvlc_core_SOURCES = libvlc/core.c
 test_libvlc_core_LDADD = $(LIBVLC)
@@ -261,7 +266,6 @@ libvlc_demux_run_la_SOURCES = src/input/demux-run.c src/input/demux-run.h \
 libvlc_demux_run_la_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DTOP_BUILDDIR=\"$$(cd "$(top_builddir)"; pwd)\" \
 	-DTOP_SRCDIR=\"$$(cd "$(top_srcdir)"; pwd)\"
-libvlc_demux_run_la_LDFLAGS = -no-install -static
 libvlc_demux_run_la_LIBADD = \
 	../lib/libvlc.la ../src/libvlccore.la ../compat/libcompat.la
 if !HAVE_DYNAMIC_PLUGINS
@@ -325,7 +329,6 @@ EXTRA_LTLIBRARIES = libvlc_demux_run.la
 libvlc_demux_dec_run_la_SOURCES = $(libvlc_demux_run_la_SOURCES) \
 	src/input/decoder.c src/input/decoder.h
 libvlc_demux_dec_run_la_CPPFLAGS = $(libvlc_demux_run_la_CPPFLAGS) -DHAVE_DECODERS
-libvlc_demux_dec_run_la_LDFLAGS = $(libvlc_demux_run_la_LDFLAGS)
 libvlc_demux_dec_run_la_LIBADD = $(libvlc_demux_run_la_LIBADD)
 if !HAVE_DYNAMIC_PLUGINS
 libvlc_demux_dec_run_la_LIBADD += \
@@ -360,10 +363,8 @@ EXTRA_LTLIBRARIES += libvlc_demux_dec_run.la
 #
 # Fuzzers
 #
-vlc_demux_run_LDFLAGS = -no-install -static
 vlc_demux_run_LDADD = libvlc_demux_run.la
 vlc_demux_dec_run_SOURCES = vlc-demux-run.c
-vlc_demux_dec_run_LDFLAGS = -no-install -static
 vlc_demux_dec_run_LDADD = libvlc_demux_dec_run.la
 EXTRA_PROGRAMS += vlc-demux-run vlc-demux-dec-run
 
@@ -375,7 +376,7 @@ noinst_PROGRAMS += vlc-demux-libfuzzer vlc-demux-dec-libfuzzer vlc-demux-run vlc
 endif
 
 vlccoreios_SOURCES = iosvlc.m
-vlccoreios_LDFLAGS = $(LDFLAGS_vlc) -Wl,-framework,Foundation,-framework,UIKit
+vlccoreios_LDFLAGS = $(AM_LDFLAGS) -Wl,-framework,Foundation,-framework,UIKit
 vlccoreios_LDFLAGS += -Xlinker -rpath -Xlinker "@executable_path/Frameworks/"
 vlccoreios_OBJCFLAGS = -fobjc-arc
 vlccoreios_LDADD = ../lib/libvlc.la ../src/libvlccore.la
