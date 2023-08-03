@@ -89,6 +89,7 @@ private slots:
 
 private:
     QUrl m_source;
+    QUrl m_oldSource;
     qreal m_radius = 0.0;
     qreal m_dpr = 1.0; // device pixel ratio
     Status m_status = Status::Null;

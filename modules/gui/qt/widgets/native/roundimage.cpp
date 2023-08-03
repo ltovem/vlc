@@ -472,15 +472,18 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         oldNode = nullptr;
     }
 
-    if (m_roundImage.isNull())
+    if (m_dirty && m_roundImage.isNull())
     {
         delete oldNode;
         m_dirty = false;
+        m_oldSource.clear();
         return nullptr;
     }
 
     if (!oldNode)
     {
+        assert(!m_roundImage.isNull());
+
         if (m_QSGCustomGeometry)
         {
             customImageNode = new QSGRoundedRectangularImageNode;
@@ -492,12 +495,15 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             assert(imageNode);
             imageNode->setOwnsTexture(true);
         }
+
+        m_dirty = true;
     }
 
     if (m_dirty)
     {
         m_dirty = false;
         assert(window());
+        assert(!m_roundImage.isNull());
 
         QQuickWindow::CreateTextureOptions flags = QQuickWindow::TextureCanUseAtlas;
 
@@ -521,6 +527,8 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             qmlWarning(this) << "Could not generate texture from " << m_roundImage;
         }
     }
+
+    m_oldSource = m_source;
 
     // Geometry:
     if (m_QSGCustomGeometry)
@@ -585,6 +593,9 @@ void RoundImage::itemChange(QQuickItem::ItemChange change, const QQuickItem::Ite
     if (change == QQuickItem::ItemDevicePixelRatioHasChanged)
         setDPR(value.realValue);
 
+    if (change == QQuickItem::ItemVisibleHasChanged && !isVisible())
+        m_oldSource.clear();
+
     QQuickItem::itemChange(change, value);
 }
 
@@ -626,7 +637,8 @@ void RoundImage::load()
 
     connect(m_activeImageResponse.get(), &RoundImageRequest::requestCompleted, this, &RoundImage::onRequestCompleted);
     //at this point m_activeImageResponse is either in Loading or Error status
-    onRequestCompleted(RoundImage::Loading, {});
+    if (m_source != m_oldSource)
+        onRequestCompleted(RoundImage::Loading, {});
 }
 
 void RoundImage::onRequestCompleted(Status status, const QImage& image)
@@ -687,10 +699,13 @@ void RoundImage::regenerateRoundImage()
     if (!isComponentComplete() || m_enqueuedGeneration)
         return;
 
-    setStatus(source().isEmpty() ? Status::Null : Status::Loading);
+    if (m_oldSource != m_source)
+    {
+        setStatus(source().isEmpty() ? Status::Null : Status::Loading);
 
-    // remove old contents
-    setRoundImage({});
+        // remove old contents
+        setRoundImage({});
+    }
 
     m_activeImageResponse.reset();
 
