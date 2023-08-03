@@ -99,9 +99,6 @@ FocusScope {
 
             spacing: VLCStyle.column_spacing
 
-            // NOTE: We want navigation buttons to be centered on the item cover.
-            buttonMargin: VLCStyle.margin_xsmall + VLCStyle.gridCover_video_height / 2 - buttonLeft.height / 2
-
             orientation: ListView.Horizontal
 
             focus: true

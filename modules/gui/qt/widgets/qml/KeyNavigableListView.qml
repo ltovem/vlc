@@ -33,9 +33,6 @@ FadingEdgeListView {
 
     // Properties
 
-    // NOTE: We want buttons to be centered vertically but configurable.
-    property int buttonMargin: height / 2 - buttonLeft.height / 2
-
     readonly property int scrollBarWidth: scroll_id.visible ? scroll_id.width : 0
 
     property bool keyNavigationWraps: false
@@ -52,9 +49,6 @@ FadingEdgeListView {
 
     //forward view properties
     property alias listScrollBar: scroll_id
-
-    property alias buttonLeft: buttonLeft
-    property alias buttonRight: buttonRight
 
     property alias dragAutoScrollDragItem: dragAutoScrollHandler.dragItem
     property alias dragAutoScrollMargin: dragAutoScrollHandler.margin
@@ -334,40 +328,5 @@ FadingEdgeListView {
                 root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
             }
         }
-    }
-
-    // FIXME: We probably need to upgrade these RoundButton(s) eventually. And we probably need
-    //        to have some kind of animation when switching pages.
-
-    RoundButton {
-        id: buttonLeft
-
-        anchors.left: parent.left
-        anchors.top: parent.top
-
-        anchors.topMargin: buttonMargin
-
-        text: '<'
-
-        visible: (root.orientation === ListView.Horizontal && !(root.atXBeginning))
-
-        onClicked: root.prevPage()
-
-        activeFocusOnTab: false
-    }
-
-    RoundButton {
-        id: buttonRight
-
-        anchors.right: parent.right
-        anchors.top: buttonLeft.top
-
-        text: '>'
-
-        visible: (root.orientation === ListView.Horizontal && !(root.atXEnd))
-
-        onClicked: root.nextPage()
-
-        activeFocusOnTab: false
     }
 }
