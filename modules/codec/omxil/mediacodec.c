@@ -848,9 +848,6 @@ static int OpenDecoder(vlc_object_t *p_this, pf_MediaCodecApi_init pf_init)
     p_sys->api.i_codec = p_dec->fmt_in->i_codec;
     p_sys->api.i_cat = p_dec->fmt_in->i_cat;
     p_sys->api.psz_mime = mime;
-    p_sys->video.i_mpeg_dar_num = 0;
-    p_sys->video.i_mpeg_dar_den = 0;
-    p_sys->video.surfacetexture = NULL;
     p_sys->b_decoder_dead = false;
 
     if (pf_init(&p_sys->api) != 0)
@@ -888,6 +885,10 @@ static int OpenDecoder(vlc_object_t *p_this, pf_MediaCodecApi_init pf_init)
 
     if (p_dec->fmt_in->i_cat == VIDEO_ES)
     {
+        p_sys->video.i_mpeg_dar_num = 0;
+        p_sys->video.i_mpeg_dar_den = 0;
+        p_sys->video.surfacetexture = NULL;
+
         switch (p_dec->fmt_in->i_codec)
         {
         case VLC_CODEC_H264:
