@@ -49,12 +49,10 @@ FocusScope {
 
     function _play(id) {
         MediaLib.addAndPlay( id, [":restore-playback-pos=2"] )
-        g_mainDisplay.showPlayer()
     }
 
     function _playIndex(idx) {
         recentModel.addAndPlay( [idx], [":restore-playback-pos=2"] )
-        g_mainDisplay.showPlayer()
     }
 
     // Childs

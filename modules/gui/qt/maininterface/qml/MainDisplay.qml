@@ -197,8 +197,6 @@ FocusScope {
     }
 
     function play(backend, ids) {
-        showPlayer();
-
         backend.addAndPlay(ids);
     }
 
