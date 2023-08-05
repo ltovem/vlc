@@ -32,6 +32,7 @@
         [VLCLibrarySegment segmentWithSegmentType:VLCLibraryHomeSegment],
         [VLCLibrarySegment segmentWithSegmentType:VLCLibraryVideoSegment],
         [VLCLibrarySegment segmentWithSegmentType:VLCLibraryMusicSegment],
+        [VLCLibrarySegment segmentWithSegmentType:VLCLibraryPlaylistsSegment],
         [VLCLibrarySegment segmentWithSegmentType:VLCLibraryBrowseSegment],
         [VLCLibrarySegment segmentWithSegmentType:VLCLibraryStreamsSegment],
     ];
@@ -100,6 +101,8 @@
             return _NS("Genres");
         case VLCLibraryVideoSegment:
             return _NS("Videos");
+        case VLCLibraryPlaylistsSegment:
+            return _NS("Playlists");
         case VLCLibraryBrowseSegment:
             return _NS("Browse");
         case VLCLibraryStreamsSegment:
@@ -125,6 +128,8 @@
             return [NSImage imageNamed:@"sidebar-music"];
         case VLCLibraryVideoSegment:
             return [NSImage imageNamed:@"sidebar-movie"];
+        case VLCLibraryPlaylistsSegment:
+            return [NSImage imageNamed:@"sidebar-music"];
         case VLCLibraryBrowseSegment:
             return [NSImage imageNamed:@"NSFolder"];
         case VLCLibraryStreamsSegment:
@@ -160,6 +165,9 @@
         case VLCLibraryVideoSegment:
             return [NSImage imageWithSystemSymbolName:@"film.stack"
                              accessibilityDescription:@"Video icon"];
+        case VLCLibraryPlaylistsSegment:
+            return [NSImage imageWithSystemSymbolName:@"music.note.list"
+                             accessibilityDescription:@"Playlists icon"];
         case VLCLibraryBrowseSegment:
             return [NSImage imageWithSystemSymbolName:@"folder"
                              accessibilityDescription:@"Browse icon"];
