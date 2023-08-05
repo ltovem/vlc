@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class VLCMediaLibraryAlbum;
 @class VLCMediaLibraryGenre;
 @class VLCMediaLibraryEntryPoint;
+@class VLCMediaLibraryPlaylist;
 @protocol VLCMediaLibraryItemProtocol;
 
 extern NSString * const VLCLibraryModelArtistListReset;
@@ -80,6 +81,9 @@ extern NSString * const VLCLibraryModelGenreUpdated;
 
 @property (readonly) size_t numberOfVideoMedia;
 @property (readonly) NSArray <VLCMediaLibraryMediaItem *> *listOfVideoMedia;
+
+@property (readonly) size_t numberOfPlaylists;
+@property (readonly) NSArray <VLCMediaLibraryPlaylist *> *listOfPlaylists;
 
 @property (readwrite) uint32_t recentMediaLimit;
 @property (readonly) size_t numberOfRecentMedia;
