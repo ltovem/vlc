@@ -43,6 +43,8 @@
 #import "library/audio-library/VLCLibraryAudioGroupTableViewDelegate.h"
 #import "library/audio-library/VLCLibraryAudioTableViewDelegate.h"
 
+#import "library/playlist-library/VLCLibraryPlaylistViewController.h"
+
 #import "library/video-library/VLCLibraryVideoViewController.h"
 
 #import "main/VLCMain.h"
@@ -270,6 +272,9 @@ NSString *VLCLibraryPlaceholderAudioViewIdentifier = @"VLCLibraryPlaceholderAudi
 - (void)presentPlaceholderAudioView
 {
     for (NSLayoutConstraint * const constraint in _libraryWindow.libraryVideoViewController.videoPlaceholderImageViewSizeConstraints) {
+        constraint.active = NO;
+    }
+    for (NSLayoutConstraint * const constraint in _libraryWindow.libraryPlaylistViewController.placeholderImageViewConstraints) {
         constraint.active = NO;
     }
     for (NSLayoutConstraint * const constraint in _audioPlaceholderImageViewSizeConstraints) {
