@@ -435,6 +435,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     case VLCLibraryGenresMusicSubSegment:
         [self showAudioLibrary];
         break;
+    case VLCLibraryPlaylistsSegment:
+        [self showPlaylistLibrary];
+        break;
     case VLCLibraryBrowseSegment:
     case VLCLibraryStreamsSegment:
         [self showMediaSourceLibrary];
@@ -635,6 +638,15 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     [self setViewModeToolbarItemVisible:YES];
 
     self.libraryAudioViewController.currentSegmentType = self.librarySegmentType;
+}
+
+- (void)showPlaylistLibrary
+{
+    [self setForwardsBackwardsToolbarItemsVisible:NO];
+    [self setSortOrderToolbarItemVisible:YES];
+    [self setLibrarySearchToolbarItemVisible:YES];
+
+    [_libraryPlaylistViewController presentPlaylistsView];
 }
 
 - (void)showMediaSourceLibrary
