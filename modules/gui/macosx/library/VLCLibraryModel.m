@@ -95,6 +95,7 @@ NSString * const VLCLibraryModelGenreUpdated = @"VLCLibraryModelGenreUpdated";
 - (void)resetCachedListOfAlbums;
 - (void)resetCachedListOfGenres;
 - (void)resetCachedListOfMonitoredFolders;
+- (void)resetCachedListOfPlaylists;
 - (void)mediaItemThumbnailGenerated:(VLCMediaLibraryMediaItem *)mediaItem;
 - (void)handleMediaItemDeletionEvent:(const vlc_ml_event_t * const)p_event;
 - (void)handleAlbumDeletionEvent:(const vlc_ml_event_t * const)p_event;
@@ -162,6 +163,9 @@ static void libraryCallback(void *p_data, const vlc_ml_event_t *p_event)
             break;
         case VLC_ML_EVENT_GENRE_DELETED:
             [libraryModel handleGenreDeletionEvent:p_event];
+            break;
+        case VLC_ML_EVENT_PLAYLIST_ADDED:
+            [libraryModel resetCachedListOfPlaylists];
             break;
         case VLC_ML_EVENT_FOLDER_ADDED:
         case VLC_ML_EVENT_FOLDER_UPDATED:
