@@ -259,6 +259,7 @@ EXTRA_DIST += \
 	lua/intf/luac.lua \
 	lua/intf/modules/host.lua \
 	lua/intf/modules/httprequests.lua \
+	lua/intf/modules/medialib.lua \
 	lua/intf/telnet.lua \
 	lua/meta/README.txt \
 	lua/meta/art/README.txt \

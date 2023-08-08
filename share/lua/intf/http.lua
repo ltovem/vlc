@@ -30,6 +30,7 @@ Configuration options:
 
 
 local common = require "common"
+local medialib = require "medialib"
 
 vlc.msg.info("Lua HTTP interface")
 
@@ -344,3 +345,4 @@ else
     load_dir( http_dir )
     a = h:handler("/art",nil,password,callback_art,nil)
 end
+medialib_handlers = medialib.setup_handlers(h, password)
