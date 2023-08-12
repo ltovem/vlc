@@ -53,7 +53,7 @@
 #define VIDEO_TOOLTIP   N_( "Video Settings" )
 #define SUBPIC_TOOLTIP  N_( "Subtitle & On Screen Display Settings" )
 #define INPUT_TOOLTIP   N_( "Input & Codec Settings" )
-#define HOTKEYS_TOOLTIP N_( "Hotkeys Settings" )
+#define HOTKEYS_TOOLTIP N_( "Hotkey Settings" )
 #define ML_TOOLTIP      N_( "Media Library Settings" )
 
 /*  - Help text -
@@ -61,21 +61,18 @@
  */
 
 /* Interface */
-#define INTF_HELP  N_( "Settings for VLC's interfaces" )
-#define INTF_GENERAL_HELP N_( "Main interfaces settings" )
+#define INTF_GENERAL_HELP N_( "Main interface settings" )
 #define INTF_MAIN_HELP N_( "Settings for the main interface" )
 #define INTF_CONTROL_HELP N_( "Settings for VLC's control interfaces" )
-#define INTF_HOTKEYS_HELP N_( "Hotkeys settings" )
+#define INTF_HOTKEYS_HELP N_( "Hotkey settings" )
 
 /* Audio */
-#define AUDIO_HELP N_( "Audio settings" )
 #define AUDIO_GENERAL_HELP N_("General audio settings")
 #define AFILTER_HELP N_( "Audio filters are used to process the audio stream." )
 #define AVISUAL_HELP N_( "Audio visualizations" )
 #define AOUT_HELP N_("General settings for audio output modules.")
 
 /* Video */
-#define VIDEO_HELP N_("Video settings")
 #define VIDEO_GENERAL_HELP N_( "General video settings" )
 #define VOUT_HELP N_("General settings for video output modules.")
 #define VFILTER_HELP N_("Video filters are used to process the video stream." )
@@ -84,8 +81,7 @@
 #define SPLITTER_HELP N_("Video splitters separate the stream into multiple videos.")
 
 /* Input */
-#define INPUT_HELP N_( "Settings for input, demultiplexing, " \
-         "decoding and encoding")
+#define INPUT_GENERAL_HELP N_( "Settings for input, demultiplexing, decoding and encoding")
 #define ACCESS_HELP N_( \
     "Settings related to the various access methods. " \
     "Common settings you may want to alter are HTTP proxy or " \
@@ -99,7 +95,7 @@
 #define SDEC_HELP N_( "Settings for subtitle, teletext and CC decoders and encoders." )
 
 /* Sout */
-#define SOUT_HELP N_( \
+#define SOUT_GENERAL_HELP N_( \
       "Stream output settings are used when acting as a streaming server " \
       "or when saving incoming streams.\n" \
       "Streams are first muxed and then sent through an \"access output\" "\
@@ -107,7 +103,6 @@
       "it (UDP, HTTP, RTP/RTSP).\n" \
       "Sout streams modules allow advanced stream processing (transcoding, "\
       "duplicating...).")
-#define SOUT_GENERAL_HELP N_( "General stream output settings")
 #define SOUT_MUX_HELP N_( \
        "Muxers create the encapsulation formats that are used to " \
        "put all the elementary streams (video, audio, ...) " \
@@ -133,23 +128,21 @@
 #define SOUT_VOD_HELP N_( "VLC's implementation of Video On Demand" )
 
 /* Playlist */
-#define PLAYLIST_HELP N_( "Settings related to playlist behaviour " \
+#define PGENERAL_HELP N_( "Settings related to playlist behaviour " \
         "(e.g. playback mode) and to modules that automatically add "\
         "items to the playlist (\"service discovery\" modules).")
-#define PGENERAL_HELP N_( "General playlist behaviour")
 #define SD_HELP N_("Services discovery modules are facilities "\
         "that automatically add items to playlist.")
 #define PEXPORT_HELP N_( "Settings relating to exporting playlists." )
 
 /* Advanced */
-#define AADVANCED_HELP N_( "Advanced settings. Use with care...")
+#define AGENERAL_HELP N_( "Advanced settings. Use with care...")
 #define ANETWORK_HELP N_( "Advanced network settings." )
 
 struct config_category_t
 {
     enum vlc_config_cat id;
     enum vlc_config_subcat general_subcat;
-    const char *help;
 };
 
 struct config_subcategory_t
@@ -162,13 +155,13 @@ struct config_subcategory_t
 
 static const struct config_category_t categories_array[] =
 {
-    { CAT_PLAYLIST,   SUBCAT_PLAYLIST_GENERAL,   PLAYLIST_HELP  },
-    { CAT_INTERFACE,  SUBCAT_INTERFACE_GENERAL,  INTF_HELP      },
-    { CAT_AUDIO,      SUBCAT_AUDIO_GENERAL,      AUDIO_HELP     },
-    { CAT_VIDEO,      SUBCAT_VIDEO_GENERAL,      VIDEO_HELP     },
-    { CAT_INPUT,      SUBCAT_INPUT_GENERAL,      INPUT_HELP     },
-    { CAT_SOUT,       SUBCAT_SOUT_GENERAL,       SOUT_HELP      },
-    { CAT_ADVANCED,   SUBCAT_ADVANCED_MISC,      AADVANCED_HELP },
+    { CAT_PLAYLIST,   SUBCAT_PLAYLIST_GENERAL  },
+    { CAT_INTERFACE,  SUBCAT_INTERFACE_GENERAL },
+    { CAT_AUDIO,      SUBCAT_AUDIO_GENERAL     },
+    { CAT_VIDEO,      SUBCAT_VIDEO_GENERAL     },
+    { CAT_INPUT,      SUBCAT_INPUT_GENERAL     },
+    { CAT_SOUT,       SUBCAT_SOUT_GENERAL      },
+    { CAT_ADVANCED,   SUBCAT_ADVANCED_MISC     },
 };
 
 static const struct config_subcategory_t subcategories_array[] =
@@ -179,13 +172,13 @@ static const struct config_subcategory_t subcategories_array[] =
 
     { SUBCAT_INTERFACE_GENERAL,    CAT_INTERFACE,  INTF_TITLE,                INTF_GENERAL_HELP  },
     { SUBCAT_INTERFACE_CONTROL,    CAT_INTERFACE,  N_("Control interfaces"),  INTF_CONTROL_HELP  },
-    { SUBCAT_INTERFACE_HOTKEYS,    CAT_INTERFACE,  N_("Hotkeys settings"),    INTF_HOTKEYS_HELP  },
+    { SUBCAT_INTERFACE_HOTKEYS,    CAT_INTERFACE,  N_("Hotkey settings"),     INTF_HOTKEYS_HELP  },
     { SUBCAT_INTERFACE_MAIN,       CAT_INTERFACE,  N_("Main interfaces"),     INTF_MAIN_HELP     },
 
     { SUBCAT_AUDIO_GENERAL,        CAT_AUDIO,      AUDIO_TITLE,               AUDIO_GENERAL_HELP },
-    { SUBCAT_AUDIO_RESAMPLER,      CAT_AUDIO,      N_("Audio resampler"),     AFILTER_HELP       },
     { SUBCAT_AUDIO_AFILTER,        CAT_AUDIO,      N_("Filters"),             AFILTER_HELP       },
     { SUBCAT_AUDIO_AOUT,           CAT_AUDIO,      N_("Output modules"),      AOUT_HELP          },
+    { SUBCAT_AUDIO_RESAMPLER,      CAT_AUDIO,      N_("Resampler"),           AFILTER_HELP       },
     { SUBCAT_AUDIO_VISUAL,         CAT_AUDIO,      N_("Visualizations"),      AVISUAL_HELP       },
 
     { SUBCAT_VIDEO_GENERAL,        CAT_VIDEO,      VIDEO_TITLE,               VIDEO_GENERAL_HELP },
@@ -194,7 +187,7 @@ static const struct config_subcategory_t subcategories_array[] =
     { SUBCAT_VIDEO_SPLITTER,       CAT_VIDEO,      N_("Splitters"),           SPLITTER_HELP      },
     { SUBCAT_VIDEO_SUBPIC,         CAT_VIDEO,      N_("Subtitles / OSD"),     SUBPIC_HELP        },
 
-    { SUBCAT_INPUT_GENERAL,        CAT_INPUT,      INPUT_TITLE,               INPUT_HELP         },
+    { SUBCAT_INPUT_GENERAL,        CAT_INPUT,      INPUT_TITLE,               INPUT_GENERAL_HELP },
     { SUBCAT_INPUT_ACCESS,         CAT_INPUT,      N_("Access modules"),      ACCESS_HELP        },
     { SUBCAT_INPUT_ACODEC,         CAT_INPUT,      N_("Audio codecs"),        ADEC_HELP          },
     { SUBCAT_INPUT_DEMUX,          CAT_INPUT,      N_("Demuxers"),            DEMUX_HELP         },
@@ -210,7 +203,7 @@ static const struct config_subcategory_t subcategories_array[] =
     { SUBCAT_SOUT_STREAM,          CAT_SOUT,       N_("Sout stream"),         SOUT_STREAM_HELP   },
     { SUBCAT_SOUT_VOD,             CAT_SOUT,       N_("VOD"),                 SOUT_VOD_HELP      },
 
-    { SUBCAT_ADVANCED_MISC,        CAT_ADVANCED,   AADVANCED_TITLE,           AADVANCED_HELP     },
+    { SUBCAT_ADVANCED_MISC,        CAT_ADVANCED,   AADVANCED_TITLE,           AGENERAL_HELP      },
     { SUBCAT_ADVANCED_NETWORK,     CAT_ADVANCED,   N_("Network"),             ANETWORK_HELP      },
 
     { SUBCAT_HIDDEN,               CAT_HIDDEN,     NULL,                      NULL               },
@@ -292,14 +285,6 @@ static inline const char *vlc_config_cat_GetName( enum vlc_config_cat cat )
 {
     enum vlc_config_subcat subcat = vlc_config_cat_GetGeneralSubcat( cat );
     return vlc_config_subcat_GetName( subcat );
-}
-
-/** Get the help text for a category. */
-VLC_USED
-static inline const char *vlc_config_cat_GetHelp( enum vlc_config_cat cat )
-{
-    int i = vlc_config_cat_IndexOf( cat );
-    return (i != -1) ? vlc_gettext(categories_array[i].help) : NULL;
 }
 
 /** Get the parent category for the given subcategory. */

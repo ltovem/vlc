@@ -131,7 +131,7 @@ static NSString* VLCVideoSettingToolbarIdentifier = @"Video Settings Item Identi
 static NSString* VLCOSDSettingToolbarIdentifier = @"Subtitles Settings Item Identifier";
 static NSString* VLCInputSettingToolbarIdentifier = @"Input Settings Item Identifier";
 static NSString* VLCMediaLibrarySettingToolbarIdentifier = @"Media Library Settings Item Identifier";
-static NSString* VLCHotkeysSettingToolbarIdentifier = @"Hotkeys Settings Item Identifier";
+static NSString* VLCHotkeysSettingToolbarIdentifier = @"Hotkey Settings Item Identifier";
 
 @interface VLCMediaLibraryFolderManagementController : NSObject <NSTableViewDelegate, NSTableViewDataSource>
 {
@@ -825,7 +825,7 @@ static inline const char * __config_GetLabel(vlc_object_t *p_this, const char *p
     [self setupButton:_osd_outline_thicknessPopup forIntList: "freetype-outline-thickness"];
 
     /********************
-     * hotkeys settings *
+     * hotkey settings *
      ********************/
     _hotkeySettings = [[NSMutableArray alloc] init];
     NSMutableArray *tempArray_desc = [[NSMutableArray alloc] init];
@@ -1098,7 +1098,7 @@ static inline void save_string_list(intf_thread_t * p_intf, id object, const cha
     }
 
     /********************
-     * hotkeys settings *
+     * hotkey settings *
      ********************/
     if (_hotkeyChanged) {
         NSUInteger hotKeyCount = [_hotkeySettings count];

@@ -634,7 +634,6 @@ enum VLCTreeBranchType {
         _subcategory = SUBCAT_UNKNOWN;
         _configItems = nil;
         _configSize = 0;
-        //_help = [toNSStr(vlc_config_cat_GetHelp(category)) retain];
     }
     return self;
 }
