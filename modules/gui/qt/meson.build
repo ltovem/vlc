@@ -590,6 +590,7 @@ if qt5_dep.found()
 
         if host_system == 'windows'
             qt_extra_deps += [
+                dependency('qdirect2d',             required: false),
                 dependency('qwindows',              required: false),
                 dependency('qwindowsvistastyle',    required: false),
             ]

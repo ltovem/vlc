@@ -52,6 +52,7 @@
     #ifdef _WIN32
      Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin)
      Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+     Q_IMPORT_PLUGIN(QWindowsDirect2DIntegrationPlugin)
     #elif defined(Q_OS_MACOS)
      Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)
     #endif
