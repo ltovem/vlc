@@ -3515,8 +3515,17 @@ static int TrackUpdateFormat( demux_t *p_demux, mp4_track_t *p_track,
         es_format_t tmpfmt;
         es_format_Init( &tmpfmt, p_track->fmt.i_cat, 0 );
         tmpfmt.i_id = p_track->i_track_ID;
-        if( TrackFillConfig( p_demux, p_track, p_newsample, i_chunk, &tmpfmt, &cfg ) == VLC_SUCCESS &&
-            !FormatIsCompatible( &p_track->fmt, &tmpfmt ) )
+
+        int ret = TrackFillConfig( p_demux, p_track, p_newsample, i_chunk, &tmpfmt, &cfg );
+        if( ret != VLC_SUCCESS )
+        {
+            p_track->b_ok = false;
+            p_track->b_selected = false;
+            es_format_Clean( &tmpfmt );
+            return ret;
+        }
+
+        if( !FormatIsCompatible( &p_track->fmt, &tmpfmt ) )
         {
             bool b_reselect = false;
 
