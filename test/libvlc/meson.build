@@ -46,7 +46,7 @@ endif
 
 vlc_tests += {
     'name' : 'test_libvlc_media_thumbnail_argb',
-    'sources' : files('media_thumbnail.c'),
+    'sources' : files('thumbnailer.c'),
     'link_with' : [libvlc, libvlccore],
     'suite' : ['libvlc', 'test_libvlc_media_thumbnail'],
     'c_args' : [
@@ -58,7 +58,7 @@ vlc_tests += {
 
 vlc_tests += {
     'name' : 'test_libvlc_media_thumbnail_jpeg',
-    'sources' : files('media_thumbnail.c'),
+    'sources' : files('thumbnailer.c'),
     'link_with' : [libvlc, libvlccore],
     'suite' : ['libvlc', 'test_libvlc_media_thumbnail'],
     'c_args' : [
@@ -70,7 +70,7 @@ vlc_tests += {
 
 vlc_tests += {
     'name' : 'test_libvlc_media_thumbnail_png',
-    'sources' : files('media_thumbnail.c'),
+    'sources' : files('thumbnailer.c'),
     'link_with' : [libvlc, libvlccore],
     'suite' : ['libvlc', 'test_libvlc_media_thumbnail'],
     'c_args' : [
@@ -82,7 +82,7 @@ vlc_tests += {
 
 vlc_tests += {
     'name' : 'test_libvlc_media_thumbnail_webp',
-    'sources' : files('media_thumbnail.c'),
+    'sources' : files('thumbnailer.c'),
     'link_with' : [libvlc, libvlccore],
     'suite' : ['libvlc', 'test_libvlc_media_thumbnail'],
     'c_args' : [
