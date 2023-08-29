@@ -2,6 +2,9 @@
  * specific.c: stubs for Android OS-specific initialization
  *****************************************************************************
  * Copyright © 2016 VLC authors and VideoLAN
+ * Copyright © 2023 Videolabs
+ *
+ * Authors: Alexandre Janniaux <ajanni@videolabs.io>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -30,6 +33,7 @@
 #include <vlc_fs.h>
 #include "../libvlc.h"
 #include "config/configuration.h"
+#include "modules/modules.h"
 
 #include <string.h>
 #include <jni.h>
@@ -76,16 +80,21 @@ get_java_string(JNIEnv *env, jclass clazz, const char *psz_name)
     return psz_strdup;
 }
 
-void
-JNI_OnUnload(JavaVM* vm, void* reserved)
-{
-    (void) reserved;
 
+void
+system_Init(void)
+{
+}
+
+// TODO
+static void
+system_Unconfigure(libvlc_int_t *p_libvlc)
+{
     for (size_t i = 0; i < GENERIC_DIR_COUNT; ++i)
         free(ppsz_generic_names[i]);
 
     JNIEnv* env = NULL;
-    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION_1_2) != JNI_OK)
+    if ((*s_jvm)->GetEnv(s_jvm, (void**) &env, JNI_VERSION_1_2) != JNI_OK)
         return;
 
     if (fields.Environment.clazz)
@@ -93,23 +102,47 @@ JNI_OnUnload(JavaVM* vm, void* reserved)
 
     if (fields.System.clazz)
         (*env)->DeleteGlobalRef(env, fields.System.clazz);
+
 }
 
-/* This function is called when the libvlcore dynamic library is loaded via the
- * java.lang.System.loadLibrary method. Therefore, s_jvm will be already set
- * when libvlc_InternalInit is called. */
-jint
-JNI_OnLoad(JavaVM *vm, void *reserved)
+void
+system_Configure(libvlc_int_t *p_libvlc, int i_argc, const char *const pp_argv[])
 {
-    s_jvm = vm;
+    (void)i_argc; (void)pp_argv;
+
+#ifdef HAVE_DYNAMIC_PLUGINS
+    /* If the libvlc_android.so support lib cannot be found, JNI will be
+     * completely disabled. */
+    void* handle = vlc_dlopen("libvlc_android.so", false);
+    if (handle == NULL)
+        return;
+
+    typedef JavaVM *(*pf_vlc_android_GetJVM)(void);
+    pf_vlc_android_GetJVM vlc_android_GetJVM =
+        (pf_vlc_android_GetJVM)vlc_dlsym(handle, "vlc_android_GetJVM");
+    if (vlc_android_GetJVM == NULL)
+        goto end;
+
+    s_jvm = (vlc_android_GetJVM)();
+#else
+    /* From src/android/android.c:
+     * Force the link to the helper library in static builds, since we cannot
+     * add the support for the helper library after the build. */
+    JavaVM *vlc_android_GetJVM(void);
+    s_jvm = vlc_android_GetJVM();
+#endif
+
+    if (s_jvm == NULL)
+        goto end;
+
     JNIEnv* env = NULL;
 
-    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION_1_2) != JNI_OK)
-        return -1;
+    if ((*s_jvm)->GetEnv(s_jvm, (void**) &env, JNI_VERSION_1_2) != JNI_OK)
+        goto end;
 
     jclass clazz = (*env)->FindClass(env, "android/os/Environment");
     if ((*env)->ExceptionCheck(env))
-        return -1;
+        goto end;
 
     static const char *ppsz_env_names[GENERIC_DIR_COUNT] = {
         NULL,                   /* VLC_DESKTOP_DIR */
@@ -154,27 +187,16 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
                                   "(Ljava/lang/String;)Ljava/lang/String;");
     (*env)->DeleteLocalRef(env, clazz);
 
-    return JNI_VERSION_1_2;
+    var_Create(p_libvlc, "android-jvm", VLC_VAR_ADDRESS);
+    var_SetAddress(p_libvlc, "android-jvm", s_jvm);
 
+end:
+    vlc_dlclose(handle);
+    return;
 error:
     if (clazz)
         (*env)->DeleteLocalRef(env, clazz);
-    JNI_OnUnload(vm, reserved);
-    return -1;
-}
-
-void
-system_Init(void)
-{
-}
-
-void
-system_Configure(libvlc_int_t *p_libvlc, int i_argc, const char *const pp_argv[])
-{
-    (void)i_argc; (void)pp_argv;
-    assert(s_jvm != NULL);
-    var_Create(p_libvlc, "android-jvm", VLC_VAR_ADDRESS);
-    var_SetAddress(p_libvlc, "android-jvm", s_jvm);
+    vlc_dlclose(handle);
 }
 
 static char *config_GetHomeDir(const char *psz_dir, const char *psz_default_dir)
