@@ -89,6 +89,13 @@ fn main() {
         include_path: env::var("INCLUDE_PATH").unwrap_or_else(|_| "../../include".to_string()),
     };
 
+    bindings_gen.generate_bindings_for("vlcrs-fourcc", &["vlc_fourcc.h"], |builder| {
+        builder
+            .allowlist_function("vlc_fourcc_.*")
+            .blocklist_function("vlc_fourcc_GetChromaDescription")
+            .blocklist_type("vlc_chroma_.*")
+            .blocklist_type("vlc_rational_.*")
+    });
     bindings_gen.generate_bindings_for("vlcrs-messages", &["vlc_messages.h"], |builder| {
         builder
             .allowlist_function("vlc_Log")
