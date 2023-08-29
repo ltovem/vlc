@@ -157,3 +157,5 @@ unsafe fn fourcc_list(fallback: *const u32) -> Option<&'static [FourCC]> {
         Some(unsafe { slice::from_raw_parts(fallback as *const FourCC, i) })
     }
 }
+
+include!(concat!(env!("OUT_DIR"), "/fourcc.rs"));
