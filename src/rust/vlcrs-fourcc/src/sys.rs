@@ -6,8 +6,10 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
+use std::num::NonZeroU32;
+
 #[doc = " Basic types definitions\n/\n/**\n The vlc_fourcc_t type.\n\n See http://www.webartz.com/fourcc/ for a very detailed list."]
-pub type vlc_fourcc_t = u32;
+pub type vlc_fourcc_t = NonZeroU32;
 extern "C" {
     #[doc = " It returns the codec associated to a fourcc within an ES category.\n\n If not found, it will return the given fourcc.\n If found, it will always be one of the VLC_CODEC_ defined above.\n\n You may use UNKNOWN_ES for the ES category if you don't have the information."]
     pub fn vlc_fourcc_GetCodec(

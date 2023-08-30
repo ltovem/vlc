@@ -1,7 +1,8 @@
 //! FourCC.
 
-use core::slice;
 use core::ffi::c_char;
+use core::slice;
+use std::num::NonZeroU32;
 
 #[allow(dead_code)]
 mod sys;
@@ -19,20 +20,18 @@ pub struct FourCC(vlc_fourcc_t);
 /// ```
 /// # use vlcrs_fourcc::fourcc;
 /// let mp4 = fourcc!('m', 'p', '4', 'v');
-/// assert_eq!(mp4.as_u32(), 0x7634706d);
+/// assert_eq!(mp4.as_u32().get(), 0x7634706d);
 /// ```
 #[macro_export]
 macro_rules! fourcc {
     ($a:expr, $b:expr, $c:expr, $d:expr) => {{
-        $crate::FourCC::from_u32(u32::from_ne_bytes([
-            $a as u8, $b as u8, $c as u8, $d as u8,
-        ]))
+        $crate::FourCC::from_u32(u32::from_ne_bytes([$a as u8, $b as u8, $c as u8, $d as u8]))
     }};
 }
 
 /// Internal function to convert a raw [u32] to a [Option<FourCC>]
-fn crf(fourcc: u32) -> Option<FourCC> {
-    if fourcc == FourCC::VLC_CODEC_UNKNOWN.as_u32() {
+fn crf(fourcc: NonZeroU32) -> Option<FourCC> {
+    if fourcc == FourCC::VLC_CODEC_UNKNOWN.0 {
         None
     } else {
         Some(FourCC(fourcc))
@@ -43,12 +42,16 @@ impl FourCC {
     // Only exist because we cannot yet define `From::from` as const.
     #[doc(hidden)]
     pub const fn from_u32(value: u32) -> FourCC {
-        FourCC(value)
+        FourCC(if let Some(nz) = NonZeroU32::new(value) {
+            nz
+        } else {
+            panic!("fourcc: non-zero value passed")
+        })
     }
 
     /// Return the inner representation of a fourcc
     #[inline]
-    pub fn as_u32(&self) -> u32 {
+    pub fn as_u32(&self) -> NonZeroU32 {
         self.0
     }
 
@@ -102,7 +105,7 @@ impl FourCC {
         let fallback = unsafe { vlc_fourcc_GetYUVFallback(self.0) };
 
         // SAFETY: The pointer points to a valid fourcc list
-        unsafe { fourcc_list(fallback) }
+        unsafe { fourcc_list(fallback as *const u32) }
     }
 
     /// Returns a slice of RGB fourccs in decreasing priority order for the given chroma
@@ -111,7 +114,7 @@ impl FourCC {
         let fallback = unsafe { vlc_fourcc_GetRGBFallback(self.0) };
 
         // SAFETY: The pointer points to a valid fourcc list
-        unsafe { fourcc_list(fallback) }
+        unsafe { fourcc_list(fallback as *const u32) }
     }
 
     /// Returns a slice of YUV fourccs in decreasing priority order for the given chroma
@@ -120,7 +123,7 @@ impl FourCC {
         let fallback = unsafe { vlc_fourcc_GetFallback(self.0) };
 
         // SAFETY: The pointer points to a valid fourcc list
-        unsafe { fourcc_list(fallback) }
+        unsafe { fourcc_list(fallback as *const u32) }
     }
 
     /// Returns true if the given fourcc is YUV and false otherwise.
