@@ -565,6 +565,8 @@ if qt6_dep.found()
 
     qt_sources = files('qt.cpp')
 
+    subdir('shaders')
+
     # Qt plugins
     qt_static_check = '''
     #include <qconfig.h>
@@ -653,7 +655,8 @@ if qt6_dep.found()
 
     vlc_modules += {
         'name' : 'qt',
-        'sources' : [qt6pre_files, qt6pre_qrc, qt_sources, some_sources],
+        'sources' : [qt6pre_files, qt6pre_qrc, shader_targets, shaders_processed, qt_sources, some_sources],
+        'extra_files' : [shader_files],
         'dependencies' : [qt_extra_deps, qt6_dep],
         'include_directories' : qt_include_dir,
         'c_args' : qt_extra_flags,
