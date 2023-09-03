@@ -177,7 +177,7 @@ typedef struct
 /*****************************************************************************
  * Declaration of local function
  *****************************************************************************/
-static void MP4_TrackSetup( demux_t *, mp4_track_t *, const MP4_Box_t  *, bool, bool );
+static int MP4_TrackSetup( demux_t *, mp4_track_t *, const MP4_Box_t  *, bool, bool );
 static void MP4_TrackInit( mp4_track_t *, const MP4_Box_t * );
 static void MP4_TrackClean( es_out_t *, mp4_track_t * );
 
@@ -677,7 +677,7 @@ static inline vlc_tick_t MP4_GetMoviePTS(demux_sys_t *p_sys )
     return p_sys->i_nztime;
 }
 
-static void LoadChapter( demux_t  *p_demux );
+static int LoadChapter( demux_t  *p_demux );
 
 static int LoadInitFrag( demux_t *p_demux )
 {
@@ -1127,10 +1127,14 @@ static int Open( vlc_object_t * p_this )
             char      *psz_ref;
             uint32_t  i_ref_type;
 
-            if( !p_rdrf || !BOXDATA(p_rdrf) || !( psz_ref = strdup( BOXDATA(p_rdrf)->psz_ref ) ) )
+            if( !p_rdrf || !BOXDATA(p_rdrf) )
             {
                 continue;
             }
+
+            if( ( psz_ref = strdup( BOXDATA(p_rdrf)->psz_ref ) ) == NULL )
+                goto error;
+
             i_ref_type = BOXDATA(p_rdrf)->i_ref_type;
 
             msg_Dbg( p_demux, "new ref=`%s' type=%4.4s",
@@ -1278,7 +1282,9 @@ static int Open( vlc_object_t * p_this )
     for( unsigned i = 0; i < p_sys->i_tracks; i++ )
     {
         const MP4_Box_t *p_trakbox = MP4_BoxGet( p_sys->p_root, "/moov/trak[%u]", i );
-        MP4_TrackSetup( p_demux, &p_sys->track[i], p_trakbox, true, !b_enabled_es );
+        if( MP4_TrackSetup( p_demux, &p_sys->track[i], p_trakbox, true, !b_enabled_es ) == VLC_ENOMEM )
+            goto error;
+
         mp4_track_t *p_track = &p_sys->track[i];
 
         if( p_track->b_ok && ! MP4_isMetadata(p_track) )
@@ -1398,7 +1404,8 @@ static int Open( vlc_object_t * p_this )
     }
 
     /* */
-    LoadChapter( p_demux );
+    if( LoadChapter( p_demux ) )
+        goto error;
 
     p_sys->asfpacketsys.priv = p_demux;
     p_sys->asfpacketsys.s = p_demux->s;
@@ -2342,6 +2349,8 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
 
             *pi_int = 1;
             *ppp_title = malloc( sizeof( input_title_t*) );
+            if( unlikely( *ppp_title == NULL ) )
+                return VLC_ENOMEM;
             (*ppp_title)[0] = vlc_input_title_Duplicate( p_sys->p_title );
             *pi_title_offset = 0;
             *pi_seekpoint_offset = 0;
@@ -2449,24 +2458,27 @@ static void Close ( vlc_object_t * p_this )
  * Local functions, specific to vlc
  ****************************************************************************/
 /* Chapters */
-static void LoadChapterGpac( demux_t  *p_demux, MP4_Box_t *p_chpl )
+static int LoadChapterGpac( demux_t  *p_demux, MP4_Box_t *p_chpl )
 {
     demux_sys_t *p_sys = p_demux->p_sys;
 
     if( BOXDATA(p_chpl)->i_chapter == 0 )
-        return;
+        return VLC_EINVAL;
 
     p_sys->p_title = vlc_input_title_New();
+    if( unlikely( p_sys->p_title == NULL ) )
+      return VLC_ENOMEM;
+
     for( int i = 0; i < BOXDATA(p_chpl)->i_chapter && p_sys->p_title; i++ )
     {
         seekpoint_t *s = vlc_seekpoint_New();
-        if( s == NULL) continue;
+        if( s == NULL) return VLC_ENOMEM;
 
         s->psz_name = strdup( BOXDATA(p_chpl)->chapter[i].psz_name );
         if( s->psz_name == NULL)
         {
             vlc_seekpoint_Delete( s );
-            continue;
+            return VLC_ENOMEM;
         }
 
         EnsureUTF8( s->psz_name );
@@ -2474,33 +2486,38 @@ static void LoadChapterGpac( demux_t  *p_demux, MP4_Box_t *p_chpl )
         s->i_time_offset = VLC_TICK_FROM_MSFTIME(offset);
         TAB_APPEND( p_sys->p_title->i_seekpoint, p_sys->p_title->seekpoint, s );
     }
+
+    return VLC_SUCCESS;
 }
-static void LoadChapterGoPro( demux_t *p_demux, MP4_Box_t *p_hmmt )
+static int LoadChapterGoPro( demux_t *p_demux, MP4_Box_t *p_hmmt )
 {
     demux_sys_t *p_sys = p_demux->p_sys;
 
     p_sys->p_title = vlc_input_title_New();
-    if( p_sys->p_title )
-        for( unsigned i = 0; i < BOXDATA(p_hmmt)->i_chapter_count; i++ )
+    if( unlikely( p_sys->p_title == NULL ) )
+        return VLC_ENOMEM;
+
+    for( unsigned i = 0; i < BOXDATA(p_hmmt)->i_chapter_count; i++ )
+    {
+        seekpoint_t *s = vlc_seekpoint_New();
+        if( s == NULL)
+            return VLC_ENOMEM;
+
+        if( asprintf( &s->psz_name, "HiLight tag #%u", i+1 ) == -1 )
         {
-            seekpoint_t *s = vlc_seekpoint_New();
-            if( s == NULL)
-                continue;
-
-            if( asprintf( &s->psz_name, "HiLight tag #%u", i+1 ) == -1 )
-            {
-                s->psz_name = NULL;
-                vlc_seekpoint_Delete( s );
-                continue;
-            }
-
-            EnsureUTF8( s->psz_name );
-            /* HiLights are stored in ms so we convert them to µs */
-            s->i_time_offset = VLC_TICK_FROM_MS( BOXDATA(p_hmmt)->pi_chapter_start[i] );
-            TAB_APPEND( p_sys->p_title->i_seekpoint, p_sys->p_title->seekpoint, s );
+            s->psz_name = NULL;
+            vlc_seekpoint_Delete( s );
+            return VLC_ENOMEM;
         }
+
+        EnsureUTF8( s->psz_name );
+        /* HiLights are stored in ms so we convert them to µs */
+        s->i_time_offset = VLC_TICK_FROM_MS( BOXDATA(p_hmmt)->pi_chapter_start[i] );
+        TAB_APPEND( p_sys->p_title->i_seekpoint, p_sys->p_title->seekpoint, s );
+    }
+    return VLC_SUCCESS;
 }
-static void LoadChapterApple( demux_t  *p_demux, mp4_track_t *tk )
+static int LoadChapterApple( demux_t  *p_demux, mp4_track_t *tk )
 {
     demux_sys_t *p_sys = p_demux->p_sys;
 
@@ -2530,7 +2547,8 @@ static void LoadChapterApple( demux_t  *p_demux, mp4_track_t *tk )
                 const char *psnz_string = &p_buffer[2];
 
                 seekpoint_t *s = vlc_seekpoint_New();
-                if( s == NULL ) continue;
+                if( s == NULL )
+                    return VLC_ENOMEM;
 
                 if( i_string > 1 && !memcmp( psnz_string, "\xFF\xFE", 2 ) )
                     s->psz_name = FromCharset( "UTF-16LE", psnz_string, i_string );
@@ -2540,34 +2558,44 @@ static void LoadChapterApple( demux_t  *p_demux, mp4_track_t *tk )
                 if( s->psz_name == NULL )
                 {
                     vlc_seekpoint_Delete( s );
-                    continue;
+                    return VLC_ENOMEM;
                 }
 
                 EnsureUTF8( s->psz_name );
                 s->i_time_offset = i_pts;
 
                 if( !p_sys->p_title )
+                {
                     p_sys->p_title = vlc_input_title_New();
+                    if( unlikely( p_sys->p_title == NULL ) )
+                    {
+                        vlc_seekpoint_Delete( s );
+                        return VLC_ENOMEM;
+                    }
+                }
                 TAB_APPEND( p_sys->p_title->i_seekpoint, p_sys->p_title->seekpoint, s );
             }
         }
     }
+    return VLC_SUCCESS;
 }
-static void LoadChapter( demux_t  *p_demux )
+static int LoadChapter( demux_t  *p_demux )
 {
     demux_sys_t *p_sys = p_demux->p_sys;
     MP4_Box_t *p_chpl;
     MP4_Box_t *p_hmmt;
 
     if( ( p_chpl = MP4_BoxGet( p_sys->p_root, "/moov/udta/chpl" ) ) &&
-          BOXDATA(p_chpl) && BOXDATA(p_chpl)->i_chapter > 0 )
+          BOXDATA(p_chpl) && BOXDATA(p_chpl)->i_chapter > 0 &&
+          LoadChapterGpac( p_demux, p_chpl ) == VLC_ENOMEM )
     {
-        LoadChapterGpac( p_demux, p_chpl );
+        return VLC_ENOMEM;
     }
     else if( ( p_hmmt = MP4_BoxGet( p_sys->p_root, "/moov/udta/HMMT" ) ) &&
-             BOXDATA(p_hmmt) && BOXDATA(p_hmmt)->pi_chapter_start && BOXDATA(p_hmmt)->i_chapter_count > 0 )
+             BOXDATA(p_hmmt) && BOXDATA(p_hmmt)->pi_chapter_start && BOXDATA(p_hmmt)->i_chapter_count > 0 &&
+             LoadChapterGoPro( p_demux, p_hmmt ) )
     {
-        LoadChapterGoPro( p_demux, p_hmmt );
+        return VLC_ENOMEM;
     }
     else
     {
@@ -2577,7 +2605,8 @@ static void LoadChapter( demux_t  *p_demux )
             mp4_track_t *tk = &p_sys->track[i];
             if ( tk->b_ok && (tk->i_use_flags & USEAS_CHAPTERS) && tk->fmt.i_cat == SPU_ES )
             {
-                LoadChapterApple( p_demux, tk );
+                if( LoadChapterApple( p_demux, tk ) )
+                    return VLC_ENOMEM;
                 break;
             }
         }
@@ -2590,6 +2619,7 @@ static void LoadChapter( demux_t  *p_demux )
         p_sys->p_title->i_length =
                 MP4_rescale_mtime( i_duration, p_sys->i_timescale );
     }
+    return VLC_SUCCESS;
 }
 
 /* now create basic chunk data, the rest will be filled by MP4_CreateSamplesIndex */
@@ -3124,12 +3154,13 @@ static int TrackFillConfig( demux_t *p_demux, const mp4_track_t *p_track,
                             es_format_t *p_fmt, track_config_t *p_cfg )
 {
     /* */
+    int ret = VLC_EGENERIC;
     switch( p_track->fmt.i_cat )
     {
     case VIDEO_ES:
         if ( p_sample->i_handler != ATOM_vide ||
-             !SetupVideoES( p_demux, p_track, p_sample, p_fmt, p_cfg ) )
-            return VLC_EGENERIC;
+             ( ret = SetupVideoES( p_demux, p_track, p_sample, p_fmt, p_cfg ) ) )
+            return ret;
 
         /* Set frame rate */
         TrackGetESSampleRate( p_demux,
@@ -3140,8 +3171,8 @@ static int TrackFillConfig( demux_t *p_demux, const mp4_track_t *p_track,
 
     case AUDIO_ES:
         if ( p_sample->i_handler != ATOM_soun ||
-             !SetupAudioES( p_demux, p_track, p_sample, p_fmt, p_cfg ) )
-            return VLC_EGENERIC;
+             ( ret = SetupAudioES( p_demux, p_track, p_sample, p_fmt, p_cfg ) ) )
+            return ret;
         break;
 
     case SPU_ES:
@@ -3149,8 +3180,8 @@ static int TrackFillConfig( demux_t *p_demux, const mp4_track_t *p_track,
                p_sample->i_handler != ATOM_subt &&
                p_sample->i_handler != ATOM_sbtl &&
                p_sample->i_handler != ATOM_clcp ) ||
-             !SetupSpuES( p_demux, p_track, p_sample, p_fmt, p_cfg ) )
-           return VLC_EGENERIC;
+             ( ret = SetupSpuES( p_demux, p_track, p_sample, p_fmt, p_cfg ) ) )
+           return ret;
         break;
 
     default:
@@ -3202,10 +3233,11 @@ static int TrackCreateES( demux_t *p_demux, mp4_track_t *p_track,
 
     p_track->fmt.i_id = p_track->i_track_ID;
 
-    if( TrackFillConfig( p_demux, p_track, p_sample, i_chunk,
-                         p_fmt, &cfg ) != VLC_SUCCESS )
+    int ret = TrackFillConfig( p_demux, p_track, p_sample, i_chunk,
+                               p_fmt, &cfg );
+    if( ret != VLC_SUCCESS )
     {
-        return VLC_EGENERIC;
+        return ret;
     }
 
     TrackConfigApply( &cfg, p_track );
@@ -3620,8 +3652,17 @@ static int TrackUpdateFormat( demux_t *p_demux, mp4_track_t *p_track,
         es_format_t tmpfmt;
         es_format_Init( &tmpfmt, p_track->fmt.i_cat, 0 );
         tmpfmt.i_id = p_track->i_track_ID;
-        if( TrackFillConfig( p_demux, p_track, p_newsample, i_chunk, &tmpfmt, &cfg ) == VLC_SUCCESS &&
-            !FormatIsCompatible( &p_track->fmt, &tmpfmt ) )
+
+        int ret = TrackFillConfig( p_demux, p_track, p_newsample, i_chunk, &tmpfmt, &cfg );
+        if( ret != VLC_SUCCESS )
+        {
+            p_track->b_ok = false;
+            p_track->b_selected = false;
+            es_format_Clean( &tmpfmt );
+            return ret;
+        }
+
+        if( !FormatIsCompatible( &p_track->fmt, &tmpfmt ) )
         {
             bool b_reselect = false;
 
@@ -3734,7 +3775,7 @@ static void TrackUpdateSampleAndTimes( mp4_track_t *p_track )
  * Parse track information and create all needed data to run a track
  * If it succeed b_ok is set to 1 else to 0
  ****************************************************************************/
-static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
+static int MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
                              const MP4_Box_t *p_box_trak,
                              bool b_create_es, bool b_force_enable )
 {
@@ -3748,7 +3789,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
     const MP4_Box_t *p_tkhd = MP4_BoxGet( p_box_trak, "tkhd" );
     if( !p_tkhd )
     {
-        return;
+        return VLC_EGENERIC;
     }
 
     /* do we launch this track by default ? */
@@ -3767,13 +3808,13 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
 
     if( ( !p_mdhd )||( !p_hdlr ) )
     {
-        return;
+        return VLC_EGENERIC;
     }
 
     if( BOXDATA(p_mdhd)->i_timescale == 0 )
     {
         msg_Warn( p_demux, "Invalid track timescale " );
-        return;
+        return VLC_EGENERIC;
     }
     p_track->i_timescale = BOXDATA(p_mdhd)->i_timescale;
 
@@ -3785,7 +3826,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
         case( ATOM_soun ):
             if( !MP4_BoxGet( p_box_trak, "mdia/minf/smhd" ) )
             {
-                return;
+                return VLC_EGENERIC;
             }
             es_format_Change( &p_track->fmt, AUDIO_ES, 0 );
             break;
@@ -3797,7 +3838,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
         case( ATOM_vide ):
             if( !MP4_BoxGet( p_box_trak, "mdia/minf/vmhd") )
             {
-                return;
+                return VLC_EGENERIC;
             }
             es_format_Change( &p_track->fmt, VIDEO_ES, 0 );
             break;
@@ -3815,7 +3856,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
             if( !( p_sdp  = MP4_BoxGet( p_box_trak, "udta/hnti/sdp " ) ) )
             {
                 msg_Warn( p_demux, "Didn't find sdp box to determine stream type" );
-                return;
+                return VLC_EGENERIC;
             }
 
             memcpy( sdp_media_type, BOXDATA(p_sdp)->psz_text, 7 );
@@ -3832,7 +3873,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
             else
             {
                 msg_Warn( p_demux, "Malformed track SDP message: %s", sdp_media_type );
-                return;
+                return VLC_EGENERIC;
             }
             break;
 
@@ -3846,7 +3887,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
             break;
 
         default:
-            return;
+            return VLC_EGENERIC;
     }
 
     p_track->asfinfo.i_cat = p_track->fmt.i_cat;
@@ -3887,13 +3928,15 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
     if( !( p_track->p_stbl = MP4_BoxGet( p_box_trak,"mdia/minf/stbl" ) ) ||
         !( p_track->p_stsd = MP4_BoxGet( p_box_trak,"mdia/minf/stbl/stsd") ) )
     {
-        return;
+        return VLC_EGENERIC;
     }
 
     /* Set language */
     if( *language && strcmp( language, "```" ) && strcmp( language, "und" ) )
     {
         p_track->fmt.psz_language = strdup( language );
+        if ( unlikely( p_track->fmt.psz_language == NULL ) )
+            return VLC_ENOMEM;
     }
 
     const MP4_Box_t *p_udta = MP4_BoxGet( p_box_trak, "udta" );
@@ -3910,6 +3953,8 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
                     p_track->fmt.psz_description =
                         strndup( p_box_iter->data.p_binary->p_blob,
                                  p_box_iter->data.p_binary->i_blob );
+                    if ( unlikely( p_box_iter->data.p_binary->i_blob != 0 && p_track->fmt.psz_description == NULL ) )
+                        return VLC_ENOMEM;
                 default:
                     break;
             }
@@ -3921,7 +3966,7 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
         TrackCreateSamplesIndex( p_demux, p_track ) )
     {
         msg_Err( p_demux, "cannot create chunks index" );
-        return; /* cannot create chunks index */
+        return VLC_EGENERIC; /* cannot create chunks index */
     }
 
     p_track->i_next_dts = 0;
@@ -3995,16 +4040,17 @@ static void MP4_TrackSetup( demux_t *p_demux, mp4_track_t *p_track,
     if( !p_sys->b_quicktime || (p_track->i_use_flags & USEAS_CHAPTERS) == 0 )
         b_create_es &= !MP4_isMetadata( p_track );
 
-    if( TrackCreateES( p_demux,
-                       p_track, p_track->i_chunk,
-                       !b_create_es ? NULL : &p_track->p_es ) )
+    int ret = TrackCreateES( p_demux, p_track, p_track->i_chunk,
+                             !b_create_es ? NULL : &p_track->p_es );
+    if ( ret != VLC_SUCCESS )
     {
         msg_Err( p_demux, "cannot create es for track[Id 0x%x]",
                  p_track->i_track_ID );
-        return;
+        return ret;
     }
 
     p_track->b_ok = true;
+    return VLC_SUCCESS;
 }
 
 /****************************************************************************

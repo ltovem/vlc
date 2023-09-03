@@ -35,18 +35,21 @@
 #include <assert.h>
 
 
-static void CopyExtradata( const uint8_t *p_extra, size_t i_extra,
+static int CopyExtradata( const uint8_t *p_extra, size_t i_extra,
                            es_format_t *fmt )
 {
     if( i_extra > 0 && !fmt->i_extra )
     {
         fmt->p_extra = malloc( i_extra );
-        if( i_extra )
+        if( fmt->p_extra == NULL )
         {
-            fmt->i_extra = i_extra;
-            memcpy( fmt->p_extra, p_extra, i_extra );
+            es_format_Clean(fmt);
+            return VLC_ENOMEM;
         }
+        fmt->i_extra = i_extra;
+        memcpy( fmt->p_extra, p_extra, i_extra );
     }
+    return VLC_SUCCESS;
 }
 
 static uint32_t GetSampleType( demux_t *p_demux, const MP4_Box_t *p_sample )
@@ -60,7 +63,7 @@ static uint32_t GetSampleType( demux_t *p_demux, const MP4_Box_t *p_sample )
     return p_sample->i_type;
 }
 
-static void SetupGlobalExtensions( const MP4_Box_t *p_sample,
+static int SetupGlobalExtensions( const MP4_Box_t *p_sample,
                                    es_format_t *p_fmt )
 {
     if( !p_fmt->i_bitrate )
@@ -75,12 +78,13 @@ static void SetupGlobalExtensions( const MP4_Box_t *p_sample,
     const MP4_Box_t *p_glbl = MP4_BoxGet( p_sample, "glbl" );
     if( p_glbl && p_glbl->data.p_binary && p_glbl->data.p_binary->p_blob )
     {
-        CopyExtradata( p_glbl->data.p_binary->p_blob,
-                       p_glbl->data.p_binary->i_blob, p_fmt );
+        return CopyExtradata( p_glbl->data.p_binary->p_blob,
+                              p_glbl->data.p_binary->i_blob, p_fmt );
     }
+    return VLC_SUCCESS;
 }
 
-static void SetupESDS( demux_t *p_demux, const mp4_track_t *p_track,
+static int SetupESDS( demux_t *p_demux, const mp4_track_t *p_track,
                        const MP4_descriptor_decoder_config_t *p_decconfig,
                        es_format_t *p_fmt )
 {
@@ -118,15 +122,18 @@ static void SetupESDS( demux_t *p_demux, const mp4_track_t *p_track,
                   "unknown objectProfileIndication(0x%x) (Track[ID 0x%x])",
                   p_decconfig->i_objectProfileIndication,
                   p_track->i_track_ID );
-        return;
+        return VLC_SUCCESS;
     }
 
     p_fmt->i_original_fourcc = 0; /* so we don't have MP4A as original fourcc */
     p_fmt->i_bitrate = p_decconfig->i_avg_bitrate;
 
-    CopyExtradata( p_decconfig->p_decoder_specific_info,
-                   p_decconfig->i_decoder_specific_info_len,
-                   p_fmt );
+    if( CopyExtradata( p_decconfig->p_decoder_specific_info,
+                       p_decconfig->i_decoder_specific_info_len,
+                       p_fmt ) )
+    {
+        return VLC_ENOMEM;
+    }
 
     if( p_fmt->i_codec == VLC_CODEC_SPU &&
             p_fmt->i_extra >= sizeof(p_fmt->subs.spu.palette) )
@@ -137,6 +144,7 @@ static void SetupESDS( demux_t *p_demux, const mp4_track_t *p_track,
         }
         p_fmt->subs.spu.b_palette = true;
     }
+    return VLC_SUCCESS;
 }
 
 static int SetupRTPReceptionHintTrack( demux_t *p_demux, const mp4_track_t *p_track,
@@ -284,7 +292,7 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
 
     const MP4_Box_data_sample_vide_t *p_vide = p_sample->data.p_sample_vide;
     if(!p_vide)
-        return 0;
+        return VLC_EINVAL;
 
     const uint32_t i_sample_type = GetSampleType( p_demux, p_sample );
 
@@ -534,7 +542,10 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
         p_fmt->video.dovi.el_present = p_data->i_el_present;
     }
 
-    SetupGlobalExtensions( p_sample, p_fmt );
+    if( SetupGlobalExtensions( p_sample, p_fmt ) )
+    {
+        return VLC_ENOMEM;
+    }
 
     /* now see if esds is present and if so create a data packet
         with decoder_specific_info  */
@@ -542,7 +553,10 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
     if ( p_esds && BOXDATA(p_esds) && BOXDATA(p_esds)->es_descriptor.p_decConfigDescr )
     {
         assert(i_sample_type == ATOM_mp4v);
-        SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt );
+        if( SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt ) )
+        {
+            return VLC_ENOMEM;
+        }
     }
     else switch( i_sample_type )
     {
@@ -568,9 +582,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
         case VLC_FOURCC( '3', 'I', 'V', '1' ):
         case VLC_FOURCC( 'Z', 'y', 'G', 'o' ):
         {
-            CopyExtradata( p_sample->data.p_sample_vide->p_qt_image_description,
-                           p_sample->data.p_sample_vide->i_qt_image_description,
-                           p_fmt );
+            if( CopyExtradata( p_sample->data.p_sample_vide->p_qt_image_description,
+                               p_sample->data.p_sample_vide->i_qt_image_description,
+                               p_fmt ) )
+            {
+                return VLC_ENOMEM;
+            }
             break;
         }
 
@@ -587,11 +604,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
         case VLC_CODEC_FFV1:
         {
             MP4_Box_t *p_binary = MP4_BoxGet( p_sample, "glbl" );
-            if( p_binary && BOXDATA(p_binary) )
-            {
+            if( p_binary && BOXDATA(p_binary) &&
                 CopyExtradata( BOXDATA(p_binary)->p_blob,
                                BOXDATA(p_binary)->i_blob,
-                               p_fmt );
+                               p_fmt ) )
+            {
+                return VLC_ENOMEM;
             }
             break;
         }
@@ -601,9 +619,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
             MP4_Box_t *p_dvc1 = MP4_BoxGet( p_sample, "dvc1" );
             if( p_dvc1 && BOXDATA(p_dvc1) )
             {
-                CopyExtradata( BOXDATA(p_dvc1)->p_vc1,
-                               BOXDATA(p_dvc1)->i_vc1,
-                               p_fmt );
+                if( CopyExtradata( BOXDATA(p_dvc1)->p_vc1,
+                                   BOXDATA(p_dvc1)->i_vc1,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
             }
             else
             {
@@ -620,9 +641,13 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
             {
                 p_fmt->i_profile = BOXDATA(p_av1C)->i_profile;
                 p_fmt->i_level = BOXDATA(p_av1C)->i_level;
-                CopyExtradata( BOXDATA(p_av1C)->p_av1C,
-                               BOXDATA(p_av1C)->i_av1C,
-                               p_fmt );
+
+                if( CopyExtradata( BOXDATA(p_av1C)->p_av1C,
+                                   BOXDATA(p_av1C)->i_av1C,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
             }
             break;
         }
@@ -639,9 +664,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
             {
                 p_fmt->i_profile = BOXDATA(p_avcC)->i_profile;
                 p_fmt->i_level = BOXDATA(p_avcC)->i_level;
-                CopyExtradata( BOXDATA(p_avcC)->p_avcC,
-                               BOXDATA(p_avcC)->i_avcC,
-                               p_fmt );
+                if( CopyExtradata( BOXDATA(p_avcC)->p_avcC,
+                                   BOXDATA(p_avcC)->i_avcC,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
             }
             else
             {
@@ -662,9 +690,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
 
             if( p_hvcC && p_hvcC->data.p_binary )
             {
-                CopyExtradata( p_hvcC->data.p_binary->p_blob,
-                               p_hvcC->data.p_binary->i_blob,
-                               p_fmt );
+                if( CopyExtradata( p_hvcC->data.p_binary->p_blob,
+                                   p_hvcC->data.p_binary->i_blob,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
             }
             else
             {
@@ -724,9 +755,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
                 p_fmt->video.color_range = p_data->i_fullrange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
                 p_fmt->video.i_bits_per_pixel = p_data->i_bit_depth;
 
-                CopyExtradata( p_data->p_codec_init_data,
-                               p_data->i_codec_init_datasize,
-                               p_fmt );
+                if( CopyExtradata( p_data->p_codec_init_data,
+                                   p_data->i_codec_init_datasize,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
 
                 const MP4_Box_t *p_SmDm = MP4_BoxGet( p_sample, "SmDm" );
                 if( !p_SmDm )
@@ -767,9 +801,12 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
                 p_fmt->video.i_height = BOXDATA(p_strf)->bmiHeader.biHeight;
                 p_fmt->video.i_visible_height =p_fmt->video.i_height;
                 p_fmt->video.i_bits_per_pixel = BOXDATA(p_strf)->bmiHeader.biBitCount;
-                CopyExtradata( BOXDATA(p_strf)->p_extra,
-                               BOXDATA(p_strf)->i_extra,
-                               p_fmt );
+                if( CopyExtradata( BOXDATA(p_strf)->p_extra,
+                                   BOXDATA(p_strf)->i_extra,
+                                   p_fmt ) )
+                {
+                    return VLC_ENOMEM;
+                }
             }
             break;
         }
@@ -802,10 +839,10 @@ int SetupVideoES( demux_t *p_demux, const mp4_track_t *p_track, const MP4_Box_t 
             break;
     }
 
-    return 1;
+    return VLC_SUCCESS;
 }
 
-static bool SetupAudioFromWaveFormatEx( const MP4_Box_t *p_WMA2, es_format_t *p_fmt )
+static int SetupAudioFromWaveFormatEx( const MP4_Box_t *p_WMA2, es_format_t *p_fmt )
 {
     if( p_WMA2 && BOXDATA(p_WMA2) )
     {
@@ -815,12 +852,11 @@ static bool SetupAudioFromWaveFormatEx( const MP4_Box_t *p_WMA2, es_format_t *p_
         p_fmt->i_bitrate = BOXDATA(p_WMA2)->Format.nAvgBytesPerSec * 8;
         p_fmt->audio.i_blockalign = BOXDATA(p_WMA2)->Format.nBlockAlign;
         p_fmt->audio.i_bitspersample = BOXDATA(p_WMA2)->Format.wBitsPerSample;
-        CopyExtradata( BOXDATA(p_WMA2)->p_extra,
-                       BOXDATA(p_WMA2)->i_extra,
-                       p_fmt );
-        return true;
+        return CopyExtradata( BOXDATA(p_WMA2)->p_extra,
+                              BOXDATA(p_WMA2)->i_extra,
+                              p_fmt );
     }
-    return false;
+    return VLC_EINVAL;
 }
 
 int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
@@ -829,7 +865,7 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
 {
     const MP4_Box_data_sample_soun_t *p_soun = p_sample->data.p_sample_soun;
     if(!p_soun)
-        return 0;
+        return VLC_EINVAL;
 
     const uint32_t i_sample_type = GetSampleType( p_demux, p_sample );
     p_fmt->i_original_fourcc = i_sample_type;
@@ -854,7 +890,7 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
         case( VLC_FOURCC( 'r', 'r', 't', 'p' ) ): /* RTP Reception Hint Track */
         {
             if( !SetupRTPReceptionHintTrack( p_demux, p_track, p_sample, p_fmt, p_cfg ) )
-                return 0;
+                return VLC_EINVAL;
             break;
         }
         case ATOM_agsm: /* Apple gsm 33 bytes != MS GSM (agsm fourcc, 65 bytes) */
@@ -904,18 +940,20 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
             {
                 size_t i_extra = 8 + p_fCtS->data.p_binary->i_blob;
                 uint8_t *p_extra = malloc(i_extra);
-                if( p_extra )
+                if( unlikely( p_extra == NULL ) )
                 {
-                    p_fmt->i_extra = i_extra;
-                    p_fmt->p_extra = p_extra;
-                    memcpy( p_extra, "fLaC", 4 );
-                    SetDWBE( &p_extra[4], p_fCtS->data.p_binary->i_blob ); /* want the lowest 24bits */
-                    p_extra[4] = 0x80; /* 0x80 Last metablock | 0x00 StreamInfo */
-                    memcpy( &p_extra[8], p_fCtS->data.p_binary->p_blob, p_fCtS->data.p_binary->i_blob );
-
-                    p_fmt->i_codec = VLC_CODEC_FLAC;
-                    p_fmt->b_packetized = false;
+                    es_format_Clean(p_fmt);
+                    return VLC_ENOMEM;
                 }
+                p_fmt->i_extra = i_extra;
+                p_fmt->p_extra = p_extra;
+                memcpy( p_extra, "fLaC", 4 );
+                SetDWBE( &p_extra[4], p_fCtS->data.p_binary->i_blob ); /* want the lowest 24bits */
+                p_extra[4] = 0x80; /* 0x80 Last metablock | 0x00 StreamInfo */
+                memcpy( &p_extra[8], p_fCtS->data.p_binary->p_blob, p_fCtS->data.p_binary->i_blob );
+
+                p_fmt->i_codec = VLC_CODEC_FLAC;
+                p_fmt->b_packetized = false;
             }
             break;
         }
@@ -927,14 +965,16 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
             {
                 size_t i_extra = p_dfLa->data.p_binary->i_blob;
                 uint8_t *p_extra = malloc(i_extra);
-                if( likely( p_extra ) )
+                if( unlikely( p_extra == NULL) )
                 {
-                    p_fmt->i_extra = i_extra;
-                    p_fmt->p_extra = p_extra;
-                    memcpy( p_extra, p_dfLa->data.p_binary->p_blob, p_dfLa->data.p_binary->i_blob);
-                    memcpy( p_extra, "fLaC", 4 );
-                    p_fmt->i_codec = VLC_CODEC_FLAC;
+                    es_format_Clean(p_fmt);
+                    return VLC_ENOMEM;
                 }
+                p_fmt->i_extra = i_extra;
+                p_fmt->p_extra = p_extra;
+                memcpy( p_extra, p_dfLa->data.p_binary->p_blob, p_dfLa->data.p_binary->i_blob);
+                memcpy( p_extra, "fLaC", 4 );
+                p_fmt->i_codec = VLC_CODEC_FLAC;
             }
             break;
         }
@@ -1215,7 +1255,10 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
     if ( p_srat )
         p_fmt->audio.i_rate = BOXDATA(p_srat)->i_sample_rate;
 
-    SetupGlobalExtensions( p_sample, p_fmt );
+    if( SetupGlobalExtensions( p_sample, p_fmt ) )
+    {
+        return VLC_ENOMEM;
+    }
 
     /* now see if esds is present and if so create a data packet
         with decoder_specific_info  */
@@ -1224,7 +1267,10 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
     if ( p_esds && BOXDATA(p_esds) && BOXDATA(p_esds)->es_descriptor.p_decConfigDescr )
     {
         assert(i_sample_type == ATOM_mp4a);
-        SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt );
+        if( SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt ) )
+        {
+            return VLC_ENOMEM;
+        }
     }
     else switch( i_sample_type )
     {
@@ -1238,9 +1284,12 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
         case VLC_CODEC_QDM2:
         case VLC_CODEC_ALAC:
         {
-            CopyExtradata( p_sample->data.p_sample_soun->p_qt_description,
-                           p_sample->data.p_sample_soun->i_qt_description,
-                           p_fmt );
+            if( CopyExtradata( p_sample->data.p_sample_soun->p_qt_description,
+                               p_sample->data.p_sample_soun->i_qt_description,
+                               p_fmt ) )
+            {
+                return VLC_ENOMEM;
+            }
             if( p_fmt->i_extra == 56 && i_sample_type == VLC_CODEC_ALAC )
             {
                 p_fmt->audio.i_channels = *((uint8_t*)p_fmt->p_extra + 41);
@@ -1257,9 +1306,14 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
         }
         case ATOM_WMA2:
         {
-            if( SetupAudioFromWaveFormatEx( MP4_BoxGet( p_sample, "wave/WMA2" ), p_fmt ) )
+            int ret = SetupAudioFromWaveFormatEx( MP4_BoxGet( p_sample, "wave/WMA2" ), p_fmt );
+            if( ret == 0 )
             {
                 p_cfg->p_asf = MP4_BoxGet( p_sample, "wave/ASF " );
+            }
+            else if( ret == VLC_ENOMEM )
+            {
+                 return VLC_ENOMEM;
             }
             else
             {
@@ -1269,7 +1323,12 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
         }
         case ATOM_wma: /* isml wmapro */
         {
-            if( !SetupAudioFromWaveFormatEx( MP4_BoxGet( p_sample, "wfex" ), p_fmt ) )
+            int ret = SetupAudioFromWaveFormatEx( MP4_BoxGet( p_sample, "wfex" ), p_fmt );
+            if( ret == VLC_ENOMEM )
+            {
+                return VLC_ENOMEM;
+            }
+            else if( ret != VLC_SUCCESS )
                 msg_Err( p_demux, "missing wfex for wma" );
             break;
         }
@@ -1285,7 +1344,7 @@ int SetupAudioES( demux_t *p_demux, const mp4_track_t *p_track,
     if (p_SA3D && BOXDATA(p_SA3D))
         p_fmt->audio.channel_type = AUDIO_CHANNEL_TYPE_AMBISONICS;
 
-    return 1;
+    return VLC_SUCCESS;
 }
 
 int SetupSpuES( demux_t *p_demux, const mp4_track_t *p_track,
@@ -1317,7 +1376,7 @@ int SetupSpuES( demux_t *p_demux, const mp4_track_t *p_track,
         {
             const MP4_Box_data_sample_generic_t *p_text = p_sample->data.p_sample_gen;
             if(!p_text)
-                return 0;
+                return VLC_ENOMEM;
 
             if( i_sample_type == VLC_FOURCC( 't', 'e', 'x', 't' ) )
                 p_fmt->i_codec = VLC_CODEC_QTXT;
@@ -1330,13 +1389,22 @@ int SetupSpuES( demux_t *p_demux, const mp4_track_t *p_track,
                 p_cfg->b_forced_spu = true;
             }
 
-            CopyExtradata( p_text->p_data, p_text->i_data, p_fmt );
+            if( CopyExtradata( p_text->p_data, p_text->i_data, p_fmt ) )
+            {
+                return VLC_ENOMEM;
+            }
 
             /* FIXME UTF-8 doesn't work here ? */
             if( p_track->b_mac_encoding )
                 p_fmt->subs.psz_encoding = strdup( "MAC" );
             else
                 p_fmt->subs.psz_encoding = strdup( "UTF-8" );
+
+            if( unlikely( p_fmt->subs.psz_encoding == NULL ) )
+            {
+                es_format_Clean(p_fmt);
+                return VLC_ENOMEM;
+            }
             break;
         }
 
@@ -1345,15 +1413,19 @@ int SetupSpuES( demux_t *p_demux, const mp4_track_t *p_track,
             break;
     }
 
-    SetupGlobalExtensions( p_sample, p_fmt );
+    if( SetupGlobalExtensions( p_sample, p_fmt ) )
+    {
+        return VLC_ENOMEM;
+    }
 
     /* now see if esds is present and if so create a data packet
         with decoder_specific_info  */
     MP4_Box_t *p_esds = MP4_BoxGet( p_sample, "esds" );
-    if ( p_esds && BOXDATA(p_esds) && BOXDATA(p_esds)->es_descriptor.p_decConfigDescr )
+    if ( p_esds && BOXDATA(p_esds) && BOXDATA(p_esds)->es_descriptor.p_decConfigDescr &&
+         SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt ) )
     {
-        SetupESDS( p_demux, p_track, BOXDATA(p_esds)->es_descriptor.p_decConfigDescr, p_fmt );
+        return VLC_ENOMEM;
     }
 
-    return 1;
+    return VLC_SUCCESS;
 }
