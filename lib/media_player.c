@@ -787,6 +787,15 @@ libvlc_media_player_new( libvlc_instance_t *instance )
     vlc_atomic_rc_init(&mp->rc);
     libvlc_event_manager_init(&mp->event_manager, mp);
 
+    struct vlc_player_probe_t *mp_probe = 
+        vlc_object_create(mp, sizeof(struct vlc_player_probe_t));
+    mp_probe->player = mp->player;
+    mp_probe->p_module = module_need(mp_probe, "playerprobe", NULL, false);
+    if (mp_probe->p_module)
+        mp->media_player_probe = mp_probe;
+    else
+        vlc_object_delete(mp_probe);
+
     /* Snapshot initialization */
     /* Attach a var callback to the global object to provide the glue between
      * vout_thread that generates the event and media_player that re-emits it
@@ -851,6 +860,12 @@ libvlc_media_player_new_from_media( libvlc_instance_t *inst,
 static void libvlc_media_player_destroy( libvlc_media_player_t *p_mi )
 {
     assert( p_mi );
+
+    if( p_mi->media_player_probe )
+    {
+        module_unneed( p_mi->media_player_probe, p_mi->media_player_probe->p_module );
+        vlc_object_delete(p_mi->media_player_probe);
+    }
 
     /* Detach Callback from the main libvlc object */
     var_DelCallback( vlc_object_instance(p_mi),

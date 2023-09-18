@@ -277,6 +277,7 @@ int main(int i_argc, const char *ppsz_argv[])
         fprintf(stderr, "VLC cannot start any interface. Exiting.\n");
         goto out;
     }
+    libvlc_add_intf(vlc,"pipinterface");
     libvlc_playlist_play(vlc);
 
     /*

@@ -32,6 +32,9 @@
 #include <vlc_modules.h>
 #include <vlc_vout_display.h>
 #include <vlc_atomic.h>
+#include <vlc_interface.h>
+#include <vlc_playlist.h>
+#include <vlc_player.h>
 
 # import <TargetConditionals.h>
 # if TARGET_OS_OSX
@@ -112,6 +115,48 @@ static void DeleteCVPXConverter( filter_t * p_converter )
 
     vlc_object_delete(p_converter);
 }
+
+static intf_thread_t *p_interface_thread;
+static vlc_player_t *p_player;
+
+static vlc_player_t *GetPlayerFromInterface() {
+    intf_thread_t *intf = p_interface_thread;
+    if (!intf)
+        return NULL;
+    vlc_playlist_t *playlist = vlc_intf_GetMainPlaylist(intf);
+    if (!playlist)
+        return NULL;
+    return vlc_playlist_GetPlayer(playlist);
+}
+
+static vlc_player_t *GetPlayer() {
+    vlc_player_t *player = GetPlayerFromInterface();
+    if (!player)
+        player = p_player;
+    return player;
+}
+
+typedef struct pipcontroller_t pipcontroller_t;
+
+static void DeletePipController( pipcontroller_t * pipcontroller );
+
+struct pipcontroller_operations {
+    void (*set_display_layer)(pipcontroller_t *, void *);
+};
+
+struct pipcontroller_t
+{
+    struct vlc_object_t obj;
+
+    /* Module properties */
+    module_t *          p_module;
+    void               *p_sys;
+
+    const struct pipcontroller_operations *ops;
+    vlc_player_listener_id *player_listener_id;
+
+    bool did_seek;
+};
 
 /**
  * Protocol declaration that drawable-nsobject should follow
@@ -294,19 +339,335 @@ shouldInheritContentsScale:(CGFloat)newScale
 
 #pragma mark -
 
-@interface VLCSampleBufferDisplay: NSObject {
+@interface VLCSampleBufferDisplay: NSObject
+{
     @public
     vout_display_place_t place;
     filter_t *converter;
 }
-    @property (nonatomic) id<VLCOpenGLVideoViewEmbedding> container;
+    @property (nonatomic, readonly) id<VLCOpenGLVideoViewEmbedding> container;
+    @property (nonatomic, readonly) vout_display_t *vd;
     @property (nonatomic) VLCSampleBufferDisplayView *displayView;
     @property (nonatomic) AVSampleBufferDisplayLayer *displayLayer;
     @property (nonatomic) VLCSampleBufferSubpictureView *spuView;
     @property (nonatomic) VLCSampleBufferSubpicture *subpicture;
+
+    @property (nonatomic, readonly) pipcontroller_t *pipcontroller;
+
+    - (instancetype)init NS_UNAVAILABLE;
+    + (instancetype)new NS_UNAVAILABLE;
+    - (instancetype)initWithContainer:(id<VLCOpenGLVideoViewEmbedding>)container
+                        pipController:(pipcontroller_t *)pipcontroller
+                          voutDisplay:(vout_display_t *)vd;
 @end
 
 @implementation VLCSampleBufferDisplay
+
+- (instancetype)initWithContainer:(id<VLCOpenGLVideoViewEmbedding>)container
+                    pipController:(pipcontroller_t *)pipcontroller
+                      voutDisplay:(vout_display_t *)vd
+{
+    self = [super init];
+    if (!self)
+        return nil;
+    _container = container;
+    _pipcontroller = pipcontroller;
+    _vd = vd;
+    
+    return self;
+}
+
+- (void)prepareDisplay {
+    @synchronized(_displayLayer) {
+        if (_displayLayer)
+            return;
+    }
+
+    VLCSampleBufferDisplay *sys = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (sys.displayView)
+            return;
+        VLCSampleBufferDisplayView *displayView = 
+            [[VLCSampleBufferDisplayView alloc] initWithVoutDisplay:sys.vd];
+        VLCSampleBufferSubpictureView *spuView = 
+            [VLCSampleBufferSubpictureView new];
+        id container = sys.container;
+        //TODO: Is it still relevant ?
+        if ([container respondsToSelector:@selector(addVoutSubview:)]) {
+            [container addVoutSubview:displayView];
+            [container addVoutSubview:spuView];
+        } else if ([container isKindOfClass:[VLCView class]]) {
+            VLCView *containerView = container;
+            [containerView addSubview:displayView];
+            [containerView addSubview:spuView];
+            [displayView setFrame:containerView.bounds];
+            [spuView setFrame:containerView.bounds];
+        } else {
+            displayView = nil;
+            spuView = nil;
+        }
+
+        vout_display_PlacePicture(
+            &sys->place, sys.vd->source, &sys.vd->cfg->display
+        );
+
+        sys.displayView = displayView;
+        sys.spuView = spuView;
+        @synchronized(sys.displayLayer) {
+            sys.displayLayer = displayView.displayLayer;
+            if ( sys.pipcontroller
+                 && sys.pipcontroller->ops->set_display_layer ) {
+                sys.pipcontroller->ops->set_display_layer(
+                    sys.pipcontroller,
+                    (__bridge void*)displayView.displayLayer
+                );
+            }
+        }
+    });
+}
+
+- (void)close {
+    VLCSampleBufferDisplay *sys = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([sys.container respondsToSelector:@selector(removeVoutSubview:)]) {
+            [sys.container removeVoutSubview:sys.displayView];
+        }
+        [sys.displayView removeFromSuperview];
+        [sys.spuView removeFromSuperview];
+    });
+}
+
+@end
+
+#pragma mark -
+
+@interface VLCPictureInPictureController: NSObject
+    <AVPictureInPictureSampleBufferPlaybackDelegate, 
+     AVPictureInPictureControllerDelegate>
+
+@property (nonatomic, readonly) NSObject *avPipController;
+@property (nonatomic, readonly) pipcontroller_t *pipcontroller;
+
+- (instancetype)initWithPipController:(pipcontroller_t *)pipcontroller;
+- (void)invalidatePlaybackState;
+
+@end
+
+@implementation VLCPictureInPictureController
+
+- (instancetype)initWithPipController:(pipcontroller_t *)pipcontroller {
+    self = [super init];
+    if (!self)
+        return nil;
+    _pipcontroller = pipcontroller;
+    
+    return self;
+}
+
+- (void)invalidatePlaybackState {
+    if (@available(macOS 12.0, iOS 15.0, tvos 15.0, *)) {
+        AVPictureInPictureController *avPipController =
+            (AVPictureInPictureController *)_avPipController;
+        dispatch_async(dispatch_get_main_queue(),^{
+            [avPipController invalidatePlaybackState];
+        });
+    }
+}
+
+- (void)prepare:(AVSampleBufferDisplayLayer *)layer {
+    if (@available(macOS 12.0, iOS 15.0, tvos 15.0, *)) {
+        if (![AVPictureInPictureController isPictureInPictureSupported]) {
+            msg_Err(_pipcontroller, "Picture In Picture isn't supported");
+            return;
+        }
+            
+        assert(layer);
+        AVPictureInPictureControllerContentSource *avPipSource;
+        avPipSource = [
+            [AVPictureInPictureControllerContentSource alloc]
+                initWithSampleBufferDisplayLayer:layer
+                                playbackDelegate:self
+        ];
+        AVPictureInPictureController *avPipController = [
+            [AVPictureInPictureController alloc]
+                initWithContentSource:avPipSource
+        ];
+        avPipController.delegate = self;
+#if TARGET_OS_IOS
+        // Not sure if it's mandatory, its usefulness isn't obvious and 
+        // documentation doesn't particularily helps
+        avPipController.canStartPictureInPictureAutomaticallyFromInline = YES;
+#endif
+        _avPipController = avPipController;
+    } else {
+        return;
+    }
+
+
+    [_avPipController addObserver:self
+                       forKeyPath:@"isPictureInPicturePossible"
+                          options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionNew
+                          context:NULL];
+}
+
+- (void)close {
+    if (@available(macOS 12.0, iOS 15.0, tvos 15.0, *)) {
+        AVPictureInPictureController *avPipController =
+            (AVPictureInPictureController *)_avPipController;
+        NSObject *observer = self;
+        dispatch_async(dispatch_get_main_queue(),^{
+            avPipController.contentSource = nil;
+            [avPipController removeObserver:observer forKeyPath:@"isPictureInPicturePossible"];
+        });
+    }
+    _avPipController = nil;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                       context:(void *)context {
+    if (object==_avPipController) {
+        if ([keyPath isEqualToString:@"isPictureInPicturePossible"]) {
+            msg_Dbg(_pipcontroller, "isPictureInPicturePossible:%d", [change[NSKeyValueChangeNewKey] boolValue]);
+        }
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
+#pragma mark - AVPictureInPictureSampleBufferPlaybackDelegate
+
+- (void)pictureInPictureController:(nonnull AVPictureInPictureController *)pictureInPictureController
+         didTransitionToRenderSize:(CMVideoDimensions)newRenderSize {
+    
+}
+
+- (void)pictureInPictureController:(nonnull AVPictureInPictureController *)pictureInPictureController
+                        setPlaying:(BOOL)playing {
+    vlc_player_t *player = GetPlayer();
+    if (!player) {
+        msg_Dbg(_pipcontroller, "[pipcontroller] %s Player isn't available",
+            __FUNCTION__);
+        return;
+    }
+    vlc_player_Lock(player);
+    if (!vlc_player_IsStarted(player)) {
+        msg_Dbg(_pipcontroller, "[pipcontroller] %s Player isn't started",
+            __FUNCTION__);
+        vlc_player_Unlock(player);
+        return;
+    }
+    if (playing) {
+        if (vlc_player_IsPaused(player))
+            vlc_player_Resume(player);
+    } else {
+        if (!vlc_player_IsPaused(player))
+            vlc_player_Pause(player);
+    }
+    vlc_player_Unlock(player);
+    msg_Dbg(_pipcontroller, "[pipcontroller] %s playing:%s",
+            __FUNCTION__, playing?"true":"false");
+}
+
+- (void)pictureInPictureController:(nonnull AVPictureInPictureController *)pictureInPictureController
+                    skipByInterval:(CMTime)skipInterval
+                 completionHandler:(nonnull void (^)(void))completionHandler {
+    vlc_player_t *player = GetPlayer();
+    if (!player)
+        return;
+    Float64 time_sec = CMTimeGetSeconds(skipInterval);
+    vlc_player_Lock(player);
+    vlc_tick_t time = vlc_player_GetTime(player) + VLC_TICK_FROM_SEC(time_sec);
+    vlc_player_SeekByTime(player, time, VLC_PLAYER_SEEK_FAST,
+                          VLC_PLAYER_WHENCE_ABSOLUTE);
+    if (vlc_player_IsPaused(player))
+        vlc_player_Resume(player);
+    vlc_player_Unlock(player);
+    _pipcontroller->did_seek = true;
+    completionHandler();
+    msg_Dbg(_pipcontroller, "[pipcontroller] %s time_sec:%.02fs time:%lld", 
+            __FUNCTION__, time_sec, time);
+}
+
+- (BOOL)pictureInPictureControllerIsPlaybackPaused:(nonnull AVPictureInPictureController *)pictureInPictureController {
+    vlc_player_t *player = GetPlayer();
+    if (!player) {
+        msg_Dbg(_pipcontroller, "[pipcontroller] %s Player isn't available",
+            __FUNCTION__);
+        return YES;
+    }
+    vlc_player_Lock(player);
+    if (!vlc_player_IsStarted(player)) {
+        msg_Dbg(_pipcontroller, "[pipcontroller] %s Player isn't started",
+            __FUNCTION__);
+        vlc_player_Unlock(player);
+        return YES;
+    }
+    BOOL isPaused = vlc_player_IsPaused(player);
+    vlc_player_Unlock(player);
+    msg_Dbg(_pipcontroller, "[pipcontroller] %s isPaused:%s",
+            __FUNCTION__, isPaused?"true":"false");
+    return isPaused;
+}
+
+- (CMTimeRange)pictureInPictureControllerTimeRangeForPlayback:(nonnull AVPictureInPictureController *)pictureInPictureController {
+    //TODO: Handle media duration
+    const CMTimeRange live = CMTimeRangeMake(kCMTimeNegativeInfinity, kCMTimePositiveInfinity);
+    vlc_player_t *player = GetPlayer();
+    if (!player)
+        return live;
+    vlc_player_Lock(player);
+    vlc_tick_t length = vlc_player_GetLength(player);
+    vlc_player_Unlock(player);
+    if (length == VLC_TICK_INVALID)
+        return live;
+    vlc_player_Lock(player);
+    vlc_tick_t time = vlc_player_GetTime(player);
+    vlc_player_Unlock(player);
+    if (time == VLC_TICK_INVALID)
+        return live;
+
+    CFTimeInterval ca_now = CACurrentMediaTime();
+    CFTimeInterval time_sec = secf_from_vlc_tick(time);
+    CFTimeInterval start = ca_now - time_sec;
+    CFTimeInterval duration = secf_from_vlc_tick(length);
+    msg_Dbg(_pipcontroller, "[pipcontroller] %s time_sec:%.02fs time:%lld", 
+            __FUNCTION__, time_sec, time);
+    return CMTimeRangeMake(CMTimeMakeWithSeconds(start, 1000000), CMTimeMakeWithSeconds(duration, 1000000));
+}
+
+- (BOOL)pictureInPictureControllerShouldProhibitBackgroundAudioPlayback:(AVPictureInPictureController *)pictureInPictureController {
+    return NO;
+}
+
+#pragma mark - AVPictureInPictureControllerDelegate
+
+- (void)pictureInPictureControllerWillStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
+    /**
+     * Invalidation seems mandatory as
+     * pictureInPictureControllerTimeRangeForPlayback: isn't automatically
+     * called each time PiP is activated
+     */
+    [self invalidatePlaybackState];
+}
+
+- (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
+}
+
+- (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController
+failedToStartPictureInPictureWithError:(NSError *)error {
+}
+
+- (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
+}
+
+- (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
+}
+
+- (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController
+restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completionHandler {
+}
+
 @end
 
 #pragma mark -
@@ -318,14 +679,9 @@ static void Close(vout_display_t *vd)
     sys = (__bridge_transfer VLCSampleBufferDisplay*)vd->sys;
 
     DeleteCVPXConverter(sys->converter);
+    DeletePipController(sys.pipcontroller);
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if ([sys.container respondsToSelector:@selector(removeVoutSubview:)]) {
-            [sys.container removeVoutSubview:sys.displayView];
-        }
-        [sys.displayView removeFromSuperview];
-        [sys.spuView removeFromSuperview];
-    });
+    [sys close];
 }
 
 static void RenderPicture(vout_display_t *vd, picture_t *pic, vlc_tick_t date) {
@@ -549,42 +905,7 @@ static void PrepareDisplay (vout_display_t *vd) {
     VLCSampleBufferDisplay *sys;
     sys = (__bridge VLCSampleBufferDisplay*)vd->sys;
 
-    @synchronized(sys.displayLayer) {
-        if (sys.displayLayer)
-            return;
-    }
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (sys.displayView)
-            return;
-        VLCSampleBufferDisplayView *displayView = 
-            [[VLCSampleBufferDisplayView alloc] initWithVoutDisplay:vd];
-        VLCSampleBufferSubpictureView *spuView = 
-            [VLCSampleBufferSubpictureView new];
-        id container = sys.container;
-        //TODO: Is it still relevant ?
-        if ([container respondsToSelector:@selector(addVoutSubview:)]) {
-            [container addVoutSubview:displayView];
-            [container addVoutSubview:spuView];
-        } else if ([container isKindOfClass:[VLCView class]]) {
-            VLCView *containerView = container;
-            [containerView addSubview:displayView];
-            [containerView addSubview:spuView];
-            [displayView setFrame:containerView.bounds];
-            [spuView setFrame:containerView.bounds];
-        } else {
-            displayView = nil;
-            spuView = nil;
-        }
-
-        vout_display_PlacePicture(&sys->place, vd->source, &vd->cfg->display);
-
-        sys.displayView = displayView;
-        sys.spuView = spuView;
-        @synchronized(sys.displayLayer) {
-            sys.displayLayer = displayView.displayLayer;
-        }
-    });
+    [sys prepareDisplay];
 }
 
 static void Prepare (vout_display_t *vd, picture_t *pic, 
@@ -627,6 +948,32 @@ static int Control (vout_display_t *vd, int query)
     return VLC_SUCCESS;
 }
 
+static pipcontroller_t * CreatePipController( vout_display_t *vd )
+{
+    pipcontroller_t *pipcontroller = vlc_object_create(vd, sizeof(pipcontroller_t));
+    pipcontroller->p_module = module_need(pipcontroller, "pipcontroller", NULL, false);
+    if (!pipcontroller->p_module)
+    {
+        vlc_object_delete(pipcontroller);
+        return NULL;
+    }
+    assert( pipcontroller->ops != NULL );
+    return pipcontroller;
+}
+
+static void DeletePipController( pipcontroller_t * pipcontroller )
+{
+    if (pipcontroller == NULL)
+        return;
+
+    if( pipcontroller->p_module )
+    {
+        module_unneed( pipcontroller, pipcontroller->p_module );
+    }
+
+    vlc_object_delete(pipcontroller);
+}
+
 static int Open (vout_display_t *vd,
                  video_format_t *fmt, vlc_video_context *context)
 {
@@ -639,11 +986,6 @@ static int Open (vout_display_t *vd,
     if (vd->cfg->window->type != VLC_WINDOW_TYPE_NSOBJECT)
         return VLC_EGENERIC;
 
-    VLCSampleBufferDisplay *sys = [VLCSampleBufferDisplay new];
-    if (sys == nil) {
-        return VLC_ENOMEM;
-    }
-
     // Display will only work with CVPX video context
     filter_t *converter = NULL;
     if (!vlc_video_context_GetPrivate(context, VLC_VIDEO_CONTEXT_CVPX)) {
@@ -651,7 +993,6 @@ static int Open (vout_display_t *vd,
         if (!converter)
             return VLC_EGENERIC;
     }
-    sys->converter = converter;
 
     @autoreleasepool {
         id container = (__bridge id)vd->cfg->window->handle.nsobject;
@@ -661,14 +1002,24 @@ static int Open (vout_display_t *vd,
             return VLC_EGENERIC;
         }
 
-        sys.container = container;
+        VLCSampleBufferDisplay *sys = 
+            [[VLCSampleBufferDisplay alloc] 
+                initWithContainer:container
+                    pipController:CreatePipController(vd)
+                      voutDisplay:vd];
+
+        if (sys == nil) {
+            return VLC_ENOMEM;
+        }
+
+        sys->converter = converter;    
 
         vd->sys = (__bridge_retained void*)sys;
 
         static const struct vlc_display_operations ops = {
             Close, Prepare, Display, Control, NULL, NULL, NULL,
         };
-
+        
         vd->ops = &ops;
 
         static const vlc_fourcc_t subfmts[] = {
@@ -682,6 +1033,135 @@ static int Open (vout_display_t *vd,
     }
 }
 
+static int OpenPlayer( vlc_object_t *p_this )
+{
+    struct vlc_player_probe_t *player_probe = (struct vlc_player_probe_t *)p_this;
+    p_player = player_probe->player;
+    return VLC_SUCCESS;
+}
+
+static int ClosePlayer( vlc_object_t *p_this )
+{
+    struct vlc_player_probe_t *player = (struct vlc_player_probe_t *)p_this;
+    p_player = NULL;
+    return VLC_SUCCESS;
+}
+
+static int OpenIntf( vlc_object_t *p_this )
+{
+    intf_thread_t *p_intf = (intf_thread_t *)p_this;
+    p_interface_thread = p_intf;
+    return VLC_SUCCESS;
+}
+
+static int CloseIntf( vlc_object_t *p_this )
+{
+    intf_thread_t *p_intf = (intf_thread_t *)p_this;
+    p_interface_thread = NULL;
+    return VLC_SUCCESS;
+}
+
+static void SetDisplayLayer( pipcontroller_t *pipcontroller, void *layer) {
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    
+    AVSampleBufferDisplayLayer *displayLayer =
+        (__bridge AVSampleBufferDisplayLayer *)layer;
+    
+    [sys prepare:displayLayer];
+}
+
+static void OnPlayerLengthChanged(vlc_player_t *player,
+        vlc_tick_t new_length, void *data) {
+    pipcontroller_t *pipcontroller = (pipcontroller_t *)data;
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    [sys invalidatePlaybackState];
+}
+
+static void OnPlayerStateChanged(vlc_player_t *player,
+        enum vlc_player_state new_state, void *data) {
+    pipcontroller_t *pipcontroller = (pipcontroller_t *)data;
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    [sys invalidatePlaybackState];
+}
+
+static void OnPlayerBufferingChanged(vlc_player_t *player,
+        float new_buffering, void *data) {
+    pipcontroller_t *pipcontroller = (pipcontroller_t *)data;
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    [sys invalidatePlaybackState];
+}
+
+static void OnPlayerCurrentMediaChanged(vlc_player_t *player,
+        input_item_t *new_media, void *data) {
+    pipcontroller_t *pipcontroller = (pipcontroller_t *)data;
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    [sys invalidatePlaybackState];
+}
+
+static void OnPlayerPositionChanged(vlc_player_t *player,
+        vlc_tick_t new_time, double new_pos, void *data) {
+    pipcontroller_t *pipcontroller = (pipcontroller_t *)data;
+    VLCPictureInPictureController *sys = 
+        (__bridge VLCPictureInPictureController*)pipcontroller->p_sys;
+    if (pipcontroller->did_seek) {
+        pipcontroller->did_seek = false;
+        [sys invalidatePlaybackState];
+    }
+}
+
+static const struct vlc_player_cbs player_callbacks = {
+    .on_length_changed        = OnPlayerLengthChanged,
+    .on_state_changed         = OnPlayerStateChanged,
+    .on_buffering_changed     = OnPlayerBufferingChanged,
+    .on_current_media_changed = OnPlayerCurrentMediaChanged,
+    .on_position_changed      = OnPlayerPositionChanged,
+};
+
+static int OpenController( pipcontroller_t *pipcontroller )
+{
+    static const struct pipcontroller_operations ops = {
+        SetDisplayLayer,
+    };
+
+    VLCPictureInPictureController *sys = 
+        [[VLCPictureInPictureController alloc] 
+            initWithPipController:pipcontroller];
+    pipcontroller->p_sys = (__bridge_retained void*)sys;
+    pipcontroller->ops = &ops;
+
+    vlc_player_t *player = GetPlayer();
+    if (player) {
+        vlc_player_Lock(player);
+        vlc_player_listener_id *listener = vlc_player_AddListener(player, &player_callbacks, pipcontroller);
+        vlc_player_Unlock(player);
+        pipcontroller->player_listener_id = listener;
+    }
+
+    return VLC_SUCCESS;
+}
+
+static int CloseController( pipcontroller_t *pipcontroller )
+{
+    VLCPictureInPictureController *sys = 
+        (__bridge_transfer VLCPictureInPictureController*)pipcontroller->p_sys;
+    
+    [sys close];
+    
+    vlc_player_t *player = GetPlayer();
+    if (player) {
+        vlc_player_Lock(player);
+        vlc_player_RemoveListener(player, pipcontroller->player_listener_id);
+        vlc_player_Unlock(player);
+    }
+    
+    return VLC_SUCCESS;
+}
+
 /*
  * Module descriptor
  */
@@ -689,4 +1169,18 @@ vlc_module_begin()
     set_description(N_("CoreMedia sample buffers based video output display"))
     set_subcategory(SUBCAT_VIDEO_VOUT)
     set_callback_display(Open, 600)
+    
+    add_submodule()
+        set_callbacks(OpenIntf, CloseIntf)
+        set_capability("interface", 0)
+        add_shortcut( "pipinterface" )
+    
+    add_submodule()
+        set_callbacks(OpenPlayer, ClosePlayer)
+        set_capability("playerprobe", 100)
+    
+    add_submodule()
+        set_callbacks(OpenController, CloseController)
+        set_capability("pipcontroller", 100)
+
 vlc_module_end()
