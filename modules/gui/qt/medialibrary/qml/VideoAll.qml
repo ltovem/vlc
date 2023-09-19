@@ -90,7 +90,6 @@ MainInterface.MainViewLoader {
 
     function onAction(indexes) {
         model.addAndPlay( indexes )
-        g_mainDisplay.showPlayer()
     }
 
     function onDoubleClick(object) {

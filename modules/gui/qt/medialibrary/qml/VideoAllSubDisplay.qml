@@ -143,7 +143,6 @@ VideoAll {
 
             function onAction(indexes) {
                 model.addAndPlay( indexes )
-                g_mainDisplay.showPlayer()
             }
 
             function onDoubleClick(object) { g_mainDisplay.play(MediaLib, object.id) }
@@ -184,7 +183,6 @@ VideoAll {
 
                 if (object.isVideo) {
                     model.addAndPlay( indexes )
-                    g_mainDisplay.showPlayer()
 
                     return
                 }
