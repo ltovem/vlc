@@ -54,7 +54,8 @@
 using Microsoft::WRL::ComPtr;
 
 static int  Open(vout_display_t *,
-                 video_format_t *, vlc_video_context *);
+                 video_format_t *, vlc_video_context **fmt_vctx,
+                 vlc_video_context *src_vctx);
 static void Close(vout_display_t *);
 
 #define D3D11_HELP N_("Recommended video output for Windows 8 and later versions")
@@ -360,8 +361,10 @@ static const auto ops = []{
 }();
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys = new (std::nothrow) vout_display_sys_t();
     if (!sys)
         return VLC_ENOMEM;
@@ -382,7 +385,7 @@ static int Open(vout_display_t *vd,
     sys->sendMetadataCb      = (libvlc_video_frameMetadata_cb)var_InheritAddress( vd, "vout-cb-metadata" );
     sys->selectPlaneCb       = (libvlc_video_output_select_plane_cb)var_InheritAddress( vd, "vout-cb-select-plane" );
 
-    dev_sys = GetD3D11OpaqueContext( context );
+    dev_sys = GetD3D11OpaqueContext( src_vctx );
     if ( dev_sys == NULL )
     {
         // No d3d11 device, we create one
@@ -428,7 +431,7 @@ static int Open(vout_display_t *vd,
 #endif // WINAPI_PARTITION_DESKTOP
     }
 
-    if (Direct3D11Open(vd, fmtp, context)) {
+    if (Direct3D11Open(vd, fmtp, src_vctx)) {
         msg_Err(vd, "Direct3D11 could not be opened");
         goto error;
     }

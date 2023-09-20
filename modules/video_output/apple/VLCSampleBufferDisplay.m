@@ -629,8 +629,10 @@ static void DeleteFilter( filter_t * p_filter )
 }
 
 static int Open (vout_display_t *vd,
-                 video_format_t *fmt, vlc_video_context *context)
+                 video_format_t *fmt, vlc_video_context **fmt_vctx,
+                 vlc_video_context *src_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     // Display isn't compatible with 360 content hence opening with this kind
     // of projection should fail if display use isn't forced
     if (!vd->obj.force && fmt->projection_mode != PROJECTION_MODE_RECTANGULAR) {
@@ -647,7 +649,7 @@ static int Open (vout_display_t *vd,
 
     // Display will only work with CVPX video context
     filter_t *converter = NULL;
-    if (!vlc_video_context_GetPrivate(context, VLC_VIDEO_CONTEXT_CVPX)) {
+    if (!vlc_video_context_GetPrivate(src_vctx, VLC_VIDEO_CONTEXT_CVPX)) {
         converter = SW_to_CVPX_converter_Create(vd);
         if (!converter)
             return VLC_EGENERIC;

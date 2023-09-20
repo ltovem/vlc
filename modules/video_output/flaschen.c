@@ -64,7 +64,8 @@
 #define LT_OFFSET_Z NULL
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin ()
@@ -102,7 +103,8 @@ static const struct vlc_display_operations ops = {
  * Open: activates flaschen vout display method
  *****************************************************************************/
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
     vout_display_sys_t *sys;
     int fd;
@@ -158,7 +160,8 @@ static int Open(vout_display_t *vd,
 
     vd->ops = &ops;
 
-    (void) context;
+    (void) src_vctx;
+    (void) fmt_vctx;
     return VLC_SUCCESS;
 }
 

@@ -752,8 +752,20 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
         video_format_Copy(&osys->display_fmt, vd->source);
         vd->obj.force = i < (ssize_t)strict; /* TODO: pass to cb() instead? */
 
-        int ret = cb(vd, &osys->display_fmt, vctx);
+        vlc_video_context *display_vctx = NULL;
+        int ret = cb(vd, &osys->display_fmt, &display_vctx, vctx);
         if (ret == VLC_SUCCESS) {
+            if (display_vctx != NULL)
+            {
+                // only support one video context per decoder+display for now
+                assert( osys->src_vctx == NULL || osys->src_vctx == display_vctx );
+                // swap the src_vctx with the one provided by the display
+                vlc_video_context_Hold( display_vctx );
+                if ( osys->src_vctx != NULL )
+                    vlc_video_context_Release( osys->src_vctx );
+                osys->src_vctx = display_vctx;
+            }
+
             assert(vd->ops->prepare != NULL || vd->ops->display != NULL);
             if (VoutDisplayCreateRender(vd) == 0) {
                 msg_Dbg(vd, "using %s module \"%s\"", "vout display",

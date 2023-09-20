@@ -187,9 +187,10 @@ static int DisplayControl(vout_display_t *vd, int query)
     return VLC_SUCCESS;
 }
 
-static int OpenDisplay(vout_display_t *vd, video_format_t *fmtp, vlc_video_context *context)
+static int OpenDisplay(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                       vlc_video_context *src_vctx)
 {
-    (void)fmtp; (void)context;
+    (void)fmtp; (void)src_vctx; (void) fmt_vctx;
 
     static const struct vlc_display_operations ops = {
         .prepare = DisplayPrepare,

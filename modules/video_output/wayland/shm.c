@@ -266,7 +266,8 @@ static const struct vlc_display_operations ops = {
 };
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
     if (vd->cfg->window->type != VLC_WINDOW_TYPE_WAYLAND)
         return VLC_EGENERIC;
@@ -341,7 +342,8 @@ static int Open(vout_display_t *vd,
     vd->ops = &ops;
 
     vlc_wl_registry_destroy(registry);
-    (void) context;
+    (void) src_vctx;
+    (void) fmt_vctx;
     return VLC_SUCCESS;
 
 error:

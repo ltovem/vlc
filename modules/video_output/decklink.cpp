@@ -233,7 +233,8 @@ struct decklink_sys_t
  *****************************************************************************/
 
 static int  OpenVideo           (vout_display_t *,
-                                 video_format_t *, vlc_video_context *);
+                                 video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                                 vlc_video_context *src_vctx);
 static void CloseVideo          (vout_display_t *);
 static int  OpenAudio           (vlc_object_t *);
 static void CloseAudio          (vlc_object_t *);
@@ -783,9 +784,11 @@ static const auto ops = []{
 }();
 
 static int OpenVideo(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context *context)
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                     vlc_video_context *src_vctx)
 {
-    VLC_UNUSED(context);
+    VLC_UNUSED(src_vctx);
+    VLC_UNUSED(fmt_vctx);
     decklink_sys_t *sys = HoldDLSys(VLC_OBJECT(vd), VIDEO_ES);
     if(!sys)
         return VLC_ENOMEM;

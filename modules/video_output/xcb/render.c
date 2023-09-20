@@ -563,7 +563,8 @@ static const struct vlc_display_operations ops = {
  * Probe the X server.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *ctx)
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
     vlc_object_t *obj = VLC_OBJECT(vd);
     struct vlc_logger *log = obj->logger;
@@ -705,7 +706,8 @@ static int Open(vout_display_t *vd,
     vd->info.subpicture_chromas = sys->spu_chromas;
     vd->ops = &ops;
 
-    (void) ctx;
+    (void) src_vctx;
+    (void) fmt_vctx;
     return VLC_SUCCESS;
 
 error:

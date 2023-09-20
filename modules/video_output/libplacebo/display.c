@@ -96,7 +96,8 @@ static const struct vlc_display_operations ops = {
 };
 
 static int Open(vout_display_t *vd,
-                video_format_t *fmt, vlc_video_context *context)
+                video_format_t *fmt, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
     vout_display_sys_t *sys =
         vlc_obj_calloc(VLC_OBJECT(vd), 1, sizeof (*sys));
@@ -171,7 +172,8 @@ static int Open(vout_display_t *vd,
     vd->ops = &ops;
 
     UpdateParams(vd);
-    (void) context;
+    (void) src_vctx;
+    (void) fmt_vctx;
     return VLC_SUCCESS;
 
 error:

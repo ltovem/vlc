@@ -37,7 +37,8 @@
 
 /* Plugin callbacks */
 static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+                video_format_t *fmtp, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx);
 static void Close(vout_display_t *vd);
 
 #define GL_TEXT N_("OpenGL extension")
@@ -188,8 +189,10 @@ static void PlacePicture(vout_display_t *vd, vout_display_place_t *place,
  * Allocates a surface and an OpenGL context for video output.
  */
 static int Open(vout_display_t *vd,
-                video_format_t *fmt, vlc_video_context *context)
+                video_format_t *fmt, vlc_video_context **fmt_vctx,
+                vlc_video_context *src_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys = malloc (sizeof (*sys));
     if (unlikely(sys == NULL))
         return VLC_ENOMEM;
@@ -249,7 +252,7 @@ static int Open(vout_display_t *vd,
     }
 
     sys->vgl = vout_display_opengl_New (fmt, &spu_chromas, sys->gl,
-                                        &vd->cfg->viewpoint, context);
+                                        &vd->cfg->viewpoint, src_vctx);
     vlc_gl_ReleaseCurrent (sys->gl);
 
     if (sys->vgl == NULL)
