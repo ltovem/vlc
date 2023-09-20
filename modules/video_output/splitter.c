@@ -233,9 +233,8 @@ static const struct vlc_display_operations ops = {
     .control = vlc_vidsplit_Control,
 };
 
-static int vlc_vidsplit_Open(vout_display_t *vd,
-                             video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                             vlc_video_context *src_vctx)
+static int vlc_vidsplit_Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                             video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(fmt_vctx);
     vlc_object_t *obj = VLC_OBJECT(vd);

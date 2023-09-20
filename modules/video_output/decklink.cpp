@@ -232,9 +232,8 @@ struct decklink_sys_t
  * Local prototypes.
  *****************************************************************************/
 
-static int  OpenVideo           (vout_display_t *,
-                                 video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                                 vlc_video_context *src_vctx);
+static int  OpenVideo           (vout_display_t *, vlc_video_context *src_vctx,
+                                 video_format_t *fmtp, vlc_video_context **fmt_vctx);
 static void CloseVideo          (vout_display_t *);
 static int  OpenAudio           (vlc_object_t *);
 static void CloseAudio          (vlc_object_t *);
@@ -783,9 +782,8 @@ static const auto ops = []{
     return ops;
 }();
 
-static int OpenVideo(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                     vlc_video_context *src_vctx)
+static int OpenVideo(vout_display_t *vd, vlc_video_context *src_vctx,
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(src_vctx);
     VLC_UNUSED(fmt_vctx);

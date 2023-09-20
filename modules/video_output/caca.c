@@ -385,9 +385,8 @@ static const struct vlc_display_operations ops = {
 /**
  * This function initializes libcaca vout method.
  */
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     vout_display_sys_t *sys;
 

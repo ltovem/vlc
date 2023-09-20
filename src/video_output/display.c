@@ -753,7 +753,7 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
         vd->obj.force = i < (ssize_t)strict; /* TODO: pass to cb() instead? */
 
         vlc_video_context *display_vctx = NULL;
-        int ret = cb(vd, &osys->display_fmt, &display_vctx, vctx);
+        int ret = cb(vd, vctx, &osys->display_fmt, &display_vctx);
         if (ret == VLC_SUCCESS) {
             if (display_vctx != NULL)
             {

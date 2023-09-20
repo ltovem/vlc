@@ -49,8 +49,8 @@
 /*****************************************************************************
  * Vout interface
  *****************************************************************************/
-static int Open(vout_display_t *vd, video_format_t *fmt, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx);
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmt, vlc_video_context **fmt_vctx);
 static void Close(vout_display_t *vd);
 
 static void PictureRender   (vout_display_t *vd, picture_t *pic, subpicture_t *subpicture,
@@ -344,9 +344,8 @@ static void *gl_cb_GetProcAddress(vlc_gl_t *vlc_gl, const char *name)
 /*****************************************************************************
  * Open: This function allocates and initializes the OpenGL vout method.
  *****************************************************************************/
-static int Open (vout_display_t *vd,
-                 video_format_t *fmt, vlc_video_context **fmt_vctx,
-                 vlc_video_context *src_vctx)
+static int Open (vout_display_t *vd, vlc_video_context *src_vctx,
+                 video_format_t *fmt, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys;

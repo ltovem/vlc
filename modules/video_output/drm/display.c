@@ -152,9 +152,8 @@ static const struct vlc_display_operations ops = {
 /**
  * This function allocates and initializes a KMS vout method.
  */
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     vlc_window_t *wnd = vd->cfg->window;
     uint_fast32_t drm_fourcc = 0;

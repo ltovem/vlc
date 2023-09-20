@@ -628,9 +628,8 @@ static void DeleteFilter( filter_t * p_filter )
     vlc_object_delete(p_filter);
 }
 
-static int Open (vout_display_t *vd,
-                 video_format_t *fmt, vlc_video_context **fmt_vctx,
-                 vlc_video_context *src_vctx)
+static int Open (vout_display_t *vd, vlc_video_context *src_vctx,
+                 video_format_t *fmt, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(fmt_vctx);
     // Display isn't compatible with 360 content hence opening with this kind

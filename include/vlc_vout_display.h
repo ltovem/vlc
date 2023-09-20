@@ -216,9 +216,9 @@ struct vout_display_owner_t {
  * @return VLC_SUCCESS or a VLC error code
  */
 typedef int (*vout_display_open_cb)(vout_display_t *vd,
+                                    vlc_video_context *src_vctx,
                                     video_format_t *fmtp,
-                                    vlc_video_context **fmt_vctx,
-                                    vlc_video_context *src_vctx);
+                                    vlc_video_context **fmt_vctx);
 
 #define set_callback_display(activate, priority) \
     { \

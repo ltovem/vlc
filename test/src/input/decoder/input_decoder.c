@@ -187,8 +187,8 @@ static int DisplayControl(vout_display_t *vd, int query)
     return VLC_SUCCESS;
 }
 
-static int OpenDisplay(vout_display_t *vd, video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                       vlc_video_context *src_vctx)
+static int OpenDisplay(vout_display_t *vd, vlc_video_context *src_vctx,
+                       video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     (void)fmtp; (void)src_vctx; (void) fmt_vctx;
 

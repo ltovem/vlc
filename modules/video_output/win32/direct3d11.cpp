@@ -53,9 +53,8 @@
 
 using Microsoft::WRL::ComPtr;
 
-static int  Open(vout_display_t *,
-                 video_format_t *, vlc_video_context **fmt_vctx,
-                 vlc_video_context *src_vctx);
+static int  Open(vout_display_t *, vlc_video_context *src_vctx,
+                 video_format_t *fmtp, vlc_video_context **fmt_vctx);
 static void Close(vout_display_t *);
 
 #define D3D11_HELP N_("Recommended video output for Windows 8 and later versions")
@@ -360,9 +359,8 @@ static const auto ops = []{
     return ops;
 }();
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys = new (std::nothrow) vout_display_sys_t();

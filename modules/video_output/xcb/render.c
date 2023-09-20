@@ -562,9 +562,8 @@ static const struct vlc_display_operations ops = {
 /**
  * Probe the X server.
  */
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     vlc_object_t *obj = VLC_OBJECT(vd);
     struct vlc_logger *log = obj->logger;

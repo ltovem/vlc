@@ -39,12 +39,10 @@
     "format instead of trying to improve performances by using the most " \
     "efficient one.")
 
-static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                     vlc_video_context *src_vctx);
-static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                     vlc_video_context *src_vctx);
+static int OpenDummy(vout_display_t *vd, vlc_video_context *src_vctx,
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx);
+static int OpenStats(vout_display_t *vd, vlc_video_context *src_vctx,
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx);
 
 vlc_module_begin ()
     set_shortname( N_("Dummy") )
@@ -97,9 +95,8 @@ static const struct vlc_display_operations ops_dummy = {
     .control = Control,
 };
 
-static int OpenDummy(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                     vlc_video_context *src_vctx)
+static int OpenDummy(vout_display_t *vd, vlc_video_context *src_vctx,
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     (void) src_vctx;
     (void) fmt_vctx;
@@ -113,9 +110,8 @@ static const struct vlc_display_operations ops_stats = {
     .control = Control,
 };
 
-static int OpenStats(vout_display_t *vd,
-                     video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                     vlc_video_context *src_vctx)
+static int OpenStats(vout_display_t *vd, vlc_video_context *src_vctx,
+                     video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     (void) src_vctx;
     (void) fmt_vctx;

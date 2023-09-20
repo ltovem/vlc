@@ -265,9 +265,8 @@ static const struct vlc_display_operations ops = {
     .reset_pictures = ResetPictures,
 };
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                vlc_video_context *src_vctx)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     if (vd->cfg->window->type != VLC_WINDOW_TYPE_WAYLAND)
         return VLC_EGENERIC;

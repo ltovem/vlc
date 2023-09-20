@@ -63,9 +63,8 @@
 #define PHASE_OFFSET_TARGET ((double)0.25)
 #define PHASE_CHECK_INTERVAL 100
 
-static int OpenMmalVout(vout_display_t *, video_format_t *fmtp,
-                        vlc_video_context **fmt_vctx,
-                        vlc_video_context *src_vctx);
+static int OpenMmalVout(vout_display_t *, vlc_video_context *src_vctx,
+                        video_format_t *fmtp, vlc_video_context **fmt_vctx);
 
 #define SUBS_MAX 4
 
@@ -1080,9 +1079,8 @@ static const struct vlc_display_operations ops = {
     .reset_pictures = vd_reset_pictures,
 };
 
-static int OpenMmalVout(vout_display_t *vd,
-                        video_format_t *fmtp, vlc_video_context **fmt_vctx,
-                        vlc_video_context *src_vctx)
+static int OpenMmalVout(vout_display_t *vd, vlc_video_context *src_vctx,
+                        video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys;
