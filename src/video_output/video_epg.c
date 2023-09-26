@@ -517,7 +517,7 @@ static void OSDEpgUpdate(subpicture_t *subpic,
                          const video_format_t *fmt_dst,
                          vlc_tick_t ts)
 {
-    epg_spu_updater_sys_t *sys = subpic->updater.p_sys;
+    epg_spu_updater_sys_t *sys = subpic->updater.sys;
     VLC_UNUSED(fmt_src); VLC_UNUSED(ts);
 
     video_format_t fmt = *fmt_dst;
@@ -537,7 +537,7 @@ static void OSDEpgUpdate(subpicture_t *subpic,
 
 static void OSDEpgDestroy(subpicture_t *subpic)
 {
-    epg_spu_updater_sys_t *sys = subpic->updater.p_sys;
+    epg_spu_updater_sys_t *sys = subpic->updater.sys;
     if( sys->epg )
         vlc_epg_Delete(sys->epg);
     free( sys->art );
@@ -629,7 +629,7 @@ int vout_OSDEpg(vout_thread_t *vout, input_item_t *input)
         .pf_validate = OSDEpgValidate,
         .pf_update   = OSDEpgUpdate,
         .pf_destroy  = OSDEpgDestroy,
-        .p_sys       = sys
+        .sys         = sys
     };
 
     const vlc_tick_t now = vlc_tick_now();

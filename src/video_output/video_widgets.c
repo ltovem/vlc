@@ -272,7 +272,7 @@ static void OSDWidgetUpdate(subpicture_t *subpic,
                           const video_format_t *fmt_dst,
                           vlc_tick_t ts)
 {
-    osdwidget_spu_updater_sys_t *sys = subpic->updater.p_sys;
+    osdwidget_spu_updater_sys_t *sys = subpic->updater.sys;
     VLC_UNUSED(fmt_src); VLC_UNUSED(ts);
 
     video_format_t fmt = *fmt_dst;
@@ -292,7 +292,7 @@ static void OSDWidgetUpdate(subpicture_t *subpic,
 
 static void OSDWidgetDestroy(subpicture_t *subpic)
 {
-    free(subpic->updater.p_sys);
+    free(subpic->updater.sys);
 }
 
 static void OSDWidget(vout_thread_t *vout, int channel, int type, int position)
@@ -312,7 +312,7 @@ static void OSDWidget(vout_thread_t *vout, int channel, int type, int position)
         .pf_validate = OSDWidgetValidate,
         .pf_update   = OSDWidgetUpdate,
         .pf_destroy  = OSDWidgetDestroy,
-        .p_sys       = sys,
+        .sys         = sys,
     };
     subpicture_t *subpic = subpicture_New(&updater);
     if (!subpic) {

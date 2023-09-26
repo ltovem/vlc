@@ -92,7 +92,7 @@ static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
 {
     VLC_UNUSED(p_fmt_src); VLC_UNUSED(p_fmt_dst);
     VLC_UNUSED(i_ts);
-    ttml_image_updater_sys_t *p_sys = p_spu->updater.p_sys;
+    ttml_image_updater_sys_t *p_sys = p_spu->updater.sys;
     subpicture_region_t **pp_last_region = &p_spu->p_region;
 
     /* !WARN: SMPTE-TT image profile requires no scaling, and even it
@@ -124,7 +124,7 @@ static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
 
 static void TTML_ImageSpuDestroy(subpicture_t *p_spu)
 {
-    ttml_image_updater_sys_t *p_sys = p_spu->updater.p_sys;
+    ttml_image_updater_sys_t *p_sys = p_spu->updater.sys;
     while(p_sys->p_regions)
     {
         ttml_image_updater_region_t *p_next = p_sys->p_regions->p_next;
@@ -143,7 +143,7 @@ static inline subpicture_t *decoder_NewTTML_ImageSpu(decoder_t *p_dec)
         .pf_validate = TTML_ImageSpuValidate,
         .pf_update   = TTML_ImageSpuUpdate,
         .pf_destroy  = TTML_ImageSpuDestroy,
-        .p_sys       = p_sys,
+        .sys         = p_sys,
     };
     p_sys->p_regions = NULL;
     p_sys->pp_append = &p_sys->p_regions;

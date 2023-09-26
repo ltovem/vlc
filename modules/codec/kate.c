@@ -740,7 +740,7 @@ static void SetupText( decoder_t *p_dec, subpicture_t *p_spu, const kate_event *
 
 static void TigerDestroySubpicture( subpicture_t *p_subpic )
 {
-    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     DecSysRelease( p_spusys->p_dec_sys );
     free( p_spusys );
 }
@@ -802,7 +802,7 @@ static int TigerValidateSubpicture( subpicture_t *p_subpic,
 {
     VLC_UNUSED(p_fmt_src); VLC_UNUSED(p_fmt_dst);
 
-    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 
     if( b_fmt_src || b_fmt_dst )
@@ -844,7 +844,7 @@ static void TigerUpdateSubpicture( subpicture_t *p_subpic,
                                    const video_format_t *p_fmt_dst,
                                    vlc_tick_t ts )
 {
-    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    kate_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
     plane_t *p_plane;
     kate_float t;
@@ -1033,7 +1033,7 @@ static subpicture_t *DecodePacket( decoder_t *p_dec, kate_packet *p_kp, block_t 
         .pf_update   = TigerUpdateSubpicture,
         .pf_destroy  = TigerDestroySubpicture,
 #endif
-        .p_sys       = p_spu_sys,
+        .sys         = p_spu_sys,
     };
     p_spu = decoder_NewSubpicture( p_dec, p_sys->b_use_tiger ? &updater : NULL );
     if( !p_spu )

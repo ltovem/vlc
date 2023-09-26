@@ -375,7 +375,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
             .pf_validate = SubpictureValidate,
             .pf_update   = SubpictureUpdate,
             .pf_destroy  = SubpictureDestroy,
-            .p_sys       = p_spu_sys,
+            .sys         = p_spu_sys,
         };
 
         p_spu = decoder_NewSubpicture( p_dec, &updater );
@@ -426,7 +426,7 @@ static int SubpictureValidate( subpicture_t *p_subpic,
                                bool b_fmt_dst, const video_format_t *p_fmt_dst,
                                vlc_tick_t i_ts )
 {
-    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 
     vlc_mutex_lock( &p_sys->lock );
@@ -472,7 +472,7 @@ static void SubpictureUpdate( subpicture_t *p_subpic,
 {
     VLC_UNUSED( p_fmt_src ); VLC_UNUSED( p_fmt_dst ); VLC_UNUSED( i_ts );
 
-    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 
     video_format_t fmt = p_sys->fmt;
@@ -532,7 +532,7 @@ static void SubpictureUpdate( subpicture_t *p_subpic,
 }
 static void SubpictureDestroy( subpicture_t *p_subpic )
 {
-    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libass_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
 
     DecSysRelease( p_spusys->p_dec_sys );
     free( p_spusys );
