@@ -938,10 +938,7 @@ static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, 
 
 
     subpicture_updater_t *updater = &p_entry->p_source->updater;
-    if (updater->pf_validate != NULL)
-        i_result = updater->pf_validate(p_entry->p_source, has_src_changed, p_fmt_src,
-                                        has_dst_changed, p_fmt_dst, i_new_ts);
-    else if (updater->ops != NULL && updater->ops->validate != NULL)
+    if (updater->ops != NULL && updater->ops->validate != NULL)
         i_result = updater->ops->validate(p_entry->p_source, has_src_changed, p_fmt_src,
                                           has_dst_changed, p_fmt_dst, i_new_ts);
 
@@ -984,19 +981,14 @@ static void SubpicUpdateWrapper( subpicture_t *p_subpic, const video_format_t *p
 
     /* call source update */
     subpicture_updater_t *updater = &p_entry->p_source->updater;
-    if (updater->pf_update != NULL || (updater->ops != NULL && updater->ops->update != NULL))
+    if (updater->ops != NULL && updater->ops->update != NULL)
     {
         i_new_ts = p_entry->p_source->i_start +
                    ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
                    ( p_entry->i_new_stop - p_entry->p_source->i_start );
 
         p_entry->p_source->p_region = p_entry->p_subpic->p_region;
-
-        if (updater->pf_update != NULL)
-            updater->pf_update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
-        else
-            updater->ops->update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
-
+        updater->ops->update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
         p_entry->p_subpic->p_region = p_entry->p_source->p_region;
     }
 
