@@ -16,22 +16,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Templates as T
 
 import org.videolan.vlc 0.1
 import "qrc:///style/"
 import "qrc:///widgets/" as Widgets
 
-Item {
+T.Control {
     id: root
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding)
+
     width: VLCStyle.dp(320, VLCStyle.scale)
     height: VLCStyle.dp(180, VLCStyle.scale)
 
     //VideoSurface x,y won't update
-    onXChanged: videoSurface.onSurfacePositionChanged()
-    onYChanged: videoSurface.onSurfacePositionChanged()
+    onXChanged: contentItem.onSurfacePositionChanged()
+    onYChanged: contentItem.onSurfacePositionChanged()
 
     objectName: "pip window"
+
+    wheelEnabled: true
 
     property real dragXMin: 0
     property real dragXMax: 0
@@ -43,7 +51,7 @@ Item {
     Accessible.name: qsTr("video content")
 
     Connections {
-        target: mouseArea.drag
+        target: dragHandler
         onActiveChanged: {
             root.anchors.left = undefined;
             root.anchors.right = undefined
@@ -53,44 +61,34 @@ Item {
             root.anchors.horizontalCenter = undefined
         }
     }
-    Drag.active: mouseArea.drag.active
 
-    VideoSurface {
-        id: videoSurface
+    Drag.active: dragHandler.active
 
-        anchors.fill: parent
-
-        enabled: root.enabled
-        visible: root.visible
-
-        ctx: MainCtx
+    TapHandler {
+        onTapped: (eventPoint, button) => {
+            MainPlaylistController.togglePlayPause()
+        }
     }
 
-    MouseArea {
-        id: mouseArea
+    DragHandler {
+        id: dragHandler
 
-        anchors.fill: videoSurface
-        z: 1
+        grabPermissions: PointerHandler.CanTakeOverFromAnything
 
-        hoverEnabled: true
-        onClicked: MainPlaylistController.togglePlayPause()
+        xAxis.minimum: root.dragXMin
+        xAxis.maximum: root.dragXMax
+        yAxis.minimum: root.dragYMin
+        yAxis.maximum: root.dragYMax
+    }
 
-        enabled: root.enabled
-        visible: root.visible
-
-        cursorShape: drag.active ? Qt.DragMoveCursor : undefined
-        drag.target: root
-        drag.minimumX: root.dragXMin
-        drag.minimumY: root.dragYMin
-        drag.maximumX: root.dragXMax
-        drag.maximumY: root.dragYMax
-
-        onWheel: wheel.accepted = true
+    contentItem: VideoSurface {
+        ctx: MainCtx
 
         Rectangle {
             color: "#10000000"
             anchors.fill: parent
-            visible: parent.containsMouse
+            visible: root.hovered
+            enabled: root.enabled
 
             Widgets.IconButton {
                 anchors.centerIn: parent
