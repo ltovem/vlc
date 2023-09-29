@@ -26,11 +26,33 @@ ToolTipExt {
     margins: 0
     padding: VLCStyle.margin_xxsmall
 
-    x: _x
-    y: pos.y - (implicitHeight + arrowArea.implicitHeight + VLCStyle.dp(7.5))
-
     readonly property real _x: pos.x - (width / 2)
-    property point pos
+    readonly property real _y: pos.y - (height / 2)
+    /* required */ property point pos
+    property bool vertical: true
+
+    StateGroup {
+        states: [
+            State {
+                when : vertical
+                PropertyChanges {
+                    target: pointingTooltip
+                    x: _x
+                    y: pos.y - (implicitHeight + arrowArea.implicitHeight + VLCStyle.dp(7.5))
+                }
+
+            },
+            State {
+                when : !vertical
+                PropertyChanges {
+                    target: pointingTooltip
+                    x: pos.x - (implicitWidth + arrowArea.implicitWidth + VLCStyle.dp(7.5))
+                    y: _y
+                }
+            }
+        ]
+    }
+
 
     background: Rectangle {
         border.color: pointingTooltip.colorContext.border
@@ -41,21 +63,71 @@ ToolTipExt {
             id: arrowArea
 
             z: 1
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.bottom
-            anchors.topMargin: -(parent.border.width)
-
-            implicitHeight: arrow.implicitHeight * Math.sqrt(2) / 2
 
             clip: true
 
+            states: [
+                State {
+                    when : vertical
+                    PropertyChanges {
+                        target: arrowArea
+
+                        anchors.topMargin:  -(parent.border.width)
+                        anchors.leftMargin:  0
+
+                        implicitHeight:  arrow.implicitHeight * Math.sqrt(2) / 2
+                        implicitWidth:  0
+                    }
+                    AnchorChanges {
+                        target: arrowArea
+
+                        anchors.left:  parent.left
+                        anchors.right:  parent.right
+                        anchors.top:  parent.bottom
+                        anchors.bottom:  undefined
+                    }
+
+                    PropertyChanges {
+                        target: arrow
+
+                        anchors.horizontalCenterOffset:  _x - pointingTooltip.x
+                    }
+                    AnchorChanges {
+                        target: arrow
+
+                        anchors.horizontalCenter: arrowArea.horizontalCenter
+                        anchors.verticalCenter: arrowArea.top
+                    }
+                },
+                State {
+                    when : !vertical
+                    PropertyChanges {
+                        target: arrowArea
+
+                        anchors.left: parent.right
+                        anchors.right: undefined
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+
+                        anchors.topMargin: 0
+                        anchors.leftMargin: -(parent.border.width)
+
+                        implicitHeight: 0
+                        implicitWidth: arrow.implicitWidth * Math.sqrt(2) / 2
+                    }
+                    PropertyChanges {
+                        target: arrow
+
+                        anchors.horizontalCenter:  arrowArea.left
+                        anchors.horizontalCenterOffset:  0
+                        anchors.verticalCenter:  arrowArea.verticalCenter
+                    }
+                }
+            ]
+
+
             Rectangle {
                 id: arrow
-
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.horizontalCenterOffset: _x - pointingTooltip.x
-                anchors.verticalCenter: parent.top
 
                 implicitWidth: VLCStyle.dp(10, VLCStyle.scale)
                 implicitHeight: VLCStyle.dp(10, VLCStyle.scale)

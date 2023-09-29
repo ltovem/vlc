@@ -65,15 +65,25 @@ T.Slider {
     readonly property real _tooltipX: toolTipFollowsMouse ? hoverHandler.point.position.x
                                                           : (handle.x + handle.width / 2) // handle center
 
+    readonly property real _tooltipY: (toolTipFollowsMouse && !control.pressed)
+                                      ? tooltipTracker.mouseY
+                                      : (handle.y + handle.height / 2) // handle center
+
     // find position under given x, can be used with Slider::valueAt()
     // x is coordinate in this control's coordinate space
-    function positionAt(x) {
+    function positionAtX(x) {
         // taken from qt sources QQuickSlider.cpp
-        // TODO: support vertical slider
         const hw = control.handle.width
         const offset = control.leftPadding + hw / 2
         const extend = control.availableWidth - hw
         return (x - offset) / extend
+    }
+
+    function positionAtY(y) {
+        var hw = control.handle.height
+        var offset = control.topPadding + hw / 2
+        var extend = control.availableHeight - hw
+        return (y - offset) / extend
     }
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
@@ -118,7 +128,7 @@ T.Slider {
 
         Rectangle {
             y: control.horizontal ? 0 : control.visualPosition * parent.height
-            width: control.horizontal ? control.position * parent.width : parent.height
+            width: control.horizontal ? control.position * parent.width : parent.width
             height: control.horizontal ? parent.height : control.position * parent.height
 
             radius: control.radius
@@ -135,22 +145,26 @@ T.Slider {
     }
 
     PointingTooltip {
-       id: toolTip
+        id: toolTip
+        z: 1 // without this tooltips get placed below root's parent popup (if any)
 
-       z: 1 // without this tooltips get placed below root's parent popup (if any)
+        pos: control.horizontal ? Qt.point(control._tooltipX, control.handle.height / 2)
+                                : Qt.point(control.handle.width / 2, control._tooltipY)
 
-       pos: Qt.point(control._tooltipX, control.handle.height / 2)
+        vertical: control.horizontal // for a horizontal slider the tooltip should be vertical
 
-       visible: hoverHandler.hovered || control.visualFocus
+        visible: hoverHandler.hovered || control.visualFocus
 
-       text: {
-           if (!visible) return ""
+        text: {
+            if (!visible) return ""
 
-           const v = control.valueAt(control.positionAt(pos.x))
-           return control.toolTipTextProvider(v)
-       }
+            const v = control.horizontal ? control.valueAt(control.positionAtX(control._tooltipX))
+                                         : control.to - control.valueAt(control.positionAtY(control._tooltipY))
 
-       //tooltip is a Popup, palette should be passed explicitly
-       colorContext.palette: theme.palette
+            return control.toolTipTextProvider(v)
+        }
+
+        //tooltip is a Popup, palette should be passed explicitly
+        colorContext.palette: theme.palette
     }
 }
