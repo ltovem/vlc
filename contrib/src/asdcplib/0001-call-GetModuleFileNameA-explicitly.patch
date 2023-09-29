@@ -1,0 +1,26 @@
+From 135a1e5075dc98247aa841529ccad40637ca4ac7 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 27 Jun 2023 13:23:48 +0200
+Subject: [PATCH] call GetModuleFileNameA explicitly
+
+If compiled with UNICODE it will not pick the proper API.
+---
+ src/KM_fileio.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/KM_fileio.cpp b/src/KM_fileio.cpp
+index f8e93c3..5e171d2 100644
+--- a/src/KM_fileio.cpp
++++ b/src/KM_fileio.cpp
+@@ -652,7 +652,7 @@ Kumu::GetExecutablePath(const std::string& default_path)
+ 
+ #if defined(KM_WIN32)
+   DWORD size = X_BUFSIZE;
+-  DWORD rc = GetModuleFileName(0, path, size);
++  DWORD rc = ::GetModuleFileNameA(0, path, size);
+   success = ( rc != 0 );
+ #elif defined(KM_MACOSX)
+   uint32_t size = X_BUFSIZE;
+-- 
+2.37.3.windows.1
+

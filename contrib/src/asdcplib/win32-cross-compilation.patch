@@ -1,12 +1,30 @@
---- asdcplib/configure.ac	2014-01-06 20:08:54.000000000 +0100
-+++ asdcplib/configure.ac.new	2014-05-16 13:05:45.689691678 +0200
-@@ -49,6 +49,9 @@
- AC_CANONICAL_HOST
- case $host_os in
+From ad6a40a3b9206e7829e5b9a0ee703d91cec2609d Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Thu, 26 Mar 2020 09:22:07 +0100
+Subject: [PATCH 3/5] enable KM_WIN32 for win32 autotools compilation
+
+Although it should not be needed and _WIN32 should be used in the code instead.
+
+Co-Authored-By: Jean-Baptiste Kempf <jb@videolan.org>
+---
+ configure.ac | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index 8dcddba..0acb661 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -53,6 +53,10 @@ case $host_os in
         openbsd*) openbsd_host=true ;;
-+       cygwin* | mingw32*)
-+            openbsd_host=false
-+            CPPFLAGS="${CPPFLAGS} -DKM_WIN32" ;;
         *)        openbsd_host=false ;;
  esac
++case $host_os in
++       cygwin* | mingw32*)
++           CPPFLAGS="${CPPFLAGS} -DKM_WIN32" ;;
++esac
  AM_CONDITIONAL([OPENBSD_HOST], [test x$openbsd_host = xtrue])
+ AC_PROG_CC
+ AC_PROG_CXX
+-- 
+2.37.3.windows.1
+

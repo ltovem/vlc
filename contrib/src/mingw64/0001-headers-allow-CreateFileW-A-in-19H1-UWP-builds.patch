@@ -1,0 +1,39 @@
+From c169868d51731ac59d2e2389cf5b637512b74828 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 27 Jun 2023 13:07:25 +0200
+Subject: [PATCH] headers: allow CreateFileW/A in 19H1 UWP builds
+
+It's allowed by the WACK and available in windowsapp.lib since 19H1.
+It's not allowed by the Windows SDK headers.
+---
+ mingw-w64-headers/include/fileapi.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mingw-w64-headers/include/fileapi.h b/mingw-w64-headers/include/fileapi.h
+index 8124bd5cc..9c07d021a 100644
+--- a/mingw-w64-headers/include/fileapi.h
++++ b/mingw-w64-headers/include/fileapi.h
+@@ -47,10 +47,11 @@ WINBASEAPI DWORD WINAPI SetFilePointer (HANDLE hFile, LONG lDistanceToMove, PLON
+   } BY_HANDLE_FILE_INFORMATION, *PBY_HANDLE_FILE_INFORMATION,
+     *LPBY_HANDLE_FILE_INFORMATION;
+   WINBASEAPI WINBOOL WINAPI GetFileInformationByHandle (HANDLE hFile, LPBY_HANDLE_FILE_INFORMATION lpFileInformation);
++  WINBASEAPI HANDLE WINAPI CreateFileA (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
++  WINBASEAPI HANDLE WINAPI CreateFileW (LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+ #endif
+ 
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+-  WINBASEAPI HANDLE WINAPI CreateFileA (LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+   WINBASEAPI WINBOOL WINAPI DefineDosDeviceW (DWORD dwFlags, LPCWSTR lpDeviceName, LPCWSTR lpTargetPath);
+   WINBASEAPI WINBOOL WINAPI FindCloseChangeNotification (HANDLE hChangeHandle);
+   WINBASEAPI HANDLE WINAPI FindFirstChangeNotificationA (LPCSTR lpPathName, WINBOOL bWatchSubtree, DWORD dwNotifyFilter);
+@@ -61,7 +62,6 @@ WINBASEAPI DWORD WINAPI SetFilePointer (HANDLE hFile, LONG lDistanceToMove, PLON
+   WINBASEAPI WINBOOL WINAPI FindVolumeClose (HANDLE hFindVolume);
+ #endif
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || defined(WINSTORECOMPAT)
+-  WINBASEAPI HANDLE WINAPI CreateFileW (LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+   WINBASEAPI DWORD WINAPI GetFileSize (HANDLE hFile, LPDWORD lpFileSizeHigh);
+ #endif
+ #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || _WIN32_WINNT >= _WIN32_WINNT_WIN10
+-- 
+2.37.3.windows.1
+
