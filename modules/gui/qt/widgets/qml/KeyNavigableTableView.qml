@@ -297,7 +297,7 @@ FocusScope {
 
                     Repeater {
                         model: sortModel
-                        MouseArea {
+                        Item {
 
                             height: VLCStyle.tableHeaderText_height
                             width: VLCStyle.colWidth(modelData.size) || 1
@@ -330,11 +330,14 @@ FocusScope {
                                     rightMargin: VLCStyle.margin_xsmall
                                 }
                             }
-                            onClicked: {
-                                if (root.model.sortCriteria !== modelData.model.criteria)
-                                    root.model.sortCriteria = modelData.model.criteria
-                                else
-                                    root.model.sortOrder = (root.model.sortOrder === Qt.AscendingOrder) ? Qt.DescendingOrder : Qt.AscendingOrder
+
+                            TapHandler {
+                                onTapped: (eventPoint, button) => {
+                                    if (root.model.sortCriteria !== modelData.model.criteria)
+                                        root.model.sortCriteria = modelData.model.criteria
+                                    else
+                                        root.model.sortOrder = (root.model.sortOrder === Qt.AscendingOrder) ? Qt.DescendingOrder : Qt.AscendingOrder
+                                }
                             }
                         }
                     }
