@@ -721,12 +721,12 @@ opengl_fragment_shader_init(struct vlc_gl_sampler *sampler, bool expose_planes)
     video_color_space_t yuv_space = fmt->space;
 
     const char *swizzle_per_tex[PICTURE_PLANE_MAX] = { NULL, };
-    const bool is_yuv = vlc_fourcc_IsYUV(chroma);
     int ret;
 
     const vlc_chroma_description_t *desc = vlc_fourcc_GetChromaDescription(chroma);
     if (desc == NULL)
         return VLC_EGENERIC;
+    const bool is_yuv = desc->color_model == COLOR_MODEL_YUV;
 
     unsigned tex_count = glfmt->tex_count;
 
