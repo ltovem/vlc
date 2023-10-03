@@ -914,34 +914,41 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
     {
         uint8_t bits_per_channel;
         uint8_t widthDenominator, heightDenominator;
+        bool is_rgb;
         switch (fmt->i_chroma)
         {
         case VLC_CODEC_D3D11_OPAQUE:
         case VLC_CODEC_NVDEC_OPAQUE:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_D3D11_OPAQUE_RGBA:
         case VLC_CODEC_D3D11_OPAQUE_BGRA:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 1;
+            is_rgb = true;
             break;
         case VLC_CODEC_D3D11_OPAQUE_10B:
         case VLC_CODEC_NVDEC_OPAQUE_10B:
             bits_per_channel = 10;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_16B:
             bits_per_channel = 16;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_444:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 1;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_444_16B:
             bits_per_channel = 16;
             widthDenominator = heightDenominator = 1;
+            is_rgb = false;
             break;
         default:
             {
@@ -959,6 +966,7 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
                     if (heightDenominator < p_format->p[i].h.den)
                         heightDenominator = p_format->p[1].h.den;
                 }
+                is_rgb = p_format->color_model == COLOR_MODEL_RGB;
             }
             break;
         }
@@ -967,7 +975,6 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
         if ( is_d3d11_opaque(fmt->i_chroma) )
             decoder_format = GetDirectDecoderFormat(vd, fmt->i_chroma);
 
-        bool is_rgb = !vlc_fourcc_IsYUV(fmt->i_chroma);
         sys->picQuad.generic.textureFormat = GetDisplayFormatByDepth(vd, bits_per_channel,
                                                              widthDenominator, heightDenominator,
                                                              decoder_format!=nullptr,
