@@ -28,14 +28,14 @@ Item {
     // `label`: label to scroll, don't add horizontal anchors on it
     property Text label: undefined
     property bool forceScroll: false
-    property alias hoverScroll: hoverArea.enabled
+    property alias hoverScroll: hoverHandler.enabled
 
 
     readonly property real requiredTextWidth: label.implicitWidth
     readonly property bool _needsToScroll: (label.width < requiredTextWidth)
 
     ToolTip.delay: VLCStyle.delayToolTipAppear
-    ToolTip.visible: scrolling && hoverArea.containsMouse
+    ToolTip.visible: scrolling && hoverHandler.hovered
     ToolTip.text: label.text
 
     //Accessible
@@ -52,19 +52,14 @@ Item {
         label.Accessible.ignored = true
     }
 
-    MouseArea {
-        id: hoverArea
-
-        anchors.fill: parent
-        acceptedButtons: Qt.NoButton
-        cursorShape: undefined
-        hoverEnabled: true
+    HoverHandler {
+        id: hoverHandler
     }
 
     SequentialAnimation {
         id: scrollAnimation
 
-        running: (root.forceScroll || hoverArea.containsMouse) && root._needsToScroll
+        running: (root.forceScroll || hoverHandler.hovered) && root._needsToScroll
         loops: Animation.Infinite
 
         onStopped: {
