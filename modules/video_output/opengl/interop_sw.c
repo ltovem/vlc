@@ -724,9 +724,7 @@ opengl_interop_generic_init(struct vlc_gl_interop *interop, bool allow_dr)
     if (unlikely(desc == NULL))
         return VLC_ENOTSUP;
 
-    const bool is_yup = vlc_fourcc_IsYUV(interop->fmt_in.i_chroma);
-
-    if (is_yup)
+    if (desc->color_model == COLOR_MODEL_YUV)
     {
         GLint max_texture_units = 0;
         priv->gl.GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
@@ -756,7 +754,7 @@ opengl_interop_generic_init(struct vlc_gl_interop *interop, bool allow_dr)
     if (ret == VLC_SUCCESS)
         goto interop_init;
 
-    if (!is_yup)
+    if (desc->color_model != COLOR_MODEL_YUV)
     {
         i_chroma = VLC_CODEC_RGBA;
         desc = vlc_fourcc_GetChromaDescription(i_chroma);
