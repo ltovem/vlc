@@ -653,7 +653,6 @@ static int
 opengl_interop_init(struct vlc_gl_interop *interop,
                     vlc_fourcc_t chroma, video_color_space_t yuv_space)
 {
-    bool is_yuv = vlc_fourcc_IsYUV(chroma);
     const vlc_chroma_description_t *desc =
         vlc_fourcc_GetChromaDescription(chroma);
     if (!desc)
@@ -670,10 +669,13 @@ opengl_interop_init(struct vlc_gl_interop *interop,
         return VLC_SUCCESS;
     }
 
-    if (is_yuv)
+    if (desc->color_model == COLOR_MODEL_YUV)
         return interop_yuv_base_init(interop, chroma, desc);
 
-    return interop_rgb_base_init(interop, chroma);
+    if (desc->color_model == COLOR_MODEL_RGB)
+        return interop_rgb_base_init(interop, chroma);
+
+    return VLC_ENOTSUP;
 }
 
 static void
