@@ -651,13 +651,10 @@ interop_xyz12_init(struct vlc_gl_interop *interop)
 
 static int
 opengl_interop_init(struct vlc_gl_interop *interop,
-                    vlc_fourcc_t chroma, video_color_space_t yuv_space)
+                    vlc_fourcc_t chroma,
+                    const vlc_chroma_description_t *desc,
+                    video_color_space_t yuv_space)
 {
-    const vlc_chroma_description_t *desc =
-        vlc_fourcc_GetChromaDescription(chroma);
-    if (!desc)
-        return VLC_EGENERIC;
-
     assert(!interop->fmt_out.p_palette);
     interop->fmt_out.i_chroma = chroma;
     interop->fmt_out.space = yuv_space;
@@ -722,6 +719,11 @@ opengl_interop_generic_init(struct vlc_gl_interop *interop, bool allow_dr)
 
     video_color_space_t space;
     const vlc_fourcc_t *list;
+    const vlc_chroma_description_t *desc =
+        vlc_fourcc_GetChromaDescription(interop->fmt_in.i_chroma);
+    if (unlikely(desc == NULL))
+        return VLC_ENOTSUP;
+
     const bool is_yup = vlc_fourcc_IsYUV(interop->fmt_in.i_chroma);
 
     if (is_yup)
@@ -750,14 +752,15 @@ opengl_interop_generic_init(struct vlc_gl_interop *interop, bool allow_dr)
 
     /* Check whether the given chroma is translatable to OpenGL. */
     vlc_fourcc_t i_chroma = interop->fmt_in.i_chroma;
-    int ret = opengl_interop_init(interop, i_chroma, space);
+    int ret = opengl_interop_init(interop, i_chroma, desc, space);
     if (ret == VLC_SUCCESS)
         goto interop_init;
 
     if (!is_yup)
     {
         i_chroma = VLC_CODEC_RGBA;
-        ret = opengl_interop_init(interop, i_chroma, space);
+        desc = vlc_fourcc_GetChromaDescription(i_chroma);
+        ret = opengl_interop_init(interop, i_chroma, desc, space);
         if (ret == VLC_SUCCESS)
             goto interop_init;
     }
@@ -768,7 +771,11 @@ opengl_interop_generic_init(struct vlc_gl_interop *interop, bool allow_dr)
     /* Check whether any fallback for the chroma is translatable to OpenGL. */
     while (*list)
     {
-        ret = opengl_interop_init(interop, *list, space);
+        desc = vlc_fourcc_GetChromaDescription(*list);
+        if (unlikely(desc == NULL))
+            ret = VLC_ENOTSUP;
+        else
+            ret = opengl_interop_init(interop, *list, desc, space);
         if (ret == VLC_SUCCESS)
         {
             i_chroma = *list;
