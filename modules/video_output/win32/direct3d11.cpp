@@ -164,17 +164,21 @@ static int UpdateDisplayFormat(vout_display_t *vd, const video_format_t *fmt)
     cfg.width  = vd->cfg->display.width;
     cfg.height = vd->cfg->display.height;
 
+    bool is_yuv;
     switch (fmt->i_chroma)
     {
     case VLC_CODEC_D3D11_OPAQUE:
         cfg.bitdepth = 8;
+        is_yuv = true;
         break;
     case VLC_CODEC_D3D11_OPAQUE_RGBA:
     case VLC_CODEC_D3D11_OPAQUE_BGRA:
         cfg.bitdepth = 8;
+        is_yuv = false;
         break;
     case VLC_CODEC_D3D11_OPAQUE_10B:
         cfg.bitdepth = 10;
+        is_yuv = true;
         break;
     default:
         {
@@ -184,13 +188,13 @@ static int UpdateDisplayFormat(vout_display_t *vd, const video_format_t *fmt)
 
             cfg.bitdepth = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
                                                             (p_format->plane_count==1 ? p_format->pixel_size : 1);
+            is_yuv = p_format->color_model == COLOR_MODEL_YUV;
         }
         break;
     }
     cfg.full_range = fmt->color_range == COLOR_RANGE_FULL ||
                      /* the YUV->RGB conversion already output full range */
-                     is_d3d11_opaque(fmt->i_chroma) ||
-                     vlc_fourcc_IsYUV(fmt->i_chroma);
+                     is_d3d11_opaque(fmt->i_chroma) || is_yuv;
     cfg.primaries  = (libvlc_video_color_primaries_t) fmt->primaries;
     cfg.colorspace = (libvlc_video_color_space_t)     fmt->space;
     cfg.transfer   = (libvlc_video_transfer_func_t)   fmt->transfer;
