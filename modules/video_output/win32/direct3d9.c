@@ -499,15 +499,11 @@ static int UpdateOutput(vout_display_t *vd, const video_format_t *fmt,
     default:
         {
             const vlc_chroma_description_t *p_format = vlc_fourcc_GetChromaDescription(fmt->i_chroma);
-            if (p_format == NULL)
-            {
-                cfg.bitdepth = 8;
-            }
-            else
-            {
-                cfg.bitdepth = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
-                                                               (p_format->plane_count==1 ? p_format->pixel_size : 1);
-            }
+            if (unlikely(p_format == NULL))
+                return VLC_ENOTSUP;
+
+            cfg.bitdepth = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
+                                                           (p_format->plane_count==1 ? p_format->pixel_size : 1);
         }
         break;
     }
