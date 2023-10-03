@@ -51,8 +51,8 @@
 #define LT_CHROMA N_("Output chroma for the memory image as a 4-character " \
                       "string, eg. \"RV32\".")
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context);
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx);
 static void Close(vout_display_t *vd);
 
 vlc_module_begin()
@@ -113,8 +113,8 @@ static const struct vlc_display_operations ops = {
  *****************************************************************************
  * This function allocates and initializes a vout method.
  *****************************************************************************/
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     vout_display_sys_t *sys = malloc(sizeof(*sys));
     if (unlikely(!sys))
@@ -215,7 +215,8 @@ static int Open(vout_display_t *vd,
     vd->sys     = sys;
     vd->ops     = &ops;
 
-    (void) context;
+    (void) src_vctx;
+    (void) fmt_vctx;
     return VLC_SUCCESS;
 }
 

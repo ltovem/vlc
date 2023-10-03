@@ -385,12 +385,13 @@ static const struct vlc_display_operations ops = {
 /**
  * This function initializes libcaca vout method.
  */
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
     vout_display_sys_t *sys;
 
-    (void) context;
+    (void) src_vctx;
+    (void) fmt_vctx;
 
     if (vout_display_cfg_IsWindowed(vd->cfg))
         return VLC_EGENERIC;

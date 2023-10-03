@@ -60,7 +60,7 @@
 @class VLCSampleBufferSubpicture, VLCSampleBufferDisplay;
 
 @interface VLCSampleBufferSubpictureRegion: NSObject
-@property (nonatomic, weak) VLCSampleBufferSubpicture *subpicture;   
+@property (nonatomic, weak) VLCSampleBufferSubpicture *subpicture;
 @property (nonatomic) CGRect backingFrame;
 @property (nonatomic) CGImageRef image;
 @end
@@ -124,9 +124,9 @@
     #else
     CGContextRef cgCtx = UIGraphicsGetCurrentContext();
     #endif
-    
+
     CGContextClearRect(cgCtx, self.bounds);
-    
+
 #if TARGET_OS_IPHONE
     CGContextSaveGState(cgCtx);
     CGAffineTransform translate = CGAffineTransformTranslate(CGAffineTransformIdentity, 0.0, self.frame.size.height);
@@ -209,7 +209,7 @@ shouldInheritContentsScale:(CGFloat)newScale
 {
     return YES;
 }
-#endif 
+#endif
 
 /*
  * General properties
@@ -264,7 +264,7 @@ static void Close(vout_display_t *vd)
 static void RenderPicture(vout_display_t *vd, picture_t *pic, vlc_tick_t date) {
     VLCSampleBufferDisplay *sys;
     sys = (__bridge VLCSampleBufferDisplay*)vd->sys;
-    
+
     @synchronized(sys.displayLayer) {
         if (sys.displayLayer == nil)
             return;
@@ -320,7 +320,7 @@ static void RenderPicture(vout_display_t *vd, picture_t *pic, vlc_tick_t date) {
         .duration = kCMTimeInvalid,
         .presentationTimeStamp = CMTimeMakeWithSeconds(ca_date, 1000000)
     };
-    
+
     err = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault, pixelBuffer, formatDesc, &sampleTimingInfo, &sampleBuffer);
     CFRelease(formatDesc);
     CVPixelBufferRelease(pixelBuffer);
@@ -336,7 +336,7 @@ static void RenderPicture(vout_display_t *vd, picture_t *pic, vlc_tick_t date) {
     CFRelease(sampleBuffer);
 }
 
-static CGRect RegionBackingFrame(VLCSampleBufferDisplay* sys, 
+static CGRect RegionBackingFrame(VLCSampleBufferDisplay* sys,
                                  subpicture_t *subpicture,
                                  subpicture_region_t *r)
 {
@@ -347,22 +347,22 @@ static CGRect RegionBackingFrame(VLCSampleBufferDisplay* sys,
     const float y = subpicture->i_original_picture_height - r->fmt.i_visible_height - r->i_y;
 
     return CGRectMake(
-        scale_w * r->i_x + sys->place.x, 
+        scale_w * r->i_x + sys->place.x,
         scale_h * y + sys->place.y,
-        scale_w * r->fmt.i_visible_width, 
+        scale_w * r->fmt.i_visible_width,
         scale_h * r->fmt.i_visible_height
     );
 }
 
-static void UpdateSubpictureRegions(vout_display_t *vd, 
-                                    subpicture_t *subpicture) 
+static void UpdateSubpictureRegions(vout_display_t *vd,
+                                    subpicture_t *subpicture)
 {
     VLCSampleBufferDisplay *sys;
     sys = (__bridge VLCSampleBufferDisplay*)vd->sys;
 
     if (sys.subpicture == nil || subpicture == NULL)
         return;
-    
+
     NSMutableArray *regions = [NSMutableArray new];
     CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
     for (subpicture_region_t *r = subpicture->p_region; r; r = r->p_next) {
@@ -370,17 +370,17 @@ static void UpdateSubpictureRegions(vout_display_t *vd,
         const size_t pixels_offset =
                 r->fmt.i_y_offset * r->p_picture->p->i_pitch +
                 r->fmt.i_x_offset * r->p_picture->p->i_pixel_pitch;
-        r->p_picture->p->i_visible_pitch = 
+        r->p_picture->p->i_visible_pitch =
             r->fmt.i_visible_width * r->p_picture->p->i_pixel_pitch;
-        
+
         CFDataRef data = CFDataCreate(
             NULL,
             r->p_picture->p->p_pixels + pixels_offset,
             length - pixels_offset);
         CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
         CGImageRef image = CGImageCreate(
-            r->fmt.i_visible_width, r->fmt.i_visible_height, 
-            8, 32, r->p_picture->p->i_pitch,  
+            r->fmt.i_visible_width, r->fmt.i_visible_height,
+            8, 32, r->p_picture->p->i_pitch,
             space, kCGImageByteOrderDefault | kCGImageAlphaFirst,
             provider, NULL, true, kCGRenderingIntentDefault
             );
@@ -460,19 +460,19 @@ static bool IsSubpictureDrawNeeded(vout_display_t *vd, subpicture_t *subpicture)
 
     /* Store the current subpicture regions in order to compare then later.
      */
-    
+
     UpdateSubpictureRegions(vd, subpicture);
     return true;
 }
 
-static void RenderSubpicture(vout_display_t *vd, subpicture_t *spu) 
+static void RenderSubpicture(vout_display_t *vd, subpicture_t *spu)
 {
     if (!IsSubpictureDrawNeeded(vd, spu))
         return;
-    
+
     VLCSampleBufferDisplay *sys;
     sys = (__bridge VLCSampleBufferDisplay*)vd->sys;
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         [sys.spuView drawSubpicture:sys.subpicture];
     });
@@ -490,9 +490,9 @@ static void PrepareDisplay (vout_display_t *vd) {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (sys.displayView)
             return;
-        VLCSampleBufferDisplayView *displayView = 
+        VLCSampleBufferDisplayView *displayView =
             [[VLCSampleBufferDisplayView alloc] initWithVoutDisplay:vd];
-        VLCSampleBufferSubpictureView *spuView = 
+        VLCSampleBufferSubpictureView *spuView =
             [VLCSampleBufferSubpictureView new];
         id container = sys.container;
         //TODO: Is it still relevant ?
@@ -520,14 +520,14 @@ static void PrepareDisplay (vout_display_t *vd) {
     });
 }
 
-static void Prepare (vout_display_t *vd, picture_t *pic, 
+static void Prepare (vout_display_t *vd, picture_t *pic,
                            subpicture_t *subpicture, vlc_tick_t date)
 {
     PrepareDisplay(vd);
     if (pic) {
         RenderPicture(vd, pic, date);
     }
-    
+
     RenderSubpicture(vd, subpicture);
 }
 
@@ -574,7 +574,7 @@ static vlc_decoder_device * CVPXHoldDecoderDevice(vlc_object_t *o, void *sys)
         device->ops = &ops;
         device->type = VLC_DECODER_DEVICE_VIDEOTOOLBOX;
     }
-    
+
     return device;
 }
 
@@ -628,9 +628,10 @@ static void DeleteFilter( filter_t * p_filter )
     vlc_object_delete(p_filter);
 }
 
-static int Open (vout_display_t *vd,
-                 video_format_t *fmt, vlc_video_context *context)
+static int Open (vout_display_t *vd, vlc_video_context *src_vctx,
+                 video_format_t *fmt, vlc_video_context **fmt_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     // Display isn't compatible with 360 content hence opening with this kind
     // of projection should fail if display use isn't forced
     if (!vd->obj.force && fmt->projection_mode != PROJECTION_MODE_RECTANGULAR) {
@@ -647,7 +648,7 @@ static int Open (vout_display_t *vd,
 
     // Display will only work with CVPX video context
     filter_t *converter = NULL;
-    if (!vlc_video_context_GetPrivate(context, VLC_VIDEO_CONTEXT_CVPX)) {
+    if (!vlc_video_context_GetPrivate(src_vctx, VLC_VIDEO_CONTEXT_CVPX)) {
         converter = SW_to_CVPX_converter_Create(vd);
         if (!converter)
             return VLC_EGENERIC;
@@ -678,7 +679,7 @@ static int Open (vout_display_t *vd,
         };
 
         vd->info.subpicture_chromas = subfmts;
-        
+
         return VLC_SUCCESS;
     }
 }

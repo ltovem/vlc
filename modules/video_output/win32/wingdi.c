@@ -42,8 +42,8 @@
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
-static int  Open (vout_display_t *,
-                  video_format_t *, vlc_video_context *);
+static int  Open (vout_display_t *, vlc_video_context *src_vctx,
+                  video_format_t *fmtp, vlc_video_context **fmt_vctx);
 static void Close(vout_display_t *);
 
 vlc_module_begin ()
@@ -157,10 +157,11 @@ static const struct vlc_display_operations ops = {
 };
 
 /* */
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
-    VLC_UNUSED(context);
+    VLC_UNUSED(src_vctx);
+    VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys;
 
     if ( !vd->obj.force && vd->source->projection_mode != PROJECTION_MODE_RECTANGULAR)

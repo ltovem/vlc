@@ -211,12 +211,14 @@ struct vout_display_owner_t {
  *
  * @param vd vout display context
  * @param fmtp It can be changed by the module to request a different format.
- * @param context The video context to configure the display for.
+ * @param src_vctx The video context to configure the display for.
+ * @param fmt_vctx The video context the display uses with its input chroma
  * @return VLC_SUCCESS or a VLC error code
  */
 typedef int (*vout_display_open_cb)(vout_display_t *vd,
+                                    vlc_video_context *src_vctx,
                                     video_format_t *fmtp,
-                                    vlc_video_context *context);
+                                    vlc_video_context **fmt_vctx);
 
 #define set_callback_display(activate, priority) \
     { \

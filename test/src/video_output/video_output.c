@@ -169,9 +169,10 @@ static void Display(vout_display_t *vd, picture_t *picture)
     (void) picture;
 }
 
-static int OpenDisplay(vout_display_t *vd, video_format_t *fmtp,
-                       struct vlc_video_context *vctx)
+static int OpenDisplay(vout_display_t *vd, vlc_video_context *src_vctx,
+                       video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
+    (void) fmt_vctx;
     static const struct vlc_display_operations ops =
     {
         .display = Display,
@@ -180,7 +181,7 @@ static int OpenDisplay(vout_display_t *vd, video_format_t *fmtp,
 
     struct vout_scenario *scenario = &vout_scenarios[current_scenario];
     assert(scenario->display_setup != NULL);
-    int ret = scenario->display_setup(vd, fmtp, vctx);
+    int ret = scenario->display_setup(vd, fmtp, src_vctx);
 
     msg_Dbg(vd, "vout display chroma %4.4s size %ux%u -> %ux%u",
             (const char *)&fmtp->i_chroma,

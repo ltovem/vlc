@@ -478,15 +478,16 @@ static void Close(vout_display_t *vd)
     free(sys);
 }
 
-static int Open(vout_display_t *vd,
-                video_format_t *fmtp, vlc_video_context *context)
+static int Open(vout_display_t *vd, vlc_video_context *src_vctx,
+                video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     vlc_window_t *embed = vd->cfg->window;
     AWindowHandler *awh = embed->display.anativewindow;
 
     if (embed->type != VLC_WINDOW_TYPE_ANDROID_NATIVE
      || fmtp->i_chroma != VLC_CODEC_ANDROID_OPAQUE
-     || context == NULL
+     || src_vctx == NULL
      || !AWindowHandler_canSetVideoLayout(awh))
         return VLC_EGENERIC;
 
@@ -504,7 +505,7 @@ static int Open(vout_display_t *vd,
     video_format_ApplyRotation(&sys->fmt, fmtp);
 
     sys->awh = awh;
-    sys->avctx = vlc_video_context_GetPrivate(context, VLC_VIDEO_CONTEXT_AWINDOW);
+    sys->avctx = vlc_video_context_GetPrivate(src_vctx, VLC_VIDEO_CONTEXT_AWINDOW);
     assert(sys->avctx);
     if (sys->avctx->texture != NULL)
     {

@@ -63,7 +63,8 @@
 #define PHASE_OFFSET_TARGET ((double)0.25)
 #define PHASE_CHECK_INTERVAL 100
 
-static int OpenMmalVout(vout_display_t *, video_format_t *, vlc_video_context *);
+static int OpenMmalVout(vout_display_t *, vlc_video_context *src_vctx,
+                        video_format_t *fmtp, vlc_video_context **fmt_vctx);
 
 #define SUBS_MAX 4
 
@@ -1078,9 +1079,10 @@ static const struct vlc_display_operations ops = {
     .reset_pictures = vd_reset_pictures,
 };
 
-static int OpenMmalVout(vout_display_t *vd,
-                        video_format_t *fmtp, vlc_video_context *vctx)
+static int OpenMmalVout(vout_display_t *vd, vlc_video_context *src_vctx,
+                        video_format_t *fmtp, vlc_video_context **fmt_vctx)
 {
+    VLC_UNUSED(fmt_vctx);
     vout_display_sys_t *sys;
     MMAL_DISPLAYREGION_T display_region;
     MMAL_STATUS_T status;
@@ -1095,9 +1097,9 @@ static int OpenMmalVout(vout_display_t *vd,
         return VLC_ENOMEM;
     vd->sys = sys;
 
-    if (vctx)
+    if (src_vctx)
     {
-        sys->dec_dev = vlc_video_context_HoldDevice(vctx);
+        sys->dec_dev = vlc_video_context_HoldDevice(src_vctx);
         if (sys->dec_dev && sys->dec_dev->type != VLC_DECODER_DEVICE_MMAL)
         {
             vlc_decoder_device_Release(sys->dec_dev);

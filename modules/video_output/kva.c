@@ -42,8 +42,8 @@
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
-static int  Open ( vout_display_t *,
-                   video_format_t *, vlc_video_context * );
+static int  Open ( vout_display_t *, vlc_video_context *,
+                   video_format_t *, vlc_video_context ** );
 static void Close( vout_display_t * );
 
 #define KVA_FIXT23_TEXT N_( \
@@ -309,15 +309,16 @@ exit_frame :
 /**
  * This function initializes KVA vout method.
  */
-static int Open ( vout_display_t *vd,
-                  video_format_t *fmtp, vlc_video_context *context )
+static int Open ( vout_display_t *vd, vlc_video_context *src_vctx,
+                  video_format_t *fmtp, vlc_video_context **fmt_vctx )
 {
     vout_display_sys_t *sys;
     struct open_init init = {
         .vd   = vd,
         .fmtp = fmtp,
     };
-    VLC_UNUSED(context);
+    VLC_UNUSED(src_vctx);
+    VLC_UNUSED(fmt_vctx);
 
     vd->sys = sys = calloc( 1, sizeof( *sys ));
     if( !sys )
