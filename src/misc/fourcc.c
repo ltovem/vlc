@@ -564,6 +564,7 @@ static const vlc_fourcc_t p_list_YUV[] = {
     VLC_CODEC_NVDEC_OPAQUE_444_16B,
     VLC_CODEC_YUV420A,
     VLC_CODEC_YUV422A,
+    VLC_CODEC_YUV2,
     0,
 };
 
