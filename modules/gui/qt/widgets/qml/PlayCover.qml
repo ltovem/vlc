@@ -19,25 +19,34 @@
  *****************************************************************************/
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Templates as T
 
 import org.videolan.vlc 0.1
 import "qrc:///style/"
 import "qrc:///widgets/" as Widgets
 
-MouseArea {
+T.Button {
+    id: root
+
     // Settings
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding)
 
     width: VLCStyle.play_cover_normal
     height: width
 
     // NOTE: This is the same scaling than the PlayButton, except we make it bigger.
     //       Maybe we could crank this to 1.1.
-    scale: (containsMouse && pressed === false) ? 1.05 : 1.0
+    scale: (hovered && !tapHandler.pressed) ? 1.05 : 1.0
 
     opacity: (visible) ? 1.0 : 0.0
 
-    hoverEnabled: true
+    activeFocusOnTab: false
+
+    signal tapped(var point)
 
     readonly property ColorContext colorContext: ColorContext {
         id: theme
@@ -48,7 +57,7 @@ MouseArea {
 
     Behavior on scale {
         // NOTE: We disable the animation while pressing to make it more impactful.
-        enabled: (pressed === false)
+        enabled: (!tapHandler.pressed)
 
         NumberAnimation {
             duration: VLCStyle.duration_short
@@ -66,6 +75,14 @@ MouseArea {
     }
 
     // Children
+
+    TapHandler {
+        id: tapHandler
+
+        onTapped: (eventPoint, button) => {
+            root.tapped(point)
+        }
+    }
 
     ScaledImage {
         anchors.centerIn: parent
@@ -92,8 +109,7 @@ MouseArea {
 
         text: VLCIcons.play_filled
 
-        color: (containsMouse) ? theme.accent
-                               : "black"
+        color: (root.hovered) ? theme.accent : "black"
 
         font.pixelSize: Math.round(parent.width / 2)
     }

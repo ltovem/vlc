@@ -135,7 +135,7 @@ Row {
 
                 visible: root._showPlayCover
 
-                onClicked: playClicked(root.index)
+                onTapped: playClicked(root.index)
             }
         }
     }
