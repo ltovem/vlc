@@ -3456,7 +3456,7 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
                 }
 
                 /* Force a rebufferization when we are too late */
-                EsOutControlLocked( out, source, ES_OUT_RESET_PCR );
+                EsOutChangePosition( out, false );
 
                 EsOutPrivControlLocked( out, source, ES_OUT_PRIV_SET_JITTER,
                                         p_sys->i_pts_delay, i_new_jitter,
