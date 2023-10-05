@@ -96,6 +96,9 @@ ListView {
             // Qt 5.15 feature, on by default here:
             root.reuseItems = true
         }
+
+        // This is required to disable dragging with mouse:
+        MainCtx.setFiltersChildMouseEvents(this, false)
     }
 
     // NOTE: We always want a valid 'currentIndex' by default.
@@ -300,6 +303,17 @@ ListView {
             if (!headerItem.focus) {
                 currentItem.focus = true
             }
+        }
+    }
+
+    HoverHandler {
+        acceptedDevices: PointerDevice.TouchScreen
+
+        onHoveredChanged: {
+            if (hovered)
+                MainCtx.setFiltersChildMouseEvents(root, true)
+            else
+                MainCtx.setFiltersChildMouseEvents(root, false)
         }
     }
 
