@@ -1014,3 +1014,9 @@ bool WindowStateHolder::holdOnTop(QWindow *window, Source source, bool hold)
 
     return onTopCounter != 0;
 }
+
+void MainCtx::setFiltersChildMouseEvents(QQuickItem *const item, const bool value)
+{
+    assert(item);
+    item->setFiltersChildMouseEvents(value);
+}
