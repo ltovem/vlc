@@ -200,6 +200,18 @@ FocusScope {
 
             Navigation.parentItem: mainColumn
             Navigation.downItem: stackView
+
+            // Handle points here so that they are not forwarded
+            // to the background view.
+            TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
+                grabPermissions: PointerHandler.CanTakeOverFromAnything
+            }
+
+            DragHandler {
+                target: null
+                grabPermissions: PointerHandler.CanTakeOverFromAnything
+            }
         }
 
         Item {
@@ -521,6 +533,18 @@ FocusScope {
         onVisibleChanged: {
             if (!visible && miniPlayer.activeFocus)
                 stackView.forceActiveFocus()
+        }
+
+        // Handle points here so that they are not forwarded
+        // to the background view.
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
+            grabPermissions: PointerHandler.CanTakeOverFromAnything
+        }
+
+        DragHandler {
+            target: null
+            grabPermissions: PointerHandler.CanTakeOverFromAnything
         }
     }
 
