@@ -728,6 +728,22 @@ FocusScope {
             id: flickableScrollBar
         }
 
+        Component.onCompleted: {
+            // This is required to disable dragging with mouse:
+            MainCtx.setFiltersChildMouseEvents(this, false)
+        }
+
+        HoverHandler {
+            acceptedDevices: PointerDevice.TouchScreen
+
+            onHoveredChanged: {
+                if (hovered)
+                    MainCtx.setFiltersChildMouseEvents(flickable, true)
+                else
+                    MainCtx.setFiltersChildMouseEvents(flickable, false)
+            }
+        }
+
         TapHandler {
             acceptedDevices: PointerDevice.Mouse
 
