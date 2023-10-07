@@ -164,37 +164,37 @@ static int UpdateDisplayFormat(vout_display_t *vd, const video_format_t *fmt)
     cfg.width  = vd->cfg->display.width;
     cfg.height = vd->cfg->display.height;
 
+    bool is_yuv;
     switch (fmt->i_chroma)
     {
     case VLC_CODEC_D3D11_OPAQUE:
         cfg.bitdepth = 8;
+        is_yuv = true;
         break;
     case VLC_CODEC_D3D11_OPAQUE_RGBA:
     case VLC_CODEC_D3D11_OPAQUE_BGRA:
         cfg.bitdepth = 8;
+        is_yuv = false;
         break;
     case VLC_CODEC_D3D11_OPAQUE_10B:
         cfg.bitdepth = 10;
+        is_yuv = true;
         break;
     default:
         {
             const vlc_chroma_description_t *p_format = vlc_fourcc_GetChromaDescription(fmt->i_chroma);
-            if (p_format == NULL)
-            {
-                cfg.bitdepth = 8;
-            }
-            else
-            {
-                cfg.bitdepth = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
-                                                               (p_format->plane_count==1 ? p_format->pixel_size : 1);
-            }
+            if (unlikely(p_format == NULL))
+                return VLC_ENOTSUP;
+
+            cfg.bitdepth = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
+                                                            (p_format->plane_count==1 ? p_format->pixel_size : 1);
+            is_yuv = p_format->color_model == COLOR_MODEL_YUV;
         }
         break;
     }
     cfg.full_range = fmt->color_range == COLOR_RANGE_FULL ||
                      /* the YUV->RGB conversion already output full range */
-                     is_d3d11_opaque(fmt->i_chroma) ||
-                     vlc_fourcc_IsYUV(fmt->i_chroma);
+                     is_d3d11_opaque(fmt->i_chroma) || is_yuv;
     cfg.primaries  = (libvlc_video_color_primaries_t) fmt->primaries;
     cfg.colorspace = (libvlc_video_color_space_t)     fmt->space;
     cfg.transfer   = (libvlc_video_transfer_func_t)   fmt->transfer;
@@ -914,56 +914,59 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
     {
         uint8_t bits_per_channel;
         uint8_t widthDenominator, heightDenominator;
+        bool is_rgb;
         switch (fmt->i_chroma)
         {
         case VLC_CODEC_D3D11_OPAQUE:
         case VLC_CODEC_NVDEC_OPAQUE:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_D3D11_OPAQUE_RGBA:
         case VLC_CODEC_D3D11_OPAQUE_BGRA:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 1;
+            is_rgb = true;
             break;
         case VLC_CODEC_D3D11_OPAQUE_10B:
         case VLC_CODEC_NVDEC_OPAQUE_10B:
             bits_per_channel = 10;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_16B:
             bits_per_channel = 16;
             widthDenominator = heightDenominator = 2;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_444:
             bits_per_channel = 8;
             widthDenominator = heightDenominator = 1;
+            is_rgb = false;
             break;
         case VLC_CODEC_NVDEC_OPAQUE_444_16B:
             bits_per_channel = 16;
             widthDenominator = heightDenominator = 1;
+            is_rgb = false;
             break;
         default:
             {
                 const vlc_chroma_description_t *p_format = vlc_fourcc_GetChromaDescription(fmt->i_chroma);
-                if (p_format == NULL)
+                if (unlikely(p_format == NULL))
+                    return VLC_ENOTSUP;
+
+                bits_per_channel = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
+                                                                (p_format->plane_count==1 ? p_format->pixel_size : 1);
+                widthDenominator = heightDenominator = 1;
+                for (size_t i=0; i<p_format->plane_count; i++)
                 {
-                    bits_per_channel = 8;
-                    widthDenominator = heightDenominator = 2;
+                    if (widthDenominator < p_format->p[i].w.den)
+                        widthDenominator = p_format->p[i].w.den;
+                    if (heightDenominator < p_format->p[i].h.den)
+                        heightDenominator = p_format->p[1].h.den;
                 }
-                else
-                {
-                    bits_per_channel = p_format->pixel_bits == 0 ? 8 : p_format->pixel_bits /
-                                                                   (p_format->plane_count==1 ? p_format->pixel_size : 1);
-                    widthDenominator = heightDenominator = 1;
-                    for (size_t i=0; i<p_format->plane_count; i++)
-                    {
-                        if (widthDenominator < p_format->p[i].w.den)
-                            widthDenominator = p_format->p[i].w.den;
-                        if (heightDenominator < p_format->p[i].h.den)
-                            heightDenominator = p_format->p[1].h.den;
-                    }
-                }
+                is_rgb = p_format->color_model == COLOR_MODEL_RGB;
             }
             break;
         }
@@ -972,7 +975,6 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
         if ( is_d3d11_opaque(fmt->i_chroma) )
             decoder_format = GetDirectDecoderFormat(vd, fmt->i_chroma);
 
-        bool is_rgb = !vlc_fourcc_IsYUV(fmt->i_chroma);
         sys->picQuad.generic.textureFormat = GetDisplayFormatByDepth(vd, bits_per_channel,
                                                              widthDenominator, heightDenominator,
                                                              decoder_format!=nullptr,

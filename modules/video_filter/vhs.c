@@ -128,7 +128,7 @@ static int Open( filter_t *p_filter )
         vlc_fourcc_GetChromaDescription( p_filter->fmt_in.video.i_chroma );
     if( !p_chroma || p_chroma->pixel_size == 0
         || p_chroma->plane_count < 3 || p_chroma->pixel_size > 1
-        || !vlc_fourcc_IsYUV( fourcc ) )
+        || p_chroma->color_model != COLOR_MODEL_YUV )
     {
         msg_Err( p_filter, "Unsupported chroma (%4.4s)", (char*)&fourcc );
         return VLC_EGENERIC;

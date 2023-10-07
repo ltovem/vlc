@@ -791,7 +791,7 @@ ConfigureVideoTrack(demux_t *demux,
 
     fmt->b_packetized = options->packetized;
 
-    if (options->colorbar && !vlc_fourcc_IsYUV(chroma) && desc->plane_count == 1)
+    if (options->colorbar && desc->color_model == COLOR_MODEL_RGB && desc->plane_count == 1)
     {
         struct demux_sys *sys = demux->p_sys;
         sys->b_colors = true;

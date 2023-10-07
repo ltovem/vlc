@@ -529,7 +529,7 @@ notsupp:
                 goto notsupp;
         }
     }
-    assert( vlc_fourcc_IsYUV( fourcc ) );
+    assert( chroma->color_model == COLOR_MODEL_YUV );
 
     /* */
     p_sys = p_filter->p_sys = malloc( sizeof( *p_sys ) );

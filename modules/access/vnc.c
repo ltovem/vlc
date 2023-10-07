@@ -410,14 +410,14 @@ static int Open( vlc_object_t *p_this )
     char *psz_chroma = var_InheritString( p_demux, CFG_PREFIX "chroma" );
     vlc_fourcc_t i_chroma = vlc_fourcc_GetCodecFromString( VIDEO_ES, psz_chroma );
     free( psz_chroma );
-    if ( !i_chroma || vlc_fourcc_IsYUV( i_chroma ) )
+    if ( !i_chroma )
     {
-        msg_Err( p_demux, "Only RGB chroma are supported" );
+        msg_Err( p_demux, "Unknown chroma not supported" );
         return VLC_EGENERIC;
     }
 
     const vlc_chroma_description_t *p_chroma_desc = vlc_fourcc_GetChromaDescription( i_chroma );
-    if ( !p_chroma_desc )
+    if ( !p_chroma_desc || p_chroma_desc->color_model != COLOR_MODEL_RGB )
     {
         msg_Err( p_demux, "Unable to get RGB chroma description" );
         return VLC_EGENERIC;

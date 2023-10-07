@@ -810,6 +810,15 @@ VLC_API bool vlc_fourcc_IsYUV( vlc_fourcc_t );
  */
 VLC_API bool vlc_fourcc_AreUVPlanesSwapped(vlc_fourcc_t , vlc_fourcc_t );
 
+typedef enum
+{
+    COLOR_MODEL_UNKNOWN, // opaque chromas
+    COLOR_MODEL_RGB,
+    COLOR_MODEL_YUV,
+    COLOR_MODEL_GRAYSCALE,
+    COLOR_MODEL_XYZ,
+} vlc_color_model;
+
 /**
  * Chroma related information.
  */
@@ -821,6 +830,7 @@ typedef struct {
     } p[4];
     unsigned pixel_size;        /* Number of bytes per pixel for a plane */
     unsigned pixel_bits;        /* Number of bits actually used bits per pixel for a plane */
+    vlc_color_model color_model;
 } vlc_chroma_description_t;
 
 /**
