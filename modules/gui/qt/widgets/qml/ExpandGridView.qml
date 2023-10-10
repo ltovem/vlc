@@ -269,25 +269,11 @@ FocusScope {
 
         onSelectionChanged: {
             for (let i = 0; i < selected.length; ++i) {
-                _updateSelectedRange(selected[i].topLeft, selected[i].bottomRight, true)
+                root._updateSelectedRange(selected[i].topLeft, selected[i].bottomRight, true)
             }
 
             for (let i = 0; i < deselected.length; ++i) {
-                _updateSelectedRange(deselected[i].topLeft, deselected[i].bottomRight, false)
-            }
-        }
-
-        function _updateSelectedRange(topLeft, bottomRight, select) {
-            let iMin = topLeft.row
-            let iMax = bottomRight.row + 1 // [] => [)
-            if (iMin < root._currentRange[1] && root._currentRange[0] < iMax) {
-                iMin = Math.max(iMin, root._currentRange[0])
-                iMax = Math.min(iMax, root._currentRange[1])
-                for (let j = iMin; j < iMax; j++) {
-                    const item = root._getItem(j)
-                    console.assert(item)
-                    item.selected = select
-                }
+                root._updateSelectedRange(deselected[i].topLeft, deselected[i].bottomRight, false)
             }
         }
     }
@@ -458,6 +444,20 @@ FocusScope {
         _isInitialised = true;
     }
 
+    function _updateSelectedRange(topLeft, bottomRight, select) {
+        let iMin = topLeft.row
+        let iMax = bottomRight.row + 1 // [] => [)
+        if (iMin < root._currentRange[1] && root._currentRange[0] < iMax) {
+            iMin = Math.max(iMin, root._currentRange[0])
+            iMax = Math.min(iMax, root._currentRange[1])
+            for (let j = iMin; j < iMax; j++) {
+                const item = root._getItem(j)
+                console.assert(item)
+                item.selected = select
+            }
+        }
+    }
+
     function _calculateCurrentRange() {
         const myContentY = flickable.contentY
         let contentYWithoutExpand = myContentY
@@ -616,11 +616,16 @@ FocusScope {
     Flickable {
         id: flickable
 
+        anchors.fill: parent
+
         flickableDirection: Flickable.VerticalFlick
 
         ScrollBar.vertical: ScrollBar {
             id: flickableScrollBar
         }
+
+        onContentYChanged: { Qt.callLater(flickable.layout, false) }
+
 
         MouseArea {
             anchors.fill: parent
@@ -671,14 +676,6 @@ FocusScope {
         Connections {
             target: headerItem
 
-            function _scrollToHeaderOnFocus() {
-                if (!headerItem.activeFocus)
-                    return;
-
-                // when we gain the focus ensure the widget is fully visible
-                animateFlickableContentY(0)
-            }
-
             onHeightChanged: {
                 flickable.layout(true)
             }
@@ -687,7 +684,7 @@ FocusScope {
                 // when header loads because of setting headerItem.focus == true, it will suddenly attain the active focus
                 // but then a queued flickable.layout() may take away it's focus and assign it to current item,
                 // using Qt.callLater we save unnecessary scrolling
-                Qt.callLater(_scrollToHeaderOnFocus)
+                Qt.callLater(flickable._scrollToHeaderOnFocus)
             }
         }
 
@@ -697,6 +694,16 @@ FocusScope {
                 if (flickable.contentY + flickable.height > footerItemLoader.y + footerItemLoader.height)
                     flickable.contentY = footerItemLoader.y + footerItemLoader.height - flickable.height
                 flickable.layout(false)
+            }
+        }
+
+        Connections {
+            target: expandItem
+            onImplicitHeightChanged: {
+                /* This is the only event we have after the expandItem height content was resized.
+                   We can trigger here the expand animation with the right final height. */
+                if (root.expandIndex !== -1)
+                    flickable.expandAnimation()
             }
         }
 
@@ -714,9 +721,13 @@ FocusScope {
             }
         }
 
-        anchors.fill: parent
+        function _scrollToHeaderOnFocus() {
+            if (!headerItem.activeFocus)
+                return;
 
-        onContentYChanged: { Qt.callLater(flickable.layout, false) }
+            // when we gain the focus ensure the widget is fully visible
+            animateFlickableContentY(0)
+        }
 
         function getExpandItemGridId() {
             if (root.expandIndex !== -1) {
@@ -807,16 +818,6 @@ FocusScope {
 
             // Place the delegates after the expandItem
             _setupIndexes(forceRelayout, [topGridEndId, lastId], root._expandItemVerticalSpace)
-        }
-
-        Connections {
-            target: expandItem
-            onImplicitHeightChanged: {
-                /* This is the only event we have after the expandItem height content was resized.
-                   We can trigger here the expand animation with the right final height. */
-                if (root.expandIndex !== -1)
-                    flickable.expandAnimation()
-            }
         }
 
         function expand() {
