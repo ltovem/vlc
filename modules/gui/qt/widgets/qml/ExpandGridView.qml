@@ -174,7 +174,7 @@ FocusScope {
 
     // Keys
 
-    Keys.onPressed: {
+    Keys.onPressed: (event) => {
         let newIndex = -1
         if (KeyHelper.matchRight(event)) {
             if ((currentIndex + 1) % nbItemPerRow !== 0) {//are we not at the end of line
@@ -230,7 +230,7 @@ FocusScope {
         }
     }
 
-    Keys.onReleased: {
+    Keys.onReleased: (event) => {
         if (!_releaseActionButtonPressed)
             return
 
@@ -247,25 +247,25 @@ FocusScope {
     // Connections
 
     Connections {
-        target: model
+        target: root.model
         onDataChanged: {
             const iMin = topLeft.row
             const iMax = bottomRight.row + 1 // [] => [)
             const f_l = _currentRange
             if (iMin < f_l[1] && f_l[0] < iMax) {
-                _refreshData(iMin, iMax)
+                root._refreshData(iMin, iMax)
             }
         }
-        onRowsInserted: _onModelCountChanged()
-        onRowsRemoved: _onModelCountChanged()
-        onModelReset: _onModelCountChanged()
+        onRowsInserted: root._onModelCountChanged()
+        onRowsRemoved: root._onModelCountChanged()
+        onModelReset: root._onModelCountChanged()
 
         // NOTE: This is useful for SortFilterProxyModel(s).
-        onLayoutChanged: _onModelCountChanged()
+        onLayoutChanged: root._onModelCountChanged()
     }
 
     Connections {
-        target: selectionDelegateModel
+        target: root.selectionDelegateModel
 
         onSelectionChanged: {
             for (let i = 0; i < selected.length; ++i) {
@@ -286,8 +286,8 @@ FocusScope {
     // Animations
 
     PropertyAnimation {
-        id: animateContentY;
-        target: flickable;
+        id: animateContentY
+        target: flickable
         properties: "contentY"
     }
 
@@ -634,7 +634,7 @@ FocusScope {
             preventStealing: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            onPressed: {
+            onPressed: (mouse) => {
                 Helpers.enforceFocus(flickable, Qt.MouseFocusReason)
 
                 if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
@@ -643,7 +643,7 @@ FocusScope {
                 }
             }
 
-            onReleased: {
+            onReleased: (mouse) => {
                 if (mouse.button & Qt.RightButton) {
                     root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
                 }
@@ -669,12 +669,12 @@ FocusScope {
 
             focus: (status === Loader.Ready) ? item.focus : false
 
-            y: root.topMargin + root.headerHeight + (root.rowHeight * (Math.ceil(model.count / root.nbItemPerRow))) +
+            y: root.topMargin + root.headerHeight + (root.rowHeight * (Math.ceil(root.model.count / root.nbItemPerRow))) +
                root._expandItemVerticalSpace
         }
 
         Connections {
-            target: headerItem
+            target: root.headerItem
 
             onHeightChanged: {
                 flickable.layout(true)
@@ -689,7 +689,7 @@ FocusScope {
         }
 
         Connections {
-            target: footerItem
+            target: root.footerItem
             onHeightChanged: {
                 if (flickable.contentY + flickable.height > footerItemLoader.y + footerItemLoader.height)
                     flickable.contentY = footerItemLoader.y + footerItemLoader.height - flickable.height
@@ -698,7 +698,7 @@ FocusScope {
         }
 
         Connections {
-            target: expandItem
+            target: root.expandItem
             onImplicitHeightChanged: {
                 /* This is the only event we have after the expandItem height content was resized.
                    We can trigger here the expand animation with the right final height. */
@@ -722,7 +722,7 @@ FocusScope {
         }
 
         function _scrollToHeaderOnFocus() {
-            if (!headerItem.activeFocus)
+            if (!root.headerItem.activeFocus)
                 return;
 
             // when we gain the focus ensure the widget is fully visible
@@ -790,11 +790,11 @@ FocusScope {
             else if (!root._isInitialised)
                 root._initialize()
 
-            root.rowX = getItemPos(0)[0]
+            root.rowX = root.getItemPos(0)[0]
 
             const expandItemGridId = getExpandItemGridId()
 
-            const f_l = _calculateCurrentRange()
+            const f_l = root._calculateCurrentRange()
             const nbItems = f_l[1] - f_l[0]
             const firstId = f_l[0]
             const lastId = f_l[1]
@@ -824,7 +824,7 @@ FocusScope {
             root.expandIndex = root._newExpandIndex
             if (root.expandIndex === -1)
                 return
-            expandItem.model = model.getDataAt(root.expandIndex)
+            root.expandItem.model = root.model.getDataAt(root.expandIndex)
             /* We must also start the expand animation here since the expandItem implicitHeight is not
                changed if it had the same height at previous opening. */
             expandAnimation()
@@ -834,7 +834,7 @@ FocusScope {
             if (root.expandIndex === -1)
                 return
 
-            const expandItemHeight = expandItem.implicitHeight + root.verticalSpacing
+            const expandItemHeight = root.expandItem.implicitHeight + root.verticalSpacing
 
             // Expand animation
 
