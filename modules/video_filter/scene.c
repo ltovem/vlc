@@ -287,7 +287,6 @@ static void SavePicture( filter_t *p_filter, picture_t *p_pic )
     filter_sys_t *p_sys = p_filter->p_sys;
     video_format_t fmt_in, fmt_out;
     char *psz_filename = NULL;
-    char *psz_temp = NULL;
     int i_ret;
 
     video_format_Init( &fmt_out, p_sys->i_format );
@@ -312,41 +311,18 @@ static void SavePicture( filter_t *p_filter, picture_t *p_pic )
                           p_sys->i_frames, p_sys->psz_format );
 
     if( i_ret == -1 )
-    {
-        msg_Err( p_filter, "could not create snapshot %s", psz_filename );
-        goto error;
-    }
-
-    i_ret = asprintf( &psz_temp, "%s.swp", psz_filename );
-    if( i_ret == -1 )
-    {
-        msg_Err( p_filter, "could not create snapshot temporarily file %s", psz_temp );
-        goto error;
-    }
+        return;
 
     /* Save the image */
-    i_ret = image_WriteUrl( p_sys->p_image, p_pic, &fmt_in, &fmt_out,
-                            psz_temp );
-    if( i_ret != VLC_SUCCESS )
-    {
-        msg_Err( p_filter, "could not create snapshot %s", psz_temp );
-    }
-    else
-    {
-        /* switch to the final destination */
 #if defined (_WIN32) || defined(__OS2__)
         vlc_unlink( psz_filename );
 #endif
-        i_ret = vlc_rename( psz_temp, psz_filename );
-        if( i_ret == -1 )
-        {
-            msg_Err( p_filter, "could not rename snapshot %s: %s",
-                     psz_filename, vlc_strerror_c(errno) );
-            goto error;
-        }
+    i_ret = image_WriteUrl( p_sys->p_image, p_pic, &fmt_in, &fmt_out,
+                            psz_filename );
+    if( i_ret != VLC_SUCCESS )
+    {
+        msg_Err( p_filter, "could not create snapshot file %s", psz_filename );
     }
 
-error:
-    free( psz_temp );
     free( psz_filename );
 }
