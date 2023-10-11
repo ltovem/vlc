@@ -19,6 +19,7 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Templates 2.12 as T
 
 import QtQml.Models 2.12
 
@@ -28,7 +29,7 @@ import "qrc:///style/"
 import "qrc:///util/Helpers.js" as Helpers
 import "qrc:///util/" as Util
 
-FocusScope {
+T.Pane {
     id: root
 
     // Properties
@@ -41,15 +42,12 @@ FocusScope {
     //margin to apply
     property int bottomMargin: 0
     property int topMargin: 0
-    property int leftMargin: VLCStyle.column_margin + leftPadding
-    property int rightMargin: VLCStyle.column_margin + rightPadding
+    property int leftMargin: VLCStyle.column_margin
+    property int rightMargin: VLCStyle.column_margin
 
-    property int leftPadding: 0
-    property int rightPadding: 0
-
-    readonly property int extraMargin: (_contentWidth - nbItemPerRow * _effectiveCellWidth
-                                        +
-                                        horizontalSpacing) / 2
+    readonly property int extraMargin: (_contentWidth
+                                        - nbItemPerRow * _effectiveCellWidth
+                                        + horizontalSpacing) / 2
 
     // NOTE: The grid margins for the item(s) horizontal positioning.
     readonly property int contentLeftMargin: extraMargin + leftMargin
@@ -69,7 +67,7 @@ FocusScope {
 
     readonly property int _effectiveCellWidth: cellWidth + horizontalSpacing
 
-    readonly property int _contentWidth: width - rightMargin - leftMargin
+    readonly property int _contentWidth: availableWidth - (rightMargin + leftMargin)
 
     property Util.SelectableDelegateModel selectionDelegateModel
     property QtAbstractItemModel model
@@ -99,9 +97,6 @@ FocusScope {
     property var _currentRange: [0,0]
 
     // Aliases
-
-    property alias contentHeight: flickable.contentHeight
-    property alias contentWidth: flickable.contentWidth
     property alias contentX: flickable.contentX
     property alias gridScrollBar: flickableScrollBar
 
@@ -124,35 +119,18 @@ FocusScope {
     signal showContextMenu(point globalPos)
 
     // Settings
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                            implicitContentHeight + topPadding + bottomPadding)
 
-    contentWidth: {
-        const size = _effectiveCellWidth * nbItemPerRow - horizontalSpacing
-
-        return leftMargin + size + rightMargin
-    }
-
-    contentHeight: {
-        const size = getItemPos(_count - 1)[1] + rowHeight + _expandItemVerticalSpace
-
-        // NOTE: topMargin and headerHeight are included in root.getItemPos.
-        if (footerItem)
-            return size + footerItem.height + bottomMargin
-        else
-            return size + bottomMargin
-    }
 
     Accessible.role: Accessible.Table
 
     activeFocusOnTab: true
 
     // Events
-
     Component.onCompleted: flickable.layout(true)
-
-    onHeightChanged: flickable.layout(false)
-
-    // NOTE: Update on contentLeftMargin since we depend on this for item placements.
-    onContentLeftMarginChanged: flickable.layout(true)
 
     onDisplayMarginEndChanged: flickable.layout(false)
 
@@ -378,7 +356,7 @@ FocusScope {
     function getItemPos(id) {
         const rowCol = getItemRowCol(id);
 
-        const x = rowCol[0] * _effectiveCellWidth + contentLeftMargin;
+        const x = rowCol[0] * _effectiveCellWidth + leftMargin + extraMargin;
 
         const y = rowCol[1] * rowHeight + headerHeight + topMargin;
 
@@ -613,10 +591,22 @@ FocusScope {
     }
 
 
-    Flickable {
+    contentItem: Flickable {
         id: flickable
 
-        anchors.fill: parent
+        contentHeight: {
+            const size = getItemPos(root._count - 1)[1] + root.rowHeight + root._expandItemVerticalSpace
+
+            // NOTE: topMargin and headerHeight are included in root.getItemPos.
+            if (root.footerItem)
+                return size + root.footerItem.height + root.bottomMargin
+            else
+                return size + root.bottomMargin
+        }
+        contentWidth:  root.availableWidth
+
+        implicitHeight: contentHeight
+        implicitWidth: contentWidth
 
         flickableDirection: Flickable.VerticalFlick
 
@@ -625,6 +615,9 @@ FocusScope {
         }
 
         onContentYChanged: { Qt.callLater(flickable.layout, false) }
+
+        onWidthChanged: layout(true)
+        onHeightChanged: layout(false)
 
 
         MouseArea {
