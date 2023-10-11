@@ -31,14 +31,13 @@ FocusScope {
 
     // Properties
 
-    /* required */ property var view
-
-    // Aliases
-
     property alias text: label.text
 
     property alias label: label
     property alias button: button
+
+    property int leftPadding: 0
+    property int rightPadding: 0
 
     // Signals
 
@@ -46,8 +45,7 @@ FocusScope {
 
     // Settings
 
-    width: view.width
-    height: label.height
+    implicitHeight: label.implicitHeight
 
     Navigation.navigable: button.visible
 
@@ -63,8 +61,8 @@ FocusScope {
 
         anchors.fill: parent
 
-        anchors.leftMargin: root.view.contentMargin
-        anchors.rightMargin: anchors.leftMargin
+        anchors.leftMargin: root.leftPadding
+        anchors.rightMargin: root.rightPadding
 
         Widgets.SubtitleLabel {
             id: label
