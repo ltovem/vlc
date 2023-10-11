@@ -17,6 +17,7 @@
  *****************************************************************************/
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Templates 2.12 as T
 import QtQml.Models 2.12
 import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.12
@@ -27,7 +28,7 @@ import "qrc:///widgets/" as Widgets
 import "qrc:///style/"
 
 // FIXME: Maybe we could inherit from KeyNavigableListView directly.
-FocusScope {
+T.Pane {
     id: root
 
     // Properties
@@ -47,13 +48,12 @@ FocusScope {
     // NOTE: We want edge to edge backgrounds in our delegate and header, so we implement our own
     //       margins implementation like in ExpandGridView. The default values should be the same
     //       than ExpandGridView to respect the grid parti pris.
-    property int leftMargin: VLCStyle.column_margin + leftPadding
-    property int rightMargin: VLCStyle.column_margin + rightPadding
+    property int leftMargin: VLCStyle.column_margin
+    property int rightMargin: VLCStyle.column_margin
+    property alias topMargin: view.topMargin
+    property alias bottomMargin: view.bottomMargin
 
-    property int leftPadding: 0
-    property int rightPadding: 0
-
-    readonly property int extraMargin: Math.max(0, (width - usedRowSpace) / 2)
+    readonly property int extraMargin: Math.max(0, (availableWidth - usedRowSpace) / 2)
 
     // NOTE: The list margins for the item(s) horizontal positioning.
     readonly property int contentLeftMargin: extraMargin + leftMargin
@@ -87,21 +87,15 @@ FocusScope {
 
     property real _availabeRowWidthLastUpdateTime: Date.now()
 
-    readonly property real _currentAvailableRowWidth: width - leftMargin - rightMargin
+    readonly property real _currentAvailableRowWidth: availableWidth - (leftMargin + rightMargin)
 
     // Aliases
-
-    property alias topMargin: view.topMargin
-    property alias bottomMargin: view.bottomMargin
-
-    property alias spacing: view.spacing
 
     property alias model: view.model
 
     property alias delegate: view.delegate
 
     property alias contentY     : view.contentY
-    property alias contentHeight: view.contentHeight
 
     property alias originX: view.originX
     property alias originY: view.originY
@@ -148,6 +142,14 @@ FocusScope {
     signal dropEntered(Item delegate, int index, var drag, bool before)
     signal dropExited(Item delegate, int index,  var drag, bool before)
     signal dropEvent(Item delegate, int index,  var drag, var drop, bool before)
+
+    // Settings
+
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding)
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
 
     // Events
 
@@ -219,14 +221,14 @@ FocusScope {
         }
     }
 
-    KeyNavigableListView {
+    contentItem: KeyNavigableListView {
         id: view
 
-        anchors.fill: parent
-
-        contentWidth: root.width - root.contentLeftMargin - root.contentRightMargin
-
         focus: true
+
+        spacing: root.spacing
+
+        implicitHeight: contentHeight
 
         headerPositioning: ListView.OverlayHeader
 
