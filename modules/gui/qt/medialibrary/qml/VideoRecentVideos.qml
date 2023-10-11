@@ -81,8 +81,8 @@ FocusScope {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            anchors.leftMargin: view.currentItem.contentLeftMargin
-            anchors.rightMargin: view.currentItem.contentRightMargin
+            anchors.leftMargin: root.leftPadding
+            anchors.rightMargin: root.rightPadding
 
             Widgets.SubtitleLabel {
                 id: label
@@ -127,8 +127,9 @@ FocusScope {
             height: MainCtx.gridView ? VLCStyle.gridItem_video_height + VLCStyle.gridItemSelectedBorder + VLCStyle.margin_xlarge
                                      : VLCStyle.margin_xxlarge + Math.min(recentModel.count, 5) * VLCStyle.tableCoverRow_height
 
-            leftPadding: root.leftPadding
-            rightPadding: root.rightPadding
+
+            leftPadding: 0
+            rightPadding: 0
 
             focus: recentModel.count !== 0
 
@@ -151,8 +152,8 @@ FocusScope {
             visible: text !== ""
             color: theme.fg.primary
 
-            leftPadding: view.currentItem.contentLeftMargin
-            rightPadding: view.currentItem.contentRightMargin
+            leftPadding: root.leftPadding
+            rightPadding: root.rightPadding
         }
     }
 }

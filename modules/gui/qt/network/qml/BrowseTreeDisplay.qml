@@ -149,9 +149,10 @@ MainInterface.MainViewLoader {
                 providerModel: root.model
 
                 // align header content with grid content
-                leftPadding: gridView.rowX
+                leftPadding: gridView.contentLeftMargin
+                rightPadding: gridView.contentRightMargin
 
-                width: gridView.width
+                width: gridView.availableWidth
 
                 Navigation.parentItem: root
                 Navigation.downAction: function () {
@@ -281,7 +282,9 @@ MainInterface.MainViewLoader {
             header: BrowseTreeHeader {
                 providerModel: root.model
 
-                width: tableView.width
+                width: tableView.availableWidth
+                leftPadding: tableView.contentLeftMargin
+                rightPadding: tableView.contentRightMargin
 
                 Navigation.parentItem: root
                 Navigation.downAction: function () {
