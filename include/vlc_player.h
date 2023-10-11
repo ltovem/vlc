@@ -64,6 +64,16 @@ digraph player_states {
  */
 typedef struct vlc_player_t vlc_player_t;
 
+struct vlc_player_probe_t {
+    struct vlc_object_t obj;
+
+    /* Module properties */
+    module_t *          p_module;
+    void               *p_sys;
+
+    vlc_player_t *player;
+};
+
 /**
  * Player lock type (normal or reentrant)
  */

@@ -52,6 +52,8 @@ struct libvlc_media_player_t
         libvlc_media_player_watch_time_on_discontinuity on_discontinuity;
         void *cbs_data;
     } timer;
+
+    struct vlc_player_probe_t *media_player_probe;
 };
 
 libvlc_track_description_t * libvlc_get_track_description(
