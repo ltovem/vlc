@@ -236,18 +236,18 @@ T.Pane {
 
         Navigation.parentItem: root
 
-        onSelectAll: selectionDelegateModel.selectAll()
-        onSelectionUpdated: selectionDelegateModel.updateSelection( keyModifiers, oldIndex, newIndex )
-        onActionAtIndex: root.actionForSelection( selectionDelegateModel.selectedIndexes )
+        onSelectAll: root.selectionDelegateModel.selectAll()
+        onSelectionUpdated: (keyModifiers, oldIndex, newIndex) => root.selectionDelegateModel.updateSelection( keyModifiers, oldIndex, newIndex )
+        onActionAtIndex: (index) => root.actionForSelection( root.selectionDelegateModel.selectedIndexes )
 
         onDeselectAll: {
-            if (selectionDelegateModel) {
-                selectionDelegateModel.clear()
+            if (root.selectionDelegateModel) {
+                root.selectionDelegateModel.clear()
             }
         }
 
-        onShowContextMenu: {
-            if (selectionDelegateModel.hasSelection)
+        onShowContextMenu: (globalPos) => {
+            if (root.selectionDelegateModel.hasSelection)
                 root.rightClick(null, null, globalPos);
         }
 
@@ -307,7 +307,7 @@ T.Pane {
                     spacing: VLCStyle.column_spacing
 
                     Repeater {
-                        model: sortModel
+                        model: root.sortModel
                         MouseArea {
 
                             height: VLCStyle.tableHeaderText_height
@@ -384,21 +384,21 @@ T.Pane {
             rowModel: model
             sortModel: root.sortModel
 
-            selected: selectionDelegateModel.isSelected(root.model.index(index, 0))
+            selected: root.selectionDelegateModel.isSelected(root.model.index(index, 0))
 
             acceptDrop: root.acceptDrop
 
-            onContextMenuButtonClicked: root.contextMenuButtonClicked(menuParent, menuModel, globalMousePos)
-            onRightClick: root.rightClick(menuParent, menuModel, globalMousePos)
-            onItemDoubleClicked: root.itemDoubleClicked(index, model)
+            onContextMenuButtonClicked: (menuParent, menuModel, globalMousePos) => root.contextMenuButtonClicked(menuParent, menuModel, globalMousePos)
+            onRightClick: (menuParent, menuModel, globalMousePos) => root.rightClick(menuParent, menuModel, globalMousePos)
+            onItemDoubleClicked: (index, model) => root.itemDoubleClicked(index, model)
 
-            onDropEntered: root.dropEntered(tableDelegate, index, drag, before)
-            onDropUpdatePosition: root.dropUpdatePosition(tableDelegate, index, drag, before)
-            onDropExited: root.dropExited(tableDelegate, index, drag, before)
-            onDropEvent: root.dropEvent(tableDelegate, index, drag, drop, before)
+            onDropEntered: (drag, before) => root.dropEntered(tableDelegate, index, drag, before)
+            onDropUpdatePosition: (drag, before) => root.dropUpdatePosition(tableDelegate, index, drag, before)
+            onDropExited: (drag, before) => root.dropExited(tableDelegate, index, drag, before)
+            onDropEvent: (drag, drop, before) => root.dropEvent(tableDelegate, index, drag, drop, before)
 
-            onSelectAndFocus:  {
-                selectionDelegateModel.updateSelection(modifiers, view.currentIndex, index)
+            onSelectAndFocus: (modifiers, focusReason) => {
+                root.selectionDelegateModel.updateSelection(modifiers, view.currentIndex, index)
 
                 view.currentIndex = index
                 view.positionViewAtIndex(index, ListView.Contain)
@@ -407,7 +407,7 @@ T.Pane {
             }
 
             Connections {
-                target: selectionDelegateModel
+                target: root.selectionDelegateModel
 
                 onSelectionChanged: {
                     tableDelegate.selected = Qt.binding(function() {
