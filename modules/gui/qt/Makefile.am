@@ -1033,6 +1033,7 @@ libqt_plugin_la_QML = \
 	util/qml/MLContextMenu.qml \
 	util/qml/ListViewRev15.qml \
 	util/qml/ListViewRev11.qml \
+        util/qml/GridSizeHelper.qml \
 	util/qml/FadeControllerStateGroup.qml \
 	widgets/qml/ActionButtonOverlay.qml \
 	widgets/qml/ActionButtonPrimary.qml \
