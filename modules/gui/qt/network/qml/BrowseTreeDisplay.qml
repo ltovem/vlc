@@ -139,9 +139,13 @@ MainInterface.MainViewLoader {
     Component{
         id: gridComponent
 
-        MainInterface.MainGridView {
+        Widgets.ExpandGridItemView {
             id: gridView
 
+            basePictureWidth: VLCStyle.gridCover_network_width
+            basePictureHeight: VLCStyle.gridCover_network_height
+            subtitleHeight: 0
+            
             selectionModel: root.selectionModel
             model: root.model
 
@@ -160,14 +164,13 @@ MainInterface.MainViewLoader {
                 }
             }
 
-            cellWidth: VLCStyle.gridItem_network_width
-            cellHeight: VLCStyle.gridCover_network_height + VLCStyle.margin_xsmall + VLCStyle.fontHeight_normal
-
             delegate: NetworkGridItem {
                 id: delegateGrid
 
+                width: gridView.cellWidth;
+                height: gridView.cellHeight;
+
                 subtitle: ""
-                height: VLCStyle.gridCover_network_height + VLCStyle.margin_xsmall + VLCStyle.fontHeight_normal
                 dragItem: networkDragItem
 
                 onPlayClicked: playAt(index)

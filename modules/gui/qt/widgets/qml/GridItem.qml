@@ -248,8 +248,8 @@ T.ItemDelegate {
                 radius: VLCStyle.gridCover_radius
                 color: theme.bg.secondary
 
-                Layout.preferredWidth: pictureWidth
-                Layout.preferredHeight: pictureHeight
+                Layout.preferredWidth: root.width
+                Layout.preferredHeight: (root.pictureHeight / root.pictureWidth) * root.width
 
                 onPlayIconClicked: (mouse) => {
                     // emulate a mouse click before delivering the play signal as to select the item
@@ -303,7 +303,7 @@ T.ItemDelegate {
                 visible: root.title !== ""
                 clip: scrolling
 
-                Layout.preferredWidth: Math.min(titleLabel.implicitWidth, pictureWidth)
+                Layout.preferredWidth: Math.min(titleLabel.implicitWidth, root.width)
                 Layout.preferredHeight: titleLabel.height
                 Layout.topMargin: root.titleMargin
                 Layout.alignment: root.textAlignHCenter ? Qt.AlignCenter : Qt.AlignLeft
@@ -330,7 +330,8 @@ T.ItemDelegate {
                     : theme.fg.secondary
                 textFormat: Text.PlainText
 
-                Layout.preferredWidth: Math.min(pictureWidth, implicitWidth)
+                Layout.preferredWidth: Math.min(root.width, implicitWidth)
+
                 Layout.alignment: root.textAlignHCenter ? Qt.AlignCenter : Qt.AlignLeft
                 Layout.topMargin: VLCStyle.margin_xsmall
 
