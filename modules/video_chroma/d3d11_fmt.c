@@ -949,7 +949,7 @@ void D3D11_LogResources(d3d11_decoder_device_t *dev_sys)
 }
 
 const struct vlc_video_context_operations d3d11_vctx_ops = {
-    NULL,
+    NULL, NULL,
 };
 
 vlc_video_context *D3D11CreateVideoContext(vlc_decoder_device *dec_dev, DXGI_FORMAT vctx_fmt)

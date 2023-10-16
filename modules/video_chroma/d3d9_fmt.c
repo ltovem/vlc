@@ -312,7 +312,7 @@ void D3D9_ReleaseDevice(d3d9_decoder_device_t *dec_dev)
 }
 
 const struct vlc_video_context_operations d3d9_vctx_ops = {
-    NULL,
+    NULL, NULL,
 };
 
 void d3d9_pic_context_destroy(picture_context_t *ctx)

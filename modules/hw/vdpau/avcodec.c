@@ -134,7 +134,7 @@ static void Close(vlc_va_t *va, AVCodecContext* ctx)
 static const struct vlc_va_operations ops = { Lock, Close, };
 
 const struct vlc_video_context_operations vdpau_vctx_ops = {
-    NULL,
+    NULL, NULL,
 };
 
 static int Open(vlc_va_t *va, AVCodecContext *avctx, enum AVPixelFormat hwfmt, const AVPixFmtDescriptor *desc,

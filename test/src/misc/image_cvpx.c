@@ -64,7 +64,7 @@ static int OpenIntf(vlc_object_t *root)
 
     struct vlc_decoder_device *device = NULL;
     static const struct vlc_video_context_operations ops = {
-        NULL
+        NULL, NULL
     };
 
     struct vlc_video_context *vctx =vlc_video_context_CreateCVPX(

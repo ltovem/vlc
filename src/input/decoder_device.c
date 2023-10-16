@@ -159,3 +159,14 @@ vlc_decoder_device* vlc_video_context_HoldDevice(vlc_video_context *vctx)
         return NULL;
     return vlc_decoder_device_Hold( vctx->device );
 }
+
+const vlc_chroma_description_t *
+vlc_video_context_ChromaDescription(vlc_video_context *vctx, vlc_fourcc_t chroma)
+{
+    const vlc_chroma_description_t *res = NULL;
+    if ( vctx != NULL && vctx->ops->chroma_description != NULL )
+        res = vctx->ops->chroma_description( vctx, chroma );
+    else
+        res = vlc_fourcc_GetChromaDescription( chroma );
+    return res;
+}

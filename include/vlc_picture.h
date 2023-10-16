@@ -88,6 +88,7 @@ typedef struct vlc_video_context vlc_video_context;
 struct vlc_video_context_operations
 {
     void (*destroy)(void *priv);
+    const vlc_chroma_description_t *(*chroma_description)(vlc_video_context *, vlc_fourcc_t);
 };
 
 /** Decoder device type */
@@ -113,6 +114,8 @@ VLC_API void vlc_video_context_Release(vlc_video_context *);
 VLC_API enum vlc_video_context_type vlc_video_context_GetType(const vlc_video_context *);
 VLC_API void *vlc_video_context_GetPrivate(vlc_video_context *, enum vlc_video_context_type);
 VLC_API vlc_video_context *vlc_video_context_Hold(vlc_video_context *);
+
+VLC_API const vlc_chroma_description_t * vlc_video_context_ChromaDescription(vlc_video_context *, vlc_fourcc_t chroma);
 
 /**
  * Get the decoder device used by the device context.
