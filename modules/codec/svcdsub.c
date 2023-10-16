@@ -394,8 +394,8 @@ static void ParseHeader( decoder_t *p_dec, block_t *p_block )
     for( i = 0; i < 4; i++ )
     {
         p_sys->p_palette[i][0] = *p++; /* Y */
-        p_sys->p_palette[i][2] = *p++; /* Cr / V */
         p_sys->p_palette[i][1] = *p++; /* Cb / U */
+        p_sys->p_palette[i][2] = *p++; /* Cr / V */
         p_sys->p_palette[i][3] = *p++; /* T */
     }
 
