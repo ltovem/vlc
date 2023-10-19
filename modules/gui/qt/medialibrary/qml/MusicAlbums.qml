@@ -114,6 +114,9 @@ MainInterface.MainViewLoader {
                 width: gridView_id.cellWidth;
                 height: gridView_id.cellHeight;
 
+                pictureWidth: gridView_id.maxPictureWidth
+                pictureHeight: gridView_id.maxPictureHeight
+
                 opacity: gridView_id.expandIndex !== -1 && gridView_id.expandIndex !== audioGridItem.index ? .7 : 1
                 dragItem: albumDragItem
                 onItemClicked : (_,_,modifier) => { gridView_id.leftClickOnItem(modifier, index) }

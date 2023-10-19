@@ -209,6 +209,9 @@ FocusScope {
                 width: gridView.cellWidth;
                 height: gridView.cellHeight;
 
+                pictureWidth: gridView.maxPictureWidth
+                pictureHeight: gridView.maxPictureHeight
+
                 onItemClicked: (_, _, modifier) => { root.onClicked(model, index, modifier) }
 
                 onItemDoubleClicked: (_, _, modifier) => { root.onDoubleClicked(model, index) }
