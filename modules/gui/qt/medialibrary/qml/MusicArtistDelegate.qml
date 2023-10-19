@@ -148,6 +148,8 @@ T.ItemDelegate {
 
             source: (model.cover) ? model.cover
                                   : VLCStyle.noArtArtistSmall
+            sourceSize.width: width
+            sourceSize.height: height
 
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
 

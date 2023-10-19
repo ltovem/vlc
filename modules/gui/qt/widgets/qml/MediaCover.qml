@@ -49,6 +49,9 @@ Rectangle {
     property alias playCoverVisible: playCoverLoader.visible
     property alias playCoverOpacity: playCoverLoader.opacity
 
+    /* required */ property int pictureWidth
+    /* required */ property int pictureHeight
+
     // Signals
 
     signal playIconClicked(var /* MouseEvent */ mouse)
@@ -69,6 +72,9 @@ Rectangle {
         anchors.fill: parent
 
         radius: root.radius
+
+        sourceSize.width: root.pictureWidth
+        sourceSize.height: root.pictureHeight
     }
 
     RoundImage {
@@ -83,6 +89,9 @@ Rectangle {
         // we only keep this image till there is no main image
         // try to release the resources otherwise
         source: !root.isImageReady ? root.fallbackImageSource : ""
+
+        sourceSize.width: root.pictureWidth
+        sourceSize.height: root.pictureHeight
     }
 
     Loader {
