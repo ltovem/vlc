@@ -311,8 +311,19 @@ void D3D9_ReleaseDevice(d3d9_decoder_device_t *dec_dev)
         sys->cleanupDeviceCb( sys->opaque );
 }
 
+static const vlc_chroma_description_t *D3D9ChromaDesc(vlc_video_context * vctx, vlc_fourcc_t chroma)
+{
+    assert(is_d3d9_opaque(chroma));
+
+    d3d9_video_context_t *priv = GetD3D9ContextPrivate(vctx);
+    const d3d9_format_t *d3d9chroma = D3D9FormatFourcc(priv->format);
+    if (unlikely(d3d9chroma == NULL)) // doesn't correspond to anything we know
+        return NULL;
+    return vlc_fourcc_GetChromaDescription(d3d9chroma->vlc_chroma);
+}
+
 const struct vlc_video_context_operations d3d9_vctx_ops = {
-    NULL, NULL,
+    NULL, D3D9ChromaDesc,
 };
 
 void d3d9_pic_context_destroy(picture_context_t *ctx)
