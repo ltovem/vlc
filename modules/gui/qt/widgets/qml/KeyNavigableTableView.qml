@@ -17,6 +17,7 @@
  *****************************************************************************/
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Templates 2.12 as T
 import QtQml.Models 2.12
 import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.12
@@ -27,7 +28,7 @@ import "qrc:///widgets/" as Widgets
 import "qrc:///style/"
 
 // FIXME: Maybe we could inherit from KeyNavigableListView directly.
-FocusScope {
+T.Pane {
     id: root
 
     // Properties
@@ -47,13 +48,12 @@ FocusScope {
     // NOTE: We want edge to edge backgrounds in our delegate and header, so we implement our own
     //       margins implementation like in ExpandGridView. The default values should be the same
     //       than ExpandGridView to respect the grid parti pris.
-    property int leftMargin: VLCStyle.column_margin + leftPadding
-    property int rightMargin: VLCStyle.column_margin + rightPadding
+    property int leftMargin: VLCStyle.column_margin
+    property int rightMargin: VLCStyle.column_margin
+    property alias topMargin: view.topMargin
+    property alias bottomMargin: view.bottomMargin
 
-    property int leftPadding: 0
-    property int rightPadding: 0
-
-    readonly property int extraMargin: Math.max(0, (width - usedRowSpace) / 2)
+    readonly property int extraMargin: Math.max(0, (availableWidth - usedRowSpace) / 2)
 
     // NOTE: The list margins for the item(s) horizontal positioning.
     readonly property int contentLeftMargin: extraMargin + leftMargin
@@ -87,21 +87,15 @@ FocusScope {
 
     property real _availabeRowWidthLastUpdateTime: Date.now()
 
-    readonly property real _currentAvailableRowWidth: width - leftMargin - rightMargin
+    readonly property real _currentAvailableRowWidth: availableWidth - (leftMargin + rightMargin)
 
     // Aliases
-
-    property alias topMargin: view.topMargin
-    property alias bottomMargin: view.bottomMargin
-
-    property alias spacing: view.spacing
 
     property alias model: view.model
 
     property alias delegate: view.delegate
 
     property alias contentY     : view.contentY
-    property alias contentHeight: view.contentHeight
 
     property alias originX: view.originX
     property alias originY: view.originY
@@ -148,6 +142,14 @@ FocusScope {
     signal dropEntered(Item delegate, int index, var drag, bool before)
     signal dropExited(Item delegate, int index,  var drag, bool before)
     signal dropEvent(Item delegate, int index,  var drag, var drop, bool before)
+
+    // Settings
+
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding)
+
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
 
     // Events
 
@@ -219,14 +221,14 @@ FocusScope {
         }
     }
 
-    KeyNavigableListView {
+    contentItem: KeyNavigableListView {
         id: view
 
-        anchors.fill: parent
-
-        contentWidth: root.width - root.contentLeftMargin - root.contentRightMargin
-
         focus: true
+
+        spacing: root.spacing
+
+        implicitHeight: contentHeight
 
         headerPositioning: ListView.OverlayHeader
 
@@ -234,18 +236,18 @@ FocusScope {
 
         Navigation.parentItem: root
 
-        onSelectAll: selectionDelegateModel.selectAll()
-        onSelectionUpdated: selectionDelegateModel.updateSelection( keyModifiers, oldIndex, newIndex )
-        onActionAtIndex: root.actionForSelection( selectionDelegateModel.selectedIndexes )
+        onSelectAll: root.selectionDelegateModel.selectAll()
+        onSelectionUpdated: (keyModifiers, oldIndex, newIndex) => root.selectionDelegateModel.updateSelection( keyModifiers, oldIndex, newIndex )
+        onActionAtIndex: (index) => root.actionForSelection( root.selectionDelegateModel.selectedIndexes )
 
         onDeselectAll: {
-            if (selectionDelegateModel) {
-                selectionDelegateModel.clear()
+            if (root.selectionDelegateModel) {
+                root.selectionDelegateModel.clear()
             }
         }
 
-        onShowContextMenu: {
-            if (selectionDelegateModel.hasSelection)
+        onShowContextMenu: (globalPos) => {
+            if (root.selectionDelegateModel.hasSelection)
                 root.rightClick(null, null, globalPos);
         }
 
@@ -305,7 +307,7 @@ FocusScope {
                     spacing: VLCStyle.column_spacing
 
                     Repeater {
-                        model: sortModel
+                        model: root.sortModel
                         MouseArea {
 
                             height: VLCStyle.tableHeaderText_height
@@ -382,21 +384,21 @@ FocusScope {
             rowModel: model
             sortModel: root.sortModel
 
-            selected: selectionDelegateModel.isSelected(root.model.index(index, 0))
+            selected: root.selectionDelegateModel.isSelected(root.model.index(index, 0))
 
             acceptDrop: root.acceptDrop
 
-            onContextMenuButtonClicked: root.contextMenuButtonClicked(menuParent, menuModel, globalMousePos)
-            onRightClick: root.rightClick(menuParent, menuModel, globalMousePos)
-            onItemDoubleClicked: root.itemDoubleClicked(index, model)
+            onContextMenuButtonClicked: (menuParent, menuModel, globalMousePos) => root.contextMenuButtonClicked(menuParent, menuModel, globalMousePos)
+            onRightClick: (menuParent, menuModel, globalMousePos) => root.rightClick(menuParent, menuModel, globalMousePos)
+            onItemDoubleClicked: (index, model) => root.itemDoubleClicked(index, model)
 
-            onDropEntered: root.dropEntered(tableDelegate, index, drag, before)
-            onDropUpdatePosition: root.dropUpdatePosition(tableDelegate, index, drag, before)
-            onDropExited: root.dropExited(tableDelegate, index, drag, before)
-            onDropEvent: root.dropEvent(tableDelegate, index, drag, drop, before)
+            onDropEntered: (drag, before) => root.dropEntered(tableDelegate, index, drag, before)
+            onDropUpdatePosition: (drag, before) => root.dropUpdatePosition(tableDelegate, index, drag, before)
+            onDropExited: (drag, before) => root.dropExited(tableDelegate, index, drag, before)
+            onDropEvent: (drag, drop, before) => root.dropEvent(tableDelegate, index, drag, drop, before)
 
-            onSelectAndFocus:  {
-                selectionDelegateModel.updateSelection(modifiers, view.currentIndex, index)
+            onSelectAndFocus: (modifiers, focusReason) => {
+                root.selectionDelegateModel.updateSelection(modifiers, view.currentIndex, index)
 
                 view.currentIndex = index
                 view.positionViewAtIndex(index, ListView.Contain)
@@ -405,7 +407,7 @@ FocusScope {
             }
 
             Connections {
-                target: selectionDelegateModel
+                target: root.selectionDelegateModel
 
                 onSelectionChanged: {
                     tableDelegate.selected = Qt.binding(function() {

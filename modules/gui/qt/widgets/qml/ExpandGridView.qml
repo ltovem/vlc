@@ -19,6 +19,7 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Templates 2.12 as T
 
 import QtQml.Models 2.12
 
@@ -28,7 +29,7 @@ import "qrc:///style/"
 import "qrc:///util/Helpers.js" as Helpers
 import "qrc:///util/" as Util
 
-FocusScope {
+T.Pane {
     id: root
 
     // Properties
@@ -41,15 +42,12 @@ FocusScope {
     //margin to apply
     property int bottomMargin: 0
     property int topMargin: 0
-    property int leftMargin: VLCStyle.column_margin + leftPadding
-    property int rightMargin: VLCStyle.column_margin + rightPadding
+    property int leftMargin: VLCStyle.column_margin
+    property int rightMargin: VLCStyle.column_margin
 
-    property int leftPadding: 0
-    property int rightPadding: 0
-
-    readonly property int extraMargin: (_contentWidth - nbItemPerRow * _effectiveCellWidth
-                                        +
-                                        horizontalSpacing) / 2
+    readonly property int extraMargin: (_contentWidth
+                                        - nbItemPerRow * _effectiveCellWidth
+                                        + horizontalSpacing) / 2
 
     // NOTE: The grid margins for the item(s) horizontal positioning.
     readonly property int contentLeftMargin: extraMargin + leftMargin
@@ -69,7 +67,7 @@ FocusScope {
 
     readonly property int _effectiveCellWidth: cellWidth + horizontalSpacing
 
-    readonly property int _contentWidth: width - rightMargin - leftMargin
+    readonly property int _contentWidth: availableWidth - (rightMargin + leftMargin)
 
     property Util.SelectableDelegateModel selectionDelegateModel
     property QtAbstractItemModel model
@@ -99,9 +97,6 @@ FocusScope {
     property var _currentRange: [0,0]
 
     // Aliases
-
-    property alias contentHeight: flickable.contentHeight
-    property alias contentWidth: flickable.contentWidth
     property alias contentX: flickable.contentX
     property alias gridScrollBar: flickableScrollBar
 
@@ -124,35 +119,18 @@ FocusScope {
     signal showContextMenu(point globalPos)
 
     // Settings
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                            implicitContentHeight + topPadding + bottomPadding)
 
-    contentWidth: {
-        const size = _effectiveCellWidth * nbItemPerRow - horizontalSpacing
-
-        return leftMargin + size + rightMargin
-    }
-
-    contentHeight: {
-        const size = getItemPos(_count - 1)[1] + rowHeight + _expandItemVerticalSpace
-
-        // NOTE: topMargin and headerHeight are included in root.getItemPos.
-        if (footerItem)
-            return size + footerItem.height + bottomMargin
-        else
-            return size + bottomMargin
-    }
 
     Accessible.role: Accessible.Table
 
     activeFocusOnTab: true
 
     // Events
-
     Component.onCompleted: flickable.layout(true)
-
-    onHeightChanged: flickable.layout(false)
-
-    // NOTE: Update on contentLeftMargin since we depend on this for item placements.
-    onContentLeftMarginChanged: flickable.layout(true)
 
     onDisplayMarginEndChanged: flickable.layout(false)
 
@@ -174,7 +152,7 @@ FocusScope {
 
     // Keys
 
-    Keys.onPressed: {
+    Keys.onPressed: (event) => {
         let newIndex = -1
         if (KeyHelper.matchRight(event)) {
             if ((currentIndex + 1) % nbItemPerRow !== 0) {//are we not at the end of line
@@ -230,7 +208,7 @@ FocusScope {
         }
     }
 
-    Keys.onReleased: {
+    Keys.onReleased: (event) => {
         if (!_releaseActionButtonPressed)
             return
 
@@ -247,47 +225,33 @@ FocusScope {
     // Connections
 
     Connections {
-        target: model
+        target: root.model
         onDataChanged: {
             const iMin = topLeft.row
             const iMax = bottomRight.row + 1 // [] => [)
             const f_l = _currentRange
             if (iMin < f_l[1] && f_l[0] < iMax) {
-                _refreshData(iMin, iMax)
+                root._refreshData(iMin, iMax)
             }
         }
-        onRowsInserted: _onModelCountChanged()
-        onRowsRemoved: _onModelCountChanged()
-        onModelReset: _onModelCountChanged()
+        onRowsInserted: root._onModelCountChanged()
+        onRowsRemoved: root._onModelCountChanged()
+        onModelReset: root._onModelCountChanged()
 
         // NOTE: This is useful for SortFilterProxyModel(s).
-        onLayoutChanged: _onModelCountChanged()
+        onLayoutChanged: root._onModelCountChanged()
     }
 
     Connections {
-        target: selectionDelegateModel
+        target: root.selectionDelegateModel
 
         onSelectionChanged: {
             for (let i = 0; i < selected.length; ++i) {
-                _updateSelectedRange(selected[i].topLeft, selected[i].bottomRight, true)
+                root._updateSelectedRange(selected[i].topLeft, selected[i].bottomRight, true)
             }
 
             for (let i = 0; i < deselected.length; ++i) {
-                _updateSelectedRange(deselected[i].topLeft, deselected[i].bottomRight, false)
-            }
-        }
-
-        function _updateSelectedRange(topLeft, bottomRight, select) {
-            let iMin = topLeft.row
-            let iMax = bottomRight.row + 1 // [] => [)
-            if (iMin < root._currentRange[1] && root._currentRange[0] < iMax) {
-                iMin = Math.max(iMin, root._currentRange[0])
-                iMax = Math.min(iMax, root._currentRange[1])
-                for (let j = iMin; j < iMax; j++) {
-                    const item = root._getItem(j)
-                    console.assert(item)
-                    item.selected = select
-                }
+                root._updateSelectedRange(deselected[i].topLeft, deselected[i].bottomRight, false)
             }
         }
     }
@@ -300,8 +264,8 @@ FocusScope {
     // Animations
 
     PropertyAnimation {
-        id: animateContentY;
-        target: flickable;
+        id: animateContentY
+        target: flickable
         properties: "contentY"
     }
 
@@ -392,7 +356,7 @@ FocusScope {
     function getItemPos(id) {
         const rowCol = getItemRowCol(id);
 
-        const x = rowCol[0] * _effectiveCellWidth + contentLeftMargin;
+        const x = rowCol[0] * _effectiveCellWidth + leftMargin + extraMargin;
 
         const y = rowCol[1] * rowHeight + headerHeight + topMargin;
 
@@ -456,6 +420,20 @@ FocusScope {
         if (currentIndex !== 0)
             positionViewAtIndex(currentIndex, ItemView.Contain)
         _isInitialised = true;
+    }
+
+    function _updateSelectedRange(topLeft, bottomRight, select) {
+        let iMin = topLeft.row
+        let iMax = bottomRight.row + 1 // [] => [)
+        if (iMin < root._currentRange[1] && root._currentRange[0] < iMax) {
+            iMin = Math.max(iMin, root._currentRange[0])
+            iMax = Math.min(iMax, root._currentRange[1])
+            for (let j = iMin; j < iMax; j++) {
+                const item = root._getItem(j)
+                console.assert(item)
+                item.selected = select
+            }
+        }
     }
 
     function _calculateCurrentRange() {
@@ -613,14 +591,34 @@ FocusScope {
     }
 
 
-    Flickable {
+    contentItem: Flickable {
         id: flickable
+
+        contentHeight: {
+            const size = getItemPos(root._count - 1)[1] + root.rowHeight + root._expandItemVerticalSpace
+
+            // NOTE: topMargin and headerHeight are included in root.getItemPos.
+            if (root.footerItem)
+                return size + root.footerItem.height + root.bottomMargin
+            else
+                return size + root.bottomMargin
+        }
+        contentWidth:  root.availableWidth
+
+        implicitHeight: contentHeight
+        implicitWidth: contentWidth
 
         flickableDirection: Flickable.VerticalFlick
 
         ScrollBar.vertical: ScrollBar {
             id: flickableScrollBar
         }
+
+        onContentYChanged: { Qt.callLater(flickable.layout, false) }
+
+        onWidthChanged: layout(true)
+        onHeightChanged: layout(false)
+
 
         MouseArea {
             anchors.fill: parent
@@ -629,7 +627,7 @@ FocusScope {
             preventStealing: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            onPressed: {
+            onPressed: (mouse) => {
                 Helpers.enforceFocus(flickable, Qt.MouseFocusReason)
 
                 if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
@@ -638,7 +636,7 @@ FocusScope {
                 }
             }
 
-            onReleased: {
+            onReleased: (mouse) => {
                 if (mouse.button & Qt.RightButton) {
                     root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
                 }
@@ -664,20 +662,12 @@ FocusScope {
 
             focus: (status === Loader.Ready) ? item.focus : false
 
-            y: root.topMargin + root.headerHeight + (root.rowHeight * (Math.ceil(model.count / root.nbItemPerRow))) +
+            y: root.topMargin + root.headerHeight + (root.rowHeight * (Math.ceil(root.model.count / root.nbItemPerRow))) +
                root._expandItemVerticalSpace
         }
 
         Connections {
-            target: headerItem
-
-            function _scrollToHeaderOnFocus() {
-                if (!headerItem.activeFocus)
-                    return;
-
-                // when we gain the focus ensure the widget is fully visible
-                animateFlickableContentY(0)
-            }
+            target: root.headerItem
 
             onHeightChanged: {
                 flickable.layout(true)
@@ -687,16 +677,26 @@ FocusScope {
                 // when header loads because of setting headerItem.focus == true, it will suddenly attain the active focus
                 // but then a queued flickable.layout() may take away it's focus and assign it to current item,
                 // using Qt.callLater we save unnecessary scrolling
-                Qt.callLater(_scrollToHeaderOnFocus)
+                Qt.callLater(flickable._scrollToHeaderOnFocus)
             }
         }
 
         Connections {
-            target: footerItem
+            target: root.footerItem
             onHeightChanged: {
                 if (flickable.contentY + flickable.height > footerItemLoader.y + footerItemLoader.height)
                     flickable.contentY = footerItemLoader.y + footerItemLoader.height - flickable.height
                 flickable.layout(false)
+            }
+        }
+
+        Connections {
+            target: root.expandItem
+            onImplicitHeightChanged: {
+                /* This is the only event we have after the expandItem height content was resized.
+                   We can trigger here the expand animation with the right final height. */
+                if (root.expandIndex !== -1)
+                    flickable.expandAnimation()
             }
         }
 
@@ -714,9 +714,13 @@ FocusScope {
             }
         }
 
-        anchors.fill: parent
+        function _scrollToHeaderOnFocus() {
+            if (!root.headerItem.activeFocus)
+                return;
 
-        onContentYChanged: { Qt.callLater(flickable.layout, false) }
+            // when we gain the focus ensure the widget is fully visible
+            animateFlickableContentY(0)
+        }
 
         function getExpandItemGridId() {
             if (root.expandIndex !== -1) {
@@ -779,11 +783,11 @@ FocusScope {
             else if (!root._isInitialised)
                 root._initialize()
 
-            root.rowX = getItemPos(0)[0]
+            root.rowX = root.getItemPos(0)[0]
 
             const expandItemGridId = getExpandItemGridId()
 
-            const f_l = _calculateCurrentRange()
+            const f_l = root._calculateCurrentRange()
             const nbItems = f_l[1] - f_l[0]
             const firstId = f_l[0]
             const lastId = f_l[1]
@@ -809,21 +813,11 @@ FocusScope {
             _setupIndexes(forceRelayout, [topGridEndId, lastId], root._expandItemVerticalSpace)
         }
 
-        Connections {
-            target: expandItem
-            onImplicitHeightChanged: {
-                /* This is the only event we have after the expandItem height content was resized.
-                   We can trigger here the expand animation with the right final height. */
-                if (root.expandIndex !== -1)
-                    flickable.expandAnimation()
-            }
-        }
-
         function expand() {
             root.expandIndex = root._newExpandIndex
             if (root.expandIndex === -1)
                 return
-            expandItem.model = model.getDataAt(root.expandIndex)
+            root.expandItem.model = root.model.getDataAt(root.expandIndex)
             /* We must also start the expand animation here since the expandItem implicitHeight is not
                changed if it had the same height at previous opening. */
             expandAnimation()
@@ -833,7 +827,7 @@ FocusScope {
             if (root.expandIndex === -1)
                 return
 
-            const expandItemHeight = expandItem.implicitHeight + root.verticalSpacing
+            const expandItemHeight = root.expandItem.implicitHeight + root.verticalSpacing
 
             // Expand animation
 

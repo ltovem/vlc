@@ -143,7 +143,7 @@ FocusScope {
             BrowseDeviceView {
                 id: foldersSection
 
-                width: root.width
+                width: flickable.width
                 height: contentHeight
 
                 visible: (model.count !== 0)
@@ -181,7 +181,7 @@ FocusScope {
             BrowseDeviceView {
                 id: deviceSection
 
-                width: root.width
+                width: flickable.width
                 height: contentHeight
 
                 maximumRows: root.maximumRows
@@ -231,7 +231,7 @@ FocusScope {
             BrowseDeviceView {
                 id: lanSection
 
-                width: root.width
+                width: flickable.width
                 height: contentHeight
 
                 maximumRows: root.maximumRows

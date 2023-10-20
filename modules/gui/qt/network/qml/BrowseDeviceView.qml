@@ -53,7 +53,12 @@ FocusScope {
     property bool isSearchable: true
 
     property Component header: BrowseDeviceHeader {
-        view: root
+
+        width: view.currentItem ? view.currentItem.availableWidth : 0
+        height: implicitHeight
+
+        leftPadding: view.currentItem ? view.currentItem.contentLeftMargin : 0
+        rightPadding: view.currentItem ? view.currentItem.contentRightMargin : 0
 
         text: root.title
 

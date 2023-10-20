@@ -266,12 +266,12 @@ VideoAll {
     }
 
     header: VideoRecentVideos {
-        width: root.width
+        width: root.currentItem.availableWidth
 
         // spacing between header and content
         bottomPadding: VLCStyle.margin_normal
-        leftPadding: root.leftPadding
-        rightPadding: root.rightPadding
+        leftPadding: root.currentItem.contentLeftMargin
+        rightPadding: root.currentItem.contentRightMargin
 
         subtitleText: (root.model && root.model.count > 0) ? I18n.qtr("Videos") : ""
 
