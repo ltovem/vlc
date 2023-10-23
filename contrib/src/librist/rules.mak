@@ -28,6 +28,7 @@ $(TARBALLS)/librist-$(LIBRIST_VERSION).tar.gz:
 
 librist: librist-$(LIBRIST_VERSION).tar.gz .sum-librist
 	$(UNPACK)
+	$(APPLY) $(SRC)/librist/win32-timing.patch
 	$(MOVE)
 
 .librist: librist crossfile.meson
