@@ -49,17 +49,26 @@
 #define COL_FILL        2
 #define COL_FILL_SHADE  3
 
+typedef struct  {
+    uint8_t r,g,b,a;
+} vlc_palette_color;
+
 #define SET_PALETTE_COLOR(id, rgb, alpha) \
-{\
-    uint8_t color[4] = { HEX2YUV(rgb), alpha };\
-    memcpy( &palette.palette[id], &color, 4 );\
+    memcpy(&palette->palette[id], &(vlc_palette_color) { HEX2RGB(rgb), alpha }, 4);
+
+static inline void SetPixelColor(uint8_t *p, const uint8_t color[4])
+{
+    p[0] = color[0];
+    p[1] = color[1];
+    p[2] = color[2];
+    p[3] = color[3];
 }
 
 /**
  * Draws a rectangle at the given position in the region.
  * It may be filled (fill == STYLE_FILLED) or empty (fill == STYLE_EMPTY).
  */
-static void DrawRect(subpicture_region_t *r, int fill, uint8_t color,
+static void DrawRect(subpicture_region_t *r, int fill, const uint8_t color[4],
                      int x1, int y1, int x2, int y2)
 {
     uint8_t *p    = r->p_picture->p->p_pixels;
@@ -69,10 +78,14 @@ static void DrawRect(subpicture_region_t *r, int fill, uint8_t color,
 
     if (fill == STYLE_FILLED) {
         if(x1 == 0 && x2 + 1 == r->p_picture->p->i_visible_pitch) {
-            memset(&p[pitch * y1], color, pitch * (y2 - y1 + 1));
+            for (int x=0; x<pitch * (y2 - y1 + 1); x+=4)
+                SetPixelColor(&p[pitch * y1 + x], color);
         } else {
             for (int y = y1; y <= y2; y++)
-                memset(&p[x1 + pitch * y], color, x2 - x1 + 1);
+            {
+                for (int x=0; x<x2 - x1 + 1; x+=4)
+                    SetPixelColor(&p[x1 + pitch * y + x], color);
+            }
         }
     } else {
         DrawRect(r, STYLE_FILLED, color, x1, y1, x1, y2);
@@ -86,7 +99,7 @@ static void DrawRect(subpicture_region_t *r, int fill, uint8_t color,
  * Draws a triangle at the given position in the region.
  * It may be filled (fill == STYLE_FILLED) or empty (fill == STYLE_EMPTY).
  */
-static void DrawTriangle(subpicture_region_t *r, int fill, uint8_t color,
+static void DrawTriangle(subpicture_region_t *r, int fill, const uint8_t color[4],
                          int x1, int y1, int x2, int y2)
 {
     uint8_t *p    = r->p_picture->p->p_pixels;
@@ -103,10 +116,10 @@ static void DrawTriangle(subpicture_region_t *r, int fill, uint8_t color,
             DrawRect(r, STYLE_FILLED, color,
                      (b_swap) ? w : x1, y2 - h, (b_swap) ? x1 : w, y2 - h);
         } else {
-            p[x1 +                     pitch * y       ] = color;
-            p[x1 + (b_swap ? -h : h) + pitch * y       ] = color;
-            p[x1 +                     pitch * (y2 - h)] = color;
-            p[x1 + (b_swap ? -h : h) + pitch * (y2 - h)] = color;
+            SetPixelColor(&p[x1 +                     pitch * 4 * y       ], color);
+            SetPixelColor(&p[x1 + (b_swap ? -h : h) + pitch * 4 * y       ], color);
+            SetPixelColor(&p[x1 +                     pitch * 4 * (y2 - h)], color);
+            SetPixelColor(&p[x1 + (b_swap ? -h : h) + pitch * 4 * (y2 - h)], color);
         }
     }
 }
@@ -114,27 +127,25 @@ static void DrawTriangle(subpicture_region_t *r, int fill, uint8_t color,
 /**
  * Create a region with a white transparent picture.
  */
-static subpicture_region_t *OSDRegion(int x, int y, int width, int height)
+static subpicture_region_t *OSDRegion(int x, int y, int width, int height, video_palette_t *palette)
 {
     if( width == 0 || height == 0 )
         return NULL;
 
-    video_palette_t palette;
     SET_PALETTE_COLOR(COL_WHITE,       0xffffff, STYLE_ALPHA_OPAQUE)
     SET_PALETTE_COLOR(COL_TRANSPARENT, 0xffffff, STYLE_ALPHA_TRANSPARENT)
     SET_PALETTE_COLOR(COL_FILL,        RGB_FILL, 0xA0)
     SET_PALETTE_COLOR(COL_FILL_SHADE,  RGB_FILL, 0x25)
-    palette.i_entries = 4;
+    palette->i_entries = 4;
 
     video_format_t fmt;
-    video_format_Init(&fmt, VLC_CODEC_YUVP);
+    video_format_Init(&fmt, VLC_CODEC_RGBA);
     fmt.i_width          =
     fmt.i_visible_width  = width;
     fmt.i_height         =
     fmt.i_visible_height = height;
     fmt.i_sar_num        = 1;
     fmt.i_sar_den        = 1;
-    fmt.p_palette        = &palette;
 
     subpicture_region_t *r = subpicture_region_New(&fmt);
     if (!r)
@@ -176,7 +187,8 @@ static subpicture_region_t *OSDSlider(int type, int position,
     if( (width < 1 + 2 * i_padding) || (height < 1 + 2 * i_padding) )
         return NULL;
 
-    subpicture_region_t *r = OSDRegion(x, y, width, height);
+    video_palette_t palette;
+    subpicture_region_t *r = OSDRegion(x, y, width, height, &palette);
     if( !r)
         return NULL;
 
@@ -193,8 +205,8 @@ static subpicture_region_t *OSDSlider(int type, int position,
     }
 
     /* one full fill is faster than drawing outline */
-    DrawRect(r, STYLE_FILLED, COL_FILL_SHADE, 0, 0, width - 1, height - 1);
-    DrawRect(r, STYLE_FILLED, COL_FILL, pos_x, pos_y, pos_xend, pos_yend);
+    DrawRect(r, STYLE_FILLED, palette.palette[COL_FILL_SHADE], 0, 0, width - 1, height - 1);
+    DrawRect(r, STYLE_FILLED, palette.palette[COL_FILL], pos_x, pos_y, pos_xend, pos_yend);
 
     return r;
 }
@@ -217,32 +229,33 @@ static subpicture_region_t *OSDIcon(int type, const video_format_t *fmt)
     if( width < 1 || height < 1 )
         return NULL;
 
+    video_palette_t palette;
     subpicture_region_t *r = OSDRegion(__MAX(x, 0),
                                        __MIN(y, (int)fmt->i_visible_height - height),
-                                       width, height);
+                                       width, height, &palette);
     if (!r)
         return NULL;
 
-    DrawRect(r, STYLE_FILLED, COL_TRANSPARENT, 0, 0, width - 1, height - 1);
+    DrawRect(r, STYLE_FILLED, palette.palette[COL_TRANSPARENT], 0, 0, width - 1, height - 1);
 
     if (type == OSD_PAUSE_ICON) {
         int bar_width = width / 3;
-        DrawRect(r, STYLE_FILLED, COL_WHITE, 0, 0, bar_width - 1, height -1);
-        DrawRect(r, STYLE_FILLED, COL_WHITE, width - bar_width, 0, width - 1, height - 1);
+        DrawRect(r, STYLE_FILLED, palette.palette[COL_WHITE], 0, 0, bar_width - 1, height -1);
+        DrawRect(r, STYLE_FILLED, palette.palette[COL_WHITE], width - bar_width, 0, width - 1, height - 1);
     } else if (type == OSD_PLAY_ICON) {
         int mid   = height >> 1;
         int delta = (width - mid) >> 1;
         int y2    = ((height - 1) >> 1) * 2;
-        DrawTriangle(r, STYLE_FILLED, COL_WHITE, delta, 0, width - delta, y2);
+        DrawTriangle(r, STYLE_FILLED, palette.palette[COL_WHITE], delta, 0, width - delta, y2);
     } else {
         int mid   = height >> 1;
         int delta = (width - mid) >> 1;
         int y2    = ((height - 1) >> 1) * 2;
-        DrawRect(r, STYLE_FILLED, COL_WHITE, delta, mid / 2, width - delta, height - 1 - mid / 2);
-        DrawTriangle(r, STYLE_FILLED, COL_WHITE, width - delta, 0, delta, y2);
+        DrawRect(r, STYLE_FILLED, palette.palette[COL_WHITE], delta, mid / 2, width - delta, height - 1 - mid / 2);
+        DrawTriangle(r, STYLE_FILLED, palette.palette[COL_WHITE], width - delta, 0, delta, y2);
         if (type == OSD_MUTE_ICON) {
             for(int y1 = 0; y1 <= height -1; y1++)
-                DrawRect(r, STYLE_FILLED, COL_FILL, y1, y1, __MIN(y1 + delta, width - 1), y1);
+                DrawRect(r, STYLE_FILLED, palette.palette[COL_FILL], y1, y1, __MIN(y1 + delta, width - 1), y1);
         }
     }
     return r;
