@@ -363,6 +363,22 @@ static void ExitMPG123( void )
 }
 
 /*****************************************************************************
+ * CloseDecoder : deallocate data structures
+ *****************************************************************************/
+static void CloseDecoder(vlc_object_t *p_this)
+{
+    decoder_t *p_dec = (decoder_t *)p_this;
+    decoder_sys_t *p_sys = p_dec->p_sys;
+
+    mpg123_close(p_sys->p_handle);
+    mpg123_delete(p_sys->p_handle);
+    ExitMPG123();
+    if (p_sys->p_out)
+        block_Release(p_sys->p_out);
+    free(p_sys);
+}
+
+/*****************************************************************************
  * OpenDecoder :
  *****************************************************************************/
 static int OpenDecoder( vlc_object_t *p_this )
@@ -406,22 +422,6 @@ error:
     ExitMPG123();
     free( p_sys );
     return VLC_EGENERIC;
-}
-
-/*****************************************************************************
- * CloseDecoder : deallocate data structures
- *****************************************************************************/
-static void CloseDecoder( vlc_object_t *p_this )
-{
-    decoder_t *p_dec = (decoder_t *)p_this;
-    decoder_sys_t *p_sys = p_dec->p_sys;
-
-    mpg123_close( p_sys->p_handle );
-    mpg123_delete( p_sys->p_handle );
-    ExitMPG123();
-    if( p_sys->p_out )
-        block_Release( p_sys->p_out );
-    free( p_sys );
 }
 
 /*****************************************************************************
