@@ -59,17 +59,6 @@ typedef struct
 } decoder_sys_t;
 
 /*****************************************************************************
- * Module descriptor
- *****************************************************************************/
-vlc_module_begin ()
-    set_subcategory( SUBCAT_INPUT_ACODEC )
-    set_description( N_("MPEG audio decoder using mpg123") )
-    set_capability( "audio decoder", 100 )
-    set_shortname( "mpg123" )
-    set_callbacks( OpenDecoder, CloseDecoder )
-vlc_module_end ()
-
-/*****************************************************************************
  * MPG123Open
  *****************************************************************************/
 static int MPG123Open( decoder_t *p_dec )
@@ -434,3 +423,14 @@ static void CloseDecoder( vlc_object_t *p_this )
         block_Release( p_sys->p_out );
     free( p_sys );
 }
+
+/*****************************************************************************
+ * Module descriptor
+ *****************************************************************************/
+vlc_module_begin()
+    set_subcategory(SUBCAT_INPUT_ACODEC)
+    set_description(N_("MPEG audio decoder using mpg123"))
+    set_capability("audio decoder", 100)
+    set_shortname("mpg123")
+    set_callbacks(OpenDecoder, CloseDecoder)
+vlc_module_end()
