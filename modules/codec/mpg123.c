@@ -38,12 +38,6 @@
 #include <vlc_block.h>
 #include <vlc_codec.h>
 
-/*****************************************************************************
- * Local prototypes
- *****************************************************************************/
-static int      OpenDecoder( vlc_object_t * );
-static void     CloseDecoder( vlc_object_t * );
-
 static unsigned int mpg123_refcount = 0;
 static vlc_mutex_t mpg123_mutex = VLC_STATIC_MUTEX;
 
