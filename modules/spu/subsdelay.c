@@ -659,8 +659,6 @@ static subsdelay_heap_entry_t * SubsdelayEntryCreate( subpicture_t *p_source, fi
 
     subpicture_t *p_new_subpic;
 
-    subpicture_updater_t updater;
-
     /* allocate structure */
 
     p_entry = (subsdelay_heap_entry_t *) malloc( sizeof( subsdelay_heap_entry_t ) );
@@ -671,11 +669,18 @@ static subsdelay_heap_entry_t * SubsdelayEntryCreate( subpicture_t *p_source, fi
     }
 
     /* initialize local updater */
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = SubpicValidateWrapper,
+        .update   = SubpicUpdateWrapper,
+        .destroy  = SubpicDestroyWrapper,
+    };
 
-    updater.p_sys = p_entry;
-    updater.pf_validate = SubpicValidateWrapper;
-    updater.pf_update = SubpicUpdateWrapper;
-    updater.pf_destroy = SubpicDestroyWrapper;
+    subpicture_updater_t updater =
+    {
+        .sys = p_entry,
+        .ops = &spu_ops,
+    };
 
     /* create new subpic */
 
@@ -920,22 +925,22 @@ static int SubpicValidateWrapper( subpicture_t *p_subpic, bool has_src_changed, 
     vlc_tick_t i_new_ts;
     int i_result = VLC_SUCCESS;
 
-    p_entry = p_subpic->updater.p_sys;
+    p_entry = p_subpic->updater.sys;
     if( !p_entry )
     {
         return VLC_SUCCESS;
     }
 
     /* call source validate */
-    if( p_entry->p_source->updater.pf_validate )
-    {
-        i_new_ts = p_entry->p_source->i_start +
-                   ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
-                   ( p_entry->i_new_stop - p_entry->p_source->i_start );
+    i_new_ts = p_entry->p_source->i_start +
+               ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
+               ( p_entry->i_new_stop - p_entry->p_source->i_start );
 
-        i_result = p_entry->p_source->updater.pf_validate( p_entry->p_source, has_src_changed, p_fmt_src,
-                                                        has_dst_changed, p_fmt_dst, i_new_ts );
-    }
+
+    subpicture_updater_t *updater = &p_entry->p_source->updater;
+    if (updater->ops != NULL && updater->ops->validate != NULL)
+        i_result = updater->ops->validate(p_entry->p_source, has_src_changed, p_fmt_src,
+                                          has_dst_changed, p_fmt_dst, i_new_ts);
 
 
     p_entry->b_last_region_saved = false;
@@ -968,23 +973,22 @@ static void SubpicUpdateWrapper( subpicture_t *p_subpic, const video_format_t *p
     subsdelay_heap_entry_t *p_entry;
     vlc_tick_t i_new_ts;
 
-    p_entry = p_subpic->updater.p_sys;
+    p_entry = p_subpic->updater.sys;
     if( !p_entry )
     {
         return;
     }
 
     /* call source update */
-    if( p_entry->p_source->updater.pf_update )
+    subpicture_updater_t *updater = &p_entry->p_source->updater;
+    if (updater->ops != NULL && updater->ops->update != NULL)
     {
         i_new_ts = p_entry->p_source->i_start +
                    ( (double)( p_entry->p_source->i_stop - p_entry->p_source->i_start ) * ( i_ts - p_entry->p_source->i_start ) ) /
                    ( p_entry->i_new_stop - p_entry->p_source->i_start );
 
         p_entry->p_source->p_region = p_entry->p_subpic->p_region;
-
-        p_entry->p_source->updater.pf_update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
-
+        updater->ops->update( p_entry->p_source, p_fmt_src, p_fmt_dst, i_new_ts );
         p_entry->p_subpic->p_region = p_entry->p_source->p_region;
     }
 
@@ -999,7 +1003,7 @@ static void SubpicDestroyWrapper( subpicture_t *p_subpic )
     subsdelay_heap_entry_t *p_entry;
     subsdelay_heap_t *p_heap;
 
-    p_entry = p_subpic->updater.p_sys;
+    p_entry = p_subpic->updater.sys;
 
     if( !p_entry )
     {
@@ -1030,7 +1034,7 @@ static void SubpicLocalUpdate( subpicture_t* p_subpic, vlc_tick_t i_ts )
 
     int i_overlapping;
 
-    p_entry = p_subpic->updater.p_sys;
+    p_entry = p_subpic->updater.sys;
     if( !p_entry || !p_entry->p_filter )
     {
         return;

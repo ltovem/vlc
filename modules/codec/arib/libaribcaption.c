@@ -104,7 +104,7 @@ static int SubpictureValidate(subpicture_t *p_subpic,
                               bool b_dst_changed, const video_format_t *p_dst_format,
                               vlc_tick_t i_ts)
 {
-    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     decoder_sys_t *p_sys = p_spusys->p_dec_sys;
 
     if (b_src_changed || b_dst_changed) {
@@ -162,7 +162,7 @@ static void SubpictureUpdate(subpicture_t *p_subpic,
 {
     VLC_UNUSED(p_src_format); VLC_UNUSED(p_dst_format); VLC_UNUSED(i_ts);
 
-    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
 
     video_format_t  fmt = *p_dst_format;
     fmt.i_chroma         = VLC_CODEC_RGBA;
@@ -212,7 +212,7 @@ static void SubpictureUpdate(subpicture_t *p_subpic,
 
 static void SubpictureDestroy(subpicture_t *p_subpic)
 {
-    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.p_sys;
+    libaribcaption_spu_updater_sys_t *p_spusys = p_subpic->updater.sys;
     DecSysRelease(p_spusys->p_dec_sys);
     free(p_spusys);
 }
@@ -260,11 +260,16 @@ static int Decode(decoder_t *p_dec, block_t *p_block)
     p_spusys->i_pts = p_block->i_pts;
     memset(&p_spusys->render_result, 0, sizeof(p_spusys->render_result));
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = SubpictureValidate,
+        .update   = SubpictureUpdate,
+        .destroy  = SubpictureDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = SubpictureValidate,
-        .pf_update   = SubpictureUpdate,
-        .pf_destroy  = SubpictureDestroy,
-        .p_sys       = p_spusys,
+        .sys = p_spusys,
+        .ops = &spu_ops,
     };
 
     subpicture_t *p_spu = decoder_NewSubpicture(p_dec, &updater);

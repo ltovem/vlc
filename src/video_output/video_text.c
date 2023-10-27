@@ -56,7 +56,7 @@ static void OSDTextUpdate(subpicture_t *subpic,
                           const video_format_t *fmt_dst,
                           vlc_tick_t ts)
 {
-    osd_spu_updater_sys_t *sys = subpic->updater.p_sys;
+    osd_spu_updater_sys_t *sys = subpic->updater.sys;
     VLC_UNUSED(fmt_src); VLC_UNUSED(ts);
 
     if( fmt_dst->i_sar_num <= 0 || fmt_dst->i_sar_den <= 0 )
@@ -95,7 +95,7 @@ static void OSDTextUpdate(subpicture_t *subpic,
 
 static void OSDTextDestroy(subpicture_t *subpic)
 {
-    osd_spu_updater_sys_t *sys = subpic->updater.p_sys;
+    osd_spu_updater_sys_t *sys = subpic->updater.sys;
 
     free(sys->text);
     free(sys);
@@ -114,11 +114,16 @@ void vout_OSDText(vout_thread_t *vout, int channel,
     sys->position = position;
     sys->text     = strdup(text);
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = OSDTextValidate,
+        .update   = OSDTextUpdate,
+        .destroy  = OSDTextDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = OSDTextValidate,
-        .pf_update   = OSDTextUpdate,
-        .pf_destroy  = OSDTextDestroy,
-        .p_sys       = sys,
+        .sys = sys,
+        .ops = &spu_ops,
     };
     subpicture_t *subpic = subpicture_New(&updater);
     if (!subpic) {

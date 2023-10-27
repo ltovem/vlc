@@ -1641,7 +1641,7 @@ static int subpictureUpdaterValidate(subpicture_t *p_subpic,
     VLC_UNUSED(p_fmt_dst);
     VLC_UNUSED(i_ts);
 
-    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.p_sys;
+    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.sys;
     bluray_overlay_t         *p_overlay = updater_lock_overlay(p_upd_sys);
 
     if (!p_overlay) {
@@ -1663,7 +1663,7 @@ static void subpictureUpdaterUpdate(subpicture_t *p_subpic,
     VLC_UNUSED(p_fmt_src);
     VLC_UNUSED(p_fmt_dst);
     VLC_UNUSED(i_ts);
-    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.p_sys;
+    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.sys;
     bluray_overlay_t         *p_overlay = updater_lock_overlay(p_upd_sys);
 
     if (!p_overlay) {
@@ -1697,7 +1697,7 @@ static void subpictureUpdaterUpdate(subpicture_t *p_subpic,
 
 static void subpictureUpdaterDestroy(subpicture_t *p_subpic)
 {
-    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.p_sys;
+    bluray_spu_updater_sys_t *p_upd_sys = p_subpic->updater.sys;
     bluray_overlay_t         *p_overlay = updater_lock_overlay(p_upd_sys);
 
     if (p_overlay) {
@@ -1719,11 +1719,16 @@ static subpicture_t *bluraySubpictureCreate(bluray_overlay_t *p_ov)
 
     p_upd_sys->p_overlay = p_ov;
 
+    static const struct vlc_spu_updater_ops spu_ops =
+    {
+        .validate = subpictureUpdaterValidate,
+        .update   = subpictureUpdaterUpdate,
+        .destroy  = subpictureUpdaterDestroy,
+    };
+
     subpicture_updater_t updater = {
-        .pf_validate = subpictureUpdaterValidate,
-        .pf_update   = subpictureUpdaterUpdate,
-        .pf_destroy  = subpictureUpdaterDestroy,
-        .p_sys       = p_upd_sys,
+        .sys = p_upd_sys,
+        .ops = &spu_ops,
     };
 
     subpicture_t *p_pic = subpicture_New(&updater);
