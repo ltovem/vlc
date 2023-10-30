@@ -231,10 +231,8 @@ vlc_gl_sub_renderer_Prepare(struct vlc_gl_sub_renderer *sr,
     gl_region_t *last = sr->regions;
 
     if (subpicture) {
-        int count = 0;
+        int count = subpicture->regions.size;
         subpicture_region_t *r;
-        vlc_spu_regions_foreach(r, &subpicture->regions)
-            count++;
 
         gl_region_t *regions = calloc(count, sizeof(*regions));
         if (!regions)
