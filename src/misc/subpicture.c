@@ -337,9 +337,9 @@ void vlc_spu_regions_Clear( vlc_spu_regions *regions )
     subpicture_region_t *p_head;
     vlc_spu_regions_foreach(p_head, regions)
     {
-        vlc_spu_regions_remove( regions, p_head );
         subpicture_region_Delete( p_head );
     }
+    vlc_vector_clear( regions );
 }
 
 #include <vlc_filter.h>
