@@ -1,7 +1,7 @@
 # librist
 
-LIBRIST_VERSION := v0.2.7
-LIBRIST_URL := http://code.videolan.org/rist/librist/-/archive/$(LIBRIST_VERSION)/librist-$(LIBRIST_VERSION).tar.gz
+LIBRIST_VERSION := v0.2.10
+LIBRIST_URL := https://code.videolan.org/rist/librist/-/archive/$(LIBRIST_VERSION)/librist-$(LIBRIST_VERSION).tar.gz
 
 ifdef BUILD_NETWORK
 PKGS += librist
@@ -32,9 +32,7 @@ $(TARBALLS)/librist-$(LIBRIST_VERSION).tar.gz:
 
 librist: librist-$(LIBRIST_VERSION).tar.gz .sum-librist
 	$(UNPACK)
-	$(APPLY) $(SRC)/librist/librist-fix-libcjson-meson.patch
 	$(APPLY) $(SRC)/librist/win32-timing.patch
-	$(APPLY) $(SRC)/librist/0001-meson-don-t-force-the-Windows-version-if-it-s-higher.patch
 	$(MOVE)
 
 .librist: librist crossfile.meson
