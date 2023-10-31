@@ -25,6 +25,22 @@ ifdef HAVE_WIN32
 LIBRIST_CONF += -Dhave_mingw_pthreads=true
 endif
 
+##Prefer nettle+gmp+gnutls over build-in mbedTLS if it's available.
+# gnutls (nettle/gmp) can't be used with the LGPLv2 license
+ifdef GPL
+LIBRIST_USE_GNUTLS=1
+else
+ifdef GNUV3
+LIBRIST_USE_GNUTLS=1
+endif
+endif
+
+ifeq ($(LIBRIST_USE_GNUTLS),1)
+DEPS_librist += gnutls $(DEPS_gnutls)
+LIBRIST_CONF += -Duse_nettle=true -Duse_mbedtls=false
+endif
+
+
 $(TARBALLS)/librist-$(LIBRIST_VERSION).tar.gz:
 	$(call download_pkg,$(LIBRIST_URL),librist)
 
@@ -32,7 +48,9 @@ $(TARBALLS)/librist-$(LIBRIST_VERSION).tar.gz:
 
 librist: librist-$(LIBRIST_VERSION).tar.gz .sum-librist
 	$(UNPACK)
+ifeq ($(LIBRIST_USE_GNUTLS),0)
 	$(APPLY) $(SRC)/librist/win32-timing.patch
+endif
 	$(MOVE)
 
 .librist: librist crossfile.meson
