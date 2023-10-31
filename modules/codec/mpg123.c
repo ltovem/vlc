@@ -264,17 +264,14 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
         i_err = mpg123_decode_frame( p_sys->p_handle, NULL, NULL, &i_bytes );
         if( i_err != MPG123_OK && i_err != MPG123_NEED_MORE )
         {
-            if( i_err == MPG123_NEW_FORMAT )
-            {
-                p_dec->fmt_out.audio.i_rate = 0;
-            }
-            else
+            if (i_err != MPG123_NEW_FORMAT)
             {
                 msg_Err( p_dec, "mpg123_decode_frame error: %s",
                          mpg123_plain_strerror( i_err ) );
                 date_Set( &p_sys->end_date, VLC_TICK_INVALID );
                 break;
             }
+            p_dec->fmt_out.audio.i_rate = 0;
         }
 
         if( i_bytes == 0 )
