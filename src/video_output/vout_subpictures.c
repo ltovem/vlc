@@ -1278,7 +1278,10 @@ static vlc_render_subpicture *SpuRenderSubpictures(spu_t *spu,
                 }
             }
 
-            vlc_spu_regions_push(&output->regions, output_last_ptr);
+            if (!vlc_spu_regions_push(&output->regions, output_last_ptr))
+            {
+                subpicture_region_Delete(output_last_ptr);
+            }
 
             if (subpic->b_subtitle) {
                 area = spu_area_unscaled(area, scale);
