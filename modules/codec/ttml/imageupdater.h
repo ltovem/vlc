@@ -103,6 +103,11 @@ static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
         subpicture_region_t *r = subpicture_region_ForPicture(&p_updtregion->p_pic->format, p_updtregion->p_pic);
         if (unlikely(r == NULL))
             return;
+        if (!vlc_spu_regions_push(&p_spu->regions, r))
+        {
+            subpicture_region_Delete(r);
+            return;
+        }
 
         r->i_align = SUBPICTURE_ALIGN_LEFT|SUBPICTURE_ALIGN_TOP;
 
@@ -115,8 +120,6 @@ static void TTML_ImageSpuUpdate(subpicture_t *p_spu,
             r->i_y = p_updtregion->origin.y * p_fmt_dst->i_visible_height;
         else
             r->i_y = p_updtregion->origin.y;
-
-        vlc_spu_regions_push(&p_spu->regions, r);
     }
 }
 

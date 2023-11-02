@@ -522,7 +522,11 @@ static void SubpictureUpdate( subpicture_t *p_subpic,
         RegionDraw( r, p_img );
 
         /* */
-        vlc_spu_regions_push(&p_subpic->regions, r);
+        if (!vlc_spu_regions_push(&p_subpic->regions, r))
+        {
+            subpicture_region_Delete( r );
+            break;
+        }
     }
     vlc_mutex_unlock( &p_sys->lock );
 

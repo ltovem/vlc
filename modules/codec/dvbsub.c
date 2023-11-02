@@ -1608,7 +1608,12 @@ static subpicture_t *render( decoder_t *p_dec )
         p_spu_region->i_x = i_base_x + p_regiondef->i_x;
         p_spu_region->i_y = i_base_y + p_regiondef->i_y;
         p_spu_region->i_align = p_sys->i_spu_position;
-        vlc_spu_regions_push(&p_spu->regions, p_spu_region);
+        if (!vlc_spu_regions_push(&p_spu->regions, p_spu_region))
+        {
+            msg_Err( p_dec, "cannot append SPU region" );
+            subpicture_region_Delete( p_spu_region );
+            continue;
+        }
 
         p_src = p_region->p_pixbuf;
         p_dst = p_spu_region->p_picture->Y_PIXELS;
@@ -1648,7 +1653,11 @@ static subpicture_t *render( decoder_t *p_dec )
             p_spu_region->i_x = i_base_x + p_regiondef->i_x + p_object_def->i_x;
             p_spu_region->i_y = i_base_y + p_regiondef->i_y + p_object_def->i_y;
             p_spu_region->i_align = p_sys->i_spu_position;
-            vlc_spu_regions_push(&p_spu->regions, p_spu_region);
+            if (!vlc_spu_regions_push(&p_spu->regions, p_spu_region))
+            {
+                msg_Err( p_dec, "cannot append SPU text region" );
+                subpicture_region_Delete( p_spu_region );
+            }
         }
     }
 

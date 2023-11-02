@@ -383,6 +383,14 @@ static subpicture_t *FilterSub(filter_t *p_filter, vlc_tick_t date)
         p_spu = NULL;
         goto exit;
     }
+    if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+    {
+        msg_Err(p_filter, "failed to append SPU region");
+        subpicture_region_Delete(p_region);
+        subpicture_Delete(p_spu);
+        p_spu = NULL;
+        goto exit;
+    }
 
     /* */
     picture_Copy(p_region->p_picture, p_pic);
@@ -398,8 +406,6 @@ static subpicture_t *FilterSub(filter_t *p_filter, vlc_tick_t date)
 
     p_region->i_x = p_sys->i_pos_x > 0 ? p_sys->i_pos_x : 0;
     p_region->i_y = p_sys->i_pos_y > 0 ? p_sys->i_pos_y : 0;
-
-    vlc_spu_regions_push(&p_spu->regions, p_region);
 
     p_spu->i_alpha = p_BarGraph->i_alpha ;
 

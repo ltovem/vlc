@@ -868,7 +868,14 @@ static int Render( decoder_t *p_dec, subpicture_t *p_spu,
         msg_Err( p_dec, "cannot allocate SPU region" );
         return VLC_EGENERIC;
     }
-    vlc_spu_regions_push(&p_spu->regions, p_region);
+    if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+    {
+        fmt.p_palette = NULL;
+        video_format_Clean( &fmt );
+        msg_Err( p_dec, "cannot append SPU region" );
+        subpicture_region_Delete( p_region );
+        return VLC_ENOMEM;
+    }
 
     p_region->i_x = p_spu_properties->i_x;
     p_region->i_y = p_spu_properties->i_y + p_spu_data->i_y_top_offset;

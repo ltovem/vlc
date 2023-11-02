@@ -1685,7 +1685,11 @@ static void subpictureUpdaterUpdate(subpicture_t *p_subpic,
         p_dst = subpicture_region_Copy(p_src);
         if (p_dst == NULL)
             break;
-        vlc_spu_regions_push(&p_subpic->regions, p_dst);
+        if (!vlc_spu_regions_push(&p_subpic->regions, p_dst))
+        {
+            subpicture_region_Delete(p_dst);
+            break;
+        }
     }
     p_overlay->status = Displayed;
 
@@ -1931,13 +1935,17 @@ static void blurayDrawOverlay(demux_t *p_demux, const BD_OVERLAY* const eventov)
             p_reg->i_x = eventov->x;
             p_reg->i_y = eventov->y;
             /* Append it to our list. */
-            vlc_spu_regions_push(&ov->regions, p_reg);
+            if (!vlc_spu_regions_push(&ov->regions, p_reg))
+            {
+                subpicture_region_Delete(p_reg);
+                p_reg = NULL;
+            }
         }
-        else
-        {
-            vlc_mutex_unlock(&ov->lock);
-            return;
-        }
+    }
+    if (!p_reg)
+    {
+        vlc_mutex_unlock(&ov->lock);
+        return;
     }
 
     /* Now we can update the region, regardless it's an update or an insert */
@@ -2044,11 +2052,16 @@ static void blurayDrawArgbOverlay(demux_t *p_demux, const BD_ARGB_OVERLAY* const
                            eventov->stride, ov->height,
                            ov->width, ov->height, 1, 1);
         p_reg = subpicture_region_New(&fmt);
-        if (unlikely(p_reg == NULL)) {
-            vlc_mutex_unlock(&ov->lock);
-            return;
+        if (unlikely(p_reg != NULL)) {
+            if (!vlc_spu_regions_push(&ov->regions, p_reg)) {
+                subpicture_region_Delete(p_reg);
+                p_reg = NULL;
+            }
         }
-        vlc_spu_regions_push(&ov->regions, p_reg);
+    }
+    if (unlikely(p_reg == NULL)) {
+        vlc_mutex_unlock(&ov->lock);
+        return;
     }
 
     /* Find a region to update */

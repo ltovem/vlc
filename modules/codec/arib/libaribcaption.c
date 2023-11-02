@@ -201,7 +201,11 @@ static void SubpictureUpdate(subpicture_t *p_subpic,
 
         CopyImageToRegion(region->p_picture, image);
 
-        vlc_spu_regions_push(&p_subpic->regions, region);
+        if (!vlc_spu_regions_push(&p_subpic->regions, region))
+        {
+            subpicture_region_Delete(region);
+            break;
+        }
     }
 
     aribcc_render_result_cleanup(&p_spusys->render_result);
