@@ -78,7 +78,9 @@ FocusScope {
 
     property real _availabeRowWidthLastUpdateTime: Date.now()
 
-    readonly property real _currentAvailableRowWidth: width - leftMargin - rightMargin
+    // NOTE: Account for contextButton's width, spacing and padding
+    readonly property real _currentAvailableRowWidth: availableWidth - (contentLeftMargin + contentRightMargin) -
+                                                      (VLCStyle.icon_normal + VLCStyle.column_spacing + VLCStyle.margin_xxxsmall)
 
     // Aliases
 
@@ -358,6 +360,8 @@ FocusScope {
 
             leftPadding: root.contentLeftMargin
             rightPadding: root.contentRightMargin
+
+            extraMargin: root.extraMargin
 
             dragItem: root.dragItem
 

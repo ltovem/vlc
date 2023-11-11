@@ -31,6 +31,8 @@ T.Control {
 
     // Properties
 
+    property int extraMargin: VLCStyle.margin_normal
+
     property var rowModel
     property var sortModel
 
@@ -212,11 +214,11 @@ T.Control {
             Widgets.IconToolButton {
                 id: contextButton
 
-                anchors.left: parent.left
+                anchors.right: parent.right
 
                 // NOTE: We want the contextButton to be contained inside the trailing
                 //       column_spacing.
-                anchors.leftMargin: -width
+                anchors.rightMargin: delegate.rightMargin - delegate.extraMargin
 
                 anchors.verticalCenter: parent.verticalCenter
 
