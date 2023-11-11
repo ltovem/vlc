@@ -249,10 +249,10 @@ MainInterface.MainViewLoader {
             //-------------------------------------------------------------------------------------
             // Properties
 
-            property int _columns: Math.max(1, VLCStyle.gridColumnsForWidth(availableRowWidth) - 2)
+            property real _nbCols: Math.max(1, VLCStyle.gridColumnsForWidth(availableRowWidth) - 2)
 
             property var _modelSmall: [{
-                size: Math.max(2, _columns),
+                size: Math.max(2, _nbCols),
 
                 model: {
                     criteria: "name",
@@ -278,7 +278,7 @@ MainInterface.MainViewLoader {
                     colDelegate   : columns.titleDelegate
                 }
             }, {
-                size: _columns,
+                size: _nbCols,
 
                 model: {
                     criteria: "name",

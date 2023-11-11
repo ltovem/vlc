@@ -42,7 +42,7 @@ MainInterface.MainTableView {
     //---------------------------------------------------------------------------------------------
     // Private
 
-    readonly property int _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
+    readonly property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
     property var _modelSmall: [{
         size: Math.max(2, _nbCols),

@@ -42,10 +42,10 @@ Widgets.KeyNavigableTableView {
     property alias parentId: rootmodel.parentId
 
     // Private
-    property int _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
+    property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
-    readonly property int _sizeA: Math.floor((_nbCols - 3) / 3)
-    readonly property int _sizeB: Math.floor((_nbCols - 2) / 2)
+    readonly property real _sizeA: (_nbCols - 3) / 3
+    readonly property real _sizeB: (_nbCols - 2) / 2
 
     property var _lineTitle: ({
         criteria: "title",

@@ -146,7 +146,7 @@ MainInterface.MainViewLoader {
         MainInterface.MainTableView {
             id: artistTable
 
-            readonly property int _nbCols: VLCStyle.gridColumnsForWidth(artistTable.availableRowWidth)
+            readonly property real _nbCols: VLCStyle.gridColumnsForWidth(artistTable.availableRowWidth)
 
             property var _modelSmall: [{
                 size: Math.max(2, artistTable._nbCols),

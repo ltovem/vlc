@@ -37,7 +37,7 @@ Widgets.KeyNavigableTableView {
     property alias sortOrder: urlModel.sortOrder
     property alias sortCriteria: urlModel.sortCriteria
 
-    readonly property int _nbCols: VLCStyle.gridColumnsForWidth(
+    readonly property real _nbCols: VLCStyle.gridColumnsForWidth(
                                        listView_id.availableRowWidth)
     property Component urlHeaderDelegate: Widgets.IconLabel {
         horizontalAlignment: Text.AlignHCenter

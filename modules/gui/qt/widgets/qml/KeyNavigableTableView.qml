@@ -47,8 +47,8 @@ FocusScope {
     // NOTE: We want edge to edge backgrounds in our delegate and header, so we implement our own
     //       margins implementation like in ExpandGridView. The default values should be the same
     //       than ExpandGridView to respect the grid parti pris.
-    property int leftMargin: VLCStyle.column_margin + leftPadding
-    property int rightMargin: VLCStyle.column_margin + rightPadding
+    property int leftMargin: VLCStyle.margin_normal + leftPadding
+    property int rightMargin: VLCStyle.margin_normal + rightPadding
 
     property int leftPadding: 0
     property int rightPadding: 0
@@ -58,15 +58,6 @@ FocusScope {
     // NOTE: The list margins for the item(s) horizontal positioning.
     readonly property int contentLeftMargin: extraMargin + leftMargin
     readonly property int contentRightMargin: extraMargin + rightMargin
-
-    readonly property real usedRowSpace: {
-        let size = leftMargin + rightMargin
-
-        for (let i in sortModel)
-            size += VLCStyle.colWidth(sortModel[i].size)
-
-        return size + Math.max(VLCStyle.column_spacing * (sortModel.length - 1), 0)
-    }
 
     property Component header: null
     property Item headerItem: view.headerItem ? view.headerItem.loadedHeader : null

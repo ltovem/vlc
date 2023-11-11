@@ -35,7 +35,7 @@ MainInterface.MainTableView {
     // Properties
     //---------------------------------------------------------------------------------------------
 
-    readonly property int columns: VLCStyle.gridColumnsForWidth(root.availableRowWidth)
+    readonly property real _nbCols: VLCStyle.gridColumnsForWidth(root.availableRowWidth)
 
     property bool isMusic
 
@@ -47,7 +47,7 @@ MainInterface.MainTableView {
     property bool _before: true
 
     property var _modelSmall: [{
-        size: Math.max(2, columns),
+        size: Math.max(2, _nbCols),
 
         model: {
             criteria: "title",
@@ -79,7 +79,7 @@ MainInterface.MainTableView {
             placeHolder: VLCStyle.noArtAlbumCover
         }
     }, {
-        size: Math.max(1, columns - 2),
+        size: Math.max(1, _nbCols - 2),
 
         model: {
             criteria: "title",

@@ -326,7 +326,7 @@ QtObject {
 
     //Returns the number columns fitting in given width
     function gridColumnsForWidth(width) {
-        return Math.floor((width + column_spacing) / (column_width + column_spacing))
+        return (width + column_spacing) / (column_width + column_spacing)
     }
 
     //dynamic margins based on screen width

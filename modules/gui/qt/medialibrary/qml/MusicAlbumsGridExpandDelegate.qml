@@ -365,7 +365,7 @@ FocusScope {
 
             fadingEdge.backgroundColor: headerColor
 
-            readonly property int _nbCols: VLCStyle.gridColumnsForWidth(tracks.availableRowWidth)
+            readonly property real _nbCols: VLCStyle.gridColumnsForWidth(tracks.availableRowWidth)
 
             property Component titleDelegate: RowLayout {
                 property var rowModel: parent.rowModel

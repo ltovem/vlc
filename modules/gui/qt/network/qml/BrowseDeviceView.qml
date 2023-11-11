@@ -235,9 +235,9 @@ FocusScope {
 
             readonly property int nbItemPerRow: 1
 
-            readonly property int _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
+            readonly property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
-            readonly property int _size: (_nbCols - 1) / 2
+            readonly property real _size: (_nbCols - 1) / 2
 
             property var _modelSmall: [{
                 size: Math.max(2, _nbCols),

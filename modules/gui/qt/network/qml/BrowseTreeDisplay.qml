@@ -209,8 +209,8 @@ MainInterface.MainViewLoader {
         MainInterface.MainTableView {
             id: tableView
 
-            readonly property int _nbCols: VLCStyle.gridColumnsForWidth(tableView.availableRowWidth)
-            readonly property int _nameColSpan: Math.max((_nbCols - 1) / 2, 1)
+            readonly property real _nbCols: VLCStyle.gridColumnsForWidth(tableView.availableRowWidth)
+            readonly property real _nameColSpan: Math.max((_nbCols - 1) / 2, 1)
             property Component thumbnailHeader: Widgets.IconLabel {
                 height: VLCStyle.listAlbumCover_height
                 width: VLCStyle.listAlbumCover_width
