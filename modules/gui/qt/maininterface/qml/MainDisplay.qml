@@ -296,8 +296,8 @@ FocusScope {
                         id: playlistColumn
                         anchors {
                             top: parent.top
-                            right: parent.right
                         }
+                        z: 1
                         focus: false
 
                         implicitWidth: VLCStyle.isScreenSmall
@@ -305,32 +305,41 @@ FocusScope {
                                        : Helpers.clamp(g_mainDisplay.width / resizeHandle.widthFactor,
                                                        playlist.minimumWidth,
                                                        g_mainDisplay.width / 2)
-                        width: 0
                         height: parent.height - g_mainDisplay.displayMargin
 
                         visible: false
 
-                        state: (MainCtx.playlistDocked && MainCtx.playlistVisible) ? "expanded" : ""
+                        state: (MainCtx.playlistDocked && MainCtx.playlistVisible) ? "expanded" : "hidden"
 
-                        states: State {
-                            name: "expanded"
-                            PropertyChanges {
-                                target: playlistColumn
-                                width: Math.round(playlistColumn.implicitWidth)
-                                visible: true
+                        states: [
+                            State {
+                                name: "expanded"
+                                PropertyChanges {
+                                    target: playlistColumn
+                                    x: playlistColumn.parent.width - playlistColumn.width
+                                    visible: true
+                                }
+                            },
+                            State {
+                                name: "hidden"
+                                PropertyChanges {
+                                    target: playlistColumn
+                                    x: playlistColumn.parent.width
+                                    visible: false
+                                }
                             }
-                        }
+                        ]
 
                         transitions: Transition {
-                            from: ""; to: "expanded";
+                            from: "hidden"; to: "expanded";
                             reversible: true
 
                             SequentialAnimation {
                                 PropertyAction { property: "visible" }
 
                                 NumberAnimation {
-                                    property: "width"
-                                    duration: VLCStyle.duration_short
+                                    property: "x"
+                                    duration: VLCStyle.duration_long
                                     easing.type: Easing.InOutSine
                                 }
                             }
