@@ -291,7 +291,14 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         p_spu = NULL;
         goto out;
     }
-    vlc_spu_regions_push( &p_spu->regions, p_region );
+    if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+    {
+        msg_Err(p_filter, "failed to append SPU region");
+        subpicture_region_Delete(p_region);
+        subpicture_Delete(p_spu);
+        p_spu = NULL;
+        goto out;
+    }
     p_region->fmt.i_sar_den = p_region->fmt.i_sar_num = 1;
 
     p_sys->last_time = date;

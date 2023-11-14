@@ -290,7 +290,10 @@ static void OSDWidgetUpdate(subpicture_t *subpic,
     else
         p_region = OSDIcon(sys->type, &fmt);
     if (p_region)
-        vlc_spu_regions_push(&subpic->regions, p_region);
+    {
+        if (!vlc_spu_regions_push(&subpic->regions, p_region))
+            subpicture_region_Delete(p_region);
+    }
 }
 
 static void OSDWidgetDestroy(subpicture_t *subpic)

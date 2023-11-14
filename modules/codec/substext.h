@@ -172,7 +172,11 @@ static void SubpictureTextUpdate(subpicture_t *subpic,
         subpicture_region_t *r = subpicture_region_NewText();
         if (!r)
             return;
-        vlc_spu_regions_push(&subpic->regions, r);
+        if (!vlc_spu_regions_push(&subpic->regions, r))
+        {
+            subpicture_region_Delete( r );
+            return;
+        }
         video_format_Copy( &r->fmt, &fmt );
 
         r->p_text = text_segment_Copy( p_updtregion->p_segments );

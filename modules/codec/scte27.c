@@ -395,7 +395,12 @@ static subpicture_t *DecodeSubtitleMessage(decoder_t *dec,
     sub->b_ephemer = true;
     sub->i_start = date;
     sub->i_stop = date + display_duration * frame_duration;
-    vlc_spu_regions_push(&sub->regions, region);
+    if (!vlc_spu_regions_push(&sub->regions, region))
+    {
+        subpicture_region_Delete(region);
+        subpicture_Delete(sub);
+        sub = NULL;
+    }
 
     return sub;
 

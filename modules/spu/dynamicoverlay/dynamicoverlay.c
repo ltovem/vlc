@@ -366,6 +366,11 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         {
             break;
         }
+        if (!vlc_spu_regions_push( &p_spu->regions, p_region ))
+        {
+            subpicture_region_Delete( p_region );
+            break;
+        }
 
         msg_Dbg( p_filter, "Displaying overlay: %4.4s, %d, %d, %d",
                  (char*)&p_overlay->format.i_chroma, p_overlay->i_x, p_overlay->i_y,
@@ -381,7 +386,6 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         p_region->i_y = p_overlay->i_y;
         p_region->i_align = SUBPICTURE_ALIGN_LEFT | SUBPICTURE_ALIGN_TOP;
         p_region->i_alpha = p_overlay->i_alpha;
-        vlc_spu_regions_push( &p_spu->regions, p_region );
     }
 
     p_sys->b_updated = false;

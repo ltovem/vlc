@@ -558,7 +558,13 @@ static subpicture_t *Subpicture( decoder_t *p_dec,
         subpicture_Delete( p_spu );
         return NULL;
     }
-    vlc_spu_regions_push(&p_spu->regions, p_region);
+    if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+    {
+        msg_Err( p_dec, "cannot append SPU region" );
+        subpicture_region_Delete( p_region );
+        subpicture_Delete( p_spu );
+        return NULL;
+    }
 
     p_spu->i_start = i_pts;
     p_spu->i_stop = b_text ? i_pts + VLC_TICK_FROM_SEC(10): 0;

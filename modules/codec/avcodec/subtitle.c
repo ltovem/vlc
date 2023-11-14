@@ -356,7 +356,11 @@ static subpicture_t *ConvertSubtitle(decoder_t *dec, AVSubtitle *ffsub, vlc_tick
             break;
         }
         if (region) {
-            vlc_spu_regions_push(&spu->regions, region);
+            if (!vlc_spu_regions_push(&spu->regions, region))
+            {
+                msg_Err(dec, "failed to append subtitle");
+                subpicture_region_Delete(region);
+            }
         }
     }
     avsubtitle_free(ffsub);

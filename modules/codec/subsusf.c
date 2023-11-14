@@ -895,12 +895,17 @@ static void ParseUSFString( decoder_t *p_dec,
 
         if( p_region )
         {
-            vlc_spu_regions_push(regions, p_region);
-
-            /* Look for position arguments which may override the style-based
-            * defaults.
-            */
-            SetupPositions( p_region, psz_subtitle );
+            if (!vlc_spu_regions_push(regions, p_region))
+            {
+                subpicture_region_Delete( p_region );
+            }
+            else
+            {
+                /* Look for position arguments which may override the style-based
+                * defaults.
+                */
+                SetupPositions( p_region, psz_subtitle );
+            }
         }
 
         if( psz_end )

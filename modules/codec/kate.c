@@ -899,7 +899,11 @@ static void TigerUpdateSubpicture( subpicture_t *p_subpic,
     PROFILE_STOP( tiger_renderer_render );
 
     PostprocessTigerImage( p_plane, fmt.i_width );
-    vlc_spu_regions_push( &p_subpic->regions, p_r );
+    if (!vlc_spu_regions_push( &p_subpic->regions, p_r ))
+    {
+        goto failure;
+    }
+    p_r = NULL;
     p_sys->b_dirty = false;
 
     PROFILE_STOP( TigerUpdateSubpicture );
@@ -1083,6 +1087,7 @@ static subpicture_t *SetupSimpleKateSPU( decoder_t *p_dec, subpicture_t *p_spu,
 {
     decoder_sys_t *p_sys = p_dec->p_sys;
     subpicture_region_t *p_bitmap_region = NULL;
+    subpicture_region_t *p_region = NULL;
     video_palette_t palette;
     kate_tracker kin;
     bool b_tracker_valid = false;
@@ -1133,8 +1138,7 @@ static subpicture_t *SetupSimpleKateSPU( decoder_t *p_dec, subpicture_t *p_spu,
         if( !p_bitmap_region )
         {
             msg_Err( p_dec, "cannot allocate SPU region" );
-            subpicture_Delete( p_spu );
-            return NULL;
+            goto error;
         }
 
         /* create the bitmap */
@@ -1144,14 +1148,11 @@ static subpicture_t *SetupSimpleKateSPU( decoder_t *p_dec, subpicture_t *p_spu,
     }
 
     /* text region */
-    subpicture_region_t *p_region = subpicture_region_NewText();
+    p_region = subpicture_region_NewText();
     if( unlikely(p_region == NULL) )
     {
         msg_Err( p_dec, "cannot allocate SPU region" );
-        if( p_bitmap_region )
-            subpicture_region_Delete( p_bitmap_region );
-        subpicture_Delete( p_spu );
-        return NULL;
+        goto error;
     }
     p_region->fmt.i_sar_num = 0;
     p_region->fmt.i_sar_den = 1;
@@ -1188,11 +1189,22 @@ static subpicture_t *SetupSimpleKateSPU( decoder_t *p_dec, subpicture_t *p_spu,
     /* if we have a bitmap, chain it before the text */
     if (p_bitmap_region)
     {
-        vlc_spu_regions_push(&p_spu->regions, p_bitmap_region);
+        if (!vlc_spu_regions_push(&p_spu->regions, p_bitmap_region))
+            goto error;
+        p_bitmap_region = NULL;
     }
-    vlc_spu_regions_push(&p_spu->regions, p_region);
+    if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+        goto error;
+    p_region = NULL;
 
     return p_spu;
+error:
+    if (p_bitmap_region)
+        subpicture_region_Delete( p_bitmap_region );
+    if (p_region)
+        subpicture_region_Delete( p_region );
+    subpicture_Delete( p_spu );
+    return NULL;
 }
 
 /*****************************************************************************

@@ -30,7 +30,7 @@
 
 #include <vlc_picture.h>
 #include <vlc_text_style.h>
-#include <vlc_list.h>
+#include <vlc_vector.h>
 
 /**
  * \defgroup subpicture Video sub-pictures
@@ -84,24 +84,28 @@ struct subpicture_region_t
     vlc_rational_t  zoom_h;
     vlc_rational_t  zoom_v;
 
-    struct vlc_list node;             /**< for inclusion in a vlc_spu_regions */
     subpicture_region_private_t *p_private;  /**< Private data for spu_t *only* */
 };
 
-typedef struct vlc_list vlc_spu_regions;
+typedef struct VLC_VECTOR(subpicture_region_t *) vlc_spu_regions;
 
 #define vlc_spu_regions_init(p_rs) \
-    vlc_list_init((p_rs))
+    vlc_vector_init((p_rs))
 #define vlc_spu_regions_push(p_rs,reg) \
-    vlc_list_append(&(reg)->node, (p_rs))
+    vlc_vector_push((p_rs), (reg))
 #define vlc_spu_regions_foreach(reg,p_rs) \
-    vlc_list_foreach(reg, (p_rs), node)
+    vlc_vector_foreach(reg, (p_rs))
 #define vlc_spu_regions_is_empty(p_rs) \
-    vlc_list_is_empty((p_rs))
+    ((p_rs)->size == 0)
 #define vlc_spu_regions_first_or_null(p_rs) \
-    vlc_list_first_entry_or_null((p_rs), subpicture_region_t, node)
+    ((subpicture_region_t *)((p_rs)->size == 0 ? NULL : (p_rs)->data[0]))
 #define vlc_spu_regions_remove(p_rs, reg) \
-    vlc_list_remove(&(reg)->node)
+    do { \
+        ssize_t ridx; \
+        vlc_vector_index_of((p_rs), (reg), &ridx); \
+        if(ridx >= 0) \
+            vlc_vector_remove((p_rs), ridx); \
+    } while (0)
 
 struct vlc_spu_highlight_t
 {

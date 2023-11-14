@@ -328,7 +328,10 @@ static void vout_FillRightPanel(epg_spu_updater_sys_t *p_sys,
                                 height * EPGOSD_TEXTSIZE_NAME,
                                 0x00ffffff);
     if(last)
-        vlc_spu_regions_push(regions, last);
+    {
+        if (!vlc_spu_regions_push(regions, last))
+            subpicture_region_Delete(last);
+    }
 
     const vlc_epg_event_t *p_current = p_sys->epg->p_current;
     vlc_epg_event_t *p_next = NULL;
@@ -353,9 +356,10 @@ static void vout_FillRightPanel(epg_spu_updater_sys_t *p_sys,
                                      height * EPGOSD_TEXTSIZE_PROG);
         if(last)
         {
+            if (!vlc_spu_regions_push(regions, last))
+                subpicture_region_Delete(last);
             /* region rendering limits */
             vout_OSDRegionConstrain(last, width, 0);
-            vlc_spu_regions_push(regions, last);
         }
     }
 
@@ -368,9 +372,10 @@ static void vout_FillRightPanel(epg_spu_updater_sys_t *p_sys,
                                      height * EPGOSD_TEXTSIZE_PROG);
         if(last)
         {
+            if (!vlc_spu_regions_push(regions, last))
+                subpicture_region_Delete(last);
             /* region rendering limits */
             vout_OSDRegionConstrain(last, width, 0);
-            vlc_spu_regions_push(regions, last);
         }
     }
 
@@ -387,7 +392,10 @@ static void vout_FillRightPanel(epg_spu_updater_sys_t *p_sys,
                                   height * OSDEPG_ROWS(1),
                                   f_progress);
     if (last)
-        vlc_spu_regions_push(regions, last);
+    {
+        if (!vlc_spu_regions_push(regions, last))
+            subpicture_region_Delete(last);
+    }
 
     /* Format the hours */
     if(p_sys->time)
@@ -403,8 +411,9 @@ static void vout_FillRightPanel(epg_spu_updater_sys_t *p_sys,
             free(psz_network);
             if(last)
             {
+                if (!vlc_spu_regions_push(regions, last))
+                    subpicture_region_Delete(last);
                 last->i_align = SUBPICTURE_ALIGN_TOP|SUBPICTURE_ALIGN_RIGHT;
-                vlc_spu_regions_push(regions, last);
             }
         }
     }
@@ -426,7 +435,10 @@ static void vout_BuildOSDEpg(epg_spu_updater_sys_t *p_sys,
                                    visible_height * OSDEPG_HEIGHT,
                                    ARGB_BGCOLOR);
     if(last)
-        vlc_spu_regions_push(regions, last);
+    {
+        if (!vlc_spu_regions_push(regions, last))
+            subpicture_region_Delete(last);
+    }
 
     struct
     {
@@ -467,7 +479,10 @@ static void vout_BuildOSDEpg(epg_spu_updater_sys_t *p_sys,
                                        logo.h,
                                        0xFF000000 | RGB_COLOR1);
         if(last)
-            vlc_spu_regions_push(regions, last);
+        {
+            if (!vlc_spu_regions_push(regions, last))
+                subpicture_region_Delete(last);
+        }
 
         int logo_padding = visible_height * (OSDEPG_LOGO_SIZE * OSDEPG_PADDING);
         last = vout_OSDImage( p_sys->obj,
@@ -477,7 +492,10 @@ static void vout_BuildOSDEpg(epg_spu_updater_sys_t *p_sys,
                                    logo.h - 2 * logo_padding,
                                    p_sys->art );
         if(last)
-            vlc_spu_regions_push(regions, last);
+        {
+            if (!vlc_spu_regions_push(regions, last))
+                subpicture_region_Delete(last);
+        }
 
         /* shrink */
         panel.x += logo.w + i_padding;

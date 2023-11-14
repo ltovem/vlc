@@ -409,7 +409,13 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         vlc_mutex_unlock( &p_sys->lock );
         return NULL;
     }
-    vlc_spu_regions_push( &p_spu->regions, region );
+    if (!vlc_spu_regions_push( &p_spu->regions, region ))
+    {
+        subpicture_region_Delete( region );
+        subpicture_Delete( p_spu );
+        vlc_mutex_unlock( &p_sys->lock );
+        return NULL;
+    }
 
     /* Generate the string that will be displayed. This string is supposed to
        be p_sys->i_length characters long. */
@@ -515,11 +521,15 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         {
             msg_Err( p_filter, "cannot allocate SPU region" );
         }
+        else if (!vlc_spu_regions_push( &p_spu->regions, p_region ))
+        {
+            msg_Err( p_filter, "failed to append SPU region" );
+            subpicture_region_Delete(p_region);
+        }
         else
         {
             p_region->i_x = region->i_x;
             p_region->i_y = region->i_y;
-            vlc_spu_regions_push( &p_spu->regions, p_region );
 
             /* Offset text to display right next to the image */
             region->i_x += fmt_out.i_visible_width;

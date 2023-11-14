@@ -479,11 +479,6 @@ static bool IsSubpictureDrawNeeded(vout_display_t *vd, const vlc_render_subpictu
         return true;
     }
 
-    size_t count = 0;
-    subpicture_region_t *r;
-    vlc_spu_regions_foreach(r, &subpicture->regions)
-        count++;
-
     if (!sys.subpicture || subpicture->i_order != sys.subpicture.order)
     {
         /* Subpicture content is different */
@@ -496,9 +491,11 @@ static bool IsSubpictureDrawNeeded(vout_display_t *vd, const vlc_render_subpictu
 
     bool draw = false;
 
+    size_t count = subpicture->regions.size;
     if (count == sys.subpicture.regions.count)
     {
         size_t i = 0;
+        subpicture_region_t *r;
         vlc_spu_regions_foreach(r, &subpicture->regions)
         {
             VLCSampleBufferSubpictureRegion *region =

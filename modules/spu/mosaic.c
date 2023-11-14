@@ -653,9 +653,18 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
             video_format_Clean( &fmt_out );
             msg_Err( p_filter, "cannot allocate SPU region" );
             subpicture_Delete( p_spu );
-            vlc_global_unlock( VLC_MOSAIC_MUTEX );
-            vlc_mutex_unlock( &p_sys->lock );
-            return NULL;
+            p_spu = NULL;
+            break;
+        }
+        if (!vlc_spu_regions_push(&p_spu->regions, p_region))
+        {
+            msg_Err(p_filter, "failed to append SPU region");
+            subpicture_region_Delete(p_region);
+            video_format_Clean( &fmt_in );
+            video_format_Clean( &fmt_out );
+            subpicture_Delete( p_spu );
+            p_spu = NULL;
+            break;
         }
 
         if( p_es->i_x >= 0 && p_es->i_y >= 0 )
@@ -708,8 +717,6 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         }
         p_region->i_align = p_sys->i_align;
         p_region->i_alpha = p_es->i_alpha;
-
-        vlc_spu_regions_push(&p_spu->regions, p_region);
 
         video_format_Clean( &fmt_in );
         video_format_Clean( &fmt_out );
