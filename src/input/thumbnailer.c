@@ -265,7 +265,7 @@ vlc_thumbnailer_RequestByTime( vlc_thumbnailer_t *thumbnailer,
 {
     struct seek_target seek_target = {
         .type = VLC_THUMBNAILER_SEEK_TIME,
-        .time = time,
+        .time = VLC_TICK_0 + time,
     };
     return RequestCommon(thumbnailer, seek_target, speed, item, timeout, cb,
                          userdata);
