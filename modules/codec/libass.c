@@ -78,12 +78,14 @@ typedef struct
 {
     vlc_tick_t     i_last_pts;
     vlc_tick_t     i_max_stop;
+    int            i_scale;
 
     /* The following fields of decoder_sys_t are shared between decoder and spu units */
     vlc_mutex_t    lock;
     int            i_refcount;
 
     /* */
+    vlc_object_t   *p_obj;
     ASS_Library    *p_library;
     ASS_Renderer   *p_renderer;
     video_format_t fmt;
@@ -148,9 +150,11 @@ static int Create( vlc_object_t *p_this )
     /* */
     vlc_mutex_init( &p_sys->lock );
     p_sys->i_refcount = 1;
+    p_sys->p_obj = p_this;
     video_format_Init( &p_sys->fmt, 0 );
     p_sys->i_last_pts = VLC_TICK_INVALID;
     p_sys->i_max_stop = VLC_TICK_INVALID;
+    p_sys->i_scale = var_InheritInteger( p_dec, "sub-text-scale" );
     p_sys->p_library  = NULL;
     p_sys->p_renderer = NULL;
     p_sys->p_track    = NULL;
@@ -294,8 +298,13 @@ static int Create( vlc_object_t *p_this )
 static void Destroy( vlc_object_t *p_this )
 {
     decoder_t *p_dec = (decoder_t *)p_this;
+    decoder_sys_t *p_sys = p_dec->p_sys;
 
-    DecSysRelease( p_dec->p_sys );
+    vlc_mutex_lock( &p_sys->lock );
+    p_sys->p_obj = NULL;
+    vlc_mutex_unlock( &p_sys->lock );
+
+    DecSysRelease( p_sys );
 }
 
 static void DecSysHold( decoder_sys_t *p_sys )
@@ -445,6 +454,16 @@ static int SubpictureValidate( subpicture_t *p_subpic,
         const double dst_ratio = (double)p_fmt_dst->i_visible_width / p_fmt_dst->i_visible_height;
         ass_set_aspect_ratio( p_sys->p_renderer, dst_ratio / src_ratio, 1 );
         p_sys->fmt = fmt;
+    }
+
+    if( p_sys->p_obj )
+    {
+        int scale = var_InheritInteger( p_sys->p_obj, "sub-text-scale" );
+        if( scale != p_sys->i_scale )
+        {
+            ass_set_font_scale( p_sys->p_renderer, scale / 100.0 );
+            p_sys->i_scale = scale;
+        }
     }
 
     /* */
