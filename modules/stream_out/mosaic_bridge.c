@@ -29,6 +29,8 @@
 # include "config.h"
 #endif
 
+#include <limits.h>
+
 #include <vlc_common.h>
 #include <vlc_threads.h>
 #include <vlc_configuration.h>
@@ -151,8 +153,10 @@ vlc_module_begin ()
     add_string( CFG_PREFIX "id", "Id", ID_TEXT, ID_LONGTEXT )
     add_integer( CFG_PREFIX "width", 0, WIDTH_TEXT,
                  WIDTH_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( CFG_PREFIX "height", 0, HEIGHT_TEXT,
                  HEIGHT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_string( CFG_PREFIX "sar", "1:1", RATIO_TEXT,
                 RATIO_LONGTEXT )
     add_string( CFG_PREFIX "chroma", NULL, CHROMA_TEXT, CHROMA_LONGTEXT )

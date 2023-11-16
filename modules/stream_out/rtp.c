@@ -73,6 +73,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -111,10 +112,10 @@
     "This allows you to specify the base port for the RTP streaming." )
 #define PORT_AUDIO_TEXT N_("Audio port")
 #define PORT_AUDIO_LONGTEXT N_( \
-    "This allows you to specify the default audio port for the RTP streaming." )
+    "This allows you to specify the default audio port for the RTP streaming. (0 to disable)." )
 #define PORT_VIDEO_TEXT N_("Video port")
 #define PORT_VIDEO_LONGTEXT N_( \
-    "This allows you to specify the default video port for the RTP streaming." )
+    "This allows you to specify the default video port for the RTP streaming. (0 to disable)." )
 
 #define TTL_TEXT N_("Hop limit (TTL)")
 #define TTL_LONGTEXT N_( \
@@ -205,21 +206,23 @@ vlc_module_begin ()
     add_string( SOUT_CFG_PREFIX "proto", "udp", PROTO_TEXT,
                 PROTO_LONGTEXT )
         change_string_list( ppsz_protos, ppsz_protocols )
-    add_integer( SOUT_CFG_PREFIX "port", 5004, PORT_TEXT,
+    add_integer_with_range( SOUT_CFG_PREFIX "port", 5004, 1, 65535, PORT_TEXT,
                  PORT_LONGTEXT )
-    add_integer( SOUT_CFG_PREFIX "port-audio", 0, PORT_AUDIO_TEXT,
-                 PORT_AUDIO_LONGTEXT )
-    add_integer( SOUT_CFG_PREFIX "port-video", 0, PORT_VIDEO_TEXT,
-                 PORT_VIDEO_LONGTEXT )
+    add_integer_with_range( SOUT_CFG_PREFIX "port-audio", 0, 0, 65535,
+                            PORT_AUDIO_TEXT, PORT_AUDIO_LONGTEXT )
+    add_integer_with_range( SOUT_CFG_PREFIX "port-video", 0, 0, 65535,
+                            PORT_VIDEO_TEXT, PORT_VIDEO_LONGTEXT )
 
     add_integer( SOUT_CFG_PREFIX "ttl", -1, TTL_TEXT,
                  TTL_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_bool( SOUT_CFG_PREFIX "rtcp-mux", false,
               RTCP_MUX_TEXT, RTCP_MUX_LONGTEXT )
     add_integer( SOUT_CFG_PREFIX "caching", MS_FROM_VLC_TICK(DEFAULT_PTS_DELAY),
                  CACHING_TEXT, CACHING_LONGTEXT )
     add_integer( "rtsp-timeout", 60, RTSP_TIMEOUT_TEXT,
                  RTSP_TIMEOUT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_string( "sout-rtsp-user", "",
                 RTSP_USER_TEXT, RTSP_USER_LONGTEXT )
     add_password("sout-rtsp-pwd", "", RTSP_PASS_TEXT, RTSP_PASS_LONGTEXT)

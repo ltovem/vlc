@@ -222,10 +222,12 @@ vlc_module_begin ()
     add_string(SOUT_CFG_PREFIX "ip", NULL, NULL, NULL)
         change_private()
     add_integer(SOUT_CFG_PREFIX "port", CHROMECAST_CONTROL_PORT, NULL, NULL)
+        change_integer_range( 1, 65535 )
         change_private()
     add_bool(SOUT_CFG_PREFIX "video", true, NULL, NULL)
         change_private()
     add_integer(SOUT_CFG_PREFIX "http-port", HTTP_PORT, HTTP_PORT_TEXT, HTTP_PORT_LONGTEXT)
+        change_integer_range( 1, 65535 )
     add_obsolete_string(SOUT_CFG_PREFIX "mux") /* since 4.0.0 */
     add_obsolete_string(SOUT_CFG_PREFIX "mime") /* since 4.0.0 */
     add_renderer_opts(SOUT_CFG_PREFIX)

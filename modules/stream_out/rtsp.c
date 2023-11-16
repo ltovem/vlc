@@ -94,7 +94,7 @@ rtsp_stream_t *RtspSetup( vlc_object_t *owner, const char *path )
     rtsp->owner = owner;
     vlc_mutex_init( &rtsp->lock );
 
-    rtsp->timeout = vlc_tick_from_sec(__MAX(0,var_InheritInteger(owner, "rtsp-timeout")));
+    rtsp->timeout = vlc_tick_from_sec(var_InheritInteger(owner, "rtsp-timeout"));
     if (rtsp->timeout != 0)
     {
         if (vlc_timer_create(&rtsp->timer, RtspTimeOut, rtsp))
