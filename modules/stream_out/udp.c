@@ -88,7 +88,7 @@ static session_descriptor_t *CreateSDP(vlc_object_t *obj, int fd)
         struct sockaddr_in in;
         struct sockaddr_in6 in6;
     } src, dst;
-    socklen_t srclen = sizeof (srclen), dstlen = sizeof (dst);
+    socklen_t srclen = sizeof (src), dstlen = sizeof (dst);
     char dhost[INET6_ADDRSTRLEN];
     unsigned short dport;
 
