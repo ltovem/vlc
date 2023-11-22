@@ -366,15 +366,15 @@ static int SetInputType(decoder_t *p_dec, DWORD stream_id, const GUID & mSubtype
 
     if (p_dec->fmt_in->i_cat == VIDEO_ES)
     {
-        UINT64 width = p_dec->fmt_in->video.i_width;
-        UINT64 height = p_dec->fmt_in->video.i_height;
+        UINT32 width = p_dec->fmt_in->video.i_width;
+        UINT32 height = p_dec->fmt_in->video.i_height;
         hr = MFSetAttributeSize(input_media_type.Get(), MF_MT_FRAME_SIZE, width, height);
         if (FAILED(hr))
             goto error;
 
         /* Some transforms like to know the frame rate and may reject the input type otherwise. */
-        UINT64 frame_ratio_num = p_dec->fmt_in->video.i_frame_rate;
-        UINT64 frame_ratio_dem = p_dec->fmt_in->video.i_frame_rate_base;
+        UINT32 frame_ratio_num = p_dec->fmt_in->video.i_frame_rate;
+        UINT32 frame_ratio_dem = p_dec->fmt_in->video.i_frame_rate_base;
         if(frame_ratio_num && frame_ratio_dem) {
             hr = MFSetAttributeRatio(input_media_type.Get(), MF_MT_FRAME_RATE, frame_ratio_num, frame_ratio_dem);
             if(FAILED(hr))
