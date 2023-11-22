@@ -418,7 +418,7 @@ static int SetInputType(decoder_t *p_dec, DWORD stream_id, const GUID & mSubtype
         }
     }
 
-    if (p_dec->fmt_in->i_extra > 0)
+    if (p_dec->fmt_in->i_extra > 0 && p_dec->fmt_in->i_codec == VLC_CODEC_H264)
     {
         UINT32 blob_size = 0;
         hr = input_media_type->GetBlobSize(MF_MT_USER_DATA, &blob_size);
