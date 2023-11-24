@@ -570,7 +570,6 @@ check_functions = [
     ['mkostemp',         '#include <unistd.h>'],
     ['mkostemp',         '#include <stdlib.h>'],
     ['mmap',             '#include <sys/mman.h>'],
-    ['open_memstream',   '#include <stdio.h>'],
     ['pipe2',            '#include <unistd.h>'],
     ['posix_fadvise',    '#include <fcntl.h>'],
     ['strcoll',          '#include <string.h>'],
