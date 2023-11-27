@@ -95,47 +95,51 @@ static int cue_Compare( const void *a_, const void *b_ )
 
 static block_t *ConvertWEBVTT( const webvtt_cue_t *p_cue, bool b_continued )
 {
-    struct vlc_memstream stream;
-
-    if( vlc_memstream_open( &stream ) )
-        return NULL;
-
     const size_t paylsize = 8 + strlen( p_cue->psz_text );
     const size_t idensize = (p_cue->psz_id) ? 8 + strlen( p_cue->psz_id ) : 0;
     const size_t attrsize = (p_cue->psz_attrs) ? 8 + strlen( p_cue->psz_attrs ) : 0;
     const size_t vttcsize = 8 + paylsize + attrsize + idensize;
 
+    char *b = malloc( vttcsize );
+    if (unlikely(b == NULL))
+        return NULL;
+    char *heap_buf = b;
+
     uint8_t vttcbox[8] = { 0, 0, 0, 0, 'v', 't', 't', 'c' };
     if( b_continued )
         vttcbox[7] = 'x';
     SetDWBE( vttcbox, vttcsize );
-    vlc_memstream_write( &stream, vttcbox, 8 );
+    memcpy( b, vttcbox, 8 );
+    b += 8;
 
     if( p_cue->psz_id )
     {
         uint8_t idenbox[8] = { 0, 0, 0, 0, 'i', 'd', 'e', 'n' };
         SetDWBE( idenbox, idensize );
-        vlc_memstream_write( &stream, idenbox, 8 );
-        vlc_memstream_write( &stream, p_cue->psz_id, idensize - 8 );
+        memcpy( b, vttcbox, 8 );
+        b += 8;
+        memcpy( b, p_cue->psz_id, idensize - 8 );
+        b += idensize - 8;
     }
 
     if( p_cue->psz_attrs )
     {
         uint8_t attrbox[8] = { 0, 0, 0, 0, 's', 't', 't', 'g' };
         SetDWBE( attrbox, attrsize );
-        vlc_memstream_write( &stream, attrbox, 8 );
-        vlc_memstream_write( &stream, p_cue->psz_attrs, attrsize - 8 );
+        memcpy( b, attrbox, 8 );
+        b += 8;
+        memcpy( b, p_cue->psz_attrs, attrsize - 8 );
+        b += attrsize - 8;
     }
 
     uint8_t paylbox[8] = { 0, 0, 0, 0, 'p', 'a', 'y', 'l' };
     SetDWBE( paylbox, paylsize );
-    vlc_memstream_write( &stream, paylbox, 8 );
-    vlc_memstream_write( &stream, p_cue->psz_text, paylsize - 8 );
+    memcpy( b, paylbox, 8 );
+    b += 8;
+    memcpy( b, p_cue->psz_text, paylsize - 8 );
+    b += paylsize - 8;
 
-    if( vlc_memstream_close( &stream ) == VLC_SUCCESS )
-        return block_heap_Alloc( stream.ptr, stream.length );
-    else
-        return NULL;
+    return block_heap_Alloc( heap_buf, vttcsize );
 }
 
 struct memstream_wrap
