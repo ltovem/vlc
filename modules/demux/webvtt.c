@@ -414,23 +414,25 @@ static int ReadWEBVTT( demux_t *p_demux )
 
 static void MakeExtradata( demux_sys_t *p_sys, void **p_extra, size_t *pi_extra )
 {
-    struct vlc_memstream extradata;
-    if( vlc_memstream_open( &extradata ) )
+    const size_t header_size = strlen( "WEBVTT\n\n" );
+    size_t extra_size = header_size;
+    if (unlikely(add_overflow(extra_size, p_sys->regions_headers.i_data, &extra_size))
+     || unlikely(add_overflow(extra_size, p_sys->styles_headers.i_data, &extra_size)))
         return;
-    vlc_memstream_puts( &extradata, "WEBVTT\n\n");
-    vlc_memstream_write( &extradata, p_sys->regions_headers.p_data,
-                                     p_sys->regions_headers.i_data );
-    vlc_memstream_write( &extradata, p_sys->styles_headers.p_data,
-                                     p_sys->styles_headers.i_data );
-    if( vlc_memstream_close( &extradata ) == VLC_SUCCESS )
-    {
-        if( extradata.length )
-        {
-            *p_extra = extradata.ptr;
-            *pi_extra = extradata.length;
-        }
-        else free( extradata.ptr );
-    }
+
+    uint8_t *extra = malloc( extra_size );
+    if (unlikely(extra == NULL))
+        return;
+
+    *p_extra = extra;
+    *pi_extra = extra_size;
+
+    memcpy( extra, "WEBVTT\n\n", header_size);
+    extra += header_size;
+    memcpy( extra, p_sys->regions_headers.p_data, p_sys->regions_headers.i_data );
+    extra += p_sys->regions_headers.i_data;
+    memcpy (extra, p_sys->styles_headers.p_data, p_sys->styles_headers.i_data );
+    extra += p_sys->styles_headers.i_data;
 }
 
 /*****************************************************************************
