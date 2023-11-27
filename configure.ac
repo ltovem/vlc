@@ -4478,7 +4478,7 @@ dnl
 AC_ARG_ENABLE([kwallet],
   AS_HELP_STRING([--enable-kwallet],
     [use kwallet (via D-Bus) for keystore (default enabled)]))
-AS_IF([test "${enable_kwallet}" != "no" -a "${have_dbus}" = "yes"], [
+AS_IF([test "${enable_kwallet}" != "no" -a "${have_sdbus}" = "yes"], [
   VLC_ADD_PLUGIN([kwallet])
 ])
 
