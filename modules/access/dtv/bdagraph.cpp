@@ -3264,7 +3264,7 @@ HRESULT BDAGraph::Register()
     _snwprintf( pwsz_graph_name, len - 1, L"VLC BDA Graph %08p Pid %08x",
         p_filter_graph, ::GetCurrentProcessId() );
     pwsz_graph_name[len-1] = 0;
-    hr = CreateItemMoniker( L"!", pwsz_graph_name, &l.p_moniker );
+    hr = CreateItemMoniker( OLESTR("!"), pwsz_graph_name, &l.p_moniker );
     if( FAILED( hr ) )
     {
         msg_Warn( p_access, "Register: Cannot Create Moniker: hr=0x%8lx", hr );
