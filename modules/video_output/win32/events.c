@@ -172,7 +172,7 @@ static LRESULT CALLBACK VideoEventProc( HWND hwnd, UINT message,
 static int Win32VoutCreateWindow( struct event_thread_t *p_event )
 {
     HINSTANCE  hInstance;
-    WNDCLASS   wc;                            /* window class components */
+    WNDCLASSW  wc;                            /* window class components */
     int        i_style;
 
     msg_Dbg( p_event->obj, "Win32VoutCreateWindow" );
@@ -197,7 +197,7 @@ static int Win32VoutCreateWindow( struct event_thread_t *p_event )
     wc.lpszClassName = p_event->class_video;      /* use a special class */
 
     /* Register the window class */
-    if( !RegisterClass(&wc) )
+    if( !RegisterClassW(&wc) )
     {
         msg_Err( p_event->obj, "Win32VoutCreateWindow RegisterClass FAILED (err=%lu)", GetLastError() );
         return VLC_EGENERIC;
@@ -207,9 +207,9 @@ static int Win32VoutCreateWindow( struct event_thread_t *p_event )
 
     /* Create the window */
     p_event->hvideownd =
-        CreateWindowEx( WS_EX_NOPARENTNOTIFY | WS_EX_NOACTIVATE,
+        CreateWindowExW( WS_EX_NOPARENTNOTIFY | WS_EX_NOACTIVATE,
                     p_event->class_video,            /* name of window class */
-                    TEXT(VOUT_TITLE) TEXT(" (VLC Video Output)"),/* window title */
+                    TEXT(VOUT_TITLE) L" (VLC Video Output)", /* window title */
                     i_style,                                 /* window style */
                     CW_USEDEFAULT,                   /* default X coordinate */
                     CW_USEDEFAULT,                   /* default Y coordinate */
@@ -259,7 +259,7 @@ static void Win32VoutCloseWindow( struct event_thread_t *p_event )
     DestroyWindow( p_event->hvideownd );
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
-    UnregisterClass( p_event->class_video, hInstance );
+    UnregisterClassW( p_event->class_video, hInstance );
 
     CloseGestures( p_event->p_gesture);
 }
@@ -351,7 +351,7 @@ struct event_thread_t *EventThreadCreate( vlc_object_t *obj, vlc_window_t *paren
     p_event->parent_window = parent_window;
 
     _snwprintf( p_event->class_video, ARRAY_SIZE(p_event->class_video),
-                TEXT("VLC video output %p"), (void *)p_event );
+                L"VLC video output %p", (void *)p_event );
 
 #ifdef HAVE_WIN32_SENSORS
     p_event->init_move = owner;

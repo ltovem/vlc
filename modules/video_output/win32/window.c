@@ -800,7 +800,7 @@ static int Open(vlc_window_t *wnd)
         return VLC_ENOMEM;
 
     _snwprintf( sys->class_main, ARRAY_SIZE(sys->class_main),
-               TEXT("VLC standalone window %p"), (void *)sys );
+                L"VLC standalone window %p", (void *)sys );
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -814,7 +814,7 @@ static int Open(vlc_window_t *wnd)
     sys->cursor_arrow = LoadCursor(NULL, IDC_ARROW);
     sys->cursor_empty = EmptyCursor(hInstance);
 
-    WNDCLASS wc = { 0 };
+    WNDCLASSW wc = { 0 };
     /* Fill in the window class structure */
     wc.style         = CS_OWNDC|CS_DBLCLKS;           /* style: dbl click */
     wc.lpfnWndProc   = WinVoutEventProc;                 /* event handler */
@@ -824,7 +824,7 @@ static int Open(vlc_window_t *wnd)
     wc.hCursor       = sys->cursor_arrow;
 
     /* Register the window class */
-    if( !RegisterClass(&wc) )
+    if( !RegisterClassW(&wc) )
     {
         if( sys->vlc_icon )
             DestroyIcon( sys->vlc_icon );
