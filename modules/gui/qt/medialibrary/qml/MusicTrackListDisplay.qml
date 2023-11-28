@@ -34,10 +34,10 @@ Widgets.KeyNavigableTableView {
 
     readonly property bool isSearchable: true
 
-    property alias searchPattern: rootmodel.searchPattern
-    property alias sortOrder: rootmodel.sortOrder
-    property alias sortCriteria: rootmodel.sortCriteria
-    property alias parentId: rootmodel.parentId
+    property var parentId
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     // Private
     property int _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
@@ -177,7 +177,27 @@ Widgets.KeyNavigableTableView {
 
     section.property: "title_first_symbol"
 
-    model: rootmodel
+    model: MLAlbumTrackModel {
+        ml: MediaLib
+
+        parentId: root.parentId
+        searchPattern: root.searchPattern
+        sortOrder: root.sortOrder
+        sortCriteria: root.sortCriteria
+
+        onSortCriteriaChanged: {
+            switch (sortCriteria) {
+            case "title":
+            case "album_title":
+            case "main_artist":
+                section.property = sortCriteria + "_first_symbol"
+                break;
+            default:
+                section.property = ""
+            }
+        }
+    }
+
     rowHeight: VLCStyle.tableCoverRow_height
 
     onActionForSelection:  model.addAndPlay(selection)
@@ -199,26 +219,9 @@ Widgets.KeyNavigableTableView {
         showCriterias: (root.sortModel === root._modelSmall)
     }
 
-    MLAlbumTrackModel {
-        id: rootmodel
-        ml: MediaLib
-
-        onSortCriteriaChanged: {
-            switch (rootmodel.sortCriteria) {
-            case "title":
-            case "album_title":
-            case "main_artist":
-                section.property = rootmodel.sortCriteria + "_first_symbol"
-                break;
-            default:
-                section.property = ""
-            }
-        }
-    }
-
     Util.MLContextMenu {
         id: contextMenu
 
-        model: rootmodel
+        model: root.model
     }
 }
