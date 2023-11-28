@@ -139,7 +139,7 @@ static void *HelperThread(void *data)
     vlc_thread_set_name("vlc-ctrl-win");
 
     HWND ipcwindow =
-        CreateWindow(L"STATIC",                      /* name of window class */
+        CreateWindowW(L"STATIC",                      /* name of window class */
                   L"VLC ipc " TEXT(VERSION),        /* window title bar text */
                   0,                                         /* window style */
                   0,                                 /* default X coordinate */
