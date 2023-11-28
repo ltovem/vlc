@@ -34,10 +34,10 @@ MainInterface.MainViewLoader {
 
     readonly property int currentIndex: Helpers.get(currentItem, "currentIndex", - 1)
 
-    property alias parentId: artistModel.parentId
-    property alias searchPattern: artistModel.searchPattern
-    property alias sortOrder: artistModel.sortOrder
-    property alias sortCriteria: artistModel.sortCriteria
+    property var parentId
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     signal requestArtistAlbumView(int reason)
 
@@ -46,6 +46,11 @@ MainInterface.MainViewLoader {
     model: MLArtistModel {
         id: artistModel
         ml: MediaLib
+
+        parentId: root.parentId
+        searchPattern: root.searchPattern
+        sortOrder: root.sortOrder
+        sortCriteria: root.sortCriteria
     }
 
     sortModel: [
