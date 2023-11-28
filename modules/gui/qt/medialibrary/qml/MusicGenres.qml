@@ -35,9 +35,9 @@ MainInterface.MainViewLoader {
     // Properties
     readonly property var currentIndex: Helpers.get(currentItem, "currentIndex", - 1)
 
-    property alias searchPattern: genreModel.searchPattern
-    property alias sortOrder: genreModel.sortOrder
-    property alias sortCriteria: genreModel.sortCriteria
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     // FIXME: remove this
     property var _currentView: currentItem
@@ -45,7 +45,21 @@ MainInterface.MainViewLoader {
     signal showAlbumView(var id, string name, int reason)
 
     isSearchable: true
-    model: genreModel
+    model: MLGenreModel {
+        ml: MediaLib
+
+        searchPattern: root.searchPattern
+        sortOrder: root.sortOrder
+        sortCriteria: root.sortCriteria
+
+        coverDefault: VLCStyle.noArtAlbumCover
+
+        onCountChanged: {
+            if (count > 0 && !selectionModel.hasSelection) {
+                root.resetFocus()
+            }
+        }
+    }
 
     sortModel: [
         { text: I18n.qtr("Alphabetic"), criteria: "name" }
@@ -55,25 +69,12 @@ MainInterface.MainViewLoader {
     grid: gridComponent
     emptyLabel: emptyLabelComponent
 
-    MLGenreModel {
-        id: genreModel
-        ml: MediaLib
-
-        coverDefault: VLCStyle.noArtAlbumCover
-
-        onCountChanged: {
-            if (genreModel.count > 0 && !selectionModel.hasSelection) {
-                root.resetFocus()
-            }
-        }
-    }
-
     function _actionAtIndex(index) {
         if (selectionModel.selectedIndexes.length > 1) {
             model.addAndPlay( selectionModel.selectedIndexes )
         } else if (selectionModel.selectedIndexes.length === 1) {
             const sel = selectionModel.selectedIndexes[0]
-            const model = genreModel.getDataAt(sel)
+            const model = root.model.getDataAt(sel)
             showAlbumView(model.id, model.name, Qt.TabFocusReason)
         }
     }
@@ -81,7 +82,7 @@ MainInterface.MainViewLoader {
     Widgets.MLDragItem {
         id: genreDragItem
 
-        mlModel: genreModel
+        mlModel: root.model
 
         indexes: indexesFlat ? selectionModel.selectedIndexesFlat
                              : selectionModel.selectedIndexes
@@ -94,12 +95,12 @@ MainInterface.MainViewLoader {
      * selectedGroup update itself after this event
      */
     onActiveFocusChanged: {
-        if (activeFocus && genreModel.count > 0 && !selectionModel.hasSelection) {
+        if (activeFocus && root.model.count > 0 && !selectionModel.hasSelection) {
             let initialIndex = 0
             if (currentIndex !== -1)
                 initialIndex = currentIndex
 
-            selectionModel.select(genreModel.index(initialIndex, 0), ItemSelectionModel.ClearAndSelect)
+            selectionModel.select(root.model.index(initialIndex, 0), ItemSelectionModel.ClearAndSelect)
             currentItem.currentIndex = initialIndex
         }
     }
@@ -107,7 +108,7 @@ MainInterface.MainViewLoader {
     Util.MLContextMenu {
         id: contextMenu
 
-        model: genreModel
+        model: root.model
     }
 
     /* Grid View */
@@ -117,7 +118,7 @@ MainInterface.MainViewLoader {
             id: gridView_id
 
             selectionModel: root.selectionModel
-            model: genreModel
+            model: root.model
             topMargin: VLCStyle.margin_large
 
            delegate: Widgets.GridItem {
@@ -250,7 +251,7 @@ MainInterface.MainViewLoader {
                 }
             }]
 
-            model: genreModel
+            model: root.model
 
             sortModel: (availableRowWidth < VLCStyle.colWidth(4)) ? _modelSmall
                                                                   : _modelMedium
