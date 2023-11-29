@@ -585,7 +585,7 @@ static void Close(vlc_window_t *wnd)
     vlc_wasync_resize_compressor_destroy(&sys->compressor);
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
-    UnregisterClass( sys->class_main, hInstance );
+    UnregisterClassW( sys->class_main, hInstance );
     DestroyCursor( sys->cursor_empty );
     if( sys->vlc_icon )
         DestroyIcon( sys->vlc_icon );
@@ -718,9 +718,9 @@ static void *EventThread( void *p_this )
 
     /* Create the window */
     sys->hwnd =
-        CreateWindowEx( WS_EX_NOPARENTNOTIFY,
+        CreateWindowExW( WS_EX_NOPARENTNOTIFY,
                     sys->class_main,                 /* name of window class */
-                    TEXT(VOUT_TITLE) TEXT(" (VLC Video Output)"),/* window title */
+                    TEXT(VOUT_TITLE) L" (VLC Video Output)",/* window title */
                     i_window_style,                          /* window style */
                     CW_USEDEFAULT,                   /* default X coordinate */
                     CW_USEDEFAULT,                   /* default Y coordinate */
@@ -805,8 +805,8 @@ static int Open(vlc_window_t *wnd)
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     WCHAR app_path[MAX_PATH];
-    if( GetModuleFileName( NULL, app_path, MAX_PATH ) )
-        sys->vlc_icon = ExtractIcon( hInstance, app_path    , 0 );
+    if( GetModuleFileNameW( NULL, app_path, MAX_PATH ) )
+        sys->vlc_icon = ExtractIconW( hInstance, app_path    , 0 );
 
     sys->button_pressed = 0;
     sys->is_cursor_hidden = false;
