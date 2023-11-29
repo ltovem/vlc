@@ -215,7 +215,11 @@ bool Win32Factory::init()
     m_trayIcon.uFlags = NIF_ICON|NIF_TIP|NIF_MESSAGE;
     m_trayIcon.uCallbackMessage = MY_WM_TRAYACTION;
     m_trayIcon.hIcon = LoadIcon( m_hInst, vlc_icon );
+#ifdef UNICODE
     wcscpy( m_trayIcon.szTip, vlc_name );
+#else
+    strcpy( m_trayIcon.szTip, vlc_name );
+#endif
 
     // Show the systray icon if needed
     if( var_InheritBool( getIntf(), "skins2-systray" ) )
