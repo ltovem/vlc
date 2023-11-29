@@ -136,30 +136,30 @@ typedef struct
 static const codec_dll decoders_table[] =
 {
     /* WVC1 */
-    { VLC_CODEC_VC1,    TEXT("wvc1dmod.dll"), &guid_wvc1 },
+    { VLC_CODEC_VC1,    L"wvc1dmod.dll", &guid_wvc1 },
     /* WMV3 */
-    { VLC_CODEC_WMV3,   TEXT("wmv9dmod.dll"), &guid_wmv9 },
+    { VLC_CODEC_WMV3,   L"wmv9dmod.dll", &guid_wmv9 },
     /* WMV2 */
-    { VLC_CODEC_WMV2,   TEXT("wmvdmod.dll"), &guid_wmv },
+    { VLC_CODEC_WMV2,   L"wmvdmod.dll", &guid_wmv },
     /* WMV1 */
-    { VLC_CODEC_WMV1,   TEXT("wmvdmod.dll"), &guid_wmv },
+    { VLC_CODEC_WMV1,   L"wmvdmod.dll", &guid_wmv },
     /* Screen codecs */
-    { VLC_CODEC_MSS2,   TEXT("WMVSDECD.DLL"), &guid_wms },
-    { VLC_CODEC_MSS2,   TEXT("wmsdmod.dll"),  &guid_wms },
-    { VLC_CODEC_MSS1,   TEXT("WMVSDECD.DLL"), &guid_wms },
-    { VLC_CODEC_MSS1,   TEXT("wmsdmod.dll"),  &guid_wms },
+    { VLC_CODEC_MSS2,   L"WMVSDECD.DLL", &guid_wms },
+    { VLC_CODEC_MSS2,   L"wmsdmod.dll",  &guid_wms },
+    { VLC_CODEC_MSS1,   L"WMVSDECD.DLL", &guid_wms },
+    { VLC_CODEC_MSS1,   L"wmsdmod.dll",  &guid_wms },
     /* Windows Media Video Adv */
-    { VLC_CODEC_WMVA,   TEXT("wmvadvd.dll"), &guid_wmva },
+    { VLC_CODEC_WMVA,   L"wmvadvd.dll", &guid_wmva },
 
     /* WMA 3 */
-    { VLC_CODEC_WMAP,   TEXT("wma9dmod.dll"), &guid_wma9 },
-    { VLC_CODEC_WMAL,   TEXT("wma9dmod.dll"), &guid_wma9 },
+    { VLC_CODEC_WMAP,   L"wma9dmod.dll", &guid_wma9 },
+    { VLC_CODEC_WMAL,   L"wma9dmod.dll", &guid_wma9 },
 
     /* WMA 2 */
-    { VLC_CODEC_WMA2,   TEXT("wma9dmod.dll"), &guid_wma9 },
+    { VLC_CODEC_WMA2,   L"wma9dmod.dll", &guid_wma9 },
 
     /* WMA Speech */
-    { VLC_CODEC_WMAS,   TEXT("wmspdmod.dll"), &guid_wma },
+    { VLC_CODEC_WMAS,   L"wmspdmod.dll", &guid_wma },
 
     /* */
     { 0, NULL, NULL }
@@ -168,23 +168,23 @@ static const codec_dll decoders_table[] =
 static const codec_dll encoders_table[] =
 {
     /* WMV3 */
-    { VLC_CODEC_WMV3, TEXT("wmvdmoe2.dll"), &guid_wmv_enc2 },
+    { VLC_CODEC_WMV3, L"wmvdmoe2.dll", &guid_wmv_enc2 },
     /* WMV2 */
-    { VLC_CODEC_WMV2, TEXT("wmvdmoe2.dll"), &guid_wmv_enc2 },
+    { VLC_CODEC_WMV2, L"wmvdmoe2.dll", &guid_wmv_enc2 },
     /* WMV1 */
-    { VLC_CODEC_WMV1, TEXT("wmvdmoe2.dll"), &guid_wmv_enc2 },
+    { VLC_CODEC_WMV1, L"wmvdmoe2.dll", &guid_wmv_enc2 },
 
     /* WMA 3 */
-    { VLC_CODEC_WMAP, TEXT("wmadmoe.dll"), &guid_wma_enc },
+    { VLC_CODEC_WMAP, L"wmadmoe.dll", &guid_wma_enc },
     /* WMA 2 */
-    { VLC_CODEC_WMA2, TEXT("wmadmoe.dll"), &guid_wma_enc },
+    { VLC_CODEC_WMA2, L"wmadmoe.dll", &guid_wma_enc },
 
     /* WMV3 v11 */
-    { VLC_CODEC_WMV3, TEXT("wmvencod.dll"), &guid_wmv9_enc },
+    { VLC_CODEC_WMV3, L"wmvencod.dll", &guid_wmv9_enc },
     /* WMV2 v11 */
-    { VLC_CODEC_WMV2, TEXT("wmvxencd.dll"), &guid_wmv8_enc },
+    { VLC_CODEC_WMV2, L"wmvxencd.dll", &guid_wmv8_enc },
     /* WMV1 v11 */
-    { VLC_CODEC_WMV1, TEXT("wmvxencd.dll"), &guid_wmv8_enc },
+    { VLC_CODEC_WMV1, L"wmvxencd.dll", &guid_wmv8_enc },
 
     /* */
     { 0, NULL, NULL }
@@ -719,7 +719,7 @@ loader:
     if( codecs_table[i_codec].i_fourcc == 0 )
         return VLC_EGENERIC;    /* Can't happen */
 
-    *p_hmsdmo_dll = LoadLibrary( codecs_table[i_codec].psz_dll );
+    *p_hmsdmo_dll = LoadLibraryW( codecs_table[i_codec].psz_dll );
     if( *p_hmsdmo_dll == NULL )
     {
         msg_Dbg( p_this, "failed loading '%ls'", codecs_table[i_codec].psz_dll );
