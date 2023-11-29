@@ -44,6 +44,9 @@
 #include <shellapi.h>                                         /* ExtractIcon */
 #include "../wasync_resize_compressor.h"
 
+#define WIDEN_(x) L ## x
+#define WIDEN(x) WIDEN_(x)
+
 #define RECTWidth(r)   (LONG)((r).right - (r).left)
 #define RECTHeight(r)  (LONG)((r).bottom - (r).top)
 
@@ -720,7 +723,7 @@ static void *EventThread( void *p_this )
     sys->hwnd =
         CreateWindowExW( WS_EX_NOPARENTNOTIFY,
                     sys->class_main,                 /* name of window class */
-                    TEXT(VOUT_TITLE) L" (VLC Video Output)",/* window title */
+                    WIDEN(VOUT_TITLE) L" (VLC Video Output)",/* window title */
                     i_window_style,                          /* window style */
                     CW_USEDEFAULT,                   /* default X coordinate */
                     CW_USEDEFAULT,                   /* default Y coordinate */

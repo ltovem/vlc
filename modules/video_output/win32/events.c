@@ -46,6 +46,9 @@
 #include "sensors.h"
 #endif
 
+#define WIDEN_(x) L ## x
+#define WIDEN(x) WIDEN_(x)
+
 /*****************************************************************************
  * Local prototypes.
  *****************************************************************************/
@@ -209,7 +212,7 @@ static int Win32VoutCreateWindow( struct event_thread_t *p_event )
     p_event->hvideownd =
         CreateWindowExW( WS_EX_NOPARENTNOTIFY | WS_EX_NOACTIVATE,
                     p_event->class_video,            /* name of window class */
-                    TEXT(VOUT_TITLE) L" (VLC Video Output)", /* window title */
+                    WIDEN(VOUT_TITLE) L" (VLC Video Output)", /* window title */
                     i_style,                                 /* window style */
                     CW_USEDEFAULT,                   /* default X coordinate */
                     CW_USEDEFAULT,                   /* default Y coordinate */
