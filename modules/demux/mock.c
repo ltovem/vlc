@@ -293,6 +293,7 @@ static_assert(offsetof(struct mock_video_options, add_track_at) ==
 struct demux_sys
 {
     mock_track_vector tracks;
+    vlc_tick_t last_pcr_date;
 
     vlc_tick_t pts;
     vlc_tick_t audio_pts;
@@ -1085,15 +1086,18 @@ Demux(demux_t *demux)
     if (sys->pts > sys->length)
         sys->pts = sys->length;
 
-    if (!sys->can_control_pace)
+    if (!sys->can_control_pace && sys->last_pcr_date != VLC_TICK_INVALID)
     {
         /* Simulate a live input */
         vlc_tick_t delay = sys->pts - prev_pts;
-        delay = delay - delay / 1000 /* Sleep a little less */;
-        vlc_tick_sleep(delay);
+        vlc_tick_wait(sys->last_pcr_date + delay);
+        sys->last_pcr_date += delay;
     }
 
     es_out_SetPCR(demux->out, sys->pts);
+
+    if (sys->last_pcr_date == VLC_TICK_INVALID)
+        sys->last_pcr_date = vlc_tick_now();
 
     const vlc_tick_t video_step_length =
         (sys->video_track_count > 0 || sys->sub_track_count > 0) ?
@@ -1456,6 +1460,7 @@ Open(vlc_object_t *obj)
         goto error;
 
     sys->pts = sys->audio_pts = sys->video_pts = VLC_TICK_0;
+    sys->last_pcr_date = VLC_TICK_INVALID;
     sys->current_title = 0;
     sys->chapter_gap = sys->chapter_count > 0 ?
                        (sys->length / sys->chapter_count) : VLC_TICK_INVALID;
