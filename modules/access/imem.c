@@ -425,10 +425,7 @@ static int OpenDemux(vlc_object_t *object)
     fmt.i_id = var_InheritInteger(object, "imem-id");
     fmt.i_group = var_InheritInteger(object, "imem-group");
 
-    char *tmp = var_InheritString(object, "imem-codec");
-    if (tmp)
-        fmt.i_codec = vlc_fourcc_GetCodecFromString(fmt.i_cat, tmp);
-    free(tmp);
+    fmt.i_codec = var_InheritCodecFourCC(object, fmt.i_cat, "imem-codec");
 
     switch (fmt.i_cat) {
     case AUDIO_ES: {
