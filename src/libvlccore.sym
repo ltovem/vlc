@@ -499,12 +499,14 @@ var_Destroy
 var_Get
 var_GetAndSet
 var_GetChecked
+var_GetCodecFourCC
 var_Set
 var_SetChecked
 var_TriggerCallback
 var_Type
 var_Inherit
 var_InheritURational
+var_InheritCodecFourCC
 var_LocationParse
 video_format_CopyCrop
 video_format_ScaleCropAr

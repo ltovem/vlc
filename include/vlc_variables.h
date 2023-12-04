@@ -497,6 +497,19 @@ static inline void *var_GetAddress( vlc_object_t *p_obj, const char *psz_name )
 }
 
 /**
+ * Get a codec FourCC value
+ *
+ * \param p_obj The object that holds the variable
+ * \param category ES category of the codec to look for
+ * \param psz_name The name of the variable
+ *
+ * \return 0 if the variable doesn't correspond to a valid FourCC codec
+ */
+VLC_API vlc_fourcc_t var_GetCodecFourCC( vlc_object_t *p_obj,
+                                         int category,
+                                         const char *name ) VLC_USED;
+
+/**
  * Increment an integer variable
  * \param p_obj the object that holds the variable
  * \param psz_name the name of the variable
@@ -756,6 +769,19 @@ static inline void *var_InheritAddress( vlc_object_t *obj, const char *name )
         val.p_address = NULL;
     return val.p_address;
 }
+
+/**
+ * Inherit a codec FourCC value
+ *
+ * \param p_obj The object that holds the variable
+ * \param category ES category of the codec to look for
+ * \param psz_name The name of the variable
+ *
+ * \return 0 if the variable doesn't correspond to a valid FourCC codec
+ */
+VLC_API vlc_fourcc_t var_InheritCodecFourCC( vlc_object_t *obj,
+                                             int category,
+                                             const char *name ) VLC_USED;
 
 
 /**

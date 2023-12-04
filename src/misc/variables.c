@@ -38,6 +38,7 @@
 #include <vlc_common.h>
 #include <vlc_arrays.h>
 #include <vlc_charset.h>
+#include <vlc_fourcc.h> // vlc_fourcc_GetCodecFromString
 #include "libvlc.h"
 #include "variables.h"
 #include "config/configuration.h"
@@ -1067,6 +1068,51 @@ int var_Inherit( vlc_object_t *p_this, const char *psz_name, int i_type,
             return VLC_ENOENT;
     }
     return VLC_SUCCESS;
+}
+
+vlc_fourcc_t var_GetCodecFourCC( vlc_object_t *p_this,
+                                 int category,
+                                 const char *psz_name )
+{
+    variable_t *p_var;
+
+    assert( p_this );
+
+    vlc_object_internals_t *p_priv = vlc_internals( p_this );
+    vlc_fourcc_t fcc;
+    p_var = Lookup( p_this, psz_name );
+    if( p_var != NULL )
+    {
+        assert( (p_var->i_type & VLC_VAR_CLASS) == VLC_VAR_STRING );
+        fcc = vlc_fourcc_GetCodecFromString( category, p_var->val.psz_string );
+    }
+    vlc_mutex_unlock( &p_priv->var_lock );
+    return fcc;
+}
+
+vlc_fourcc_t var_InheritCodecFourCC( vlc_object_t *p_this,
+                                     int category,
+                                     const char *psz_name )
+{
+    vlc_value_t val;
+    vlc_object_internals_t *p_priv = vlc_internals( p_this );
+
+    for (vlc_object_t *obj = p_this; obj != NULL; obj = vlc_object_parent(obj))
+    {
+        vlc_fourcc_t fcc = var_GetCodecFourCC( obj, category, psz_name );
+        if (fcc != 0)
+            return fcc;
+    }
+
+    /* else take value from config */
+    vlc_fourcc_t fcc = 0;
+    char *fourcc_str = config_GetPsz( psz_name );
+    if( fourcc_str != NULL )
+    {
+        fcc = vlc_fourcc_GetCodecFromString( category, fourcc_str );
+        free(fourcc_str);
+    }
+    return fcc;
 }
 
 int (var_InheritURational)(vlc_object_t *object,
