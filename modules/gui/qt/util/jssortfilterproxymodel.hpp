@@ -44,8 +44,6 @@ public:
     void setFilterAcceptsRowFunction(const QJSValue& value);
     void setFilterAcceptsColumnFunction(const QJSValue& value);
 
-    bool filterAccepts(QJSValue& evalFunc, const int source, const QModelIndex &source_parent) const;
-
 public slots:
     void invalidateFilter();
 
@@ -56,6 +54,8 @@ signals:
 protected:
     bool filterAcceptsRow(const int source_row, const QModelIndex &source_parent) const override;
     bool filterAcceptsColumn(const int source_column, const QModelIndex &source_parent) const override;
+
+    bool filterAccepts(QJSValue& evalFunc, const int source, const QModelIndex &source_parent) const;
 
 private:
     // TODO: Qt 7 remove mutable. They forgot to add const...
