@@ -297,7 +297,6 @@ void MainUI::registerQMLTypes()
         qmlRegisterUncreatableType<ControlbarProfile>(uri, versionMajor, versionMinor, "ControlbarProfile", "");
         qmlRegisterUncreatableType<PlayerControlbarModel>(uri, versionMajor, versionMinor, "PlayerControlbarModel", "");
         qmlRegisterUncreatableType<ControlListModel>( uri, versionMajor, versionMinor, "ControlListModel", "" );
-        qmlRegisterType<ControlListFilter>(uri, versionMajor, versionMinor, "ControlListFilter");
         qmlRegisterSingletonType(uri, versionMajor, versionMinor, "PlayerListModel", PlayerControlbarModel::getPlaylistIdentifierListModel);
 
         qmlRegisterType<StringListMenu>( uri, versionMajor, versionMinor, "StringListMenu" );
