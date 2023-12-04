@@ -406,9 +406,7 @@ static int Open( vlc_object_t *p_this )
     if ( p_sys->f_fps <= 0 ) p_sys->f_fps = 1.0;
     p_sys->i_frame_interval = vlc_tick_rate_duration( p_sys->f_fps );
 
-    char *psz_chroma = var_InheritString( p_demux, CFG_PREFIX "chroma" );
-    vlc_fourcc_t i_chroma = vlc_fourcc_GetCodecFromString( VIDEO_ES, psz_chroma );
-    free( psz_chroma );
+    vlc_fourcc_t i_chroma = var_InheritCodecFourCC( p_this, VIDEO_ES, CFG_PREFIX "chroma" );
     if ( !i_chroma || vlc_fourcc_IsYUV( i_chroma ) )
     {
         msg_Err( p_demux, "Only RGB chroma are supported" );
