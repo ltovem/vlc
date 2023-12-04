@@ -30,6 +30,25 @@
 
 # include <assert.h>
 
+/* Config category */
+enum vlc_config_cat
+{
+    /* Hidden category.
+       Any options under this will be hidden in the GUI preferences, but will
+       be listed in cmdline help output. */
+    CAT_HIDDEN    = -1,
+
+    CAT_UNKNOWN   = 0,
+
+    CAT_INTERFACE = 1,
+    CAT_AUDIO     = 2,
+    CAT_VIDEO     = 3,
+    CAT_INPUT     = 4,
+    CAT_SOUT      = 5,
+    CAT_ADVANCED  = 6,
+    CAT_PLAYLIST  = 7,
+};
+
 #define MAIN_TITLE N_( "VLC preferences" )
 
 /*  - Titles -
