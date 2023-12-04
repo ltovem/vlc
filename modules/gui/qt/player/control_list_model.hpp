@@ -33,6 +33,7 @@ public:
     enum Roles {
         ID_ROLE = Qt::UserRole
     };
+    Q_ENUM(Roles)
 
     enum ControlType
     {
