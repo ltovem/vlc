@@ -39,11 +39,23 @@ FocusScope {
 
     property int identifier: -1
 
-    readonly property PlayerControlbarModel model: {
+    property PlayerControlbarModel model: {
         if (!!MainCtx.controlbarProfileModel.currentModel)
             return MainCtx.controlbarProfileModel.currentModel.getModel(identifier)
         else
             return null
+    }
+
+    property QtAbstractItemModel leftModel: FilteredPlayerControlbarModel {
+        sourceModel: playerControlLayout.model ? playerControlLayout.model.left : null
+    }
+
+    property QtAbstractItemModel centerModel: FilteredPlayerControlbarModel {
+        sourceModel: playerControlLayout.model ? playerControlLayout.model.center : null
+    }
+
+    property QtAbstractItemModel rightModel: FilteredPlayerControlbarModel {
+        sourceModel: playerControlLayout.model ? playerControlLayout.model.right : null
     }
 
     readonly property ColorContext colorContext: ColorContext {
@@ -92,12 +104,7 @@ FocusScope {
 
             ControlRepeater {
                 id: leftRepeater
-                model: ControlListFilter {
-                    sourceModel: playerControlLayout.model.left
-
-                    player: Player
-                    ctx: MainCtx
-                }
+                model: playerControlLayout.leftModel
 
                 Navigation.parentItem: playerControlLayout
                 Navigation.rightAction: function() {
@@ -133,12 +140,7 @@ FocusScope {
 
             ControlRepeater {
                 id: rightRepeater
-                model: ControlListFilter {
-                    sourceModel: playerControlLayout.model.right
-
-                    player: Player
-                    ctx: MainCtx
-                }
+                model: playerControlLayout.rightModel
 
                 Navigation.parentItem: playerControlLayout
                 Navigation.leftAction: function() {
@@ -169,18 +171,14 @@ FocusScope {
             rightMargin: layoutSpacing - spacing
         }
 
+        // TODO: Filtered count
         active: !!playerControlLayout.model && !!playerControlLayout.model.left && (playerControlLayout.model.left.count > 0) &&
                 !loaderLeftRight.active
 
         focus: active
 
         sourceComponent: ControlLayout {
-            model: ControlListFilter {
-                sourceModel: playerControlLayout.model.left
-
-                player: Player
-                ctx: MainCtx
-            }
+            model: playerControlLayout.leftModel
 
             alignment: (Qt.AlignVCenter | Qt.AlignLeft)
 
@@ -206,7 +204,7 @@ FocusScope {
             bottom: parent.bottom
         }
 
-        // TODO: "ControlListFilter"'s count......
+        // TODO: Filtered count
         active: !!playerControlLayout.model && !!playerControlLayout.model.center && (playerControlLayout.model.center.count > 0)
 
         BindingCompat on width {
@@ -233,12 +231,7 @@ FocusScope {
         }
 
         sourceComponent: ControlLayout {
-            model: ControlListFilter {
-                sourceModel: playerControlLayout.model.center
-
-                player: Player
-                ctx: MainCtx
-            }
+            model: playerControlLayout.centerModel
 
             focus: true
 
@@ -267,16 +260,12 @@ FocusScope {
             leftMargin: layoutSpacing - spacing
         }
 
+        // TODO: Filtered count
         active: !!playerControlLayout.model && !!playerControlLayout.model.right && (playerControlLayout.model.right.count > 0) &&
                 !loaderLeftRight.active
 
         sourceComponent: ControlLayout {
-            model: ControlListFilter {
-                sourceModel: playerControlLayout.model.right
-
-                player: Player
-                ctx: MainCtx
-            }
+            model: playerControlLayout.rightModel
 
             alignment: (Qt.AlignVCenter | Qt.AlignRight)
 
