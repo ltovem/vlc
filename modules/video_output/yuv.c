@@ -106,10 +106,8 @@ static int Open(vout_display_t *vd,
     sys->is_yuv4mpeg2 = var_InheritBool(vd, CFG_PREFIX "yuv4mpeg2");
 
     /* */
-    char *psz_fcc = var_InheritString(vd, CFG_PREFIX "chroma");
-    const vlc_fourcc_t requested_chroma = vlc_fourcc_GetCodecFromString(VIDEO_ES,
-                                                                        psz_fcc);
-    free(psz_fcc);
+    const vlc_fourcc_t requested_chroma =
+        var_InheritCodecFourCC(VLC_OBJECT(vd), VIDEO_ES, CFG_PREFIX "chroma");
 
     const vlc_fourcc_t chroma = requested_chroma ? requested_chroma :
                                                    VLC_CODEC_I420;
