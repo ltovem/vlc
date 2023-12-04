@@ -45,6 +45,7 @@
 #include "util/csdbuttonmodel.hpp"
 #include "util/vlctick.hpp"
 #include "util/list_selection_model.hpp"
+#include "util/jssortfilterproxymodel.hpp"
 
 #include "dialogs/help/aboutmodel.hpp"
 #include "dialogs/dialogs_provider.hpp"
@@ -229,6 +230,8 @@ void MainUI::registerQMLTypes()
         const char* uri = "org.videolan.vlc";
         const int versionMajor = 0;
         const int versionMinor = 1;
+
+        qmlRegisterType<JSSortFilterProxyModel>(uri, versionMajor, versionMinor, "SortFilterProxyModel");
 
         qmlRegisterSingletonType<MainCtx>(uri, versionMajor, versionMinor, "MainCtx", SingletonRegisterHelper<MainCtx>::callback);
         qmlRegisterUncreatableType<SearchCtx>(uri, versionMajor, versionMinor, "SearchCtx", "");
