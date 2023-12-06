@@ -82,6 +82,8 @@
         <file alias="FSM.qml">util/qml/FSM.qml</file>
         <file alias="FSMState.qml">util/qml/FSMState.qml</file>
         <file alias="FadeControllerStateGroup.qml">util/qml/FadeControllerStateGroup.qml</file>
+        <file alias="ActionExt.qml">util/qml/ActionExt.qml</file>
+        <file alias="ActionGroupExt.qml">util/qml/ActionGroupExt.qml</file>
     </qresource>
     <qresource prefix="/sd">
         <file alias="capture-card.svg">pixmaps/sd/capture-card.svg</file>
@@ -228,6 +230,8 @@
         <file alias="FadingEdge.qml">widgets/qml/FadingEdge.qml</file>
         <file alias="FadingEdgeForListView.qml">widgets/qml/FadingEdgeForListView.qml</file>
         <file alias="PopupIconToolButton.qml">widgets/qml/PopupIconToolButton.qml</file>
+        <file alias="MenuExt.qml">widgets/qml/MenuExt.qml</file>
+        <file alias="MenuSeparatorExt.qml">widgets/qml/MenuSeparatorExt.qml</file>
     </qresource>
     <qresource prefix="/network">
         <file alias="AddressbarButton.qml">network/qml/AddressbarButton.qml</file>

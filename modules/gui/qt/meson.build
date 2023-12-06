@@ -137,6 +137,9 @@ moc_headers = files(
     'util/vlctick.hpp',
     'util/dismiss_popup_event_filter.hpp',
     'util/list_selection_model.hpp',
+    'widgets/native/platformagnosticmenu.hpp',
+    'widgets/native/platformagnosticaction.hpp',
+    'widgets/native/platformagnosticactiongroup.hpp',
     'widgets/native/animators.hpp',
     'widgets/native/csdthemeimage.hpp',
     'widgets/native/customwidgets.hpp',
@@ -146,7 +149,7 @@ moc_headers = files(
     'widgets/native/roundimage.hpp',
     'widgets/native/roundimage_p.hpp',
     'widgets/native/searchlineedit.hpp',
-    'widgets/native/viewblockingrectangle.hpp',
+    'widgets/native/viewblockingrectangle.hpp'
 )
 
 if host_system == 'windows'
@@ -457,6 +460,12 @@ some_sources = files(
     'util/dismiss_popup_event_filter.hpp',
     'util/list_selection_model.cpp',
     'util/list_selection_model.hpp',
+    'widgets/native/platformagnosticmenu.cpp',
+    'widgets/native/platformagnosticmenu.hpp',
+    'widgets/native/platformagnosticaction.cpp',
+    'widgets/native/platformagnosticaction.hpp',
+    'widgets/native/platformagnosticactiongroup.cpp',
+    'widgets/native/platformagnosticactiongroup.hpp',
     'widgets/native/animators.cpp',
     'widgets/native/animators.hpp',
     'widgets/native/customwidgets.cpp',
@@ -476,7 +485,7 @@ some_sources = files(
     'widgets/native/searchlineedit.cpp',
     'widgets/native/searchlineedit.hpp',
     'widgets/native/viewblockingrectangle.cpp',
-    'widgets/native/viewblockingrectangle.hpp',
+    'widgets/native/viewblockingrectangle.hpp'
 )
 
 if host_system == 'windows'
