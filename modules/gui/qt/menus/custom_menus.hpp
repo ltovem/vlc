@@ -23,46 +23,65 @@
 
 #include "qt.hpp"
 
+
 #include <QMenu>
+#include <QPointer>
 #include "medialibrary/mlrecentsmodel.hpp"
 
 class QAbstractListModel;
+class PlatformAgnosticMenu;
+class PlatformAgnosticAction;
+class PlatformAgnosticActionGroup;
 
-class RendererAction : public QAction
+class RendererAction : public QObject
 {
     Q_OBJECT
 
+    friend class RendererMenu;
+
     public:
-        RendererAction( vlc_renderer_item_t * );
+        RendererAction( vlc_renderer_item_t *, QObject* parent = nullptr );
         ~RendererAction();
         vlc_renderer_item_t *getItem();
 
     private:
+        QPointer<PlatformAgnosticAction> m_action;
         vlc_renderer_item_t *p_item;
 };
 
-class RendererMenu : public QMenu
+class RendererMenu : public QObject
 {
     Q_OBJECT
 
+    friend class VLCMenuBar;
+    friend class QmlRendererMenu;
+
 public:
-    RendererMenu( QMenu *, qt_intf_t * );
+    RendererMenu( qt_intf_t *, QObject * parent = nullptr );
     virtual ~RendererMenu();
     void reset();
+
+    void popup(const QPoint& pos);
+
+signals:
+    void aboutToHide();
+    void aboutToShow();
 
 private slots:
     void addRendererItem( vlc_renderer_item_t * );
     void removeRendererItem( vlc_renderer_item_t * );
     void updateStatus( int );
-    void RendererSelected( QAction* );
+    void RendererSelected( QObject* );
 
 private:
-    void addRendererAction( QAction * );
-    void removeRendererAction( QAction * );
+    void addRendererAction( RendererAction * );
+    void removeRendererAction( RendererAction * );
     static vlc_renderer_item_t* getMatchingRenderer( const QVariant &,
                                                      vlc_renderer_item_t* );
-    QAction *status;
-    QActionGroup *group;
+    QPointer<PlatformAgnosticMenu> m_menu;
+    QPointer<QObject> m_progressIndicator;
+    QPointer<PlatformAgnosticAction> m_statusAction;
+    QPointer<PlatformAgnosticActionGroup> m_group;
     qt_intf_t *p_intf;
 };
 
@@ -70,7 +89,7 @@ private:
 /*
  * Construct a menu from a QAbstractListModel with Qt::DisplayRole and Qt::CheckStateRole
  */
-class CheckableListMenu : public QMenu
+class CheckableListMenu : public QObject
 {
     Q_OBJECT
 public:
@@ -87,7 +106,9 @@ public:
      * @param grouping whether the menu should use an ActionGroup or not
      * @param parent QObject parent
      */
-    CheckableListMenu(QString title, QAbstractListModel* model ,  GroupingMode grouping = UNGROUPED, QWidget *parent = nullptr);
+    CheckableListMenu(QString title, QAbstractListModel* model,  GroupingMode grouping = UNGROUPED, QObject* parent = nullptr);
+
+    PlatformAgnosticMenu *operator()() const;
 
 private slots:
     void onRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
@@ -97,9 +118,10 @@ private slots:
     void onModelReset();
 
 private:
+    QPointer<PlatformAgnosticMenu> m_menu;
     QAbstractListModel* m_model;
     GroupingMode m_grouping;
-    QActionGroup* m_actionGroup = nullptr;
+    PlatformAgnosticActionGroup* m_actionGroup = nullptr;
 };
 
 // NOTE: This class is a helper to populate and maintain a QMenu from an QAbstractListModel.
@@ -109,7 +131,7 @@ class ListMenuHelper : public QObject
 
 public:
     // NOTE: The model actions will be inserted before 'before' or at the end if it's NULL.
-    ListMenuHelper(QMenu * menu, QAbstractListModel * model, QAction * before = nullptr,
+    ListMenuHelper(PlatformAgnosticMenu * menu, QAbstractListModel * model, PlatformAgnosticAction * before = nullptr,
                    QObject * parent = nullptr);
 
 public: // Interface
@@ -132,21 +154,21 @@ signals:
     void countChanged(int count);
 
 private:
-    QMenu * m_menu = nullptr;
+    PlatformAgnosticMenu * m_menu = nullptr;
 
-    QActionGroup * m_group = nullptr;
+    PlatformAgnosticActionGroup * m_group = nullptr;
 
     QAbstractListModel * m_model = nullptr;
 
-    QList<QAction *> m_actions;
+    QList<PlatformAgnosticAction *> m_actions;
 
-    QAction * m_before = nullptr;
+    PlatformAgnosticAction * m_before = nullptr;
 };
 
 /**
  * @brief The BooleanPropertyAction class allows to bind a boolean Q_PROPERTY to a QAction
  */
-class BooleanPropertyAction: public QAction
+class BooleanPropertyAction: public QObject
 {
     Q_OBJECT
 public:
@@ -157,20 +179,26 @@ public:
      * @param propertyName the name of the property on the @a model
      * @param parent QObject parent
      */
-    BooleanPropertyAction(QString title, QObject* model , QString propertyName, QWidget *parent = nullptr);
+    BooleanPropertyAction(QString title, QObject* model , QString propertyName, QObject* parent = nullptr);
+
+    PlatformAgnosticAction *operator()() const;
 
 private slots:
     void setModelChecked(bool checked);
 private:
+    QPointer<PlatformAgnosticAction> m_action;
+
     QObject* m_model;
     QString m_propertyName;
 };
 
-class RecentMenu : public QMenu
+class RecentMenu : public QObject
 {
     Q_OBJECT
 public:
-    RecentMenu(MLRecentsModel* model, MediaLib* ml, QWidget *parent = nullptr);
+    RecentMenu(MLRecentsModel* model, MediaLib* ml, QObject* parent = nullptr);
+
+    PlatformAgnosticMenu *operator()() const;
 
 private slots:
     void onRowsRemoved(const QModelIndex &parent, int first, int last);
@@ -179,19 +207,26 @@ private slots:
     void onModelReset();
 
 private:
+    QPointer<PlatformAgnosticMenu> m_menu;
+
     MLRecentsModel* m_model = nullptr;
-    QAction* m_separator = nullptr;
+    PlatformAgnosticAction* m_separator = nullptr;
     MediaLib* m_ml = nullptr;
 
-    QList<QAction *> m_actions;
+    QList<PlatformAgnosticAction *> m_actions;
 };
 
-class BookmarkMenu : public QMenu
+class BookmarkMenu : public QObject
 {
     Q_OBJECT
 
 public:
-    BookmarkMenu(MediaLib * mediaLib, vlc_player_t * player, QWidget * parent = nullptr);
+    BookmarkMenu(MediaLib * mediaLib, vlc_player_t * player, QObject* parent = nullptr);
+
+    PlatformAgnosticMenu *operator()() const;
+
+private:
+    QPointer<PlatformAgnosticMenu> m_menu;
 };
 
 #endif // CUSTOM_MENUS_HPP

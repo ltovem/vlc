@@ -73,7 +73,7 @@ Item {
     function updateHover(obj, cb, index, hovered ) {
         root._countHovered += hovered ? 1 : -1
 
-        if (hovered && menubar.openMenuOnHover) {
+        if (hovered && (menubar.openMenuOnHover || (menuOpened && root._menuIndex !== index))) {
             cb.trigger(obj)
             root._menuIndex = index
         }

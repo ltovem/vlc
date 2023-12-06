@@ -119,7 +119,11 @@ Widgets.IconToolButton {
 
     // Children
 
-    SortMenu { id: sortMenu }
+    SortMenu {
+        id: sortMenu
+
+        ctx: MainCtx
+    }
 
 }
 

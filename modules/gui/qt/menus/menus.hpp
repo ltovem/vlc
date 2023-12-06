@@ -27,8 +27,28 @@
 #include "qt.hpp"
 
 #include "custom_menus.hpp"
+#include "widgets/native/platformagnosticmenu.hpp"
+#include "widgets/native/platformagnosticaction.hpp"
+#include "widgets/native/platformagnosticactiongroup.hpp"
 
 #include <QObject>
+
+template <class Menu>
+struct Types{ };
+
+template<>
+struct Types<QMenu>
+{
+    using actionType = QAction;
+    using iconType = QIcon;
+};
+
+template <>
+struct Types<PlatformAgnosticMenu>
+{
+    using actionType = PlatformAgnosticAction;
+    using iconType = QString;
+};
 
 class VLCMenuBar : public QObject
 {
@@ -39,10 +59,10 @@ public:
     VLCMenuBar(QObject* parent = nullptr);
 
     /* Popups Menus */
-    static QMenu* PopupMenu( qt_intf_t *, bool );
-    static QMenu* AudioPopupMenu( qt_intf_t *, bool );
-    static QMenu* VideoPopupMenu( qt_intf_t *, bool );
-    static QMenu* MiscPopupMenu( qt_intf_t *, bool );
+    static PlatformAgnosticMenu* PopupMenu( qt_intf_t *, bool );
+    static PlatformAgnosticMenu* AudioPopupMenu( qt_intf_t *, bool );
+    static PlatformAgnosticMenu* VideoPopupMenu( qt_intf_t *, bool );
+    static PlatformAgnosticMenu* MiscPopupMenu( qt_intf_t *, bool );
 
     /* Systray */
     static void updateSystrayMenu( MainCtx *, qt_intf_t  *,
@@ -53,37 +73,55 @@ public:
 
 protected:
     /* All main Menus */
-    static void FileMenu( qt_intf_t *, QMenu * );
 
-    static void ToolsMenu( qt_intf_t *, QMenu * );
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void FileMenu( qt_intf_t *, Menu * );
 
-    static void ViewMenu( qt_intf_t *, QMenu *);
+    template<class Menu>
+    static void ToolsMenu( qt_intf_t *, Menu * );
 
-    static void InterfacesMenu( qt_intf_t *p_intf, QMenu * );
-    static void ExtensionsMenu( qt_intf_t *p_intf, QMenu * );
+    template<class Menu, class Action = typename Types<Menu>::actionType, class Icon = typename Types<Menu>::iconType>
+    static void ViewMenu( qt_intf_t *, Menu *);
 
-    static void NavigMenu( qt_intf_t *, QMenu * );
+    template<class Menu>
+    static void InterfacesMenu( qt_intf_t *p_intf, Menu * );
 
-    static void RebuildNavigMenu(qt_intf_t *, QMenu *);
+    template<class Menu>
+    static void ExtensionsMenu( qt_intf_t *p_intf, Menu * );
 
-    static void VideoMenu( qt_intf_t *, QMenu * );
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void NavigMenu( qt_intf_t *, Menu * );
 
-    static void SubtitleMenu( qt_intf_t *, QMenu *current, bool b_popup = false );
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void RebuildNavigMenu(qt_intf_t *, Menu *);
 
-    static void AudioMenu( qt_intf_t *, QMenu * );
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void VideoMenu( qt_intf_t *, Menu * );
 
-    static void HelpMenu( QMenu *menu );
+    template<class Menu>
+    static void SubtitleMenu( qt_intf_t *, Menu *current, bool b_popup = false );
+
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void AudioMenu( qt_intf_t *, Menu * );
+
+    template<class Menu>
+    static void HelpMenu( Menu *menu );
 
     /* Popups Menus */
-    static void PopupMenuStaticEntries( QMenu *menu );
-    static void PopupMenuPlaylistEntries( QMenu *menu, qt_intf_t *p_intf );
-    static void PopupMenuPlaylistControlEntries( QMenu *menu, qt_intf_t *p_intf );
-    static void PopupMenuControlEntries( QMenu *menu, qt_intf_t *p_intf, bool b = true );
+    template<class Menu, class Action = typename Types<Menu>::actionType>
+    static void PopupMenuStaticEntries( Menu *menu );
+    template<class Menu, class Action = typename Types<Menu>::actionType, class Icon = typename Types<Menu>::iconType>
+    static void PopupMenuPlaylistEntries( Menu *menu, qt_intf_t *p_intf );
+    template<class Menu>
+    static void PopupMenuPlaylistControlEntries( Menu *menu, qt_intf_t *p_intf );
+    template<class Menu, class Action = typename Types<Menu>::actionType, class Icon = typename Types<Menu>::iconType>
+    static void PopupMenuControlEntries( Menu *menu, qt_intf_t *p_intf, bool b = true );
 
     /* recentMRL menu */
     static RendererMenu *rendererMenu;
 
-    static void updateAudioDevice(qt_intf_t *, QMenu* );
+    template<class ActionGroup, class Menu, class Action = typename Types<Menu>::actionType>
+    static void updateAudioDevice(qt_intf_t *, Menu* );
 };
 
 #endif

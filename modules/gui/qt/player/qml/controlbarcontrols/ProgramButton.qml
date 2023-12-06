@@ -42,6 +42,8 @@ Widgets.IconControlButton {
     QmlProgramMenu {
         id: menu
 
+        ctx: MainCtx
+
         player: Player
 
         onAboutToShow: root.requestLockUnlockAutoHide(true)

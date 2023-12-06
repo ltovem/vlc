@@ -23,6 +23,8 @@
 #include "extensions_manager.hpp"
 #include "player/player_controller.hpp"
 #include "extensions.hpp"
+#include "widgets/native/platformagnosticmenu.hpp"
+#include "widgets/native/platformagnosticaction.hpp"
 
 #include <vlc_modules.h>
 #include <vlc_interface.h>
@@ -129,7 +131,8 @@ void ExtensionsManager::reloadExtensions()
     emit extensionsUpdated();
 }
 
-void ExtensionsManager::menu( QMenu *current )
+template<class Menu, class Action, class Icon>
+void ExtensionsManager::menu( Menu *current )
 {
     assert( current != NULL );
     if( !isLoaded() )
@@ -140,7 +143,7 @@ void ExtensionsManager::menu( QMenu *current )
 
     vlc_mutex_lock( &p_extensions_manager->lock );
 
-    QAction *action;
+    PlatformAgnosticAction *action;
     extension_t *p_ext = NULL;
     int i_ext = 0;
     ARRAY_FOREACH( p_ext, p_extensions_manager->extensions )
@@ -149,13 +152,14 @@ void ExtensionsManager::menu( QMenu *current )
 
         if( b_Active && extension_HasMenu( p_extensions_manager, p_ext ) )
         {
-            QMenu *submenu = new QMenu(
+            const auto submenu = PlatformAgnosticMenu::createMenu(
                     qfu( p_ext->psz_shortdescription ? p_ext->psz_shortdescription: p_ext->psz_title ),
                     current );
             char **ppsz_titles = NULL;
             uint16_t *pi_ids = NULL;
             size_t i_num = 0;
-            action = current->addMenu( submenu );
+            current->addMenu( submenu );
+            action = PlatformAgnosticAction::createAction( submenu );
 
             action->setCheckable( true );
             action->setChecked( true );
@@ -169,7 +173,7 @@ void ExtensionsManager::menu( QMenu *current )
                     action = submenu->addAction( qfu( ppsz_titles[i] ) );
                     menuMapper->setMapping( action,
                                             MENU_MAP( pi_ids[i], i_ext ) );
-                    connect( action, &QAction::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
+                    connect( action, &Action::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
                     free( ppsz_titles[i] );
                 }
                 if( !i_num )
@@ -189,17 +193,17 @@ void ExtensionsManager::menu( QMenu *current )
             }
 
             submenu->addSeparator();
-            action = submenu->addAction( QIcon( ":/menu/clear.svg" ),
+            action = submenu->addAction( Icon( ":/menu/clear.svg" ),
                                          qtr( "Deactivate" ) );
             menuMapper->setMapping( action, MENU_MAP( 0, i_ext ) );
-            connect( action, &QAction::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
+            connect( action, &Action::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
         }
         else
         {
             action = current->addAction(
                     qfu( p_ext->psz_shortdescription ? p_ext->psz_shortdescription: p_ext->psz_title ) );
             menuMapper->setMapping( action, MENU_MAP( 0, i_ext ) );
-            connect( action, &QAction::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
+            connect( action, &Action::triggered, menuMapper, QOverload<>::of(&QSignalMapper::map) );
 
             if( !extension_TriggerOnly( p_extensions_manager, p_ext ) )
             {
@@ -340,3 +344,5 @@ void ExtensionsManager::metaChanged( input_item_t* )
     }
     vlc_mutex_unlock( &p_extensions_manager->lock );
 }
+
+template void ExtensionsManager::menu(PlatformAgnosticMenu*);

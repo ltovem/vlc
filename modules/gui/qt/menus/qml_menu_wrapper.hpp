@@ -33,6 +33,7 @@ class MLPlaylistModel;
 class NetworkDeviceModel;
 class NetworkMediaModel;
 class MainCtx;
+class PlatformAgnosticMenu;
 namespace vlc {
 namespace playlist {
 class PlaylistController;
@@ -53,6 +54,8 @@ class StringListMenu : public QObject
 {
     Q_OBJECT
 
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
 public:
     using QObject::QObject;
 
@@ -60,12 +63,17 @@ public:
 
 signals:
     void selected(int index, const QString &str);
+
+private:
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 
 class SortMenu : public QObject
 {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
 
     Q_PROPERTY(bool shown READ isShown NOTIFY shownChanged FINAL)
 
@@ -79,14 +87,14 @@ public:
     bool isShown() const { return m_shown; };
 
 protected:
-    virtual void onPopup(QMenu * menu);
+    virtual void onPopup(PlatformAgnosticMenu * menu);
 
 signals:
     void selected(int index);
     void shownChanged();
 
 private:
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
     bool m_shown = false;
 };
 
@@ -94,10 +102,8 @@ class SortMenuVideo : public SortMenu
 {
     Q_OBJECT
 
-    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
-
 protected: // SortMenu reimplementation
-    void onPopup(QMenu * menu) override;
+    void onPopup(PlatformAgnosticMenu * menu) override;
 
 signals:
     void grouping(MainCtx::Grouping grouping);
@@ -124,7 +130,7 @@ signals:
 public slots:
     void popup( QPoint pos );
 private:
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
     bool m_shown = false;
 };
 
@@ -139,6 +145,8 @@ class QmlMenuBar : public VLCMenuBar
 
 public:
     explicit QmlMenuBar(QObject *parent = nullptr);
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     //navigate to the left(-1)/right(1) menu
@@ -160,41 +168,11 @@ private slots:
     void onMenuClosed();
 
 private:
-    typedef QMenu* (*CreateMenuFunc)();
-    void popupMenuCommon( QQuickItem* button, std::function<void(QMenu*)> createMenuFunc);
-    std::unique_ptr<QMenu> m_menu;
+    typedef PlatformAgnosticMenu* (*CreateMenuFunc)();
+    void popupMenuCommon( QQuickItem* button, std::function<void(PlatformAgnosticMenu*)> createMenuFunc);
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
     QQuickItem* m_button = nullptr;
     friend class QmlMenuBarMenu;
-};
-
-//specialized QMenu for QmlMenuBar
-class QmlMenuBarMenu : public QMenu
-{
-    Q_OBJECT
-public:
-    QmlMenuBarMenu(QmlMenuBar* menubar, QWidget* parent = nullptr);
-    ~QmlMenuBarMenu();
-protected:
-    void mouseMoveEvent(QMouseEvent* mouseEvent) override;
-    void keyPressEvent(QKeyEvent *) override;
-    void keyReleaseEvent(QKeyEvent *) override;
-private:
-    QmlMenuBar* m_menubar = nullptr;
-};
-
-class QmlMenuPositioner : public QObject
-{
-public:
-    explicit QmlMenuPositioner(QObject * parent = nullptr);
-
-public: // Interface
-    void popup(QMenu * menu, const QPoint & position, bool above);
-
-public: // Events
-    bool eventFilter(QObject * object, QEvent * event);
-
-private:
-    QPoint m_position;
 };
 
 class QmlBookmarkMenu : public QObject
@@ -216,14 +194,14 @@ signals:
     void aboutToShow();
 
 private:
-    QmlMenuPositioner m_positioner;
-
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 class QmlProgramMenu : public QObject
 {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
 
     SIMPLE_MENU_PROPERTY(PlayerController *, player, nullptr)
 
@@ -238,9 +216,8 @@ signals:
     void aboutToShow();
 
 private:
-    QmlMenuPositioner m_positioner;
 
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 class QmlRendererMenu : public QObject
@@ -260,7 +237,6 @@ signals:
     void aboutToShow();
 
 private:
-    QmlMenuPositioner m_positioner;
 
     std::unique_ptr<RendererMenu> m_menu;
 };
@@ -270,6 +246,8 @@ private:
 class QmlTrackMenu : public QObject
 {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
 
 public: // Enums
     enum Action
@@ -323,6 +301,9 @@ protected: // QmlTrackMenu implementation
 
 class PlaylistListContextMenu : public QObject {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
     SIMPLE_MENU_PROPERTY(MLPlaylistListModel *, model, nullptr)
 public:
     PlaylistListContextMenu(QObject * parent = nullptr);
@@ -330,11 +311,14 @@ public:
 public slots:
     void popup(const QModelIndexList & selected, QPoint pos, QVariantMap options = {});
 private:
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 class PlaylistMediaContextMenu : public QObject {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
     SIMPLE_MENU_PROPERTY(MLPlaylistModel *, model, nullptr)
 public:
     PlaylistMediaContextMenu(QObject * parent = nullptr);
@@ -344,11 +328,14 @@ public slots:
 signals:
     void showMediaInformation(int index);
 private:
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 class NetworkMediaContextMenu : public QObject {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
     SIMPLE_MENU_PROPERTY(NetworkMediaModel*, model, nullptr)
 public:
     NetworkMediaContextMenu(QObject* parent = nullptr);
@@ -361,6 +348,9 @@ private:
 
 class NetworkDeviceContextMenu : public QObject {
     Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
     SIMPLE_MENU_PROPERTY(NetworkDeviceModel*, model, nullptr)
 public:
     NetworkDeviceContextMenu(QObject* parent = nullptr);
@@ -372,6 +362,7 @@ private:
 
 class PlaylistContextMenu : public QObject {
     Q_OBJECT
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
     SIMPLE_MENU_PROPERTY(vlc::playlist::PlaylistListModel*, model, nullptr)
     SIMPLE_MENU_PROPERTY(vlc::playlist::PlaylistController*, controler, nullptr)
     SIMPLE_MENU_PROPERTY(ListSelectionModel*, selectionModel, nullptr)
@@ -381,7 +372,7 @@ public:
 public slots:
     void popup(int currentIndex, QPoint pos );
 private:
-    std::unique_ptr<QMenu> m_menu;
+    std::unique_ptr<PlatformAgnosticMenu> m_menu;
 };
 
 #undef SIMPLE_MENU_PROPERTY
