@@ -330,13 +330,13 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/list_selection_model.hpp \
 	gui/qt/util/animators.cpp \
 	gui/qt/util/animators.hpp \
+	gui/qt/util/navigation_attached.cpp \
+	gui/qt/util/navigation_attached.hpp \
 	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
 	gui/qt/widgets/native/csdthemeimage.cpp \
 	gui/qt/widgets/native/csdthemeimage.hpp \
 	gui/qt/widgets/native/interface_widgets.cpp \
 	gui/qt/widgets/native/interface_widgets.hpp \
-	gui/qt/widgets/native/navigation_attached.cpp \
-	gui/qt/widgets/native/navigation_attached.hpp \
 	gui/qt/widgets/native/mlfolderseditor.cpp \
 	gui/qt/widgets/native/mlfolderseditor.hpp \
 	gui/qt/widgets/native/qvlcframe.cpp \
@@ -516,10 +516,10 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/dismiss_popup_event_filter.moc.cpp \
 	gui/qt/util/list_selection_model.moc.cpp \
 	gui/qt/util/animators.moc.cpp \
+	gui/qt/util/navigation_attached.moc.cpp \
 	gui/qt/widgets/native/csdthemeimage.moc.cpp \
 	gui/qt/widgets/native/customwidgets.moc.cpp \
 	gui/qt/widgets/native/interface_widgets.moc.cpp \
-	gui/qt/widgets/native/navigation_attached.moc.cpp \
 	gui/qt/widgets/native/mlfolderseditor.moc.cpp \
 	gui/qt/widgets/native/roundimage.moc.cpp \
 	gui/qt/widgets/native/roundimage_p.moc.cpp \

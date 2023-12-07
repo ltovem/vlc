@@ -45,6 +45,7 @@
 #include "util/csdbuttonmodel.hpp"
 #include "util/vlctick.hpp"
 #include "util/list_selection_model.hpp"
+#include "util/navigation_attached.hpp"
 
 #include "dialogs/help/aboutmodel.hpp"
 #include "dialogs/dialogs_provider.hpp"
@@ -60,7 +61,6 @@
 
 #include "widgets/native/csdthemeimage.hpp"
 #include "widgets/native/roundimage.hpp"
-#include "widgets/native/navigation_attached.hpp"
 #include "widgets/native/viewblockingrectangle.hpp"
 
 #include "videosurface.hpp"
