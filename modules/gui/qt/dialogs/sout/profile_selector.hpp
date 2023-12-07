@@ -29,7 +29,7 @@
 #include <QSet>
 #include <QHash>
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "util/soutchain.hpp"
 
 /* Auto-generated from .ui files */

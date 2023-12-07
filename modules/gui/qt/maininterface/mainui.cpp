@@ -59,9 +59,9 @@
 
 #include "menus/qml_menu_wrapper.hpp"
 
-#include "widgets/native/csdthemeimage.hpp"
-#include "widgets/native/roundimage.hpp"
-#include "widgets/native/viewblockingrectangle.hpp"
+#include "widgets/csdthemeimage.hpp"
+#include "widgets/roundimage.hpp"
+#include "widgets/viewblockingrectangle.hpp"
 
 #include "videosurface.hpp"
 #include "mainctx.hpp"

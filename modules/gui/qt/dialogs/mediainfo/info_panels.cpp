@@ -28,7 +28,7 @@
 
 #include "qt.hpp"
 #include "info_panels.hpp"
-#include "widgets/native/interface_widgets.hpp"
+#include "widgets/interface_widgets.hpp"
 #include "info_widgets.hpp"
 #include "dialogs/fingerprint/fingerprintdialog.hpp"
 #include "dialogs/fingerprint/chromaprint.hpp"

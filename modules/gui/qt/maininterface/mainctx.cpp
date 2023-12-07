@@ -35,10 +35,10 @@
 #include "util/renderer_manager.hpp"
 #include "util/csdbuttonmodel.hpp"
 
-#include "widgets/native/customwidgets.hpp"               // qtEventToVLCKey, QVLCStackedWidget
+#include "widgets/customwidgets.hpp"               // qtEventToVLCKey, QVLCStackedWidget
 #include "util/qt_dirs.hpp"                     // toNativeSeparators
 
-#include "widgets/native/interface_widgets.hpp"     // bgWidget, videoWidget
+#include "widgets/interface_widgets.hpp"     // bgWidget, videoWidget
 
 #include "playlist/playlist_controller.hpp"
 

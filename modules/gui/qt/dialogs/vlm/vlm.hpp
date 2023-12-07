@@ -33,7 +33,7 @@
 /* Auto-generated from .ui files */
 #include "ui_vlm.h"
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "util/singleton.hpp"
 #include <QDateTime>
 

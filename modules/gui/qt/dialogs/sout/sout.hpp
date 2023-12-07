@@ -32,7 +32,7 @@
 /* Auto-generated from .ui files */
 #include "ui_sout.h"
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "util/soutchain.hpp"
 
 #include <QWizard>

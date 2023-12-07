@@ -38,7 +38,7 @@
 #include <QComboBox>
 #include <QCloseEvent>
 #include <QKeyEvent>
-#include "widgets/native/customwidgets.hpp"
+#include "widgets/customwidgets.hpp"
 
 #include <algorithm>
 

@@ -27,7 +27,7 @@
 
 #include "plugins.hpp"
 
-#include "widgets/native/searchlineedit.hpp"
+#include "widgets/searchlineedit.hpp"
 #include "dialogs/extensions/extensions_manager.hpp"
 #include "addons_manager.hpp"
 #include "util/animators.hpp"

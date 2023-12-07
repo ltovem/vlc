@@ -24,7 +24,7 @@
 #define QVLC_PLAYLISTS_H_ 1
 
 // VLC includes
-#include <widgets/native/qvlcframe.hpp>
+#include <widgets/qvlcframe.hpp>
 #include <util/singleton.hpp>
 
 // Forward declarations

@@ -332,18 +332,18 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/animators.hpp \
 	gui/qt/util/navigation_attached.cpp \
 	gui/qt/util/navigation_attached.hpp \
-	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
-	gui/qt/widgets/native/csdthemeimage.cpp \
-	gui/qt/widgets/native/csdthemeimage.hpp \
-	gui/qt/widgets/native/interface_widgets.cpp \
-	gui/qt/widgets/native/interface_widgets.hpp \
-	gui/qt/widgets/native/mlfolderseditor.cpp \
-	gui/qt/widgets/native/mlfolderseditor.hpp \
-	gui/qt/widgets/native/qvlcframe.cpp \
-	gui/qt/widgets/native/qvlcframe.hpp \
-	gui/qt/widgets/native/roundimage.cpp gui/qt/widgets/native/roundimage.hpp gui/qt/widgets/native/roundimage_p.hpp \
-	gui/qt/widgets/native/searchlineedit.cpp gui/qt/widgets/native/searchlineedit.hpp \
-	gui/qt/widgets/native/viewblockingrectangle.cpp gui/qt/widgets/native/viewblockingrectangle.hpp
+	gui/qt/widgets/customwidgets.cpp gui/qt/widgets/customwidgets.hpp \
+	gui/qt/widgets/csdthemeimage.cpp \
+	gui/qt/widgets/csdthemeimage.hpp \
+	gui/qt/widgets/interface_widgets.cpp \
+	gui/qt/widgets/interface_widgets.hpp \
+	gui/qt/widgets/mlfolderseditor.cpp \
+	gui/qt/widgets/mlfolderseditor.hpp \
+	gui/qt/widgets/qvlcframe.cpp \
+	gui/qt/widgets/qvlcframe.hpp \
+	gui/qt/widgets/roundimage.cpp gui/qt/widgets/roundimage.hpp gui/qt/widgets/roundimage_p.hpp \
+	gui/qt/widgets/searchlineedit.cpp gui/qt/widgets/searchlineedit.hpp \
+	gui/qt/widgets/viewblockingrectangle.cpp gui/qt/widgets/viewblockingrectangle.hpp
 if HAVE_WIN32
 libqt_plugin_la_SOURCES += \
 	gui/qt/maininterface/mainctx_win32.cpp \
@@ -517,14 +517,14 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/list_selection_model.moc.cpp \
 	gui/qt/util/animators.moc.cpp \
 	gui/qt/util/navigation_attached.moc.cpp \
-	gui/qt/widgets/native/csdthemeimage.moc.cpp \
-	gui/qt/widgets/native/customwidgets.moc.cpp \
-	gui/qt/widgets/native/interface_widgets.moc.cpp \
-	gui/qt/widgets/native/mlfolderseditor.moc.cpp \
-	gui/qt/widgets/native/roundimage.moc.cpp \
-	gui/qt/widgets/native/roundimage_p.moc.cpp \
-	gui/qt/widgets/native/searchlineedit.moc.cpp \
-	gui/qt/widgets/native/viewblockingrectangle.moc.cpp
+	gui/qt/widgets/csdthemeimage.moc.cpp \
+	gui/qt/widgets/customwidgets.moc.cpp \
+	gui/qt/widgets/interface_widgets.moc.cpp \
+	gui/qt/widgets/mlfolderseditor.moc.cpp \
+	gui/qt/widgets/roundimage.moc.cpp \
+	gui/qt/widgets/roundimage_p.moc.cpp \
+	gui/qt/widgets/searchlineedit.moc.cpp \
+	gui/qt/widgets/viewblockingrectangle.moc.cpp
 
 if HAVE_WIN32
 nodist_libqt_plugin_la_SOURCES += gui/qt/maininterface/mainctx_win32.moc.cpp \

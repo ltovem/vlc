@@ -23,7 +23,7 @@
 #ifndef QVLC_MESSAGES_DIALOG_H_
 #define QVLC_MESSAGES_DIALOG_H_ 1
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "util/singleton.hpp"
 
 /* Auto-generated from .ui files */

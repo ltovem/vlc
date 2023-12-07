@@ -29,7 +29,7 @@
 #include "dialogs/sout/sout.hpp"
 #include "util/qt_dirs.hpp"
 #include "dialogs/sout/sout_widgets.hpp"
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 
 #include <QString>
 

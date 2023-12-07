@@ -25,7 +25,7 @@
 
 #include <QUrl>
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 
 class QLineEdit;
 class QCheckBox;

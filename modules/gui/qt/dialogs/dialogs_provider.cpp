@@ -35,7 +35,7 @@
 #include "playlist/playlist_controller.hpp"
 #include "menus/menus.hpp"
 #include "util/qt_dirs.hpp"
-#include "widgets/native/customwidgets.hpp" /* VLCKeyToString() */
+#include "widgets/customwidgets.hpp" /* VLCKeyToString() */
 #include "maininterface/mainctx.hpp"
 
 /* The dialogs */

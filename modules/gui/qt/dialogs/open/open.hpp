@@ -29,7 +29,7 @@
 
 #include <vlc_common.h>
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "dialogs/open/open_panels.hpp"
 #include "util/singleton.hpp"
 
