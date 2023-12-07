@@ -328,8 +328,8 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/dismiss_popup_event_filter.hpp \
 	gui/qt/util/list_selection_model.cpp \
 	gui/qt/util/list_selection_model.hpp \
-	gui/qt/widgets/native/animators.cpp \
-	gui/qt/widgets/native/animators.hpp \
+	gui/qt/util/animators.cpp \
+	gui/qt/util/animators.hpp \
 	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
 	gui/qt/widgets/native/csdthemeimage.cpp \
 	gui/qt/widgets/native/csdthemeimage.hpp \
@@ -515,7 +515,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/vlctick.moc.cpp \
 	gui/qt/util/dismiss_popup_event_filter.moc.cpp \
 	gui/qt/util/list_selection_model.moc.cpp \
-	gui/qt/widgets/native/animators.moc.cpp \
+	gui/qt/util/animators.moc.cpp \
 	gui/qt/widgets/native/csdthemeimage.moc.cpp \
 	gui/qt/widgets/native/customwidgets.moc.cpp \
 	gui/qt/widgets/native/interface_widgets.moc.cpp \

@@ -908,8 +908,8 @@ modules/gui/qt/util/singleton.hpp
 modules/gui/qt/util/validators.cpp
 modules/gui/qt/util/validators.hpp
 modules/gui/qt/util/vlctick.cpp
-modules/gui/qt/widgets/native/animators.cpp
-modules/gui/qt/widgets/native/animators.hpp
+modules/gui/qt/widgets/animators.cpp
+modules/gui/qt/widgets/animators.hpp
 modules/gui/qt/widgets/native/customwidgets.cpp
 modules/gui/qt/widgets/native/customwidgets.hpp
 modules/gui/qt/widgets/native/interface_widgets.cpp

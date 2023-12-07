@@ -30,7 +30,7 @@
 #include "widgets/native/searchlineedit.hpp"
 #include "dialogs/extensions/extensions_manager.hpp"
 #include "addons_manager.hpp"
-#include "widgets/native/animators.hpp"
+#include "util/animators.hpp"
 #include "util/imagehelper.hpp"
 
 #include <cassert>
