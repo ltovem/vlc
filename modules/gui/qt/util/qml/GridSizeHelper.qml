@@ -40,10 +40,20 @@ Item{
     readonly property int textHeight: (titleHeight ? titleHeight + titleTopMargin + VLCStyle.margin_xxxsmall / 2: 0) +
                                       (subtitleHeight ? subtitleHeight + subtitleTopMargin + VLCStyle.margin_xxxsmall / 2 : 0)
 
-    property int horizontalSpacing: VLCStyle.column_spacing
+    property int horizontalSpacing: _defaultHorizontalSpacing
+    readonly property int _defaultHorizontalSpacing: VLCStyle.column_spacing
 
-    readonly property int nbItemPerRow: Math.max(Math.floor((availableWidth + horizontalSpacing) /
-                                                            (basePictureWidth + horizontalSpacing)), 1)
+    readonly property int nbItemPerRow: Math.max(Math.floor((availableWidth + _defaultHorizontalSpacing) /
+                                                            (basePictureWidth + _defaultHorizontalSpacing)), 1)
+
+    onNbItemPerRowChanged: {
+        if(nbItemPerRow === 2)
+            horizontalSpacing = VLCStyle.margin_large + VLCStyle.margin_xxxsmall
+        else if(nbItemPerRow === 3)
+            horizontalSpacing = VLCStyle.margin_large + VLCStyle.margin_xxsmall
+        else
+            horizontalSpacing = _defaultHorizontalSpacing
+    }
 
     // NOTE: Responsive cell sizing based on available width
     readonly property int cellWidth: (availableWidth + horizontalSpacing) / nbItemPerRow - horizontalSpacing
