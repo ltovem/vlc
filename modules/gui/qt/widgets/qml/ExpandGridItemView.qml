@@ -45,6 +45,8 @@ Widgets.ExpandGridView {
     property alias subtitleTopMargin: gridHelper.subtitleTopMargin
     property alias subtitleHeight: gridHelper.subtitleHeight
 
+    property alias maxNbItemPerRow: gridHelper.maxNbItemPerRow
+
     // Settings
 
     displayMarginEnd: g_mainDisplay.displayMargin
@@ -63,5 +65,7 @@ Widgets.ExpandGridView {
         id: gridHelper
 
         availableWidth: root._availableContentWidth
+
+        maxNbItemPerRow: basePictureWidth === basePictureHeight ? 10 : 6
     }
 }

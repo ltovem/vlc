@@ -43,8 +43,17 @@ Item{
     property int horizontalSpacing: _defaultHorizontalSpacing
     readonly property int _defaultHorizontalSpacing: VLCStyle.column_spacing
 
-    readonly property int nbItemPerRow: Math.max(Math.floor((availableWidth + _defaultHorizontalSpacing) /
-                                                            (basePictureWidth + _defaultHorizontalSpacing)), 1)
+    property int maxNbItemPerRow
+    readonly property int nbItemPerRow: {
+        let _nbItemPerRow = Math.max(
+            Math.floor(
+                (availableWidth + _defaultHorizontalSpacing) /
+                (basePictureWidth + _defaultHorizontalSpacing)
+            ), 1
+        )
+
+        return maxNbItemPerRow ? Math.min(_nbItemPerRow, maxNbItemPerRow) : _nbItemPerRow
+    }
 
     onNbItemPerRowChanged: {
         if(nbItemPerRow === 2)
@@ -59,8 +68,28 @@ Item{
     readonly property int cellWidth: (availableWidth + horizontalSpacing) / nbItemPerRow - horizontalSpacing
     readonly property int cellHeight: (basePictureHeight / basePictureWidth) * cellWidth + textHeight
 
+    //NOTE: These factors have been selected because they downscale the thumbnails in most of the cases,
+    //      for a balance of performance/quality
+    property real pictureWidthResizeFactor: {
+        if(maxNbItemPerRow === 6)
+            return 2.2
+        else
+            return 2.7
+    }
+
+    property real appWidthFactor:{
+        if (VLCStyle.appWidth <= 1920)
+            return 0.5
+        else if (VLCStyle.appWidth <= 2560)
+            return 0.7
+        else
+            return 1
+    }
+
     // NOTE: Find the maximum picture sizes until nbItemPerRow changes,
     //       so that we can downscale the thumbnails
-    readonly property int maxPictureWidth: (basePictureWidth + horizontalSpacing) * (1 + 1 / nbItemPerRow) - horizontalSpacing
+    readonly property int maxPictureWidth: nbItemPerRow == maxNbItemPerRow ? Math.floor(basePictureWidth *
+                                                                                        pictureWidthResizeFactor * appWidthFactor):
+                                               (basePictureWidth + horizontalSpacing) * (1 + 1 / nbItemPerRow) - horizontalSpacing
     readonly property int maxPictureHeight: (basePictureHeight / basePictureWidth) * maxPictureWidth
 }
