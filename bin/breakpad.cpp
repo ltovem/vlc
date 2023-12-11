@@ -44,9 +44,9 @@ extern "C"
 
 void CheckCrashDump( const wchar_t* path )
 {
-    wchar_t pattern[MAX_PATH];
+    wchar_t pattern[WIN10_MAX_LONG_PATH];
     WIN32_FIND_DATA data;
-    _snwprintf( pattern, MAX_PATH, L"%s/*.dmp", path );
+    _snwprintf( pattern, WIN10_MAX_LONG_PATH, L"%s/*.dmp", path );
     HANDLE h = FindFirstFile( pattern, &data );
     if (h == INVALID_HANDLE_VALUE)
         return;
@@ -58,8 +58,8 @@ void CheckCrashDump( const wchar_t* path )
     params[L"ver"] = TEXT(PACKAGE_VERSION);
     do
     {
-        wchar_t fullPath[MAX_PATH];
-        _snwprintf( fullPath, MAX_PATH, L"%s/%s", path, data.cFileName );
+        wchar_t fullPath[WIN10_MAX_LONG_PATH];
+        _snwprintf( fullPath, WIN10_MAX_LONG_PATH, L"%s/%s", path, data.cFileName );
         if( answer == IDYES )
         {
             std::map<std::wstring, std::wstring> files;

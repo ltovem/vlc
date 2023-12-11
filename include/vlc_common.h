@@ -1216,4 +1216,8 @@ VLC_API const char * VLC_Compiler( void ) VLC_USED;
 #define ARRAY_STATIC_SIZE  static
 #endif
 
+#if defined( _WIN32 )
+#   define WIN10_MAX_LONG_PATH 65536
+#endif
+
 #endif /* !VLC_COMMON_H */
