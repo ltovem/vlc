@@ -234,6 +234,8 @@ QtObject {
     property int appHeight: 0
 
     readonly property int smallWidth: MainCtx.dp(600, scale)
+    readonly property int mediumWidth: MainCtx.dp(1000, scale)
+
     readonly property bool isScreenSmall: appWidth <= smallWidth
 
     //global application margin "safe area"
@@ -327,4 +329,17 @@ QtObject {
         return Math.floor((width + column_spacing) / (column_width + column_spacing))
     }
 
+    //dynamic margins based on screen width
+    function dynamicAppMargins(width) {
+        var minMargin = margin_normal
+        var maxMargin = margin_large
+
+        if (width < smallWidth)
+            return minMargin;
+        else if(width > mediumWidth)
+            return maxMargin;
+        else
+            return minMargin + (width - smallWidth) * (maxMargin - minMargin) /
+                    (mediumWidth - smallWidth);
+    }
 }
