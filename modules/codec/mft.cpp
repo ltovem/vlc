@@ -1536,11 +1536,6 @@ static int FindMFT(decoder_t *p_dec)
         category = MFT_CATEGORY_VIDEO_DECODER;
         input_type.guidMajorType = MFMediaType_Video;
         input_type.guidSubtype = FormatToGUID(video_format_table, p_dec->fmt_in->i_codec);
-        if(input_type.guidSubtype == GUID_NULL) {
-            /* Codec is not well known. Construct a MF transform subtype from the fourcc */
-            input_type.guidSubtype = MFVideoFormat_Base;
-            input_type.guidSubtype.Data1 = p_dec->fmt_in->i_codec;
-        }
     }
     else
     {
