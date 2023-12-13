@@ -484,10 +484,14 @@ rtp_decode (struct vlc_logger *logger, const rtp_session_t *session, rtp_source_
     if (src->pt.instance != pt) {
         /* Change the active payload type for this source. */
         if (src->pt.instance != NULL)
+        {
             vlc_rtp_pt_end(src->pt.instance, src->pt.opaque);
+            src->pt.instance = NULL;
+        }
 
+        if(vlc_rtp_pt_begin(pt, &src->pt.opaque) != VLC_SUCCESS)
+            goto drop;
         src->pt.instance = pt;
-        src->pt.opaque = vlc_rtp_pt_begin(pt);
     }
 
     /* Computes the PTS from the RTP timestamp and payload RTP frequency.

@@ -33,7 +33,7 @@
 
 #include "rtp.h"
 
-static void *rtp_opus_init(struct vlc_rtp_pt *pt)
+static int rtp_opus_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     VLC_UNUSED(pt);
 
@@ -46,14 +46,14 @@ static void *rtp_opus_init(struct vlc_rtp_pt *pt)
                                        0x00, 0x00, 0x00 }; /* gain / mapping */
     fmt.p_extra = malloc(sizeof(header));
     if(!fmt.p_extra)
-        return NULL;
+        return VLC_ENOMEM;
     fmt.i_extra = sizeof(header);
     memcpy(fmt.p_extra, header, sizeof(header));
 
-    struct vlc_rtp_es *es = vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
     es_format_Clean(&fmt);
 
-    return es;
+    return VLC_SUCCESS;
 }
 
 static void rtp_opus_destroy(struct vlc_rtp_pt *pt, void *data)

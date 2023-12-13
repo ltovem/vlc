@@ -47,18 +47,19 @@ struct rtp_xiph_source {
     uint32_t     ident;
 };
 
-static void *xiph_init(struct vlc_rtp_pt *pt)
+static int xiph_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_xiph_source *self = malloc(sizeof (*self));
 
     if (self == NULL)
-        return NULL;
+        return VLC_ENOMEM;
 
     self->id = NULL;
     self->block = NULL;
     self->ident = 0xffffffff; /* impossible value on the wire */
     (void) pt;
-    return self;
+    *ppriv = self;
+    return VLC_SUCCESS;
 }
 
 static void xiph_destroy(struct vlc_rtp_pt *pt, void *data)

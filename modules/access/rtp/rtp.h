@@ -105,9 +105,10 @@ struct vlc_rtp_pt_operations {
      * for each source.
      *
      * \param pt RTP payload type being taken into use
-     * \return a data pointer for decode() and destroy() callbacks
+     * \param ppriv data storage pointer for decode() and destroy() callbacks
+     * \return VLC_SUCCESS on success, an error code on failure.
      */
-    void *(*init)(struct vlc_rtp_pt *pt);
+    int (*init)(struct vlc_rtp_pt *pt, void **ppriv);
 
     /**
      * Stops using a payload type.
@@ -190,12 +191,13 @@ void vlc_rtp_pt_release(struct vlc_rtp_pt *pt);
  * type with an unique RTP source.
  *
  * @param pt RTP payload type to associate with a source
- * @return private data for the type-source association
+ * @param ppriv private data storage for the type-source association
+ * @return VLC_SUCCESS on success, an error code on failure.
  */
-static inline void *vlc_rtp_pt_begin(struct vlc_rtp_pt *pt)
+static inline int vlc_rtp_pt_begin(struct vlc_rtp_pt *pt, void **ppriv)
 {
     assert(pt->ops->init != NULL);
-    return pt->ops->init(pt);
+    return pt->ops->init(pt, ppriv);
 }
 
 /**
