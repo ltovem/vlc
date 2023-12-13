@@ -44,6 +44,7 @@
 #include <vlc_decoder.h>
 #include <vlc_memstream.h>
 #include <vlc_tracer.h>
+#include <vlc_stt.h>
 
 #include "input_internal.h"
 #include "../clock/input_clock.h"
@@ -140,6 +141,9 @@ struct es_out_id_t
     vlc_input_decoder_t   *p_dec_record;
     vlc_clock_t *p_clock;
 
+    /* Used to store the stt es when is created */
+    es_out_id_t *stt_es;
+
     /* Used by vlc_clock_cbs, need to be const during the lifetime of the clock */
     bool master;
 
@@ -198,6 +202,24 @@ typedef struct
     int         i_mode;
 
     es_out_es_props_t video, audio, sub;
+
+    /* Speech-To-Text */
+    struct {
+        bool enabled;
+        enum {
+            VLC_STT_LOADER_UNINIT,
+            VLC_STT_LOADER_ERROR,
+            VLC_STT_LOADER_LOADING,
+            VLC_STT_LOADER_DONE,
+        } status;
+        enum {
+            VLC_STT_NOTWAITING,
+            VLC_STT_WAITING,
+            VLC_STT_REQUESTSTOPWAITING,
+        } wait;
+        void *ctx;
+        input_resource_t *resource;
+    } stt;
 
     /* es/group to select */
     int         i_group_id;
@@ -674,6 +696,9 @@ static bool EsOutDecodersIsEmpty( es_out_t *out )
             return true;
     }
 
+    if (p_sys->stt.wait == VLC_STT_REQUESTSTOPWAITING)
+        return false;
+
     foreach_es_then_es_slaves(es)
     {
         if( es->p_dec && !vlc_input_decoder_IsEmpty( es->p_dec ) )
@@ -899,7 +924,12 @@ static void EsOutChangePosition( es_out_t *out, bool b_flush,
         {
             if( b_flush && p_es != p_next_frame_es )
                 vlc_input_decoder_Flush( p_es->p_dec );
-            if( !p_sys->b_buffering )
+            /**
+             * Start to wait only if is not already waiting.
+             * Used to prevent calling StartWait multiple times when the
+             * stt model is loading.
+             */
+            if( !p_sys->b_buffering && p_sys->stt.wait == VLC_STT_NOTWAITING)
             {
                 vlc_input_decoder_StartWait( p_es->p_dec );
                 if( p_es->p_dec_record != NULL )
@@ -907,6 +937,11 @@ static void EsOutChangePosition( es_out_t *out, bool b_flush,
             }
         }
         p_es->i_pts_level = VLC_TICK_INVALID;
+    }
+
+    if (!p_sys->b_buffering && p_sys->stt.enabled)
+    {
+        p_sys->stt.wait = VLC_STT_WAITING;
     }
 
     es_out_pgrm_t *pgrm;
@@ -947,6 +982,7 @@ static inline void EsOutStopWait(es_out_t *out)
         if (es->p_dec_record)
             vlc_input_decoder_StopWait(es->p_dec_record);
     }
+    p_sys->stt.wait = VLC_STT_NOTWAITING;
 }
 
 static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
@@ -1016,18 +1052,20 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
         return;
     }
 
-    const vlc_tick_t i_decoder_buffering_start = vlc_tick_now();
-    foreach_es_then_es_slaves(p_es)
-    {
-        if( !p_es->p_dec || p_es->fmt.i_cat == SPU_ES )
-            continue;
-        vlc_input_decoder_Wait( p_es->p_dec );
-        if( p_es->p_dec_record )
-            vlc_input_decoder_Wait( p_es->p_dec_record );
-    }
+    if (p_sys->stt.wait == VLC_STT_WAITING) {
+        const vlc_tick_t i_decoder_buffering_start = vlc_tick_now();
+        foreach_es_then_es_slaves(p_es)
+        {
+            if( !p_es->p_dec || p_es->fmt.i_cat == SPU_ES )
+                continue;
+            vlc_input_decoder_Wait( p_es->p_dec );
+            if( p_es->p_dec_record )
+                vlc_input_decoder_Wait( p_es->p_dec_record );
+        }
 
-    msg_Dbg( p_sys->p_input, "Decoder wait done in %d ms",
-              (int)MS_FROM_VLC_TICK(vlc_tick_now() - i_decoder_buffering_start) );
+        msg_Dbg( p_sys->p_input, "Decoder wait done in %d ms",
+                (int)MS_FROM_VLC_TICK(vlc_tick_now() - i_decoder_buffering_start) );
+    }
 
     /* Here is a good place to destroy unused vout with every demuxer */
     EsOutStopFreeVout( out );
@@ -1072,6 +1110,11 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
                                i_stream_start);
     vlc_clock_main_Unlock(p_sys->p_pgrm->clocks.main);
 
+    if (p_sys->stt.status == VLC_STT_LOADER_LOADING)
+    {
+        p_sys->stt.wait = VLC_STT_REQUESTSTOPWAITING;
+        return;
+    }
     EsOutStopWait(out);
 }
 static void EsOutDecodersChangePause( es_out_t *out, bool b_paused, vlc_tick_t i_date )
@@ -2070,7 +2113,7 @@ VLC_MALLOC static char *EsOutCreateStrId( es_out_id_t *es, bool stable, const ch
     if( p_master )
     {
         vlc_memstream_puts( &ms, p_master->id.str_id );
-        vlc_memstream_puts( &ms, "/cc/" );
+        vlc_memstream_puts( &ms, es->fmt.i_codec == VLC_CODEC_STT ? "/stt/" : "/cc/" );
     }
     else if ( id )
     {
@@ -2218,6 +2261,9 @@ static es_out_id_t *EsOutAddLocked( es_out_t *out, input_source_t *source,
     es->p_dec = NULL;
     es->p_dec_record = NULL;
     es->p_clock = NULL;
+
+    es->stt_es = NULL;
+
     es->master = false;
     vlc_vector_init(&es->sub_es_vec);
     es->p_master = p_master;
@@ -2443,6 +2489,160 @@ static void EsOutDestroyDecoder( es_out_t *out, es_out_id_t *p_es )
     es_format_Clean( &p_es->fmt_out );
 }
 
+static int EsOutSttCtxCbLocked(const struct vlc_stt_ctx *ctx, void *data)
+{
+    es_out_id_t *es = data;
+    es_out_t *out = es->out;
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+
+    sys->stt.ctx = ctx->data;
+
+    if (ctx->data == NULL) {
+        sys->stt.status = VLC_STT_LOADER_ERROR;
+        goto error_stt_cb;
+    }
+
+    if (es->p_master->p_dec == NULL)
+    {
+        goto error_stt_cb;
+    }
+
+    vlc_stt_extra_t *extra = es->fmt.p_extra;
+    if (extra == NULL)
+    {
+        goto error_stt_cb;
+    }
+    extra->fmt = es->p_master->fmt_out.audio;
+    extra->ctx = *ctx;
+
+    sys->stt.status = VLC_STT_LOADER_DONE;
+
+    if (!AOUT_FMT_LINEAR(&es->p_master->fmt_out.audio))
+        goto error_stt_cb;
+
+    EsOutCreateDecoder(out, es);
+
+    if(es->p_dec == NULL || es->p_pgrm != sys->p_pgrm)
+    {
+        goto error_stt_cb;
+    }
+
+    EsOutSendEsEvent(out, es, VLC_INPUT_ES_SELECTED, false);
+
+    if (sys->stt.wait == VLC_STT_REQUESTSTOPWAITING)
+    {
+        EsOutStopWait(out);
+        sys->stt.wait = VLC_STT_NOTWAITING;
+    }
+
+    return VLC_SUCCESS;
+
+error_stt_cb:
+    if (es->p_dec != NULL)
+    {
+        EsOutDestroyDecoder(out, es);
+    }
+
+    if (sys->stt.wait == VLC_STT_REQUESTSTOPWAITING)
+    {
+        EsOutStopWait(out);
+        sys->stt.wait = VLC_STT_NOTWAITING;
+    }
+
+    return VLC_EGENERIC;
+}
+
+static int EsOutSttCtxCb(const struct vlc_stt_ctx *ctx, void *data)
+{
+    es_out_id_t *es = data;
+    es_out_t *out = es->out;
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+
+    vlc_mutex_lock(&sys->lock);
+
+    int ret = EsOutSttCtxCbLocked(ctx, es);
+
+    vlc_mutex_unlock(&sys->lock);
+    return ret;
+}
+
+static int EsOutSttLoaderStart(es_out_t *out, es_out_id_t *es)
+{
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+    vlc_tick_t delay = 0;
+
+    static const struct vlc_stt_ctx_callbacks events = {
+        .loaded = EsOutSttCtxCb,
+    };
+    struct vlc_stt_ctx ctx;
+
+    sys->stt.status = VLC_STT_LOADER_LOADING;
+
+    int ret = input_resource_GetSttCtx(sys->stt.resource, &events, es, &ctx,
+                                       &delay);
+    /* Need to check if it was set sync */
+    if (ret == 0) {
+        sys->stt.status = VLC_STT_LOADER_DONE;
+        EsOutSttCtxCbLocked(&ctx, es);
+    } else if (ret != -EBUSY) {
+        sys->stt.status = VLC_STT_LOADER_ERROR;
+        return VLC_EGENERIC;
+    }
+    /**
+     * Update the pts delay if the delay needed to do speech to text is
+     * is more than the current pts delay.
+     */
+    EsOutControlLocked(out, NULL, ES_OUT_RESET_PCR);
+    if (delay > sys->i_pts_delay)
+    {
+        EsOutPrivControlLocked(out, NULL, ES_OUT_PRIV_SET_JITTER, delay,
+                               sys->i_pts_jitter, sys->i_cr_average);
+    }
+    return VLC_SUCCESS;
+}
+
+static void EsOutEnableSTT(es_out_t *out, es_out_id_t *es)
+{
+    es_out_sys_t *sys = container_of(out, es_out_sys_t, out);
+
+    es_format_t fmt;
+    es_format_Init(&fmt, SPU_ES, VLC_CODEC_STT);
+    fmt.i_group = es->fmt.i_group;
+    fmt.psz_description = strdup("Speech To Text");
+    fmt.psz_language = strdup("auto");
+    fmt.i_id = 0;
+
+    vlc_stt_extra_t *extra = malloc(sizeof(*extra));
+    if (extra == NULL)
+    {
+        es_format_Clean(&fmt);
+        return;
+    }
+    extra->ctx.data = NULL;
+    extra->ctx.name = NULL;
+    fmt.i_extra = sizeof(*extra);
+    fmt.p_extra = extra;
+
+    es->stt_es = EsOutAddLocked(out, sys->main_source, &fmt, es, false);
+    if (es->stt_es == NULL)
+    {
+        es_format_Clean(&fmt);
+    }
+
+    es->stt_es->psz_language = strdup("auto");
+    es->stt_es->psz_language_code = strdup("auto");
+    es->stt_es->psz_title = strdup("Speech To Text");
+}
+
+static void EsOutDisableSTT(es_out_t *out, es_out_id_t *es)
+{
+    if (es->stt_es != NULL) {
+        EsOutUnselectEs(out, es->stt_es, false);
+        EsOutDelLocked(out, es->stt_es);
+        es->stt_es = NULL;
+    }
+}
+
 static void EsOutSelectEs( es_out_t *out, es_out_id_t *es, bool b_force )
 {
     es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
@@ -2494,6 +2694,17 @@ static void EsOutSelectEs( es_out_t *out, es_out_id_t *es, bool b_force )
         }
     }
 
+    /**
+     * Start the Loader and select the es when the model is loaded.
+     */
+    if (es->fmt.i_codec == VLC_CODEC_STT)
+    {
+        if (p_sys->stt.status != VLC_STT_LOADER_DONE &&
+            p_sys->stt.status != VLC_STT_LOADER_LOADING)
+            EsOutSttLoaderStart(out, es);
+        return;
+    }
+
     EsOutCreateDecoder( out, es );
 
     if( es->p_dec == NULL || es->p_pgrm != p_sys->p_pgrm )
@@ -2512,6 +2723,12 @@ static void EsOutSelectEs( es_out_t *out, es_out_id_t *es, bool b_force )
         {
             input_SendEventVbiPage( p_input, vbi_page );
             input_SendEventVbiTransparency( p_input, !vbi_opaque );
+        }
+
+        if (p_sys->stt.enabled && es->fmt.i_cat == AUDIO_ES &&
+            es->stt_es == NULL)
+        {
+            EsOutEnableSTT(out, es);
         }
     }
 }
@@ -2544,7 +2761,29 @@ static void EsOutUnselectEs( es_out_t *out, es_out_id_t *es, bool b_update )
     if( p_sys->p_next_frame_es == es )
         EsOutStopNextFrame( out );
 
+    /**
+     * Is the track has a stt_es, Disable the stt track
+     */
+    if (es->stt_es != NULL)
+    {
+        EsOutDisableSTT(out, es);
+    }
+
+
     EsOutDestroyDecoder( out, es );
+
+    /**
+     * If es is a STT track release the loader
+     */
+    if (es->fmt.i_codec == VLC_CODEC_STT &&
+        p_sys->stt.status == VLC_STT_LOADER_DONE)
+    {
+        vlc_stt_extra_t *extra = es->fmt.p_extra;
+
+        extra->ctx.data = NULL;
+        extra->ctx.name = NULL;
+        p_sys->stt.status = VLC_STT_LOADER_UNINIT;
+    }
 
     if( !b_update )
         return;
@@ -3018,6 +3257,20 @@ static int EsOutSend( es_out_t *out, es_out_id_t *es, block_t *p_block )
         {
             EsOutUpdateInfo(out, es, status.format.meta);
             EsOutSendEsEvent(out, es, VLC_INPUT_ES_UPDATED, false);
+
+            /**
+             * If stt_es is selected and the audio format changed reload
+             * the stt spu decoder
+             */
+            if (es->stt_es != NULL && EsIsSelected(es->stt_es)
+                && p_sys->stt.status == VLC_STT_LOADER_DONE)
+            {
+                vlc_stt_extra_t *extra = es->stt_es->fmt.p_extra;
+
+                extra->fmt = es->fmt_out.audio;
+                EsOutDestroyDecoder(out, es->stt_es);
+                EsOutCreateDecoder(out, es->stt_es);
+            }
         }
 
         es_format_Clean( &status.format.fmt );
@@ -3356,7 +3609,39 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
         }
         return VLC_SUCCESS;
     }
-
+    case ES_OUT_PRIV_SET_STT_ENABLED:
+    {
+        bool enabled = va_arg(args, int);
+        if (enabled == p_sys->stt.enabled)
+        {
+            return VLC_SUCCESS;
+        }
+        p_sys->stt.enabled = enabled;
+        es_out_id_t *es;
+        if(p_sys->stt.enabled)
+        {
+            vlc_list_foreach(es, &p_sys->es, node)
+            {
+                if (es->fmt.i_cat == AUDIO_ES && es->p_dec != NULL)
+                {
+                    EsOutEnableSTT(out, es);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            vlc_list_foreach(es, &p_sys->es, node)
+            {
+                if (es->fmt.i_cat == AUDIO_ES && es->p_dec != NULL)
+                {
+                    EsOutDisableSTT(out, es);
+                    break;
+                }
+            }
+        }
+        return VLC_SUCCESS;
+    }
     case ES_OUT_SET_PCR:
     case ES_OUT_SET_GROUP_PCR:
     {
@@ -4091,6 +4376,12 @@ es_out_t *input_EsOutNew( input_thread_t *p_input, input_source_t *main_source, 
     EsOutPropsInit( &p_sys->sub,  false, p_input, input_type,
                     ES_OUT_ES_POLICY_AUTO,
                     "sub-track-id", "sub-track", "sub-language", "sub" );
+
+    p_sys->stt.enabled = var_GetBool(p_input, "stt");
+    p_sys->stt.ctx = NULL;
+    p_sys->stt.status = VLC_STT_LOADER_UNINIT;
+    p_sys->stt.wait = VLC_STT_NOTWAITING;
+    p_sys->stt.resource = input_priv(p_input)->p_resource;
 
     p_sys->cc_decoder = var_InheritInteger( p_input, "captions" );
 
