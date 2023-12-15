@@ -399,4 +399,12 @@ QQuickItem * CompositorDirectComposition::activeFocusItem() const /* override */
     return m_uiSurface->activeFocusItem();
 }
 
+QQuickWindow * CompositorDirectComposition::quickWindow() const
+{
+    if (m_uiSurface)
+        return m_uiSurface->getOffscreenWindow();
+    else
+        return nullptr;
+}
+
 }

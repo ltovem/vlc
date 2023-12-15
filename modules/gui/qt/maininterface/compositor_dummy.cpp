@@ -95,4 +95,9 @@ QQuickItem * CompositorDummy::activeFocusItem() const /* override */
     return m_qmlWidget->activeFocusItem();
 }
 
+QQuickWindow * CompositorDummy::quickWindow() const
+{
+    return m_qmlWidget.get();
+}
+
 }
