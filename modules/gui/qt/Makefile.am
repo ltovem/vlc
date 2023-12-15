@@ -274,8 +274,6 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/player/player_controller.cpp gui/qt/player/player_controller.hpp gui/qt/player/player_controller_p.hpp \
 	gui/qt/player/player_controlbar_model.cpp gui/qt/player/player_controlbar_model.hpp \
 	gui/qt/player/control_list_model.cpp gui/qt/player/control_list_model.hpp \
-	gui/qt/player/control_list_filter.cpp \
-	gui/qt/player/control_list_filter.hpp \
 	gui/qt/playlist/media.hpp \
 	gui/qt/playlist/playlist_common.hpp \
 	gui/qt/playlist/playlist_controller.cpp \
@@ -328,6 +326,8 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/dismiss_popup_event_filter.hpp \
 	gui/qt/util/list_selection_model.cpp \
 	gui/qt/util/list_selection_model.hpp \
+	gui/qt/util/jssortfilterproxymodel.cpp \
+	gui/qt/util/jssortfilterproxymodel.hpp \
 	gui/qt/widgets/native/animators.cpp \
 	gui/qt/widgets/native/animators.hpp \
 	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
@@ -489,7 +489,6 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/player/player_controller.moc.cpp \
 	gui/qt/player/player_controlbar_model.moc.cpp \
 	gui/qt/player/control_list_model.moc.cpp \
-	gui/qt/player/control_list_filter.moc.cpp \
 	gui/qt/playlist/playlist_controller.moc.cpp \
 	gui/qt/playlist/playlist_item.moc.cpp \
 	gui/qt/playlist/playlist_model.moc.cpp \
@@ -515,6 +514,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/vlctick.moc.cpp \
 	gui/qt/util/dismiss_popup_event_filter.moc.cpp \
 	gui/qt/util/list_selection_model.moc.cpp \
+	gui/qt/util/jssortfilterproxymodel.moc.cpp \
 	gui/qt/widgets/native/animators.moc.cpp \
 	gui/qt/widgets/native/csdthemeimage.moc.cpp \
 	gui/qt/widgets/native/customwidgets.moc.cpp \
@@ -931,6 +931,7 @@ libqt_plugin_la_QML = \
 	gui/qt/player/qml/TracksListPage.qml \
 	gui/qt/player/qml/ControlLayout.qml \
 	gui/qt/player/qml/ControlRepeater.qml \
+	gui/qt/player/qml/FilteredControlListModel.qml \
 	gui/qt/player/qml/controlbarcontrols/HighResolutionTimeWidget.qml \
 	gui/qt/player/qml/controlbarcontrols/ArtworkInfoWidget.qml \
 	gui/qt/player/qml/controlbarcontrols/AspectRatioWidget.qml \

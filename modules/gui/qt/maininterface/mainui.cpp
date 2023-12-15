@@ -45,6 +45,7 @@
 #include "util/csdbuttonmodel.hpp"
 #include "util/vlctick.hpp"
 #include "util/list_selection_model.hpp"
+#include "util/jssortfilterproxymodel.hpp"
 
 #include "dialogs/help/aboutmodel.hpp"
 #include "dialogs/dialogs_provider.hpp"
@@ -230,6 +231,8 @@ void MainUI::registerQMLTypes()
         const int versionMajor = 0;
         const int versionMinor = 1;
 
+        qmlRegisterType<JSSortFilterProxyModel>(uri, versionMajor, versionMinor, "SortFilterProxyModel");
+
         qmlRegisterSingletonType<MainCtx>(uri, versionMajor, versionMinor, "MainCtx", SingletonRegisterHelper<MainCtx>::callback);
         qmlRegisterUncreatableType<SearchCtx>(uri, versionMajor, versionMinor, "SearchCtx", "");
         qmlRegisterUncreatableType<SortCtx>(uri, versionMajor, versionMinor, "SortCtx", "");
@@ -294,7 +297,6 @@ void MainUI::registerQMLTypes()
         qmlRegisterUncreatableType<ControlbarProfile>(uri, versionMajor, versionMinor, "ControlbarProfile", "");
         qmlRegisterUncreatableType<PlayerControlbarModel>(uri, versionMajor, versionMinor, "PlayerControlbarModel", "");
         qmlRegisterUncreatableType<ControlListModel>( uri, versionMajor, versionMinor, "ControlListModel", "" );
-        qmlRegisterType<ControlListFilter>(uri, versionMajor, versionMinor, "ControlListFilter");
         qmlRegisterSingletonType(uri, versionMajor, versionMinor, "PlayerListModel", PlayerControlbarModel::getPlaylistIdentifierListModel);
 
         qmlRegisterType<StringListMenu>( uri, versionMajor, versionMinor, "StringListMenu" );
