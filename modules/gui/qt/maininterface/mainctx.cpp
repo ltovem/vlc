@@ -867,6 +867,15 @@ QWindow *MainCtx::intfMainWindow() const
         return nullptr;
 }
 
+QQuickWindow *MainCtx::quickWindow() const
+{
+    assert(p_intf);
+    if (p_intf->p_compositor)
+        return p_intf->p_compositor->quickWindow();
+    else
+        return nullptr;
+}
+
 QVariant MainCtx::settingValue(const QString &key, const QVariant &defaultValue) const
 {
     return settings->value(key, defaultValue);
