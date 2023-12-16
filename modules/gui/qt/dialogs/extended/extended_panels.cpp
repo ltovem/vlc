@@ -50,7 +50,7 @@
 #include "maininterface/mainctx.hpp"
 #include "player/player_controller.hpp"
 #include "util/qt_dirs.hpp"
-#include "widgets/native/customwidgets.hpp"
+#include "widgets/customwidgets.hpp"
 #include "dialogs/dialogs_provider.hpp"
 #include "util/vlctick.hpp"
 

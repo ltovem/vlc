@@ -1,4 +1,4 @@
-#include "../../maininterface/mainctx.hpp"
+#include "maininterface/mainctx.hpp"
 
 #include <QQuickWindow>
 #include <QSGImageNode>

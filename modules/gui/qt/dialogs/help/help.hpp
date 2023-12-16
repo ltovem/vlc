@@ -29,7 +29,7 @@
 
 #include "qt.hpp"
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "util/singleton.hpp"
 
 /* Auto-generated from .ui files */

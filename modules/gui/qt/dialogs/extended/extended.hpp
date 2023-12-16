@@ -23,7 +23,7 @@
 #ifndef QVLC_EXTENDED_DIALOG_H_
 #define QVLC_EXTENDED_DIALOG_H_ 1
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 
 #include "extended_panels.hpp"
 #include "util/singleton.hpp"

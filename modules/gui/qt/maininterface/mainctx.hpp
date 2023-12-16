@@ -26,7 +26,7 @@
 
 #include "qt.hpp"
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "player/player_controller.hpp"
 #include "util/color_scheme_model.hpp"
 #include "medialibrary/medialib.hpp"

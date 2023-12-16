@@ -17,7 +17,7 @@
  *****************************************************************************/
 #include "videosurface.hpp"
 #include "maininterface/mainctx.hpp"
-#include "widgets/native/customwidgets.hpp" //for qtEventToVLCKey
+#include "widgets/customwidgets.hpp" //for qtEventToVLCKey
 #include <QSGRectangleNode>
 #include <QThreadPool>
 #include <vlc_window.h>

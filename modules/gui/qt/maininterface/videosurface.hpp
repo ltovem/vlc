@@ -18,7 +18,7 @@
 #ifndef VIDEOSURFACE_HPP
 #define VIDEOSURFACE_HPP
 
-#include "widgets/native/viewblockingrectangle.hpp"
+#include "widgets/viewblockingrectangle.hpp"
 #include <QMutex>
 #include <QRunnable>
 #include "qt.hpp"

@@ -24,7 +24,7 @@
 #ifndef QVLC_MEDIAINFO_DIALOG_H_
 #define QVLC_MEDIAINFO_DIALOG_H_ 1
 
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "info_panels.hpp"
 #include "util/singleton.hpp"
 #include "util/shared_input_item.hpp"

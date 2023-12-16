@@ -30,7 +30,7 @@
 #include <QToolButton>
 #include <QDial>
 
-#include "animators.hpp"
+#include "util/animators.hpp"
 #include "qt.hpp"
 
 class QWidget;

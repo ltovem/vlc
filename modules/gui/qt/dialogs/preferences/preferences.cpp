@@ -31,8 +31,8 @@
 #include "expert_view.hpp"
 #include "dialogs/preferences/complete_preferences.hpp"
 #include "dialogs/preferences/simple_preferences.hpp"
-#include "widgets/native/searchlineedit.hpp"
-#include "widgets/native/qvlcframe.hpp"
+#include "widgets/searchlineedit.hpp"
+#include "widgets/qvlcframe.hpp"
 #include "maininterface/mainctx.hpp"
 
 #include <QHBoxLayout>
