@@ -297,7 +297,6 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/imageluminanceextractor.cpp gui/qt/util/imageluminanceextractor.hpp \
 	gui/qt/util/csdbuttonmodel.cpp gui/qt/util/csdbuttonmodel.hpp \
 	gui/qt/util/imagehelper.cpp gui/qt/util/imagehelper.hpp \
-	gui/qt/util/i18n.cpp gui/qt/util/i18n.hpp \
 	gui/qt/util/keyhelper.cpp gui/qt/util/keyhelper.hpp \
 	gui/qt/util/listcache.hxx gui/qt/util/listcache.hpp \
 	gui/qt/util/listcacheloader.hpp \
@@ -328,6 +327,8 @@ libqt_plugin_la_SOURCES = \
 	gui/qt/util/dismiss_popup_event_filter.hpp \
 	gui/qt/util/list_selection_model.cpp \
 	gui/qt/util/list_selection_model.hpp \
+	gui/qt/util/jscustomextensions.cpp \
+	gui/qt/util/jscustomextensions.hpp \
 	gui/qt/widgets/native/animators.cpp \
 	gui/qt/widgets/native/animators.hpp \
 	gui/qt/widgets/native/customwidgets.cpp gui/qt/widgets/native/customwidgets.hpp \
@@ -500,7 +501,6 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/color_svg_image_provider.moc.cpp \
 	gui/qt/util/imageluminanceextractor.moc.cpp \
 	gui/qt/util/csdbuttonmodel.moc.cpp \
-	gui/qt/util/i18n.moc.cpp \
 	gui/qt/util/keyhelper.moc.cpp \
 	gui/qt/util/listcache.moc.cpp \
 	gui/qt/util/locallistcacheloader.moc.cpp \
@@ -515,6 +515,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	gui/qt/util/vlctick.moc.cpp \
 	gui/qt/util/dismiss_popup_event_filter.moc.cpp \
 	gui/qt/util/list_selection_model.moc.cpp \
+	gui/qt/util/jscustomextensions.moc.cpp \
 	gui/qt/widgets/native/animators.moc.cpp \
 	gui/qt/widgets/native/csdthemeimage.moc.cpp \
 	gui/qt/widgets/native/customwidgets.moc.cpp \
