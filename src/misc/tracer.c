@@ -33,10 +33,6 @@
 #include <vlc_tracer.h>
 #include "../libvlc.h"
 
-struct vlc_tracer {
-    const struct vlc_tracer_operations *ops;
-};
-
 /**
  * Module-based message trace.
  */
