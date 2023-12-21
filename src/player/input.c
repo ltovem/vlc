@@ -724,6 +724,23 @@ vlc_player_input_HandleVoutEvent(struct vlc_player_input *input,
 }
 
 static void
+vlc_player_input_HandleAoutDrift(struct vlc_player_input *input,
+                                   vlc_tick_t drift)
+{
+    msg_Dbg(input->player, "adjusting video delay: %" PRId64, drift);
+
+    enum es_format_category_e cats[] = { VIDEO_ES, SPU_ES };
+    for (size_t i = 0; i < ARRAY_SIZE(cats); ++i)
+    {
+        enum es_format_category_e cat = cats[i];
+        vlc_tick_t delay = input->cat_delays[cat] + drift;
+
+        const input_control_param_t param = { .cat_delay = { cat, delay } };
+        input_ControlPush(input->thread, INPUT_CONTROL_SET_CATEGORY_DELAY, &param);
+    }
+}
+
+static void
 input_thread_Events(input_thread_t *input_thread,
                     const struct vlc_input_event *event, void *user_data)
 {
@@ -887,6 +904,9 @@ input_thread_Events(input_thread_t *input_thread,
             input->teletext_transparent = event->vbi_transparent;
             vlc_player_SendEvent(player, on_teletext_transparency_changed,
                                  input->teletext_transparent);
+            break;
+        case INPUT_EVENT_AOUT_DRIFT:
+            vlc_player_input_HandleAoutDrift(input, event->drift);
             break;
         default:
             break;
