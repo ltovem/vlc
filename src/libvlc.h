@@ -210,4 +210,6 @@ int vlc_MetadataRequest(libvlc_int_t *libvlc, input_item_t *item,
  */
 void var_OptionParse (vlc_object_t *, const char *, bool trusted);
 
+int vlc_TracerInit(libvlc_int_t *libvlc);
+
 #endif

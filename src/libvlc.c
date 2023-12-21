@@ -119,17 +119,6 @@ static void libvlc_AddInterfaces(libvlc_int_t *libvlc, const char *varname)
     free(str);
 }
 
-static int vlc_TracerInit(libvlc_int_t *libvlc)
-{
-    libvlc_priv_t *priv = libvlc_priv(libvlc);
-
-    char *tracer_name = var_InheritString(libvlc, "tracer");
-    priv->tracer = vlc_tracer_Create(VLC_OBJECT(libvlc), tracer_name);
-    free(tracer_name);
-
-    return VLC_SUCCESS;
-}
-
 /**
  * Initialize a libvlc instance
  * This function initializes a previously allocated libvlc instance:
