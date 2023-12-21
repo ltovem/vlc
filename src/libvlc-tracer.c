@@ -36,13 +36,111 @@
 #include "../lib/libvlc_internal.h"
 #include "libvlc.h"
 
+#include "misc/rcu.h"
+
+/* No-op tracer */
+static void vlc_tracer_discard_Trace(void *opaque, vlc_tick_t ts,
+                                     va_list entries)
+    { (void)opaque; (void)ts; (void)entries; }
+
+static const struct vlc_tracer_operations discard_tracer_ops =
+    { .trace = vlc_tracer_discard_Trace };
+
+static struct vlc_tracer discard_tracer =/* No-op tracer */
+    { .ops = &discard_tracer_ops };
+
+/**
+ * Switchable tracer.
+ *
+ * A tracer that can be redirected live.
+ */
+struct vlc_tracer_switch {
+    struct vlc_tracer *_Atomic backend;
+    struct vlc_tracer frontend;
+};
+static const struct vlc_tracer_operations switch_ops;
+
+static void vlc_TraceSwitch(struct vlc_tracer *tracer,
+                            struct vlc_tracer *new_tracer)
+{
+    struct vlc_tracer_switch *traceswitch =
+        container_of(tracer, struct vlc_tracer_switch, frontend);
+    struct vlc_tracer *old_tracer;
+
+    assert(tracer->ops == &switch_ops);
+
+    if (new_tracer == NULL)
+        new_tracer = &discard_tracer;
+
+    old_tracer = atomic_exchange_explicit(&traceswitch->backend, new_tracer,
+                                          memory_order_acq_rel);
+    vlc_rcu_synchronize();
+
+    if (old_tracer == new_tracer || old_tracer == NULL)
+        return;
+
+    if (old_tracer->ops->destroy != NULL)
+        old_tracer->ops->destroy(old_tracer->opaque);
+}
+
+static void vlc_tracer_switch_vaTrace(void *opaque, vlc_tick_t ts,
+                                      va_list entries)
+{
+    struct vlc_tracer *tracer = opaque;
+    assert(tracer->ops->trace == &vlc_tracer_switch_vaTrace);
+
+    struct vlc_tracer_switch *traceswitch =
+        container_of(tracer, struct vlc_tracer_switch, frontend);
+
+    vlc_rcu_read_lock();
+    struct vlc_tracer *backend =
+        atomic_load_explicit(&traceswitch->backend, memory_order_acquire);
+    backend->ops->trace(backend->opaque, ts, entries);
+    vlc_rcu_read_unlock();
+}
+
+static void vlc_tracer_switch_Destroy(void *opaque)
+{
+    struct vlc_tracer *tracer = opaque;
+    assert(tracer->ops->destroy == &vlc_tracer_switch_Destroy);
+
+    vlc_TraceSwitch(tracer, &discard_tracer);
+
+    struct vlc_tracer_switch *traceswitch =
+        container_of(tracer, struct vlc_tracer_switch, frontend);
+    free(traceswitch);
+}
+
+static const struct vlc_tracer_operations switch_ops = {
+    vlc_tracer_switch_vaTrace,
+    vlc_tracer_switch_Destroy,
+};
+
+static struct vlc_tracer *vlc_tracer_switch_Create()
+{
+    struct vlc_tracer_switch *traceswitch = malloc(sizeof *traceswitch);
+    if (unlikely(traceswitch == NULL))
+        return NULL;
+
+    traceswitch->frontend.ops = &switch_ops;
+    traceswitch->frontend.opaque = &traceswitch->frontend;
+    atomic_init(&traceswitch->backend, &discard_tracer);
+    return &traceswitch->frontend;
+}
+
 int vlc_TracerInit(libvlc_int_t *libvlc)
 {
     libvlc_priv_t *priv = libvlc_priv(libvlc);
 
+    struct vlc_tracer *tracerswitch = vlc_tracer_switch_Create();
+    if (unlikely(tracerswitch == NULL))
+        return VLC_ENOMEM;
+    priv->tracer = tracerswitch;
+
     char *tracer_name = var_InheritString(libvlc, "tracer");
-    priv->tracer = vlc_tracer_Create(VLC_OBJECT(libvlc), tracer_name);
+    struct vlc_tracer *tracer = vlc_tracer_Create(VLC_OBJECT(libvlc), tracer_name);
     free(tracer_name);
+    vlc_TraceSwitch(tracerswitch, tracer);
 
     return VLC_SUCCESS;
 }
