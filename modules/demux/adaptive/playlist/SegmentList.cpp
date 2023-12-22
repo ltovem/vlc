@@ -153,8 +153,10 @@ void SegmentList::pruneBySegmentNumber(uint64_t tobelownum)
             break;
 
         totalLength -= (*it)->duration.Get();
-        it = segments.erase(it);
+        it++;
     }
+
+    segments.erase(std::begin(segments), it);
 }
 
 bool SegmentList::getPlaybackTimeDurationBySegmentNumber(uint64_t number,
