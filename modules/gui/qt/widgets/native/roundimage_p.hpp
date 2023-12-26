@@ -31,6 +31,8 @@
 
 #include "roundimage.hpp"
 
+class QSGTexture;
+
 struct ImageCacheKey
 {
     ImageCacheKey(QUrl url, QSize size, qreal radius)
@@ -79,7 +81,7 @@ public:
     void handleImageResponseFinished();
 
 signals:
-    void requestCompleted(RoundImage::Status status, QImage image);
+    void requestCompleted(RoundImage::Status status, const std::shared_ptr<QSGTexture>& texture);
 
 private:
     QQuickImageResponse *getAsyncImageResponse(const QUrl &url, const QSize &requestedSize, const qreal radius, QQmlEngine *engine);
@@ -134,14 +136,22 @@ class RoundImageCache
 public:
     RoundImageCache();
 
-    inline QImage* object(const ImageCacheKey& key) const
+    inline std::shared_ptr<QSGTexture> object(const ImageCacheKey& key) const
     {
-        return m_imageCache.object(key);
+        if (const auto object = m_imageCache.object(key))
+            return *object;
+        else
+            return nullptr;
     }
 
-    inline void insert(const ImageCacheKey& key, QImage* image, int size)
+    inline bool insert(const ImageCacheKey& key, const std::shared_ptr<QSGTexture>& texture, int size)
     {
-        m_imageCache.insert(key, image, size);
+        return m_imageCache.insert(key, new std::shared_ptr<QSGTexture>(texture), size);
+    }
+
+    void clear()
+    {
+        m_imageCache.clear();
     }
 
     std::shared_ptr<RoundImageRequest> requestImage(const ImageCacheKey& key, qreal dpr, QQmlEngine *engine);
@@ -149,8 +159,8 @@ public:
     void removeRequest(const ImageCacheKey& key);
 
 private:
-    //images are cached (result of RoundImageGenerator) with the cost calculated from QImage::sizeInBytes
-    QCache<ImageCacheKey, QImage> m_imageCache;
+    //images are cached (result of RoundImageGenerator) with the cost calculated from QSGTexture::size
+    QCache<ImageCacheKey, std::shared_ptr<QSGTexture>> m_imageCache;
 
     //contains the pending request, we use a weak ptr here as the request may be canceled and destroyed
     //when all RoundImage that requested the image drop the request. user should check for validity before
