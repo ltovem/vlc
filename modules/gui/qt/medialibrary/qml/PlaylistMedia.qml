@@ -110,6 +110,17 @@ MainInterface.MainTableView {
     sortModel: (availableRowWidth < VLCStyle.colWidth(4)) ? _modelSmall
                                                           : _modelMedium
 
+
+    listView.acceptDropFunc: function(index, drop) {
+        // FIXME: The DnD API seems quite poorly designed in this file.
+        //        Why does it ask for both index and "before"
+        //        When index + 1 is essentially the same as
+        //        before being false?
+        //        What is "delegate" and why is it passed in applyDrop()?
+        //        We have to come up with a shim function here...
+        return applyDrop(drop, index - 1, null, false)
+    }
+
     //---------------------------------------------------------------------------------------------
     // Events
     //---------------------------------------------------------------------------------------------
@@ -150,7 +161,7 @@ MainInterface.MainTableView {
     //---------------------------------------------------------------------------------------------
     // Drop interface
 
-    function isDroppable(drop, index) {
+    listView.isDropAcceptableFunc: function(drop, index) {
         if (drop.source === dragItem) {
             return Helpers.itemsMovable(selectionModel.sortedSelectedIndexesFlat, index)
         } else if (Helpers.isValidInstanceOf(drop.source, Widgets.DragItem)) {
@@ -163,7 +174,7 @@ MainInterface.MainTableView {
     }
 
     function applyDrop(drop, index, delegate, before) {
-        if (root.isDroppable(drop, index + (before ? 0 : 1)) === false) {
+        if (listView.isDropAcceptableFunc(drop, index + (before ? 0 : 1)) === false) {
             root.hideLine(delegate)
             return
         }
@@ -195,7 +206,7 @@ MainInterface.MainTableView {
     }
 
     function _dropUpdatePosition(drag, index, delegate, before) {
-        if (root.isDroppable(drag, index + (before ? 0 : 1)) === false) {
+        if (listView.isDropAcceptableFunc(drag, index + (before ? 0 : 1)) === false) {
             root.hideLine(delegate)
             return
         }
