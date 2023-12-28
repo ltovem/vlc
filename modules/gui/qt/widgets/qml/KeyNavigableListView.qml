@@ -42,7 +42,7 @@ ListView {
         model: root.model
     }
 
-    // Optional property for drop indicator placement:
+    // Optional property for drop indicator placement and auto scroll feature:
     property var itemContainsDrag: undefined
     
     // Optional functions for the optional drag accessory footer:
@@ -59,6 +59,8 @@ ListView {
     //       to set it to null, so that the item is not created
     //       if the effect is not wanted.
     property alias fadingEdge: fadingEdge
+
+    property alias autoScrollDirection: viewDragAutoScrollHandlerLoader.scrollingDirection
 
     //forward view properties
 
@@ -397,6 +399,34 @@ ListView {
         listView: root
 
         backgroundColor: theme.bg.primary
+
+        BindingCompat on enableBeginningFade {
+            when: (root.autoScrollDirection === Util.ViewDragAutoScrollHandler.Direction.Backward)
+            value: false
+        }
+
+        BindingCompat on enableEndFade {
+            when: (root.autoScrollDirection === Util.ViewDragAutoScrollHandler.Direction.Forward)
+            value: false
+        }
+    }
+
+    Loader {
+        id: viewDragAutoScrollHandlerLoader
+
+        active: root.itemContainsDrag !== undefined
+
+        readonly property int scrollingDirection: item ? item.scrollingDirection : -1
+
+        sourceComponent: Util.ViewDragAutoScrollHandler {
+            view: root
+            dragging: root.itemContainsDrag !== null
+            dragPosProvider: function () {
+                const source = root.itemContainsDrag
+                const point = source.drag
+                return root.mapFromItem(source, point.x, point.y)
+            }
+        }
     }
 
     Component {

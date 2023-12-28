@@ -208,16 +208,6 @@ T.Pane {
 
             model: root.model
 
-            BindingCompat on fadingEdge.enableBeginningFade {
-                when: (autoScroller.scrollingDirection === Util.ViewDragAutoScrollHandler.Direction.Backward)
-                value: false
-            }
-
-            BindingCompat on fadingEdge.enableEndFade {
-                when: (autoScroller.scrollingDirection === Util.ViewDragAutoScrollHandler.Direction.Forward)
-                value: false
-            }
-
             fadingEdge.backgroundColor: root.background.usingAcrylic ? "transparent"
                                                                      : listView.colorContext.bg.primary
 
@@ -284,18 +274,6 @@ T.Pane {
                 onModelReset: {
                     if (listView.currentIndex === -1 && root.model.count > 0)
                         listView.currentIndex = 0
-                }
-            }
-
-            Util.ViewDragAutoScrollHandler {
-                id: autoScroller
-
-                view: listView
-                dragging: !!listView.itemContainsDrag && listView.itemContainsDrag !== listView.footerItem
-                dragPosProvider: function () {
-                    const source = listView.itemContainsDrag
-                    const point = source.drag
-                    return listView.mapFromItem(source, point.x, point.y)
                 }
             }
 
