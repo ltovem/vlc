@@ -94,6 +94,32 @@ ListView {
 
     Accessible.role: Accessible.List
 
+    add: Transition {
+        SequentialAnimation {
+            PropertyAction {
+                // TODO: Remove this >= Qt 5.15
+                property: "opacity"
+                value: 0.0
+            }
+
+            OpacityAnimator {
+                from: 0.0 // QTBUG-66475
+                to: 1.0
+                duration: VLCStyle.duration_long
+                easing.type: Easing.OutSine
+            }
+        }
+    }
+
+    displaced: Transition {
+        NumberAnimation {
+            // TODO: Use YAnimator >= Qt 6.0 (QTBUG-66475)
+            property: "y"
+            duration: VLCStyle.duration_long
+            easing.type: Easing.OutSine
+        }
+    }
+
     // Events
 
     Component.onCompleted: {
