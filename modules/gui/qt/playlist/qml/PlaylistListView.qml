@@ -267,8 +267,6 @@ T.Pane {
             fadingEdge.backgroundColor: root.background.usingAcrylic ? "transparent"
                                                                      : listView.colorContext.bg.primary
 
-            contentWidth: width
-
             property int shiftIndex: -1
 
             onShowContextMenu: (globalPos) => {
