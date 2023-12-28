@@ -23,10 +23,12 @@ import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
 
 import org.videolan.vlc 0.1
+import org.videolan.compat 0.1
 
 import "qrc:///style/"
 import "qrc:///util/" as Util
 import "qrc:///util/Helpers.js" as Helpers
+import "qrc:///widgets/" as Widgets
 
 ListView {
     id: root
@@ -42,6 +44,10 @@ ListView {
 
     // Optional property for drop indicator placement:
     property var itemContainsDrag: undefined
+    
+    // Optional functions for the optional drag accessory footer:
+    property var isDropAcceptableFunc
+    property var acceptDropFunc
 
     // Private
 
@@ -96,6 +102,75 @@ ListView {
     // If the delegate does not obey it, calculate
     // the content width appropriately.
     contentWidth: width
+    
+    footer: !!root.acceptDropFunc ? footerDragAccessoryComponent : null
+
+    Component {
+        id: footerDragAccessoryComponent
+
+        Item {
+            implicitWidth: parent.width
+
+            BindingCompat on implicitHeight {
+                delayed: true
+                value: Math.max(VLCStyle.icon_normal, root.height - y)
+            }
+
+            property alias firstItemIndicatorVisible: firstItemIndicator.visible
+
+            readonly property bool containsDrag: dropArea.containsDrag
+            readonly property bool topContainsDrag: containsDrag
+            readonly property bool bottomContainsDrag: false
+
+            property alias drag: dropArea.drag
+
+            Rectangle {
+                id: firstItemIndicator
+
+                anchors.fill: parent
+                anchors.margins: VLCStyle.margin_small
+
+                border.width: VLCStyle.dp(2)
+                border.color: theme.accent
+
+                color: "transparent"
+
+                visible: (root.model.count === 0 && dropArea.containsDrag)
+
+                opacity: 0.8
+
+                Widgets.IconLabel {
+                    anchors.centerIn: parent
+
+                    text: VLCIcons.add
+
+                    font.pixelSize: VLCStyle.fontHeight_xxxlarge
+
+                    color: theme.accent
+                }
+            }
+
+            DropArea {
+                id: dropArea
+
+                anchors.fill: parent
+
+                onEntered: function(drag) {
+                    if(!!root.isDropAcceptableFunc && !root.isDropAcceptableFunc(drag, root.model.rowCount())) {
+                        drag.accepted = false
+                        return
+                    }
+
+                    drag.accepted = true
+                }
+
+                onDropped: function(drop) {
+                    console.assert(!!root.acceptDropFunc)
+                    root.acceptDropFunc(root.model.count, drop)
+                }
+            }
+        }
+    }
 
     Accessible.role: Accessible.List
 
