@@ -676,7 +676,7 @@ static void aout_UpdateMixMode(audio_output_t *aout, int mode,
     var_Change(aout, "mix-mode", VLC_VAR_SETVALUE, (vlc_value_t) { .i_int = mode});
 }
 
-int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
+int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
                    audio_sample_format_t *fmt, int input_profile,
                    audio_sample_format_t *filter_fmt,
                    aout_filters_cfg_t *filters_cfg)

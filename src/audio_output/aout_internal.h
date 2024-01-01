@@ -41,7 +41,7 @@ enum {
 };
 
 typedef struct aout_volume aout_volume_t;
-typedef struct vlc_aout_stream vlc_aout_stream;
+typedef struct vlc_aout_stream_owner vlc_aout_stream_owner;
 
 typedef struct
 {
@@ -49,7 +49,7 @@ typedef struct
     module_t *module; /**< Output plugin (or NULL if inactive) */
     bool bitexact;
 
-    vlc_aout_stream *main_stream;
+    vlc_aout_stream_owner *main_stream;
 
     struct
     {
@@ -119,7 +119,7 @@ audio_output_t *aout_New (vlc_object_t *);
  *
  * \warning The caller must NOT hold the audio output lock.
  */
-int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
+int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
                    audio_sample_format_t *fmt, int input_profile,
                    audio_sample_format_t *filter_fmt,
                    aout_filters_cfg_t *filters_cfg);
@@ -158,27 +158,27 @@ struct vlc_aout_stream_cfg
     const audio_replay_gain_t *replay_gain;
 };
 
-vlc_aout_stream *vlc_aout_stream_New(audio_output_t *p_aout,
+vlc_aout_stream_owner *vlc_aout_stream_New(audio_output_t *p_aout,
                                      const struct vlc_aout_stream_cfg *cfg);
-void vlc_aout_stream_Delete(vlc_aout_stream *);
-int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block);
-void vlc_aout_stream_GetResetStats(vlc_aout_stream *stream, unsigned *, unsigned *);
-void vlc_aout_stream_ChangePause(vlc_aout_stream *stream, bool b_paused, vlc_tick_t i_date);
-void vlc_aout_stream_ChangeRate(vlc_aout_stream *stream, float rate);
-void vlc_aout_stream_ChangeDelay(vlc_aout_stream *stream, vlc_tick_t delay);
-void vlc_aout_stream_Flush(vlc_aout_stream *stream);
-void vlc_aout_stream_Drain(vlc_aout_stream *stream);
+void vlc_aout_stream_Delete(vlc_aout_stream_owner *);
+int vlc_aout_stream_Play(vlc_aout_stream_owner *stream, block_t *block);
+void vlc_aout_stream_GetResetStats(vlc_aout_stream_owner *stream, unsigned *, unsigned *);
+void vlc_aout_stream_ChangePause(vlc_aout_stream_owner *stream, bool b_paused, vlc_tick_t i_date);
+void vlc_aout_stream_ChangeRate(vlc_aout_stream_owner *stream, float rate);
+void vlc_aout_stream_ChangeDelay(vlc_aout_stream_owner *stream, vlc_tick_t delay);
+void vlc_aout_stream_Flush(vlc_aout_stream_owner *stream);
+void vlc_aout_stream_Drain(vlc_aout_stream_owner *stream);
 /* Contrary to other vlc_aout_stream_*() functions, this function can be called from
  * any threads */
-bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream);
+bool vlc_aout_stream_IsDrained(vlc_aout_stream_owner *stream);
 /* Called from output.c */
-void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
+void vlc_aout_stream_NotifyTiming(vlc_aout_stream_owner *stream, vlc_tick_t system_ts,
                                   vlc_tick_t audio_ts);
-void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream);
-void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain);
+void vlc_aout_stream_NotifyDrained(vlc_aout_stream_owner *stream);
+void vlc_aout_stream_NotifyGain(vlc_aout_stream_owner *stream, float gain);
 
-void vlc_aout_stream_RequestRestart(vlc_aout_stream *stream, unsigned);
-void vlc_aout_stream_RequestRetiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
+void vlc_aout_stream_RequestRestart(vlc_aout_stream_owner *stream, unsigned);
+void vlc_aout_stream_RequestRetiming(vlc_aout_stream_owner *stream, vlc_tick_t system_ts,
                                      vlc_tick_t audio_ts);
 
 void aout_InputRequestRestart(audio_output_t *aout);
