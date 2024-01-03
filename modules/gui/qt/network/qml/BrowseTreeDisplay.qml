@@ -307,17 +307,6 @@ MainInterface.MainViewLoader {
 
             Navigation.navigable: layout.Navigation.navigable || (emptyLabel.visible && emptyLabel.button.enabled)
 
-            // used by MainDisplay to transfer focus
-            function setCurrentItemFocus(reason) {
-                if (!Navigation.navigable)
-                    return
-
-                if (header.Navigation.navigable)
-                    Helpers.enforceFocus(header, reason)
-                else
-                    Helpers.enforceFocus(emptyLabel, reason)
-            }
-
             ColumnLayout {
                 id: layout
 

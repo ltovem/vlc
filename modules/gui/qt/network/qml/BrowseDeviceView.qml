@@ -61,9 +61,7 @@ FocusScope {
 
         Navigation.parentItem: root
 
-        Navigation.downAction: function() {
-            view.setCurrentItemFocus(Qt.TabFocusReason)
-        }
+        Navigation.downItem: view
 
         onClicked: root.seeAll(reason)
     }
@@ -109,10 +107,6 @@ FocusScope {
 
     function playAt(index) {
         model.addAndPlay(index)
-    }
-
-    function setCurrentItemFocus(reason) {
-        _currentView.setCurrentItemFocus(reason)
     }
 
     function getItemY(index) {

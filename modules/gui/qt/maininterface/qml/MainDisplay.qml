@@ -372,9 +372,7 @@ FocusScope {
                     Navigation.upItem: sourcesBanner
                     Navigation.downItem: miniPlayer.visible ? miniPlayer : null
 
-                    Navigation.leftAction: function() {
-                        stackView.currentItem.setCurrentItemFocus(Qt.TabFocusReason);
-                    }
+                    Navigation.leftItem: stackView
 
                     Navigation.cancelAction: function() {
                         MainCtx.playlistVisible = false

@@ -74,8 +74,6 @@ FocusScope {
 
     // Functions
 
-    function setCurrentItemFocus(reason) { view.setCurrentItemFocus(reason); }
-
     function resetFocus() {
         const count = model.count
 

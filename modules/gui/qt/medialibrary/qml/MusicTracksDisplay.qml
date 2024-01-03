@@ -49,10 +49,6 @@ FocusScope {
     property alias model: tracklistdisplay_id.model
     property alias selectionModel: tracklistdisplay_id.selectionModel
 
-    function setCurrentItemFocus(reason) {
-        tracklistdisplay_id.setCurrentItemFocus(reason);
-    }
-
     MusicTrackListDisplay {
         id: tracklistdisplay_id
 

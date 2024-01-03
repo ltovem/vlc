@@ -223,9 +223,9 @@ FocusScope {
 
             // NOTE: We make sure we have the proper visual focus on components.
             if (oldIndex < currentIndex)
-                setCurrentItemFocus(Qt.TabFocusReason);
+                _getItem(currentIndex).forceActiveFocus(Qt.TabFocusReason);
             else
-                setCurrentItemFocus(Qt.BacktabFocusReason);
+                _getItem(currentIndex).forceActiveFocus(Qt.BacktabFocusReason);
         }
 
         if (!event.accepted) {
@@ -331,34 +331,6 @@ FocusScope {
         if (reason !== Qt.OtherFocusReason) {
             if (item)
                 Helpers.enforceFocus(item, reason)
-            else
-                setCurrentItemFocus(reason)
-        }
-    }
-
-    function setCurrentItemFocus(reason) {
-
-        // NOTE: Saving the focus reason for later.
-        _currentFocusReason = reason;
-
-        if (!model || model.count === 0 || currentIndex === -1) {
-            // NOTE: By default we want the focus on the flickable.
-            flickable.forceActiveFocus(reason);
-
-            return;
-        }
-
-        if (_containsItem(currentIndex))
-            Helpers.enforceFocus(_getItem(currentIndex), reason);
-        else
-            flickable.forceActiveFocus(reason);
-
-        // NOTE: We make sure the current item is fully visible.
-        positionViewAtIndex(currentIndex, ItemView.Contain);
-
-        if (expandIndex !== -1) {
-            // We clear expandIndex so we can apply the proper focus in _setupChild.
-            retract();
         }
     }
 
