@@ -76,7 +76,7 @@ MouseArea {
 
         z: -1
 
-        source: VLCStyle.playShadow
+        targetSource: VLCStyle.playShadow
     }
 
     Rectangle {

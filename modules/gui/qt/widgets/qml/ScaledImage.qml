@@ -25,8 +25,13 @@ import org.videolan.compat 0.1
 
 Image {
     id: root
-    sourceSize: Qt.size(width * MainCtx.screen.devicePixelRatio
-                    , height * MainCtx.screen.devicePixelRatio)
+
+    property bool acceptPartialSourceSize: true
+
+    property size targetSourceSize: Qt.size(width * MainCtx.screen.devicePixelRatio,
+                                            height * MainCtx.screen.devicePixelRatio)
+
+    property string targetSource
 
     property bool disableSmoothWhenIntegerUpscaling: false
 
@@ -35,9 +40,33 @@ Image {
     readonly property bool _smooth: true
     smooth: _smooth
 
+    onSourceSizeChanged: {
+        if (targetSourceSize === sourceSize)
+            sourceBinding.allow = true
+        else if (status === Image.Null)
+            sourceBinding.allow = false
+    }
+
     BindingCompat on smooth {
         when: root.disableSmoothWhenIntegerUpscaling &&
               !((root.paintedWidth % root.implicitWidth) || (root.paintedHeight % root.implicitHeight))
         value: false
+    }
+
+    BindingCompat on sourceSize {
+        // Delay source size to prevent multiple assignments.
+        delayed: true
+        when: root.acceptPartialSourceSize || (root.targetSourceSize.width > 0 && root.targetSourceSize.height > 0)
+        value: root.targetSourceSize
+    }
+
+    BindingCompat on source {
+        // source should be empty until sourceSize is finalized
+        id: sourceBinding
+
+        when: allow && root.targetSource.length > 0
+        value: root.targetSource
+
+        property bool allow: false
     }
 }
