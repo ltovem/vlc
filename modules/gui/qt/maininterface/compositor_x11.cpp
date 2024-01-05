@@ -244,3 +244,11 @@ QQuickItem * CompositorX11::activeFocusItem() const /* override */
 {
     return m_qmlView->activeFocusItem();
 }
+
+QQuickWindow * CompositorX11::quickWindow() const
+{
+    if (m_qmlView)
+        return m_qmlView->getOffscreenWindow();
+    else
+        return nullptr;
+}

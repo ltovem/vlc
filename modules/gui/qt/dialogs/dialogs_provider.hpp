@@ -70,6 +70,7 @@ enum {
 class QEvent;
 class QSignalMapper;
 class VLCMenuBar;
+class PlatformAgnosticMenu;
 
 class DialogsProvider : public QObject, public Singleton<DialogsProvider>
 {
@@ -118,10 +119,10 @@ private:
 
     qt_intf_t *p_intf;
 
-    std::unique_ptr<QMenu> popupMenu;
-    std::unique_ptr<QMenu> videoPopupMenu;
-    std::unique_ptr<QMenu> audioPopupMenu;
-    std::unique_ptr<QMenu> miscPopupMenu;
+    std::unique_ptr<PlatformAgnosticMenu> popupMenu;
+    std::unique_ptr<PlatformAgnosticMenu> videoPopupMenu;
+    std::unique_ptr<PlatformAgnosticMenu> audioPopupMenu;
+    std::unique_ptr<PlatformAgnosticMenu> miscPopupMenu;
 
     QWidget* root;
     bool b_isDying;

@@ -116,6 +116,7 @@ class MainCtx : public QObject
     Q_PROPERTY(bool hasAcrylicSurface READ hasAcrylicSurface NOTIFY hasAcrylicSurfaceChanged FINAL)
     Q_PROPERTY(bool smoothScroll READ smoothScroll NOTIFY smoothScrollChanged FINAL)
     Q_PROPERTY(QWindow* intfMainWindow READ intfMainWindow CONSTANT FINAL)
+    Q_PROPERTY(QQuickWindow* quickWindow READ quickWindow CONSTANT FINAL)
     Q_PROPERTY(QScreen* screen READ screen NOTIFY screenChanged)
     Q_PROPERTY(bool useGlobalShortcuts READ getUseGlobalShortcuts WRITE setUseGlobalShortcuts NOTIFY useGlobalShortcutsChanged FINAL)
     Q_PROPERTY(int maxVolume READ maxVolume NOTIFY maxVolumeChanged FINAL)
@@ -246,6 +247,8 @@ public:
     void setPreferHotkeys(bool enable);
 
     QWindow *intfMainWindow() const;
+
+    QQuickWindow *quickWindow() const;
 
     Q_INVOKABLE QVariant settingValue(const QString &key, const QVariant &defaultValue) const;
     Q_INVOKABLE void setSettingValue(const QString &key, const QVariant &value);

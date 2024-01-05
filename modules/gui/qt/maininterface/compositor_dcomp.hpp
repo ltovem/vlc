@@ -58,6 +58,8 @@ public:
 
     QQuickItem * activeFocusItem() const override;
 
+    QQuickWindow * quickWindow() const override;
+
 private slots:
     void onSurfacePositionChanged(const QPointF& position) override;
     void onSurfaceSizeChanged(const QSizeF& size) override;

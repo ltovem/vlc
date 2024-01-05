@@ -49,17 +49,25 @@
 #include <QMetaProperty>
 #include <QMetaMethod>
 
-RendererAction::RendererAction( vlc_renderer_item_t *p_item_ )
-    : QAction()
+#include "widgets/native/platformagnosticmenu.hpp"
+#include "widgets/native/platformagnosticaction.hpp"
+#include "widgets/native/platformagnosticactiongroup.hpp"
+
+RendererAction::RendererAction( vlc_renderer_item_t *p_item_, QObject* parent )
+    : QObject{parent}
 {
     p_item = p_item_;
     vlc_renderer_item_hold( p_item );
+
+    m_action = PlatformAgnosticAction::createAction( parent );
+    assert(m_action);
+
     if( vlc_renderer_item_flags( p_item ) & VLC_RENDERER_CAN_VIDEO )
-        setIcon( QIcon( ":/menu/movie.svg" ) );
+        m_action->setIcon( QStringLiteral( ":/menu/movie.svg" ) );
     else
-        setIcon( QIcon( ":/menu/music.svg" ) );
-    setText( vlc_renderer_item_name( p_item ) );
-    setCheckable(true);
+        m_action->setIcon( QStringLiteral(":/menu/music.svg") );
+    m_action->setText( vlc_renderer_item_name( p_item ) );
+    m_action->setCheckable(true);
 }
 
 RendererAction::~RendererAction()
@@ -72,55 +80,79 @@ vlc_renderer_item_t * RendererAction::getItem()
     return p_item;
 }
 
-RendererMenu::RendererMenu( QMenu *parent, qt_intf_t *p_intf_ )
-    : QMenu( parent ), p_intf( p_intf_ )
+RendererMenu::RendererMenu( qt_intf_t *p_intf_, QObject* parent )
+    : QObject{ parent }
+    , p_intf( p_intf_ )
 {
-    setTitle( qtr("&Renderer") );
+    m_menu = PlatformAgnosticMenu::createMenu(parent);
+    assert(m_menu);
 
-    group = new QActionGroup( this );
+    connect(m_menu, &PlatformAgnosticMenu::aboutToHide, this, &RendererMenu::aboutToHide);
+    connect(m_menu, &PlatformAgnosticMenu::aboutToShow, this, &RendererMenu::aboutToShow);
 
-    QAction *action = new QAction( qtr("<Local>"), this );
+    m_menu->setTitle( qtr("&Renderer") );
+
+    m_group = PlatformAgnosticActionGroup::createActionGroup( m_menu.data() );
+    assert(m_group);
+
+    const auto action = PlatformAgnosticAction::createAction( qtr("<Local>"), m_menu.data() );
+    assert(action);
+
     action->setCheckable(true);
-    addAction( action );
-    group->addAction(action);
+    m_menu->addAction( action );
+    m_group->addAction( action );
 
     vlc_player_Lock( p_intf_->p_player );
     if ( vlc_player_GetRenderer( p_intf->p_player ) == nullptr )
         action->setChecked( true );
     vlc_player_Unlock( p_intf_->p_player );
 
-    addSeparator();
+    m_menu->addSeparator();
 
-    QWidget *statusWidget = new QWidget();
-    statusWidget->setLayout( new QVBoxLayout );
-    QLabel *label = new QLabel();
-    label->setObjectName( "statuslabel" );
-    statusWidget->layout()->addWidget( label );
-    QProgressBar *pb = new QProgressBar();
-    pb->setObjectName( "statusprogressbar" );
-    pb->setMaximumHeight( 10 );
-    pb->setStyleSheet( QString("\
-        QProgressBar:horizontal {\
-            border: none;\
-            background: transparent;\
-            padding: 1px;\
-        }\
-        QProgressBar::chunk:horizontal {\
-            background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, \
-                        stop: 0 white, stop: 0.4 orange, stop: 0.6 orange, stop: 1 white);\
-        }") );
-    pb->setRange( 0, 0 );
-    pb->setSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Maximum );
-    statusWidget->layout()->addWidget( pb );
-    QWidgetAction *qwa = new QWidgetAction( this );
-    qwa->setDefaultWidget( statusWidget );
-    qwa->setDisabled( true );
-    addAction( qwa );
-    status = qwa;
+    if (qobject_cast<WidgetsMenu*>(m_menu))
+    {
+        QProgressBar *pb = new QProgressBar();
+        pb->setObjectName( "statusprogressbar" );
+        pb->setMaximumHeight( 10 );
+        pb->setStyleSheet( QString("\
+            QProgressBar:horizontal {\
+                border: none;\
+                background: transparent;\
+                padding: 1px;\
+            }\
+            QProgressBar::chunk:horizontal {\
+                background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, \
+                            stop: 0 white, stop: 0.4 orange, stop: 0.6 orange, stop: 1 white);\
+            }") );
+        pb->setRange( 0, 0 );
+        pb->setSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Maximum );
+        QWidgetAction *qwa = new QWidgetAction( this );
+        qwa->setDefaultWidget( pb );
+        qwa->setDisabled( true );
+        m_progressIndicator = qwa;
+    }
+    else if (qobject_cast<QuickControls2Menu*>(m_menu))
+    {
+        const auto menu = static_cast<QuickControls2Menu*>(m_menu.data());
+        QQmlEngine* const engine = qmlEngine(menu->m_menu);
+        assert(engine);
+        QQmlComponent component(engine, nullptr);
+        component.setData("import QtQuick.Controls 2.12; BusyIndicator { }", {});
+        m_progressIndicator = component.create(qmlContext(menu->m_menu));
+        assert(m_progressIndicator);
+        QQmlEngine::setObjectOwnership(m_progressIndicator, QQmlEngine::CppOwnership);
+        m_progressIndicator->setParent(menu->m_menu);
+    }
+    else
+        Q_UNREACHABLE();
+
+    m_statusAction = m_menu->addAction( qtr("Waiting...") );
+    m_statusAction->setEnabled(false);
+    m_menu->addItem(m_progressIndicator);
 
     RendererManager *manager = RendererManager::getInstance( p_intf );
-    connect( this, &RendererMenu::aboutToShow, manager, &RendererManager::StartScan );
-    connect( group, &QActionGroup::triggered, this, &RendererMenu::RendererSelected );
+    connect( m_menu, &PlatformAgnosticMenu::aboutToShow, manager, &RendererManager::StartScan );
+    connect( m_group, &PlatformAgnosticActionGroup::triggered, this, &RendererMenu::RendererSelected );
     connect( manager, SIGNAL(rendererItemAdded( vlc_renderer_item_t * )),
              this, SLOT(addRendererItem( vlc_renderer_item_t * )), Qt::DirectConnection );
     connect( manager, SIGNAL(rendererItemRemoved( vlc_renderer_item_t * )),
@@ -135,34 +167,34 @@ RendererMenu::~RendererMenu()
 
 void RendererMenu::updateStatus( int val )
 {
-    QProgressBar *pb = findChild<QProgressBar *>("statusprogressbar");
-    QLabel *label = findChild<QLabel *>("statuslabel");
     if( val >= RendererManager::RendererStatus::RUNNING )
     {
-        label->setText( qtr("Scanning...").
-               append( QString(" (%1s)").arg( val ) ) );
-        pb->setVisible( true );
-        status->setVisible( true );
+        m_statusAction->setText( qtr("Scanning...").append( QString(" (%1s)").arg( val ) ) );
+        m_progressIndicator->setProperty( "visible", true );
+        m_statusAction->setVisible(true);
     }
     else if( val == RendererManager::RendererStatus::FAILED )
     {
-        label->setText( "Failed (no discovery module available)" );
-        pb->setVisible( false );
-        status->setVisible( true );
+        m_statusAction->setText( qtr("Failed (no discovery module available)") );
+        m_progressIndicator->setProperty( "visible", false );
+        m_statusAction->setVisible(true);
     }
-    else status->setVisible( false );
+    else
+    {
+        m_statusAction->setVisible(false);
+    }
 }
 
 void RendererMenu::addRendererItem( vlc_renderer_item_t *p_item )
 {
-    QAction *action = new RendererAction( p_item );
-    insertAction( status, action );
-    group->addAction( action );
+    const auto action = new RendererAction( p_item, m_menu );
+    m_menu->insertAction( m_statusAction, action->m_action );
+    m_group->addAction( action->m_action );
 }
 
 void RendererMenu::removeRendererItem( vlc_renderer_item_t *p_item )
 {
-    foreach (QAction* action, group->actions())
+    for (const auto action : m_menu->actions())
     {
         RendererAction *ra = qobject_cast<RendererAction *>( action );
         if( !ra || ra->getItem() != p_item )
@@ -173,35 +205,43 @@ void RendererMenu::removeRendererItem( vlc_renderer_item_t *p_item )
     }
 }
 
-void RendererMenu::addRendererAction(QAction *action)
+void RendererMenu::addRendererAction(RendererAction *action)
 {
-    insertAction( status, action );
-    group->addAction( action );
+    m_menu->insertAction( m_statusAction, action->m_action );
+    m_group->addAction( action->m_action );
 }
 
-void RendererMenu::removeRendererAction(QAction *action)
+void RendererMenu::removeRendererAction(RendererAction *action)
 {
-    removeAction( action );
-    group->removeAction( action );
+    m_menu->removeAction( action->m_action );
+    m_group->removeAction( action->m_action );
 }
 
 void RendererMenu::reset()
 {
     /* reset the list of renderers */
-    foreach (QAction* action, group->actions())
+    for (const auto action : m_menu->actions())
     {
         RendererAction *ra = qobject_cast<RendererAction *>( action );
         if( ra )
         {
             removeRendererAction( ra );
-            delete ra;
+            ra->deleteLater();
         }
     }
 }
 
-void RendererMenu::RendererSelected(QAction *action)
+void RendererMenu::popup(const QPoint &pos)
 {
-    RendererAction *ra = qobject_cast<RendererAction *>( action );
+    assert(m_menu);
+    m_menu->popup(pos);
+}
+
+void RendererMenu::RendererSelected(QObject *_action)
+{
+    const auto action = _action->property("platformAgnosticAction").value<PlatformAgnosticAction *>();
+    assert(action);
+    const auto ra = qobject_cast<RendererAction *>(action->parent());
     if( ra )
         RendererManager::getInstance( p_intf )->SelectRenderer( ra->getItem() );
     else
@@ -210,22 +250,20 @@ void RendererMenu::RendererSelected(QAction *action)
 
 /*   CheckableListMenu   */
 
-CheckableListMenu::CheckableListMenu(QString title, QAbstractListModel* model , GroupingMode grouping,  QWidget *parent)
-    : QMenu(parent)
+CheckableListMenu::CheckableListMenu(QString title, QAbstractListModel* model , GroupingMode grouping, QObject* parent)
+    : QObject{parent}
     , m_model(model)
     , m_grouping(grouping)
 {
-    this->setTitle(title);
+    m_menu = PlatformAgnosticMenu::createMenu(parent);
+    assert(m_menu);
+    m_menu->setTitle(title);
     if (m_grouping != UNGROUPED)
     {
-        m_actionGroup = new QActionGroup(this);
+        m_actionGroup = PlatformAgnosticActionGroup::createActionGroup(m_menu);
         if (m_grouping == GROUPED_OPTIONAL)
         {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-            m_actionGroup->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
-#else
             m_actionGroup->setExclusive(false);
-#endif
         }
     }
 
@@ -239,46 +277,50 @@ CheckableListMenu::CheckableListMenu(QString title, QAbstractListModel* model , 
 
 void CheckableListMenu::onRowsAboutToBeRemoved(const QModelIndex &, int first, int last)
 {
+    assert(m_menu);
     for (int i = last; i >= first; i--)
     {
-        QAction* action = actions()[i];
+        PlatformAgnosticAction* action = m_menu->actions()[i];
         if (m_actionGroup)
             m_actionGroup->removeAction(action);
         delete action;
     }
-    if (actions().count() == 0)
-        setEnabled(false);
+    if (m_menu->actions().count() == 0)
+        m_menu->setEnabled(false);
 }
 
 void CheckableListMenu::onRowInserted(const QModelIndex &, int first, int last)
 {
+    assert(m_menu);
     for (int i = first; i <= last; i++)
     {
         QModelIndex index = m_model->index(i);
         QString title = m_model->data(index, Qt::DisplayRole).toString();
         bool checked = m_model->data(index, Qt::CheckStateRole).toBool();
 
-        QAction *choiceAction = new QAction(title, this);
-        addAction(choiceAction);
+        PlatformAgnosticAction *choiceAction = PlatformAgnosticAction::createAction(title, (*this)());
+        m_menu->addAction(choiceAction);
         if (m_actionGroup)
             m_actionGroup->addAction(choiceAction);
-        connect(choiceAction, &QAction::triggered, [this, i](bool checked){
+        connect(choiceAction, &PlatformAgnosticAction::triggered, this, [this, i](bool checked){
             QModelIndex dataIndex = m_model->index(i);
             m_model->setData(dataIndex, QVariant::fromValue<bool>(checked), Qt::CheckStateRole);
         });
         choiceAction->setCheckable(true);
         choiceAction->setChecked(checked);
-        setEnabled(true);
+        m_menu->setEnabled(true);
     }
 }
 
 void CheckableListMenu::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> & )
 {
+    assert(m_menu);
     for (int i = topLeft.row(); i <= bottomRight.row(); i++)
     {
-        if (i >= actions().size())
+        const auto actions = m_menu->actions();
+        if (i >= actions.size())
             break;
-        QAction *choiceAction = actions()[i];
+        PlatformAgnosticAction *choiceAction = actions[i];
 
         QModelIndex index = m_model->index(i);
         QString title = m_model->data(index, Qt::DisplayRole).toString();
@@ -291,31 +333,33 @@ void CheckableListMenu::onDataChanged(const QModelIndex &topLeft, const QModelIn
 
 void CheckableListMenu::onModelAboutToBeReset()
 {
-    for (QAction* action  :actions())
+    assert(m_menu);
+    for (PlatformAgnosticAction* action : m_menu->actions())
     {
         if (m_actionGroup)
             m_actionGroup->removeAction(action);
         delete action;
     }
-    setEnabled(false);
+    m_menu->setEnabled(false);
 }
 
 void CheckableListMenu::onModelReset()
 {
+    assert(m_menu);
     int nb_rows = m_model->rowCount();
     if (nb_rows == 0)
-        setEnabled(false);
+        m_menu->setEnabled(false);
     else
         onRowInserted({}, 0, nb_rows - 1);
 }
 
 // ListMenuHelper
 
-ListMenuHelper::ListMenuHelper(QMenu * menu, QAbstractListModel * model, QAction * before,
+ListMenuHelper::ListMenuHelper(PlatformAgnosticMenu * menu, QAbstractListModel * model, PlatformAgnosticAction * before,
                                QObject * parent)
     : QObject(parent), m_menu(menu), m_model(model), m_before(before)
 {
-    m_group = new QActionGroup(this);
+    m_group = PlatformAgnosticActionGroup::createActionGroup(m_menu);
 
     onModelReset();
 
@@ -338,7 +382,7 @@ int ListMenuHelper::count() const
 
 void ListMenuHelper::onRowsInserted(const QModelIndex &, int first, int last)
 {
-    QAction * before;
+    PlatformAgnosticAction * before;
 
     if (first < m_actions.count())
         before = m_actions.at(first);
@@ -351,7 +395,7 @@ void ListMenuHelper::onRowsInserted(const QModelIndex &, int first, int last)
 
         QString name = m_model->data(index, Qt::DisplayRole).toString();
 
-        QAction * action = new QAction(name, this);
+        PlatformAgnosticAction * action = PlatformAgnosticAction::createAction(name, m_menu);
 
         action->setCheckable(true);
 
@@ -366,7 +410,7 @@ void ListMenuHelper::onRowsInserted(const QModelIndex &, int first, int last)
 
         m_actions.insert(i, action);
 
-        connect(action, &QAction::triggered, this, &ListMenuHelper::onTriggered);
+        connect(action, &PlatformAgnosticAction::triggered, this, &ListMenuHelper::onTriggered);
     }
 
     emit countChanged(m_actions.count());
@@ -376,14 +420,14 @@ void ListMenuHelper::onRowsRemoved(const QModelIndex &, int first, int last)
 {
     for (int i = first; i <= last; i++)
     {
-        QAction * action = m_actions.at(i);
+        PlatformAgnosticAction * action = m_actions.at(i);
 
         m_group->removeAction(action);
 
         delete action;
     }
 
-    QList<QAction *>::iterator begin = m_actions.begin();
+    QList<PlatformAgnosticAction *>::iterator begin = m_actions.begin();
 
     m_actions.erase(begin + first, begin + last + 1);
 
@@ -395,7 +439,7 @@ void ListMenuHelper::onDataChanged(const QModelIndex & topLeft,
 {
     for (int i = topLeft.row(); i <= bottomRight.row(); i++)
     {
-        QAction * action = m_actions.at(i);
+        PlatformAgnosticAction * action = m_actions.at(i);
 
         QModelIndex index = m_model->index(i, 0);
 
@@ -411,7 +455,7 @@ void ListMenuHelper::onDataChanged(const QModelIndex & topLeft,
 
 void ListMenuHelper::onModelReset()
 {
-    for (QAction * action : m_actions)
+    for (PlatformAgnosticAction * action : m_actions)
     {
         m_group->removeAction(action);
 
@@ -428,34 +472,36 @@ void ListMenuHelper::onModelReset()
 
 void ListMenuHelper::onTriggered(bool)
 {
-    QAction * action = static_cast<QAction *> (sender());
+    PlatformAgnosticAction * action = static_cast<PlatformAgnosticAction *> (sender());
 
     emit select(m_actions.indexOf(action));
 }
 
 /*     BooleanPropertyAction    */
 
-BooleanPropertyAction::BooleanPropertyAction(QString title, QObject *model, QString propertyName, QWidget *parent)
-    : QAction(parent)
+BooleanPropertyAction::BooleanPropertyAction(QString title, QObject *model, QString propertyName, QObject *parent)
+    : QObject(parent)
     , m_model(model)
     , m_propertyName(propertyName)
 {
-    setText(title);
+    m_action = PlatformAgnosticAction::createAction(parent);
+    assert(m_action);
+    m_action->setText(title);
     assert(model);
     const QMetaObject* meta = model->metaObject();
     int propertyId = meta->indexOfProperty(qtu(propertyName));
     assert(propertyId != -1);
     QMetaProperty property = meta->property(propertyId);
     assert(property.type() ==  QVariant::Bool);
-    const QMetaObject* selfMeta = this->metaObject();
+    const QMetaObject* metaObject = m_action->metaObject();
 
     assert(property.hasNotifySignal());
-    QMetaMethod checkedSlot = selfMeta->method(selfMeta->indexOfSlot( "setChecked(bool)" ));
-    connect( model, property.notifySignal(), this, checkedSlot );
-    connect( this, &BooleanPropertyAction::triggered, this, &BooleanPropertyAction::setModelChecked );
+    QMetaMethod checkedSlot = metaObject->method(metaObject->indexOfSlot( "setChecked(bool)" ));
+    connect( model, property.notifySignal(), m_action, checkedSlot );
+    connect( m_action, &PlatformAgnosticAction::triggered, this, &BooleanPropertyAction::setModelChecked );
 
-    setCheckable(true);
-    setChecked(property.read(model).toBool());
+    m_action->setCheckable(true);
+    m_action->setChecked(property.read(model).toBool());
 }
 
 void BooleanPropertyAction::setModelChecked(bool checked)
@@ -464,17 +510,20 @@ void BooleanPropertyAction::setModelChecked(bool checked)
 }
 
 
-RecentMenu::RecentMenu(MLRecentsModel* model, MediaLib* ml,  QWidget* parent)
-    : QMenu(parent)
+RecentMenu::RecentMenu(MLRecentsModel* model, MediaLib* ml, QObject* parent)
+    : QObject(parent)
     , m_model(model)
     , m_ml(ml)
 {
+    m_menu = PlatformAgnosticMenu::createMenu(parent);
+    assert(m_menu);
+
     connect(m_model, &MLRecentsModel::rowsRemoved, this, &RecentMenu::onRowsRemoved);
     connect(m_model, &MLRecentsModel::rowsInserted, this, &RecentMenu::onRowInserted);
     connect(m_model, &MLRecentsModel::dataChanged, this, &RecentMenu::onDataChanged);
     connect(m_model, &MLRecentsModel::modelReset, this, &RecentMenu::onModelReset);
-    m_separator = addSeparator();
-    addAction( qtr("&Clear"), m_model, &MLRecentsModel::clearHistory );
+    m_menu->addSeparator();
+    m_menu->addAction( qtr("&Clear"), this, [this]() { m_model->clearHistory(); } );
     onModelReset();
 }
 
@@ -485,17 +534,17 @@ void RecentMenu::onRowsRemoved(const QModelIndex&, int first, int last)
         delete m_actions.at(i);
     }
 
-    QList<QAction *>::iterator begin = m_actions.begin();
+    QList<PlatformAgnosticAction *>::iterator begin = m_actions.begin();
 
     m_actions.erase(begin + first, begin + last + 1);
 
     if (m_actions.isEmpty())
-        setEnabled(false);
+        m_menu->setEnabled(false);
 }
 
 void RecentMenu::onRowInserted(const QModelIndex&, int first, int last)
 {
-    QAction * before;
+    PlatformAgnosticAction * before;
 
     if (first < m_actions.count())
         before = m_actions.at(first);
@@ -508,20 +557,21 @@ void RecentMenu::onRowInserted(const QModelIndex&, int first, int last)
         QModelIndex index = m_model->index(i);
         QString url = m_model->data(index, MLRecentsModel::RECENT_MEDIA_URL).toString();
 
-        QAction *choiceAction = new QAction(url, this);
+        PlatformAgnosticAction *choiceAction = PlatformAgnosticAction::createAction(url, m_menu);
+        assert(choiceAction);
 
         // NOTE: We are adding sequentially *before* the next action in the list.
-        insertAction(before, choiceAction);
+        m_menu->insertAction(before, choiceAction);
 
         m_actions.insert(i, choiceAction);
 
-        connect(choiceAction, &QAction::triggered, [this, choiceAction](){
+        connect(choiceAction, &PlatformAgnosticAction::triggered, this, [this, choiceAction](){
             QModelIndex index = m_model->index(m_actions.indexOf(choiceAction));
 
             MLItemId id = m_model->data(index, MLRecentsModel::RECENT_MEDIA_ID).value<MLItemId>();
             m_ml->addAndPlay(id);
         });
-        setEnabled(true);
+        m_menu->setEnabled(true);
     }
 }
 
@@ -543,31 +593,46 @@ void RecentMenu::onModelReset()
 
     int nb_rows = m_model->rowCount();
     if (nb_rows == 0 || nb_rows == -1)
-        setEnabled(false);
+        m_menu->setEnabled(false);
     else
         onRowInserted({}, 0, nb_rows - 1);
 }
 
 // BookmarkMenu
 
-BookmarkMenu::BookmarkMenu(MediaLib * mediaLib, vlc_player_t * player, QWidget * parent)
-    : QMenu(parent)
+BookmarkMenu::BookmarkMenu(MediaLib * mediaLib, vlc_player_t * player, QObject* parent)
+    : QObject{parent}
 {
-    // FIXME: Do we really need a translation call for the string shortcut ?
-    addAction(qtr("&Manage"), THEDP, &DialogsProvider::bookmarksDialog, qtr("Ctrl+B"));
+    m_menu = PlatformAgnosticMenu::createMenu(parent);
 
-    addSeparator();
+    // FIXME: Do we really need a translation call for the string shortcut ?
+    m_menu->addAction(qtr("&Manage"), THEDP, []() {
+            DialogsProvider::getInstance()->bookmarksDialog();
+        }, QKeySequence("Ctrl+B"));
+
+    m_menu->addSeparator();
 
     MLBookmarkModel * model = new MLBookmarkModel(this);
     model->setPlayer(player);
     model->setMl(mediaLib);
 
-    ListMenuHelper * helper = new ListMenuHelper(this, model, nullptr, this);
+    ListMenuHelper * helper = new ListMenuHelper(m_menu.data(), model, nullptr, this);
 
     connect(helper, &ListMenuHelper::select, [model](int index)
     {
         model->select(model->index(index, 0));
     });
 
-    setTearOffEnabled(true);
+    if (qobject_cast<WidgetsMenu*>(m_menu.data()))
+        m_menu->setTearOffEnabled(true);
 }
+PlatformAgnosticMenu *CheckableListMenu::operator()() const {
+    return m_menu.data();
+};
+PlatformAgnosticAction *BooleanPropertyAction::operator()() const {
+    return m_action.data();
+};
+PlatformAgnosticMenu *RecentMenu::operator()() const { return m_menu.data(); };
+PlatformAgnosticMenu *BookmarkMenu::operator()() const {
+    return m_menu.data();
+};

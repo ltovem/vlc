@@ -53,6 +53,8 @@ public:
 
     QQuickItem * activeFocusItem() const override;
 
+    QQuickWindow * quickWindow() const override;
+
 private:
     int windowEnable(const vlc_window_cfg_t *)  override;
     void windowDisable() override;

@@ -60,6 +60,8 @@ public:
 
     QQuickItem * activeFocusItem() const override;
 
+    QQuickWindow * quickWindow() const override;
+
 protected:
     bool eventFilter(QObject *obj, QEvent *ev) override;
 

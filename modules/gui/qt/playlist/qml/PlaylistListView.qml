@@ -134,6 +134,7 @@ T.Pane {
 
     PlaylistContextMenu {
         id: contextMenu
+        ctx: MainCtx
         model: root.model
         selectionModel: root.selectionModel
         controler: MainPlaylistController

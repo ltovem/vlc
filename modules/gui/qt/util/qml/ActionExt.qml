@@ -1,7 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2021 VLC authors and VideoLAN
- *
- * Authors: Benjamin Arnaud <bunjee@omega.gg>
+ * Copyright (C) 2023 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,36 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
-
 import QtQuick 2.12
+import QtQuick.Controls 2.12
 
-import org.videolan.vlc 0.1
+Action {
 
-import "qrc:///widgets/" as Widgets
-import "qrc:///style/"
-
-Widgets.IconControlButton {
-    id: root
-
-    signal requestLockUnlockAutoHide(bool lock)
-
-    iconText: VLCIcons.tv
-
-    text: I18n.qtr("Programs")
-
-    // NOTE: We want to pop the menu above the button.
-    onClicked: menu.popup(this.mapToGlobal(0, 0), true)
-
-    enabled: (paintOnly === false && Player.hasPrograms)
-
-    QmlProgramMenu {
-        id: menu
-
-        ctx: MainCtx
-
-        player: Player
-
-        onAboutToShow: root.requestLockUnlockAutoHide(true)
-        onAboutToHide: root.requestLockUnlockAutoHide(false)
-    }
 }

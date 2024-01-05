@@ -41,6 +41,8 @@ QtObject {
        e.g see MLContextMenu.qml
     **/
 
+    property alias menu: menu
+
     property var actions: []
 
     signal requestData(var requestID, var indexes)
@@ -99,6 +101,8 @@ QtObject {
 
     readonly property StringListMenu _menu: StringListMenu {
         id: menu
+
+        ctx: MainCtx
 
         onSelected: {
             root._executeAction(index)

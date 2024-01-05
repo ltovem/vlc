@@ -207,6 +207,11 @@ QQuickItem * CompositorWin7::activeFocusItem() const /* override */
     return m_qmlView->activeFocusItem();
 }
 
+QQuickWindow * CompositorWin7::quickWindow() const
+{
+    return m_qmlView.get();
+}
+
 bool CompositorWin7::eventFilter(QObject*, QEvent* ev)
 {
     if (!m_videoWidget || !m_qmlView)

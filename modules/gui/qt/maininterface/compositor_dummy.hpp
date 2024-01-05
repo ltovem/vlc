@@ -63,6 +63,8 @@ public:
 
     QQuickItem * activeFocusItem() const override;
 
+    QQuickWindow * quickWindow() const override;
+
 protected:
     qt_intf_t *m_intf;
 

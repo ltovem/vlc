@@ -30,6 +30,7 @@
 #include "qt.hpp"
 #include <player/player_controller.hpp>
 #include "util/singleton.hpp"
+#include "menus/menus.hpp"
 
 #include <QObject>
 
@@ -51,7 +52,9 @@ public:
     inline bool isLoaded() { return p_extensions_manager != NULL; }
     inline bool cannotLoad() { return b_unloading || b_failed; }
     inline bool isUnloading() { return b_unloading; }
-    void menu( QMenu *current );
+
+    template<class Menu, class Action = typename Types<Menu>::actionType, class Icon = typename Types<Menu>::iconType>
+    void menu( Menu *current );
 
     void openVLsub();
 

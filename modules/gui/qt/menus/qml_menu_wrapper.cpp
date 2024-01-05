@@ -33,67 +33,46 @@
 #include <QScreen>
 #include <QActionGroup>
 
-namespace
+#include "widgets/native/platformagnosticmenu.hpp"
+#include "widgets/native/platformagnosticaction.hpp"
+#include "widgets/native/platformagnosticactiongroup.hpp"
+
+static inline void popupMenu(PlatformAgnosticMenu* const menu, const QPoint& point, const bool above)
 {
-    QIcon sortIcon(QWidget *widget, int order)
-    {
-        assert(order == Qt::AscendingOrder || order == Qt::DescendingOrder);
-
-        QStyleOptionHeader headerOption;
-        headerOption.initFrom(widget);
-        headerOption.sortIndicator = (order == Qt::AscendingOrder)
-                ? QStyleOptionHeader::SortDown
-                : QStyleOptionHeader::SortUp;
-
-        QStyle *style = qApp->style();
-        int arrowsize = style->pixelMetric(QStyle::PM_HeaderMarkSize, &headerOption, widget);
-        if (arrowsize <= 0)
-            arrowsize = 32;
-
-        qreal dpr = widget ? widget->devicePixelRatioF() : 1.0;
-        headerOption.rect = QRect(0, 0, arrowsize, arrowsize);
-
-        QPixmap arrow(arrowsize * dpr, arrowsize * dpr);
-        arrow.setDevicePixelRatio(dpr);
-        arrow.fill(Qt::transparent);
-
-        {
-            QPainter arrowPainter(&arrow);
-            style->drawPrimitive(QStyle::PE_IndicatorHeaderArrow, &headerOption, &arrowPainter, widget);
-        }
-
-        return QIcon(arrow);
-    }
+    assert(menu);
+    if (above)
+        menu->popup(QPoint(point.x(), point.y() - menu->sizeHint().height()));
+    else
+        menu->popup(point);
 }
 
 void StringListMenu::popup(const QPoint &point, const QVariantList &stringList)
 {
-    QMenu *m = new QMenu;
-    m->setAttribute(Qt::WA_DeleteOnClose);
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
     for (int i = 0; i != stringList.size(); ++i)
     {
         const auto str = stringList[i].toString();
-        m->addAction(str, this, [this, i, str]()
+        m_menu->addAction(str, this, [this, i, str]()
         {
             emit selected(i, str);
         });
     }
 
-    m->popup(point);
+    m_menu->popup(point);
 }
 
 // SortMenu
 
 void SortMenu::popup(const QPoint &point, const bool popupAbovePoint, const QVariantList &model)
 {
-    m_menu = std::make_unique<QMenu>();
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
-    connect( m_menu.get(), &QMenu::aboutToShow, this, [this]() {
+    connect( m_menu.get(), &PlatformAgnosticMenu::aboutToShow, this, [this]() {
         m_shown = true;
         shownChanged();
     } );
-    connect( m_menu.get(), &QMenu::aboutToHide, this, [this]() {
+    connect( m_menu.get(), &PlatformAgnosticMenu::aboutToHide, this, [this]() {
         m_shown = false;
         shownChanged();
     } );
@@ -110,9 +89,26 @@ void SortMenu::popup(const QPoint &point, const bool popupAbovePoint, const QVar
         action->setChecked(checked);
 
         if (checked)
-            action->setIcon(sortIcon(m_menu.get(), obj.value("order").toInt()));
+        {
+            const QLatin1String themeIconAscending{"view-sort-ascending"};
+            const QLatin1String themeIconDescending{"view-sort-descending"};
+            const QLatin1String *themeIcon;
 
-        connect(action, &QAction::triggered, this, [this, i]()
+            switch (static_cast<Qt::SortOrder>(obj.value("order").toInt())) {
+            case Qt::AscendingOrder:
+                themeIcon = &themeIconAscending;
+                break;
+            case Qt::DescendingOrder:
+                themeIcon = &themeIconDescending;
+                break;
+            default:
+                Q_UNREACHABLE();
+            }
+
+            action->setIcon(*themeIcon, false);
+        }
+
+        connect(action, &PlatformAgnosticAction::triggered, this, [this, i]()
         {
             emit selected(i);
         });
@@ -120,10 +116,7 @@ void SortMenu::popup(const QPoint &point, const bool popupAbovePoint, const QVar
 
     onPopup(m_menu.get());
 
-    if (popupAbovePoint)
-        m_menu->popup(QPoint(point.x(), point.y() - m_menu->sizeHint().height()));
-    else
-        m_menu->popup(point);
+    popupMenu(m_menu.get(), point, popupAbovePoint);
 }
 
 void SortMenu::close()
@@ -134,15 +127,15 @@ void SortMenu::close()
 
 // Protected functions
 
-/* virtual */ void SortMenu::onPopup(QMenu *) {}
+/* virtual */ void SortMenu::onPopup(PlatformAgnosticMenu *) {}
 
 // SortMenuVideo
 
 // Protected SortMenu reimplementation
 
-void SortMenuVideo::onPopup(QMenu * menu) /* override */
+void SortMenuVideo::onPopup(PlatformAgnosticMenu * menu) /* override */
 {
-    if (!m_ctx)
+    if (!getctx())
         return;
 
     menu->addSeparator();
@@ -160,19 +153,19 @@ void SortMenuVideo::onPopup(QMenu * menu) /* override */
         { N_("Group by folder"), MainCtx::GROUPING_FOLDER },
     };
 
-    QActionGroup * group = new QActionGroup(this);
+    PlatformAgnosticActionGroup * group = PlatformAgnosticActionGroup::createActionGroup(menu);
 
-    int index = m_ctx->grouping();
+    int index = getctx()->grouping();
 
     for (size_t i = 0; i < ARRAY_SIZE(entries); i++)
     {
-        QAction * action = menu->addAction(qtr(entries[i].title));
+        PlatformAgnosticAction * action = menu->addAction(qtr(entries[i].title));
 
         action->setCheckable(true);
 
         MainCtx::Grouping grouping = entries[i].grouping;
 
-        connect(action, &QAction::triggered, this, [this, grouping]()
+        connect(action, &PlatformAgnosticAction::triggered, this, [this, grouping]()
         {
             emit this->grouping(grouping);
         });
@@ -198,15 +191,15 @@ void QmlGlobalMenu::popup(QPoint pos)
     if (!p_intf)
         return;
 
-    m_menu = std::make_unique<QMenu>();
-    QMenu* submenu;
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
+    PlatformAgnosticMenu* submenu;
 
-    connect( m_menu.get(), &QMenu::aboutToShow, this, [this]() {
+    connect( m_menu.get(), &PlatformAgnosticMenu::aboutToShow, this, [this]() {
         m_shown = true;
         shownChanged();
         aboutToShow();
     });
-    connect( m_menu.get(), &QMenu::aboutToHide, this, [this]() {
+    connect( m_menu.get(), &PlatformAgnosticMenu::aboutToHide, this, [this]() {
         m_shown = false;
         shownChanged();
         aboutToHide();
@@ -241,50 +234,54 @@ void QmlGlobalMenu::popup(QPoint pos)
     m_menu->popup(pos);
 }
 
-QmlMenuBarMenu::QmlMenuBarMenu(QmlMenuBar* menubar, QWidget* parent)
-    : QMenu(parent)
-    , m_menubar(menubar)
-{}
-
-QmlMenuBarMenu::~QmlMenuBarMenu()
-{
-}
-
-void QmlMenuBarMenu::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-    QPoint globalPos =m_menubar-> m_menu->mapToGlobal(mouseEvent->pos());
-    if (m_menubar->getmenubar()->contains(m_menubar->getmenubar()->mapFromGlobal(globalPos))
-        && !m_menubar->m_button->contains(m_menubar->m_button->mapFromGlobal(globalPos)))
-    {
-        m_menubar->setopenMenuOnHover(true);
-        close();
-        return;
-    }
-    QMenu::mouseMoveEvent(mouseEvent);
-}
-
-void QmlMenuBarMenu::keyPressEvent(QKeyEvent * event)
-{
-    QMenu::keyPressEvent(event);
-    if (!event->isAccepted()
-        && (event->key() == Qt::Key_Left  || event->key() == Qt::Key_Right))
-    {
-        event->accept();
-        emit m_menubar->navigateMenu(event->key() == Qt::Key_Left ? -1 : 1);
-    }
-}
-
-void QmlMenuBarMenu::keyReleaseEvent(QKeyEvent * event)
-{
-    QMenu::keyReleaseEvent(event);
-}
-
 QmlMenuBar::QmlMenuBar(QObject *parent)
     : VLCMenuBar(parent)
 {
 }
 
-void QmlMenuBar::popupMenuCommon( QQuickItem* button, std::function<void(QMenu*)> createMenuFunc)
+bool QmlMenuBar::eventFilter(QObject *watched, QEvent *event)
+{
+    if (!(qobject_cast<QMenu*>(watched) || qobject_cast<QQuickItem*>(watched)))
+        return false;
+
+    switch (event->type())
+    {
+    case QEvent::MouseMove: // X11
+    {
+        const auto globalPos = static_cast<QMouseEvent*>(event)->globalPos();
+
+        if (getmenubar()->contains(getmenubar()->mapFromGlobal(globalPos))
+            && !m_button->contains(m_button->mapFromGlobal(globalPos)))
+        {
+            setopenMenuOnHover(true);
+            m_menu->close();
+
+            event->accept();
+            return true;
+        }
+
+        return false;
+    }
+    case QEvent::KeyPress:
+    {
+        const auto keyEvent = static_cast<QKeyEvent*>(event);
+
+        if ((keyEvent->key() == Qt::Key_Left  || keyEvent->key() == Qt::Key_Right))
+        {
+            event->accept();
+            emit navigateMenu(keyEvent->key() == Qt::Key_Left ? -1 : 1);
+            return true;
+        }
+
+        return false;
+    }
+
+    default:
+        return false;
+    }
+}
+
+void QmlMenuBar::popupMenuCommon( QQuickItem* button, std::function<void(PlatformAgnosticMenu*)> createMenuFunc)
 {
     if (!m_ctx || !m_menubar || !button)
         return;
@@ -293,18 +290,22 @@ void QmlMenuBar::popupMenuCommon( QQuickItem* button, std::function<void(QMenu*)
     if (!p_intf)
         return;
 
-    m_menu = std::make_unique<QmlMenuBarMenu>(this);
+    if (m_menu) // This is necessary on Wayland that previous menu must be closed before.
+        m_menu->close();
+
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
+    m_menu->installEventFilter(this);
     createMenuFunc(m_menu.get());
     m_button = button;
     m_openMenuOnHover = false;
-    connect(m_menu.get(), &QMenu::aboutToHide, this, &QmlMenuBar::onMenuClosed);
+    connect(m_menu.get(), &PlatformAgnosticMenu::aboutToHide, this, &QmlMenuBar::onMenuClosed);
     QPointF position = button->mapToGlobal(QPoint(0, button->height()));
     m_menu->popup(position.toPoint());
 }
 
 void QmlMenuBar::popupMediaMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         qt_intf_t* p_intf = m_ctx->getIntf();
         FileMenu( p_intf, menu );
     });
@@ -312,28 +313,28 @@ void QmlMenuBar::popupMediaMenu( QQuickItem* button )
 
 void QmlMenuBar::popupPlaybackMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         NavigMenu( m_ctx->getIntf(), menu );
     });
 }
 
 void QmlMenuBar::popupAudioMenu(QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         AudioMenu( m_ctx->getIntf(), menu );
     });
 }
 
 void QmlMenuBar::popupVideoMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         VideoMenu( m_ctx->getIntf(), menu );
     });
 }
 
 void QmlMenuBar::popupSubtitleMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         SubtitleMenu( m_ctx->getIntf(), menu );
     });
 }
@@ -341,14 +342,14 @@ void QmlMenuBar::popupSubtitleMenu( QQuickItem* button )
 
 void QmlMenuBar::popupToolsMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         ToolsMenu( m_ctx->getIntf(), menu );
     });
 }
 
 void QmlMenuBar::popupViewMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [this](QMenu* menu) {
+    popupMenuCommon(button, [this](PlatformAgnosticMenu* menu) {
         qt_intf_t* p_intf = m_ctx->getIntf();
         ViewMenu( p_intf, menu );
     });
@@ -356,7 +357,7 @@ void QmlMenuBar::popupViewMenu( QQuickItem* button )
 
 void QmlMenuBar::popupHelpMenu( QQuickItem* button )
 {
-    popupMenuCommon(button, [](QMenu* menu) {
+    popupMenuCommon(button, [](PlatformAgnosticMenu* menu) {
         HelpMenu(menu);
     });
 }
@@ -367,64 +368,6 @@ void QmlMenuBar::onMenuClosed()
         emit menuClosed();
 }
 
-// QmlMenuPositioner
-
-/* explicit */ QmlMenuPositioner::QmlMenuPositioner(QObject * parent) : QObject(parent) {}
-
-// Interface
-
-void QmlMenuPositioner::popup(QMenu * menu, const QPoint & position, bool above)
-{
-    menu->removeEventFilter(this);
-
-    if (above == false)
-    {
-        menu->popup(position);
-
-        return;
-    }
-
-    m_position = position;
-
-    menu->installEventFilter(this);
-
-    // NOTE: QMenu::height() returns an invalid height until the initial popup call.
-    menu->popup(position);
-}
-
-// Public events
-
-bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
-{
-    if (event->type() == QEvent::Resize)
-    {
-        QScreen * screen = QGuiApplication::screenAt(m_position);
-
-        if (screen == nullptr)
-            return QObject::eventFilter(object, event);
-
-        QMenu * menu = static_cast<QMenu *> (object);
-
-        int width  = menu->width();
-        int height = menu->height();
-
-        QRect geometry = screen->availableGeometry();
-
-        int x = geometry.x();
-        int y = geometry.y();
-
-        // NOTE: We want a position within the screen boundaries.
-
-        x = qBound(x, m_position.x(), x + geometry.width() - width);
-
-        y = qBound(y, m_position.y() - height, y + geometry.height() - height);
-
-        menu->move(QPoint(x, y));
-    }
-
-    return QObject::eventFilter(object, event);
-}
-
 // QmlBookmarkMenu
 
 /* explicit */ QmlBookmarkMenu::QmlBookmarkMenu(QObject * parent)
@@ -433,28 +376,35 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
 
 // Interface
 
-/* Q_INVOKABLE */ void QmlBookmarkMenu::popup(const QPoint & position, bool above)
+/* Q_INVOKABLE */ void QmlBookmarkMenu::popup(const QPoint & position, const bool above)
 {
     if (m_ctx == nullptr || m_player == nullptr)
         return;
 
-    m_menu = std::make_unique<QMenu>();
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
-    connect(m_menu.get(), &QMenu::aboutToHide, this, &QmlBookmarkMenu::aboutToHide);
-    connect(m_menu.get(), &QMenu::aboutToShow, this, &QmlBookmarkMenu::aboutToShow);
+    connect(m_menu.get(), &PlatformAgnosticMenu::aboutToHide, this, &QmlBookmarkMenu::aboutToHide);
+    connect(m_menu.get(), &PlatformAgnosticMenu::aboutToShow, this, &QmlBookmarkMenu::aboutToShow);
 
-    QAction * sectionTitles    = m_menu->addSection(qtr("Titles"));
-    QAction * sectionChapters  = m_menu->addSection(qtr("Chapters"));
-    QAction * sectionBookmarks = nullptr;
+    m_menu->addSeparator();
+    PlatformAgnosticAction * sectionTitles    = m_menu->addAction(qtr("Titles"));
+    m_menu->addSeparator();
+    PlatformAgnosticAction * sectionChapters  = m_menu->addAction(qtr("Chapters"));
+    m_menu->addSeparator();
+    PlatformAgnosticAction * sectionBookmarks = nullptr;
 
     if (m_ctx->hasMediaLibrary())
-        sectionBookmarks = m_menu->addSection(qtr("Bookmarks"));
+    {
+        m_menu->addSeparator();
+        sectionBookmarks = m_menu->addAction(qtr("Bookmarks"));
+        m_menu->addSeparator();
+    }
 
     // Titles
 
     TitleListModel * titles = m_player->getTitles();
 
-    sectionTitles->setVisible(titles->rowCount() != 0);
+    sectionTitles->setEnabled(titles->rowCount() != 0);
 
     ListMenuHelper * helper = new ListMenuHelper(m_menu.get(), titles, sectionChapters, m_menu.get());
 
@@ -466,14 +416,14 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
     connect(helper, &ListMenuHelper::countChanged, [sectionTitles](int count)
     {
         // NOTE: The section should only be visible when the model has content.
-        sectionTitles->setVisible(count != 0);
+        sectionTitles->setEnabled(count != 0);
     });
 
     // Chapters
 
     ChapterListModel * chapters = m_player->getChapters();
 
-    sectionChapters->setVisible(chapters->rowCount() != 0);
+    sectionChapters->setEnabled(chapters->rowCount() != 0);
 
     helper = new ListMenuHelper(m_menu.get(), chapters, sectionBookmarks, m_menu.get());
 
@@ -485,7 +435,7 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
     connect(helper, &ListMenuHelper::countChanged, [sectionChapters](int count)
     {
         // NOTE: The section should only be visible when the model has content.
-        sectionChapters->setVisible(count != 0);
+        sectionChapters->setEnabled(count != 0);
     });
 
     // Bookmarks
@@ -508,7 +458,7 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
         });
     }
 
-    m_positioner.popup(m_menu.get(), position, above);
+    popupMenu(m_menu.get(), position, above);
 }
 
 // QmlProgramMenu
@@ -519,17 +469,19 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
 
 // Interface
 
-/* Q_INVOKABLE */ void QmlProgramMenu::popup(const QPoint & position, bool above)
+/* Q_INVOKABLE */ void QmlProgramMenu::popup(const QPoint & position, const bool above)
 {
     if (m_player == nullptr)
         return;
 
-    m_menu = std::make_unique<QMenu>();
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
-    connect(m_menu.get(), &QMenu::aboutToHide, this, &QmlProgramMenu::aboutToHide);
-    connect(m_menu.get(), &QMenu::aboutToShow, this, &QmlProgramMenu::aboutToShow);
+    connect(m_menu.get(), &PlatformAgnosticMenu::aboutToHide, this, &QmlProgramMenu::aboutToHide);
+    connect(m_menu.get(), &PlatformAgnosticMenu::aboutToShow, this, &QmlProgramMenu::aboutToShow);
 
-    m_menu->addSection(qtr("Programs"));
+    m_menu->addSeparator();
+    m_menu->addAction(qtr("Programs"));
+    m_menu->addSeparator();
 
     ProgramListModel * programs = m_player->getPrograms();
 
@@ -540,7 +492,7 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
         programs->setData(programs->index(index), true, Qt::CheckStateRole);
     });
 
-    m_positioner.popup(m_menu.get(), position, above);
+    popupMenu(m_menu.get(), position, above);
 }
 
 // QmlRendererMenu
@@ -551,17 +503,17 @@ bool QmlMenuPositioner::eventFilter(QObject * object, QEvent * event)
 
 // Interface
 
-/* Q_INVOKABLE */ void QmlRendererMenu::popup(const QPoint & position, bool above)
+/* Q_INVOKABLE */ void QmlRendererMenu::popup(const QPoint & position, const bool above)
 {
     if (m_ctx == nullptr)
         return;
 
-    m_menu = std::make_unique<RendererMenu>(nullptr, m_ctx->getIntf());
+    m_menu = std::make_unique<RendererMenu>(m_ctx->getIntf(), m_ctx->quickWindow());
 
-    connect(m_menu.get(), &QMenu::aboutToHide, this, &QmlRendererMenu::aboutToHide);
-    connect(m_menu.get(), &QMenu::aboutToShow, this, &QmlRendererMenu::aboutToShow);
+    connect(m_menu.get(), &RendererMenu::aboutToHide, this, &QmlRendererMenu::aboutToHide);
+    connect(m_menu.get(), &RendererMenu::aboutToShow, this, &QmlRendererMenu::aboutToShow);
 
-    m_positioner.popup(m_menu.get(), position, above);
+    popupMenu(m_menu->m_menu, position, above);
 }
 
 // Tracks
@@ -656,19 +608,19 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
     for (const QModelIndex & modelIndex : selected)
         ids.push_back(m_model->data(modelIndex, MLPlaylistListModel::PLAYLIST_ID));
 
-    m_menu = std::make_unique<QMenu>();
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
     MediaLib * ml = m_model->ml();
 
-    QAction * action = m_menu->addAction(qtr("Add and play"));
+    PlatformAgnosticAction * action = m_menu->addAction(qtr("Add and play"));
 
-    connect(action, &QAction::triggered, [ml, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [ml, ids]() {
         ml->addAndPlay(ids);
     });
 
     action = m_menu->addAction(qtr("Enqueue"));
 
-    connect(action, &QAction::triggered, [ml, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [ml, ids]() {
         ml->addToPlaylist(ids);
     });
 
@@ -678,14 +630,14 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
 
         QModelIndex index = selected.first();
 
-        connect(action, &QAction::triggered, [this, index]() {
+        connect(action, &PlatformAgnosticAction::triggered, ml, [this, index]() {
             m_model->showDialogRename(index);
         });
     }
 
     action = m_menu->addAction(qtr("Delete"));
 
-    connect(action, &QAction::triggered, [this, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [this, ids]() {
         m_model->deletePlaylists(ids);
     });
 
@@ -709,31 +661,31 @@ void PlaylistMediaContextMenu::popup(const QModelIndexList & selected, QPoint po
     for (const QModelIndex& modelIndex : selected)
         ids.push_back(m_model->data(modelIndex, MLPlaylistModel::MEDIA_ID));
 
-    m_menu = std::make_unique<QMenu>();
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
 
     MediaLib * ml = m_model->ml();
 
-    QAction * action = m_menu->addAction(qtr("Add and play"));
+    PlatformAgnosticAction * action = m_menu->addAction(qtr("Add and play"));
 
-    connect(action, &QAction::triggered, [ml, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [ml, ids]() {
         ml->addAndPlay(ids);
     });
 
     action = m_menu->addAction(qtr("Enqueue"));
 
-    connect(action, &QAction::triggered, [ml, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [ml, ids]() {
         ml->addToPlaylist(ids);
     });
 
     action = m_menu->addAction(qtr("Add to playlist"));
 
-    connect(action, &QAction::triggered, [ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), [ids]() {
         DialogsProvider::getInstance()->playlistsDialog(ids);
     });
 
     action = m_menu->addAction(qtr("Play as audio"));
 
-    connect(action, &QAction::triggered, [ml, ids]() {
+    connect(action, &PlatformAgnosticAction::triggered, ml, [ml, ids]() {
         ml->addAndPlay(ids, {":no-video"});
     });
 
@@ -742,7 +694,7 @@ void PlaylistMediaContextMenu::popup(const QModelIndexList & selected, QPoint po
 
         QSignalMapper * mapper = new QSignalMapper(m_menu.get());
 
-        connect(action, &QAction::triggered, mapper, QOverload<>::of(&QSignalMapper::map));
+        connect(action, &PlatformAgnosticAction::triggered, mapper, QOverload<>::of(&QSignalMapper::map));
 
         mapper->setMapping(action, options["information"].toInt());
         connect(mapper, QSIGNALMAPPER_MAPPEDINT_SIGNAL,
@@ -753,9 +705,9 @@ void PlaylistMediaContextMenu::popup(const QModelIndexList & selected, QPoint po
 
     action = m_menu->addAction(qtr("Remove Selected"));
 
-    action->setIcon(QIcon(":/menu/remove.svg"));
+    action->setIcon(":/menu/remove.svg");
 
-    connect(action, &QAction::triggered, [this, selected]() {
+    connect(action, &PlatformAgnosticAction::triggered, this, [this, selected]() {
         m_model->remove(selected);
     });
 
@@ -853,8 +805,8 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
     if (!m_controler || !m_model || !m_selectionModel)
         return;
 
-    m_menu = std::make_unique<QMenu>();
-    QAction* action;
+    m_menu = std::unique_ptr<PlatformAgnosticMenu>(PlatformAgnosticMenu::createMenu(m_ctx->quickWindow()));
+    PlatformAgnosticAction* action;
 
     QList<QUrl> selectedUrlList;
     for (const int modelIndex : m_selectionModel->selectedIndexesFlat())
@@ -867,7 +819,7 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
     if (currentItem)
     {
         action = m_menu->addAction( qtr("Play") );
-        connect(action, &QAction::triggered, [this, currentIndex]( ) {
+        connect(action, &PlatformAgnosticAction::triggered, this, [this, currentIndex]( ) {
             m_controler->goTo(currentIndex, true);
         });
 
@@ -876,12 +828,12 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
 
     if (m_selectionModel->hasSelection()) {
         action = m_menu->addAction( qtr("Stream") );
-        connect(action, &QAction::triggered, [selectedUrlList]( ) {
+        connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), [selectedUrlList]( ) {
             DialogsProvider::getInstance()->streamingDialog(selectedUrlList, false);
         });
 
         action = m_menu->addAction( qtr("Save") );
-        connect(action, &QAction::triggered, [selectedUrlList]( ) {
+        connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), [selectedUrlList]( ) {
             DialogsProvider::getInstance()->streamingDialog(selectedUrlList, true);
         });
 
@@ -890,16 +842,16 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
 
     if (currentItem) {
         action = m_menu->addAction( qtr("Information") );
-        action->setIcon(QIcon(":/menu/info.svg"));
-        connect(action, &QAction::triggered, [currentItem]( ) {
+        action->setIcon(":/menu/info.svg");
+        connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), [currentItem]( ) {
             DialogsProvider::getInstance()->mediaInfoDialog(currentItem);
         });
 
         m_menu->addSeparator();
 
         action = m_menu->addAction( qtr("Show Containing Directory...") );
-        action->setIcon(QIcon(":/menu/folder.svg"));
-        connect(action, &QAction::triggered, [this, currentItem]( ) {
+        action->setIcon(":/menu/folder.svg");
+        connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), [this, currentItem]( ) {
             m_controler->explore(currentItem);
         });
 
@@ -907,20 +859,20 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
     }
 
     action = m_menu->addAction( qtr("Add File...") );
-    action->setIcon(QIcon(":/menu/add.svg"));
-    connect(action, &QAction::triggered, []( ) {
+    action->setIcon(":/menu/add.svg");
+    connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), []( ) {
         DialogsProvider::getInstance()->simpleOpenDialog(false);
     });
 
     action = m_menu->addAction( qtr("Add Directory...") );
-    action->setIcon(QIcon(":/menu/add.svg"));
-    connect(action, &QAction::triggered, []( ) {
+    action->setIcon(":/menu/add.svg");
+    connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), []( ) {
         DialogsProvider::getInstance()->PLAppendDir();
     });
 
     action = m_menu->addAction( qtr("Advanced Open...") );
-    action->setIcon(QIcon(":/menu/add.svg"));
-    connect(action, &QAction::triggered, []( ) {
+    action->setIcon(":/menu/add.svg");
+    connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), []( ) {
         DialogsProvider::getInstance()->PLAppendDialog();
     });
 
@@ -929,15 +881,15 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
     if (m_selectionModel->hasSelection())
     {
         action = m_menu->addAction( qtr("Save Playlist to File...") );
-        connect(action, &QAction::triggered, []( ) {
+        connect(action, &PlatformAgnosticAction::triggered, DialogsProvider::getInstance(), []( ) {
             DialogsProvider::getInstance()->savePlayingToPlaylist();
         });
 
         m_menu->addSeparator();
 
         action = m_menu->addAction( qtr("Remove Selected") );
-        action->setIcon(QIcon(":/menu/remove.svg"));
-        connect(action, &QAction::triggered, [this]( ) {
+        action->setIcon(":/menu/remove.svg");
+        connect(action, &PlatformAgnosticAction::triggered, this, [this]( ) {
             m_model->removeItems(m_selectionModel->selectedIndexesFlat());
         });
     }
@@ -946,8 +898,8 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
     if (m_model->rowCount() > 0)
     {
         action = m_menu->addAction( qtr("Clear the playlist") );
-        action->setIcon(QIcon(":/menu/clear.svg"));
-        connect(action, &QAction::triggered, [this]( ) {
+        action->setIcon(":/menu/clear.svg");
+        connect(action, &PlatformAgnosticAction::triggered, this, [this]( ) {
             m_controler->clear();
         });
 
@@ -957,12 +909,12 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
         PlaylistController::SortKey currentKey = m_controler->getSortKey();
         PlaylistController::SortOrder currentOrder = m_controler->getSortOrder();
 
-        QMenu* sortMenu = m_menu->addMenu(qtr("Sort by"));
-        QActionGroup * group = new QActionGroup(sortMenu);
+        PlatformAgnosticMenu* sortMenu = m_menu->addMenu(qtr("Sort by"));
+        PlatformAgnosticActionGroup * group = PlatformAgnosticActionGroup::createActionGroup(sortMenu);
 
         auto addSortAction = [&](const QString& label, PlaylistController::SortKey key, PlaylistController::SortOrder order) {
-            QAction* action = sortMenu->addAction(label);
-            connect(action, &QAction::triggered, this, [this, key, order]( ) {
+            PlatformAgnosticAction* action = sortMenu->addAction(label);
+            connect(action, &PlatformAgnosticAction::triggered, this, [this, key, order]( ) {
                 m_controler->sort(key, order);
             });
             action->setCheckable(true);
@@ -983,8 +935,8 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
         }
 
         action = m_menu->addAction( qtr("Shuffle the playlist") );
-        action->setIcon(QIcon(":/menu/ic_fluent_arrow_shuffle_on.svg"));
-        connect(action, &QAction::triggered, this, [this]( ) {
+        action->setIcon(":/menu/ic_fluent_arrow_shuffle_on.svg");
+        connect(action, &PlatformAgnosticAction::triggered, this, [this]( ) {
             m_controler->shuffle();
         });
 
@@ -992,3 +944,4 @@ void PlaylistContextMenu::popup(int currentIndex, QPoint pos )
 
     m_menu->popup(pos);
 }
+

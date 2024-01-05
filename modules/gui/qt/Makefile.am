@@ -333,6 +333,9 @@ libqt_plugin_la_SOURCES = \
 	util/dismiss_popup_event_filter.hpp \
 	util/list_selection_model.cpp \
 	util/list_selection_model.hpp \
+	widgets/native/platformagnosticmenu.cpp widgets/native/platformagnosticmenu.hpp \
+	widgets/native/platformagnosticaction.cpp widgets/native/platformagnosticaction.hpp \
+	widgets/native/platformagnosticactiongroup.cpp widgets/native/platformagnosticactiongroup.hpp \
 	widgets/native/animators.cpp \
 	widgets/native/animators.hpp \
 	widgets/native/customwidgets.cpp widgets/native/customwidgets.hpp \
@@ -520,6 +523,9 @@ nodist_libqt_plugin_la_SOURCES = \
 	util/vlctick.moc.cpp \
 	util/dismiss_popup_event_filter.moc.cpp \
 	util/list_selection_model.moc.cpp \
+	widgets/native/platformagnosticmenu.moc.cpp \
+	widgets/native/platformagnosticaction.moc.cpp \
+	widgets/native/platformagnosticactiongroup.moc.cpp \
 	widgets/native/animators.moc.cpp \
 	widgets/native/csdthemeimage.moc.cpp \
 	widgets/native/customwidgets.moc.cpp \
@@ -1000,6 +1006,8 @@ libqt_plugin_la_QML = \
 	util/qml/ListViewRev15.qml \
 	util/qml/ListViewRev11.qml \
 	util/qml/FadeControllerStateGroup.qml \
+	util/qml/ActionExt.qml \
+	util/qml/ActionGroupExt.qml \
 	widgets/qml/ActionButtonOverlay.qml \
 	widgets/qml/ActionButtonPrimary.qml \
 	widgets/qml/BannerTabButton.qml \
@@ -1073,7 +1081,9 @@ libqt_plugin_la_QML = \
 	widgets/qml/DoubleShadow.qml \
 	widgets/qml/FadingEdge.qml \
 	widgets/qml/FadingEdgeForListView.qml \
-	widgets/qml/PopupIconToolButton.qml
+	widgets/qml/PopupIconToolButton.qml \
+	widgets/qml/MenuExt.qml \
+	widgets/qml/MenuSeparatorExt.qml
 
 lib_qt_plugin_la_QRC = vlc.qrc
 

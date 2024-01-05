@@ -80,6 +80,8 @@ public:
     virtual QWindow* interfaceMainWindow() const = 0;
 
     virtual QQuickItem * activeFocusItem() const = 0;
+
+    virtual QQuickWindow* quickWindow() const = 0;
 };
 
 /**
