@@ -134,27 +134,8 @@ ListView {
             if (currentItem)
                 Helpers.enforceFocus(currentItem, reason)
             else
-                setCurrentItemFocus(reason)
+                currentItem.forceActiveFocus(reason)
         }
-    }
-
-    function setCurrentItemFocus(reason) {
-        if (!model || model.count === 0) {
-            // NOTE: By default we want the focus on the flickable.
-            root.forceActiveFocus(reason);
-
-            // NOTE: Saving the focus reason for later.
-            _currentFocusReason = reason;
-
-            return;
-        }
-
-        if (currentIndex === -1)
-            currentIndex = 0;
-
-        positionViewAtIndex(currentIndex, ItemView.Contain);
-
-        Helpers.enforceFocus(currentItem, reason);
     }
 
     function nextPage() {

@@ -21,7 +21,7 @@ import QtQuick.Templates 2.12 as T
 
 import org.videolan.vlc 0.1
 
-T.Control {
+T.Pane {
     id: root
 
     // Properties
@@ -48,59 +48,6 @@ T.Control {
 
     // Events
 
-    onIndexFocusChanged: if (_hasFocus()) _applyFocus()
-
-    onActiveFocusChanged: {
-        // NOTE: We try to restore the preferred focused item.
-        if (!activeFocus || _applyFocus())
-            return;
-
-        // Next item
-        if (focusReason === Qt.TabFocusReason) {
-            for (let i = 0; i < count; i++) {
-                const item = repeater.itemAt(i);
-
-                if (item.visible && item.enabled) {
-                    item.forceActiveFocus(Qt.TabFocusReason);
-
-                    return;
-                }
-            }
-        }
-        // Previous item
-        else if (focusReason === Qt.BacktabFocusReason) {
-            for (let i = count -1; i >= 0; i--) {
-                const item = repeater.itemAt(i);
-
-                if (item.visible && item.enabled) {
-                    item.forceActiveFocus(Qt.BacktabFocusReason);
-
-                    return;
-                }
-            }
-        }
-        // NOTE: We make sure that one item has the focus.
-        else {
-            let itemFocus = undefined;
-
-            for (let i = 0 ; i < count; i++) {
-                const item = repeater.itemAt(i);
-
-                if (item.visible && item.enabled) {
-                    // NOTE: We already have a focused item, so we keep it this way.
-                    if (item.activeFocus)
-                        return;
-
-                    if (itemFocus == undefined)
-                        itemFocus = item;
-                }
-            }
-
-            if (itemFocus)
-                itemFocus.forceActiveFocus(focusReason);
-        }
-    }
-
     // Keys
 
     Keys.priority: Keys.AfterItem
@@ -108,20 +55,6 @@ T.Control {
     Keys.onPressed: root.Navigation.defaultKeyAction(event)
 
     // Functions
-
-    function _applyFocus() {
-        if (indexFocus < 0 || indexFocus >= count) return false;
-
-        const item = repeater.itemAt(indexFocus);
-
-        if (item.visible && item.enabled) {
-            item.forceActiveFocus(focusReason);
-
-            return true;
-        }
-
-        return false;
-    }
 
     function _hasFocus() {
         for (let i = 0 ; i < count; i++) {
@@ -149,6 +82,9 @@ T.Control {
             id: repeater
 
             onItemAdded: {
+                if (index === 0)
+                    item.focus = true
+
                 if (item.enabled) root._countEnabled += 1;
 
                 enabledConnection.createObject(item, { target: item });

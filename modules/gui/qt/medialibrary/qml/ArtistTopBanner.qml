@@ -41,10 +41,6 @@ FocusScope {
     Accessible.role: Accessible.Pane
     Accessible.name: I18n.qtr("Artist banner")
 
-    function setCurrentItemFocus(reason) {
-        playActionBtn.forceActiveFocus(reason);
-    }
-
     readonly property ColorContext colorContext: ColorContext {
         id: theme
         ////force the dark theme in the header

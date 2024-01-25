@@ -129,8 +129,9 @@ StackViewExt {
         //pages like MainDisplay are not page PageLoader, so just check for the loadView function
         if (typeof currentItem.loadView === "function") {
             currentItem.loadView(path.slice(1), properties, focusReason)
-        } else {
-            setCurrentItemFocus(focusReason)
+        } else if (Number.isInteger(currentItem.focusReason)) {
+            currentItem.focusReason = focusReason
+            currentItem.focus = true
         }
 
         return true

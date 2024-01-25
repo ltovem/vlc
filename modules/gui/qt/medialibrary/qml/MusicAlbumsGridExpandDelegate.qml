@@ -37,8 +37,6 @@ FocusScope {
     property var enqueueActionBtn
     property var playActionBtn
 
-    property bool forcePlayActionBtnFocusOnce: false
-
     signal retract()
 
     implicitWidth: layout.implicitWidth
@@ -55,12 +53,6 @@ FocusScope {
     // components should shrink with change of height, but it doesn't happen fast enough
     // causing expand and shrink animation bit laggy, so clip the delegate to fix it
     clip: true
-
-    function setCurrentItemFocus(reason) {
-        root.playActionBtn.forceActiveFocus(reason);
-        if (VLCStyle.isScreenSmall)
-            root.forcePlayActionBtnFocusOnce = true;
-    }
 
     function _getStringTrack() {
         const count = Helpers.get(model, "nb_tracks", 0);
@@ -190,7 +182,7 @@ FocusScope {
                         return
 
                     if (tracks.count > 0) {
-                        tracks.setCurrentItemFocus(Qt.TabFocusReason)
+                        tracks.forceActiveFocus(Qt.TabFocusReason)
                     } else {
                         root.Navigation.downAction()
                     }
@@ -221,7 +213,7 @@ FocusScope {
                     }
 
                     if (tracks.count > 0) {
-                        tracks.setCurrentItemFocus(Qt.TabFocusReason)
+                        tracks.forceActiveFocus(Qt.TabFocusReason)
                     } else {
                         root.Navigation.downAction()
                     }

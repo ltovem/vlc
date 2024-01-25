@@ -43,10 +43,6 @@ FocusScope {
 
     focus: true
 
-    function setCurrentItemFocus(reason) {
-        playActionBtn.forceActiveFocus(reason);
-    }
-
     readonly property ColorContext colorContext: ColorContext {
         id: theme
         colorSet: ColorContext.View

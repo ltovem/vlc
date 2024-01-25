@@ -142,13 +142,9 @@ MainInterface.MainViewLoader {
                 onRetract: gridView_id.retract()
                 Navigation.parentItem: root
 
-                Navigation.cancelAction: function() {
-                    gridView_id.setCurrentItemFocus(Qt.TabFocusReason);
-                }
+                Navigation.cancelItem: gridView_id
 
-                Navigation.upAction: function() {
-                    gridView_id.setCurrentItemFocus(Qt.TabFocusReason);
-                }
+                Navigation.upItem: gridView_id
 
                 Navigation.downAction: function() {}
             }
@@ -157,7 +153,7 @@ MainInterface.MainViewLoader {
                 if (selectionModel.selectedIndexes.length === 1) {
                     switchExpandItem(index);
 
-                    expandItem.setCurrentItemFocus(Qt.TabFocusReason);
+                    expandItem.forceActiveFocus(Qt.TabFocusReason)
                 } else {
                     _actionAtIndex(index);
                 }

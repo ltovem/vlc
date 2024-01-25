@@ -77,7 +77,7 @@ MainInterface.MainGridView {
             gridView.switchExpandItem(index)
 
             if (gridView.focus)
-                expandItem.setCurrentItemFocus(Qt.TabFocusReason)
+                expandItem.forceActiveFocus(Qt.TabFocusReason)
         }
     }
 
@@ -142,6 +142,6 @@ MainInterface.MainGridView {
     }
 
     function forceFocus() {
-        setCurrentItemFocus(Qt.TabFocus)
+        forceActiveFocus(Qt.TabFocus)
     }
 }

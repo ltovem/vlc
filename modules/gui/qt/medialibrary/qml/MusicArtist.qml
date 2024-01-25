@@ -75,11 +75,15 @@ FocusScope {
         height: col.height
         width: root.width
 
-        function setCurrentItemFocus(reason) {
-            if (albumsListView)
-                albumsListView.setCurrentItemFocus(reason);
-            else
-                artistBanner.setCurrentItemFocus(reason);
+        Navigation.parentItem: root
+        Navigation.downAction: function() {
+            const item = view.currentItem
+            if (!item)
+                return
+            if (item.currentIndex === -1)
+                item.currentIndex = 0
+            console.assert(item.currentItem)
+            item.currentItem.forceActiveFocus(Qt.TabFocusReason)
         }
 
         Column {
@@ -105,14 +109,8 @@ FocusScope {
                         root.navigationShowHeader(0, height)
                 }
 
-                Navigation.parentItem: root
-                Navigation.downAction: function() {
-                    if (albumsListView)
-                        albumsListView.setCurrentItemFocus(Qt.TabFocusReason);
-                    else
-                        _currentView.setCurrentItemFocus(Qt.TabFocusReason);
-
-                }
+                Navigation.parentItem: headerFs
+                Navigation.downItem: albumsListView
             }
 
             Loader {
@@ -159,15 +157,9 @@ FocusScope {
                         orientation: ListView.Horizontal
                         spacing: VLCStyle.column_spacing
 
-                        Navigation.parentItem: root
+                        Navigation.parentItem: headerFs
 
-                        Navigation.upAction: function() {
-                            artistBanner.setCurrentItemFocus(Qt.TabFocusReason);
-                        }
-
-                        Navigation.downAction: function() {
-                            root.setCurrentItemFocus(Qt.TabFocusReason);
-                        }
+                        Navigation.upItem: artistBanner
 
                         delegate: Widgets.GridItem {
                             id: gridItem
@@ -226,14 +218,6 @@ FocusScope {
     focus: true
 
     onInitialIndexChanged: resetFocus()
-
-    function setCurrentItemFocus(reason) {
-        if (view.currentItem === null) {
-            Qt.callLater(setCurrentItemFocus, reason)
-            return
-        }
-        view.currentItem.setCurrentItemFocus(reason);
-    }
 
     function resetFocus() {
         if (albumModel.count === 0) {
@@ -376,13 +360,9 @@ FocusScope {
                 onRetract: gridView_id.retract()
                 Navigation.parentItem: root
 
-                Navigation.cancelAction: function() {
-                    gridView_id.setCurrentItemFocus(Qt.TabFocusReason);
-                }
+                Navigation.cancelItem: gridView_id
 
-                Navigation.upAction: function() {
-                    gridView_id.setCurrentItemFocus(Qt.TabFocusReason);
-                }
+                Navigation.upItem: gridView_id
 
                 Navigation.downAction: function() {}
             }
@@ -391,7 +371,7 @@ FocusScope {
                 if (albumSelectionModel.selectedIndexes.length === 1) {
                     switchExpandItem(index);
 
-                    expandItem.setCurrentItemFocus(Qt.TabFocusReason);
+                    expandItem.forceActiveFocus(Qt.TabFocusReason)
                 } else {
                     _actionAtIndex(index, albumModel, albumSelectionModel);
                 }
@@ -399,9 +379,7 @@ FocusScope {
 
             Navigation.parentItem: root
 
-            Navigation.upAction: function() {
-                headerItem.setCurrentItemFocus(Qt.TabFocusReason);
-            }
+            Navigation.upItem: headerItem
 
             Navigation.cancelAction: root._onNavigationCancel
 
@@ -488,9 +466,7 @@ FocusScope {
 
             Navigation.parentItem: root
 
-            Navigation.upAction: function() {
-                headerItem.setCurrentItemFocus(Qt.TabFocusReason);
-            }
+            Navigation.upItem: headerItem
 
             Navigation.cancelAction: root._onNavigationCancel
 

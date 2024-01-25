@@ -69,15 +69,6 @@ FocusScope {
     Component.onCompleted: resetFocus()
     onActiveFocusChanged: resetFocus()
 
-    function setCurrentItemFocus(reason) {
-        if (foldersSection.visible)
-            foldersSection.setCurrentItemFocus(reason);
-        else if (deviceSection.visible)
-            deviceSection.setCurrentItemFocus(reason);
-        else if (lanSection.visible)
-            lanSection.setCurrentItemFocus(reason);
-    }
-
     function _centerFlickableOnItem(item) {
         if (item.activeFocus === false)
             return
@@ -163,9 +154,9 @@ FocusScope {
 
                 Navigation.downAction: function() {
                     if (deviceSection.visible)
-                        deviceSection.setCurrentItemFocus(Qt.TabFocusReason)
+                        deviceSection.forceActiveFocus(Qt.TabFocusReason)
                     else if (lanSection.visible)
-                        lanSection.setCurrentItemFocus(Qt.TabFocusReason)
+                        lanSection.forceActiveFocus(Qt.TabFocusReason)
                     else
                         root.Navigation.defaultNavigationDown()
                 }
@@ -206,19 +197,9 @@ FocusScope {
 
                 Navigation.parentItem: root
 
-                Navigation.upAction: function() {
-                    if (foldersSection.visible)
-                        foldersSection.setCurrentItemFocus(Qt.TabFocusReason)
-                    else
-                        root.Navigation.defaultNavigationUp()
-                }
+                Navigation.upItem: foldersSection
 
-                Navigation.downAction: function() {
-                    if (lanSection.visible)
-                        lanSection.setCurrentItemFocus(Qt.TabFocusReason)
-                    else
-                        root.Navigation.defaultNavigationDown()
-                }
+                Navigation.downItem: lanSection
 
                 onBrowse: root.browse(tree, reason)
 
@@ -257,9 +238,9 @@ FocusScope {
 
                 Navigation.upAction: function() {
                     if (deviceSection.visible)
-                        deviceSection.setCurrentItemFocus(Qt.TabFocusReason)
+                        deviceSection.forceActiveFocus(Qt.TabFocusReason)
                     else if (foldersSection.visible)
-                        foldersSection.setCurrentItemFocus(Qt.TabFocusReason)
+                        foldersSection.forceActiveFocus(Qt.TabFocusReason)
                     else
                         root.Navigation.defaultNavigationUp()
                 }

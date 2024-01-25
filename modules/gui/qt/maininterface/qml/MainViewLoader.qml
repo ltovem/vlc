@@ -76,11 +76,6 @@ Widgets.StackViewExt {
     // the index to "go to" when the view is loaded
     property int initialIndex: -1
 
-    // used in custom focus management for explicit "focusReason" transfer
-    readonly property var setCurrentItemFocus: {
-        return Helpers.get(currentItem, "setCurrentItemFocus", setCurrentItemFocusDefault)
-    }
-
     // NOTE: We have to use a Component here. When using a var the onCurrentComponentChanged event
     //       gets called multiple times even when the currentComponent stays the same.
     property Component currentComponent: {
@@ -155,16 +150,6 @@ Widgets.StackViewExt {
         currentItem.setCurrentItem(index)
     }
 
-    function setCurrentItemFocusDefault(reason) {
-        if (currentItem) {
-            if (currentItem.setCurrentItemFocus)
-                currentItem.setCurrentItemFocus(reason)
-            else
-                currentItem.forceActiveFocus(reason)
-        } else
-            Helpers.enforceFocus(root, reason)
-    }
-
     function _updateView() {
         // NOTE: When the currentItem is null we default to the StackView focusReason.
         if (currentItem && currentItem.activeFocus)
@@ -178,6 +163,6 @@ Widgets.StackViewExt {
     function _applyView(reason) {
         replace(null, currentComponent)
 
-        setCurrentItemFocus(reason)
+        currentItem.forceActiveFocus(reason)
     }
 }

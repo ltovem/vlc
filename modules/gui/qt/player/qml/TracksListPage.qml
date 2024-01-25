@@ -256,7 +256,7 @@ RowLayout {
 
                         onClicked: {
                             tracksList.currentIndex = index
-                            tracksList.setCurrentItemFocus(Qt.MouseFocusReason)
+                            tracksList.forceActiveFocus(Qt.MouseFocusReason)
                         }
 
                         Navigation.parentItem: tracksList

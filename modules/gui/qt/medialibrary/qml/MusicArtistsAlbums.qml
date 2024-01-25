@@ -71,7 +71,7 @@ FocusScope {
 
     function resetFocus() {
         if (VLCStyle.isScreenSmall) {
-            albumSubView.setCurrentItemFocus(Qt.OtherFocusReason)
+            albumSubView.forceActiveFocus(Qt.OtherFocusReason)
             return
         }
 
@@ -82,14 +82,6 @@ FocusScope {
         artistList.positionViewAtIndex(initialIndex, ItemView.Contain)
 
         artistList.setCurrentItem(initialIndex)
-    }
-
-    function setCurrentItemFocus(reason) {
-        if (VLCStyle.isScreenSmall) {
-            albumSubView.setCurrentItemFocus(reason);
-        } else {
-            artistList.setCurrentItemFocus(reason);
-        }
     }
 
     function _actionAtIndex(index) {
@@ -163,9 +155,7 @@ FocusScope {
 
             Navigation.parentItem: root
 
-            Navigation.rightAction: function() {
-                albumSubView.setCurrentItemFocus(Qt.TabFocusReason);
-            }
+            Navigation.rightItem: albumSubView
 
             Navigation.cancelAction: function() {
                 if (artistList.currentIndex <= 0) {
