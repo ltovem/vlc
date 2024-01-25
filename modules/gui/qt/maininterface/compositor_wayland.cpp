@@ -110,6 +110,13 @@ bool CompositorWayland::makeMainInterface(MainCtx* mainCtx)
     m_qmlView->setClearBeforeRendering(true);
     m_qmlView->setColor(QColor(Qt::transparent));
 
+    m_qmlView->create();
+
+    CompositorVideo::Flags flags = CompositorVideo::CAN_SHOW_PIP;
+
+    if (kWindowEffectsEnableBlurBehind())
+        flags |= CompositorVideo::HAS_ACRYLIC;
+
     m_qmlView->show();
 
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
@@ -119,8 +126,7 @@ bool CompositorWayland::makeMainInterface(MainCtx* mainCtx)
 
     m_waylandImpl->setupInterface(m_waylandImpl, interfaceSurface, dprForWindow(m_qmlView.get()));
 
-    return commonGUICreate(m_qmlView.get(), m_qmlView.get(),
-                    CompositorVideo::CAN_SHOW_PIP);
+    return commonGUICreate(m_qmlView.get(), m_qmlView.get(), flags);
 }
 
 QWindow* CompositorWayland::interfaceMainWindow() const
