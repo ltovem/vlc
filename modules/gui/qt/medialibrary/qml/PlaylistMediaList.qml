@@ -43,9 +43,9 @@ MainInterface.MainViewLoader {
 
     readonly property int currentIndex: Helpers.get(currentItem, "currentIndex", -1)
 
-    property alias searchPattern: playlistModel.searchPattern
-    property alias sortOrder: playlistModel.sortOrder
-    property alias sortCriteria: playlistModel.sortCriteria
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     //---------------------------------------------------------------------------------------------
     // Private
@@ -101,8 +101,11 @@ MainInterface.MainViewLoader {
 
 
     model: MLPlaylistListModel {
-        id: playlistModel
         ml: MediaLib
+
+        searchPattern: root.searchPattern
+        sortOrder: root.sortOrder
+        sortCriteria: root.sortCriteria
 
         playlistType: isMusic ? MLPlaylistListModel.PLAYLIST_TYPE_AUDIO
                               : MLPlaylistListModel.PLAYLIST_TYPE_VIDEO

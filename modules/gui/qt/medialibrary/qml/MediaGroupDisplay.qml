@@ -35,7 +35,7 @@ VideoAll {
     // Aliases
 
     // NOTE: This is used to determine which media(s) shall be displayed.
-    property alias parentId: modelVideo.parentId
+    property var parentId
 
     // NOTE: The title of the group.
     property string title: ""
@@ -43,8 +43,7 @@ VideoAll {
     // Children
 
     model: MLVideoModel {
-        id: modelVideo
-
+        parentId: root.parentId
         searchPattern: MainCtx.search.pattern
         sortOrder: MainCtx.sort.order
         sortCriteria: MainCtx.sort.criteria
@@ -52,7 +51,7 @@ VideoAll {
         ml: MediaLib
     }
 
-    contextMenu: Util.MLContextMenu { model: modelVideo; showPlayAsAudioAction: true }
+    contextMenu: Util.MLContextMenu { model: root.model; showPlayAsAudioAction: true }
 
     header: Widgets.SubtitleLabel {
         width: root.width

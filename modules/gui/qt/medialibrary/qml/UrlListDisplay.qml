@@ -33,9 +33,9 @@ Widgets.KeyNavigableTableView {
 
     readonly property bool isSearchable: false
 
-    property alias searchPattern: urlModel.searchPattern
-    property alias sortOrder: urlModel.sortOrder
-    property alias sortCriteria: urlModel.sortCriteria
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     readonly property int _nbCols: VLCStyle.gridColumnsForWidth(
                                        listView_id.availableRowWidth)
@@ -48,7 +48,14 @@ Widgets.KeyNavigableTableView {
     }
 
     visible: urlModel.count > 0
-    model: urlModel
+
+    model: MLUrlModel {
+        ml: MediaLib
+
+        searchPattern: listView_id.searchPattern
+        sortOrder: listView_id.sortOrder
+        sortCriteria: listView_id.sortCriteria
+    }
 
     sortModel: [{
         size: Math.max(listView_id._nbCols - 1, 1),
@@ -84,15 +91,10 @@ Widgets.KeyNavigableTableView {
     onContextMenuButtonClicked: contextMenu.popup(selectionModel.selectedIndexes, globalMousePos)
     onRightClick: contextMenu.popup(selectionModel.selectedIndexes, globalMousePos)
 
-    MLUrlModel {
-        id: urlModel
-        ml: MediaLib
-    }
-
     Util.MLContextMenu {
         id: contextMenu
 
-        model: urlModel
+        model: listView_id.model
     }
 
 

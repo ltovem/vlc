@@ -42,13 +42,21 @@ MainInterface.MainViewLoader {
     readonly property int contentLeftMargin: Helpers.get(currentItem, "contentLeftMargin", 0)
     readonly property int contentRightMargin: Helpers.get(currentItem, "contentRightMargin", 0)
 
-    property alias parentId: albumModelId.parentId
-    property alias searchPattern: albumModelId.searchPattern
-    property alias sortOrder: albumModelId.sortOrder
-    property alias sortCriteria: albumModelId.sortCriteria
+    property var parentId
+    property string searchPattern
+    property int sortOrder
+    property string sortCriteria
 
     isSearchable: true
-    model: albumModelId
+
+    model: MLAlbumModel {
+        ml: MediaLib
+
+        parentId: root.parentId
+        searchPattern: root.searchPattern
+        sortOrder: root.sortOrder
+        sortCriteria: root.sortCriteria
+    }
 
     sortModel: [
         { text: I18n.qtr("Alphabetic"),  criteria: "title"},
@@ -71,16 +79,10 @@ MainInterface.MainViewLoader {
         }
     }
 
-    MLAlbumModel {
-        id: albumModelId
-
-        ml: MediaLib
-    }
-
     Widgets.MLDragItem {
         id: albumDragItem
 
-        mlModel: albumModelId
+        mlModel: root.model
         indexes: indexesFlat ? selectionModel.selectedIndexesFlat
                              : selectionModel.selectedIndexes
         indexesFlat: !!selectionModel.selectedIndexesFlat
@@ -90,7 +92,7 @@ MainInterface.MainViewLoader {
     Util.MLContextMenu {
         id: contextMenu
 
-        model: albumModelId
+        model: root.model
     }
 
     Component {
@@ -107,7 +109,7 @@ MainInterface.MainViewLoader {
             headerDelegate: root.header
 
             selectionModel: root.selectionModel
-            model: albumModelId
+            model: root.model
 
             delegate: AudioGridItem {
                 id: audioGridItem
@@ -233,7 +235,7 @@ MainInterface.MainViewLoader {
                 }
             }]
 
-            model: albumModelId
+            model: root.model
             selectionModel: root.selectionModel
             onActionForSelection: _actionAtIndex(selection[0]);
             Navigation.parentItem: root
@@ -257,12 +259,12 @@ MainInterface.MainViewLoader {
             }
 
             Connections {
-                target: albumModelId
+                target: root.model
                 onSortCriteriaChanged: {
-                    switch (albumModelId.sortCriteria) {
+                    switch (root.model.sortCriteria) {
                     case "title":
                     case "main_artist":
-                        tableView_id.section.property = albumModelId.sortCriteria + "_first_symbol"
+                        tableView_id.section.property = root.model.sortCriteria + "_first_symbol"
                         break;
                     default:
                         tableView_id.section.property = ""
