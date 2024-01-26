@@ -3401,6 +3401,16 @@ struct libvlc_media_player_watch_time_cbs {
      * date in order to get the last paused ts/position.
      */
     void (*on_discontinuity)(void *opaque, int64_t system_date_us);
+
+    /**
+     * Callback prototype that notify when the player is seeking or finished
+     * seeking.
+     *
+     * \param opaque opaque pointer set by libvlc_media_player_watch_time()
+     * \param value point of the seek request or NULL when seeking is finished.
+     * value.system_date_us = INT64_MAX in that case
+     */
+    void (*on_seek)(void *opaque, const libvlc_media_player_time_point_t *value);
 };
 
 /**

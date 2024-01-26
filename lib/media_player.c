@@ -2300,6 +2300,19 @@ static void player_timer_on_discontinuity(vlc_tick_t system_date, void *data)
                                       US_FROM_VLC_TICK(system_date));
 }
 
+static void player_timer_on_seek(const struct vlc_player_timer_point *point,
+                                 void *data)
+{
+    libvlc_media_player_t *p_mi = data;
+
+    if (p_mi->timer.cbs->on_seek == NULL)
+        return;
+
+    const libvlc_media_player_time_point_t libpoint = PLAYER_TIME_CORE_TO_LIB(point);
+
+    p_mi->timer.cbs->on_seek(p_mi->timer.cbs_data, &libpoint);
+}
+
 int
 libvlc_media_player_watch_time(libvlc_media_player_t *p_mi,
                                int64_t min_period_us,
@@ -2315,6 +2328,7 @@ libvlc_media_player_watch_time(libvlc_media_player_t *p_mi,
     static const struct vlc_player_timer_cbs player_timer_cbs = {
         .on_update = player_timer_on_update,
         .on_discontinuity = player_timer_on_discontinuity,
+        .on_seek = player_timer_on_seek,
     };
 
     vlc_player_t *player = p_mi->player;
