@@ -249,8 +249,8 @@ typedef struct {
     struct vout_crop crop;
 
     /* */
-    video_format_t source;
-    video_format_t display_fmt;
+    video_format_t source;          // format coming from the decoder
+    video_format_t display_fmt;     // format required on the input of the display module
     vlc_video_context *src_vctx;
 
     // filters to convert the vout source to fmt, NULL means no conversion is needed
