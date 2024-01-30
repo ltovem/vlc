@@ -327,15 +327,6 @@ static void PictureDisplay (vout_display_t *vd, picture_t *pic)
     sys->has_first_frame = true;
 }
 
-static void UpdatePlace (vout_display_t *vd, const vout_display_cfg_t *cfg)
-{
-    vout_display_sys_t *sys = vd->sys;
-    vout_display_place_t place;
-    /* We never receive resize from the core, so provide the size ourselves */
-    vout_display_PlacePicture(&place, vd->source, &cfg->display);
-    sys->place = place;
-}
-
 static int Control (vout_display_t *vd, int query)
 {
     vout_display_sys_t *sys = vd->sys;
@@ -366,7 +357,8 @@ static int Control (vout_display_t *vd, int query)
                     cfg.display.width = sys->cfg.display.width;
                     cfg.display.height = sys->cfg.display.height;
                     sys->cfg = cfg;
-                    UpdatePlace(vd, &cfg);
+                    /* We never receive resize from the core, so provide the size ourselves */
+                    vout_display_PlacePicture(&sys->place, vd->source, &cfg.display);
                 }
                 return VLC_SUCCESS;
             }
@@ -590,7 +582,8 @@ static void OpenglSwap (vlc_gl_t *gl)
         vout_display_sys_t *sys = vd->sys;
         sys->cfg.display.width  = bounds.size.width;
         sys->cfg.display.height = bounds.size.height;
-        UpdatePlace(vd, &sys->cfg);
+        /* We never receive resize from the core, so provide the size ourselves */
+        vout_display_PlacePicture(&sys->place, vd->source, &sys->cfg.display);
     }
     [super reshape];
 }
