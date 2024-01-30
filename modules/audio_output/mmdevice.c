@@ -83,7 +83,6 @@ enum initialisation_status_t {
 
 typedef struct
 {
-    struct aout_stream_owner *stream; /**< Underlying audio output stream */
     audio_output_t *aout;
     IMMDeviceEnumerator *it; /**< Device enumerator, NULL when exiting */
     IMMDevice *dev; /**< Selected output device, NULL if none */
@@ -106,7 +105,16 @@ typedef struct
     vlc_mutex_t lock;
     vlc_cond_t ready;
     vlc_thread_t thread; /**< Thread for audio session control */
+
+    struct vlc_list stream_list; /**< List to store the nodes of stream_sys_t* objects */
 } aout_sys_t;
+
+typedef struct
+{
+    struct aout_stream_owner *stream; /**< Underlying audio output stream */
+    audio_output_t *aout;
+    struct vlc_list node;
+} stream_sys_t;
 
 /* NOTE: The Core Audio API documentation totally fails to specify the thread
  * safety (or lack thereof) of the interfaces. This code takes the most
@@ -121,8 +129,10 @@ typedef struct
  * and (trivially) the device and session notifications. */
 
 static int DeviceSelect(audio_output_t *, const char *);
-static int vlc_FromHR(audio_output_t *aout, HRESULT hr)
+static int vlc_FromHR(vlc_aout_stream *stream, HRESULT hr)
 {
+    stream_sys_t *sys = stream->sys;
+    audio_output_t *aout = sys->aout;
     /* Select the default device (and restart) on unplug */
     if (unlikely(hr == AUDCLNT_E_DEVICE_INVALIDATED ||
                  hr == AUDCLNT_E_RESOURCES_INVALIDATED))
@@ -131,43 +141,45 @@ static int vlc_FromHR(audio_output_t *aout, HRESULT hr)
 }
 
 /*** VLC audio output callbacks ***/
-static void Play(audio_output_t *aout, block_t *block, vlc_tick_t date)
+static int Play(vlc_aout_stream *stream, block_t *block, vlc_tick_t date)
 {
-    aout_sys_t *sys = aout->sys;
+    stream_sys_t *sys = stream->sys;
+    aout_sys_t *aout_sys = sys->aout->sys;
 
-    vlc_mutex_lock(&sys->lock);
+    vlc_mutex_lock(&aout_sys->lock);
     aout_stream_owner_AppendBlock(sys->stream, block, date);
-    vlc_mutex_unlock(&sys->lock);
-    SetEvent(sys->work_event);
+    vlc_mutex_unlock(&aout_sys->lock);
+    SetEvent(aout_sys->work_event);
 }
 
-static void Pause(audio_output_t *aout, bool paused, vlc_tick_t date)
+static int Pause(vlc_aout_stream *stream, bool paused)
 {
-    aout_sys_t *sys = aout->sys;
+    stream_sys_t *sys = stream->sys;
+    aout_sys_t *aout_sys = sys->aout->sys;
     HRESULT hr;
 
     EnterMTA();
-    vlc_mutex_lock(&sys->lock);
+    vlc_mutex_lock(&aout_sys->lock);
     hr = aout_stream_owner_Pause(sys->stream, paused);
-    vlc_mutex_unlock(&sys->lock);
+    vlc_mutex_unlock(&aout_sys->lock);
     LeaveMTA();
 
-    vlc_FromHR(aout, hr);
-    (void) date;
+    return vlc_FromHR(stream, hr);
 }
 
-static void Flush(audio_output_t *aout)
+static int Flush(vlc_aout_stream *stream)
 {
-    aout_sys_t *sys = aout->sys;
+    stream_sys_t *sys = stream->sys;
+    aout_sys_t *aout_sys = sys->aout->sys;
     HRESULT hr;
 
     EnterMTA();
-    vlc_mutex_lock(&sys->lock);
+    vlc_mutex_lock(&aout_sys->lock);
     hr = aout_stream_owner_Flush(sys->stream);
-    vlc_mutex_unlock(&sys->lock);
+    vlc_mutex_unlock(&aout_sys->lock);
     LeaveMTA();
 
-    vlc_FromHR(aout, hr);
+    return vlc_FromHR(stream, hr);
 }
 
 static int VolumeSetLocked(audio_output_t *aout, float vol)
@@ -736,7 +748,7 @@ static int DeviceRequestLocked(audio_output_t *aout)
     while (sys->requested_device != NULL)
         vlc_cond_wait(&sys->ready, &sys->lock);
 
-    if (sys->stream != NULL && sys->dev != NULL)
+    if (!vlc_list_is_empty(&sys->stream_list) && sys->dev != NULL)
         /* Request restart of stream with the new device */
         aout_RestartRequest(aout, AOUT_RESTART_OUTPUT);
     return (sys->dev != NULL) ? 0 : -1;
@@ -838,36 +850,45 @@ static void MMSessionMainloop(audio_output_t *aout, ISimpleAudioVolume *volume)
             }
         }
 
-        DWORD wait_ms = INFINITE;
+        DWORD wait_ms = INFINITE, stream_wait_ms;
         DWORD ev_count = 1;
         HANDLE events[2] = {
             sys->work_event,
             NULL
         };
 
-        if (sys->stream != NULL)
+        stream_sys_t *stream_sys;
+        if (!vlc_list_is_empty(&sys->stream_list))
         {
-            wait_ms = aout_stream_owner_ProcessTimer(sys->stream);
+            vlc_list_foreach(stream_sys, &sys->stream_list, node)
+            {
+                stream_wait_ms = aout_stream_owner_ProcessTimer(stream_sys->stream);
+                if(stream_wait_ms < wait_ms)
+                    wait_ms = stream_wait_ms;
 
-            /* Don't listen to the stream event if the block fifo is empty */
-            if (sys->stream->chain != NULL)
-                events[ev_count++] = sys->stream->buffer_ready_event;
+                /* Don't listen to the stream event if the block fifo is empty */
+                if (stream_sys->stream->chain != NULL)
+                    events[ev_count++] = stream_sys->stream->buffer_ready_event;
+            }
         }
 
         vlc_mutex_unlock(&sys->lock);
         WaitForMultipleObjects(ev_count, events, FALSE, wait_ms);
         vlc_mutex_lock(&sys->lock);
 
-        if (sys->stream != NULL)
+        if (!vlc_list_is_empty(&sys->stream_list))
         {
-            hr = aout_stream_owner_PlayAll(sys->stream);
-            /* Don't call vlc_FromHR here since this function waits for the
-             * current thread */
-            if (unlikely(hr == AUDCLNT_E_DEVICE_INVALIDATED ||
-                         hr == AUDCLNT_E_RESOURCES_INVALIDATED))
+            vlc_list_foreach(stream_sys, &sys->stream_list, node)
             {
-                sys->requested_device = default_device;
-                /* The restart of the stream will be requested asynchronously */
+                hr = aout_stream_owner_PlayAll(stream_sys->stream);
+                /* Don't call vlc_FromHR here since this function waits for the
+                 * current thread */
+                if (unlikely(hr == AUDCLNT_E_DEVICE_INVALIDATED ||
+                             hr == AUDCLNT_E_RESOURCES_INVALIDATED))
+                {
+                    sys->requested_device = default_device;
+                    /* The restart of the stream will be requested asynchronously */
+                }
             }
         }
     }
@@ -1182,9 +1203,39 @@ static int aout_stream_Start(void *func, bool forced, va_list ap)
     return SUCCEEDED(*hr) ? VLC_SUCCESS : VLC_EGENERIC;
 }
 
-static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
+static void StopStream(vlc_aout_stream *stream, audio_output_t *aout);
+
+static const struct vlc_aout_stream_ops stream_ops = {
+    StopStream,
+    NULL,
+    Play,
+    Pause,
+    Flush,
+    NULL
+};
+
+static int OpenStream(vlc_aout_stream *s)
+{
+    stream_sys_t *sys = malloc(sizeof (*sys));
+    if (unlikely(sys == NULL))
+        return VLC_ENOMEM;
+    
+    sys->stream = NULL;
+    sys->aout = NULL;
+
+    s->sys = sys;
+    s->ops = &stream_ops;
+    return VLC_SUCCESS;
+}
+
+static int StartStream(audio_output_t *aout, vlc_aout_stream *stream, audio_sample_format_t *restrict fmt)
 {
     aout_sys_t *sys = aout->sys;
+    int retValue = OpenStream(stream);
+    if(retValue)
+        return VLC_ENOMEM;
+    stream_sys_t *stream_sys = stream->sys;
+    stream_sys->aout = aout;
 
     const bool b_spdif = AOUT_FMT_SPDIF(fmt);
     const bool b_hdmi = AOUT_FMT_HDMI(fmt);
@@ -1292,8 +1343,9 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
         return -1;
     }
 
-    assert (sys->stream == NULL);
-    sys->stream = owner;
+    assert (stream_sys->stream == NULL);
+    stream_sys->stream = owner;
+    vlc_list_append(&stream_sys->node, &sys->stream_list);
 
     vlc_mutex_unlock(&sys->lock);
     LeaveMTA();
@@ -1302,18 +1354,22 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
     return 0;
 }
 
-static void Stop(audio_output_t *aout)
+static void StopStream(vlc_aout_stream *stream, audio_output_t *aout)
 {
-    aout_sys_t *sys = aout->sys;
+    stream_sys_t *sys = stream->sys;
+    aout_sys_t *aout_sys = aout->sys;
 
     assert(sys->stream != NULL);
 
     EnterMTA();
+    vlc_list_remove(&sys->node);
     aout_stream_owner_Stop(sys->stream);
     LeaveMTA();
 
     aout_stream_owner_Delete(sys->stream);
     sys->stream = NULL;
+    sys->aout = NULL;
+    free(sys);
 }
 
 static int Open(vlc_object_t *obj)
@@ -1325,7 +1381,6 @@ static int Open(vlc_object_t *obj)
         return VLC_ENOMEM;
 
     aout->sys = sys;
-    sys->stream = NULL;
     sys->aout = aout;
     sys->it = NULL;
     sys->dev = NULL;
@@ -1340,6 +1395,7 @@ static int Open(vlc_object_t *obj)
     sys->requested_mute = -1;
     sys->acquired_device = NULL;
     sys->request_device_restart = false;
+    vlc_list_init(&sys->stream_list);
 
     if (!var_CreateGetBool(aout, "volume-save"))
         VolumeSetLocked(aout, var_InheritFloat(aout, "mmdevice-volume"));
@@ -1383,11 +1439,7 @@ static int Open(vlc_object_t *obj)
         goto error;
     }
 
-    aout->start = Start;
-    aout->stop = Stop;
-    aout->play = Play;
-    aout->pause = Pause;
-    aout->flush = Flush;
+    aout->start_stream = StartStream;
     aout->volume_set = VolumeSet;
     aout->mute_set = MuteSet;
     aout->device_select = DeviceSelect;
@@ -1415,6 +1467,11 @@ static void Close(vlc_object_t *obj)
 
     vlc_join(sys->thread, NULL);
     CloseHandle(sys->work_event);
+    stream_sys_t *stream_sys;
+    vlc_list_foreach(stream_sys, &sys->stream_list, node)
+    {
+        vlc_list_remove(&stream_sys->node);
+    }
 
     free(sys);
 }
