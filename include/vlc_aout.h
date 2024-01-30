@@ -120,6 +120,92 @@
 /* Number of samples in an A/52 frame. */
 #define A52_FRAME_NB 1536
 
+typedef struct vlc_aout_stream vlc_aout_stream;
+
+struct vlc_aout_stream_ops {
+    void (*stop)(vlc_aout_stream *, audio_output_t *);
+    /**< Stops the stream (mandatory, cannot be NULL).
+      *
+      * This callback terminates the current audio stream (i.e., vlc_aout_stream),
+      * and deallocates the private data of the object.
+      *
+      */
+
+    int (*time_get)(vlc_aout_stream *, vlc_tick_t * restrict delay);
+    /**< Estimates playback buffer latency (can be NULL).
+      *
+      * This callback computes an estimation of the delay until the current
+      * tail of the audio output buffer would be rendered. This is essential
+      * for (lip) synchronization and long term drift between the audio output
+      * clock and the media upstream clock (if any).
+      *
+      * If the audio output clock is exactly synchronized with the system
+      * monotonic clock (i.e. vlc_tick_now()), then this callback is not
+      * mandatory.  In that case, drain must be implemented (since the default
+      * implementation uses the delay to wait for the end of the stream).
+      *
+      * This callback is called before the first play() in order to get the
+      * initial delay (the hw latency). Most modules won't be able to know this
+      * latency before the first play. In that case, they should return -1 and
+      * handle the first play() date, cf. play() documentation.
+      *
+      * \warning It is recommended to report the audio delay via
+      * vlc_aout_stream_TimingReport(). In that case, time_get should not be implemented.
+      *
+      * \param delay pointer to the delay until the next sample to be written
+      *              to the playback buffer is rendered [OUT]
+      * \return 0 on success, non-zero on failure or lack of data
+      *
+      * \note This callback cannot be called in stopped state.
+      */
+
+    int (*play)(vlc_aout_stream *, block_t *block, vlc_tick_t date);
+    /**< Queues a block of samples of the audio stream for playback (mandatory, cannot be NULL).
+      *
+      * \param block block of audio samples
+      * \param date intended system time to render the first sample
+      *
+      * \return VLC_SUCCESS on success, non-zero on failure
+      * 
+      * \note This callback cannot be called in stopped state.
+      */
+
+    int (*pause)(vlc_aout_stream *, bool paused);
+    /**< Pauses or resumes playback of the audio stream (mandatory, cannot be NULL).
+      *
+      * This callback pauses or resumes audio playback as quickly as possible.
+      * When pausing, it is desirable to stop producing sound immediately, but
+      * retain already queued audio samples in the buffer to play when later
+      * when resuming.
+      *
+      * \param paused pause if true, resume from pause if false
+      * 
+      * \return VLC_SUCCESS on success, non-zero on failure
+      *
+      * \note This callback cannot be called in stopped state.
+      */
+
+    int (*flush)(vlc_aout_stream *);
+    /**< Flushes the playback buffers (mandatory, cannot be NULL).
+      * 
+      * \return VLC_SUCCESS on success, non-zero on failure
+      *
+      * \note This callback cannot be called in stopped state.
+      */
+
+    void (*drain)(vlc_aout_stream *);
+    /**< Drain the playback buffers asynchronously (can be NULL).
+      *
+      * A drain operation can be cancelled by s->flush() or s->stop().
+      *
+      * It is legal to continue playback after a drain_async, if flush() is
+      * called before the next play().
+      *
+      * Call vlc_aout_stream_DrainedReport() to notify that the stream is drained.
+      *
+      */
+};
+
 /**
  * \defgroup audio_output_module Audio output modules
  * @{
@@ -135,6 +221,11 @@ struct vlc_audio_output_events {
     void (*hotplug_report)(audio_output_t *, const char *, const char *);
     void (*restart_request)(audio_output_t *, unsigned);
     int (*gain_request)(audio_output_t *, float);
+};
+
+struct vlc_aout_stream_events {
+    void (*timing_report)(vlc_aout_stream *, vlc_tick_t system_ts, vlc_tick_t audio_ts);
+    void (*drained_report)(vlc_aout_stream *);
 };
 
 /** Audio output object
@@ -171,6 +262,25 @@ struct audio_output
       * stopped state. There can be only one stream per audio output at a time.
       *
       * \note This callbacks needs not be reentrant.
+      */
+
+    int (*start_stream)(audio_output_t *, vlc_aout_stream *s, audio_sample_format_t * restrict fmt);
+    /**< Starts a new stream and initializes the vlc_aout_stream *s object.
+      * 
+      * This callback implements the vlc_aout_stream callbacks. After the callback returns,
+      * s->play(), s->pause(), s->flush(), s->stop(), s->drain(), s->volume_set(), and s->mute_set()
+      * callbacks may be called.
+      * 
+      * \param s vlc_aout_stream* object to be initialized
+      * 
+      * \param fmt input stream sample format upon entry,
+      *            output stream sample format upon return [IN/OUT]
+      * 
+      * \return VLC_SUCCESS on success, non-zero on failure
+      * 
+      * \note Either start() or start_stream() should be implemened for an audio_output_t module.
+      * (start() for legacy modules, start_stream() for adapted modules that support multiple streams)
+      * 
       */
 
     void (*stop)(audio_output_t *);
@@ -300,6 +410,22 @@ struct audio_output
     const struct vlc_audio_output_events *events;
 };
 
+/** 
+ * Audio output stream object
+ **/
+struct vlc_aout_stream
+{
+    struct vlc_object_t obj;
+
+    void *sys; /**< Private data for callbacks */
+
+    void *owner; /**< Stores the vlc_aout_stream_owner object in the core */
+
+    const struct vlc_aout_stream_ops *ops;
+
+    const struct vlc_aout_stream_events *events;
+};
+
 /**
  * Report a new timing point
  *
@@ -396,6 +522,33 @@ static inline int aout_GainRequest(audio_output_t *aout, float gain)
 static inline void aout_RestartRequest(audio_output_t *aout, unsigned mode)
 {
     aout->events->restart_request(aout, mode);
+}
+
+/**
+ * Report a new timing point
+ *
+ * system_ts doesn't have to be close to vlc_tick_now(). Any valid { system_ts,
+ * audio_ts } points in the past are sufficient to update the clock.
+ *
+ * \note audio_ts starts at 0 and should not take the block PTS into account.
+ *
+ * It is important to report the first point as soon as possible (and the
+ * following points if the audio delay take some time to be stabilized). Once
+ * the audio is stabilized, it is recommended to report timing points every few
+ * seconds.
+ */
+static inline void vlc_aout_stream_TimingReport(vlc_aout_stream *stream, vlc_tick_t system_ts,
+                                     vlc_tick_t audio_ts)
+{
+    stream->events->timing_report(stream, system_ts, audio_ts);
+}
+
+/**
+ * Report than the stream is drained
+ */
+static inline void vlc_aout_stream_DrainedReport(vlc_aout_stream *stream)
+{
+    stream->events->drained_report(stream);
 }
 
 #define AOUT_RESTART_FILTERS        0x1
