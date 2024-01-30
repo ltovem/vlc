@@ -241,7 +241,7 @@ vlc_aout_stream_owner * vlc_aout_stream_New(audio_output_t *p_aout,
                                                    &stream->filters_cfg);
         if (stream->filters == NULL)
         {
-            aout_OutputDelete (p_aout);
+            aout_OutputDelete (p_aout, stream);
             vlc_audio_meter_Reset(&owner->meter, NULL);
 
 error:
@@ -253,6 +253,18 @@ error:
     }
 
     return stream;
+}
+
+int vlc_aout_stream_Start(vlc_aout_stream_owner *stream, audio_sample_format_t * restrict fmt)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    return aout->start(aout, fmt);
+}
+
+void vlc_aout_stream_Stop(vlc_aout_stream_owner *stream)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    aout->stop(aout);
 }
 
 /**
@@ -269,12 +281,18 @@ void vlc_aout_stream_Delete (vlc_aout_stream_owner *stream)
         vlc_audio_meter_Reset(&owner->meter, NULL);
         if (stream->filters)
             aout_FiltersDelete (aout, stream->filters);
-        aout_OutputDelete (aout);
+        aout_OutputDelete (aout, stream);
     }
     if (stream->volume != NULL)
         aout_volume_Delete(stream->volume);
 
     free(stream);
+}
+
+static void stream_Play (vlc_aout_stream_owner *stream, block_t *block, vlc_tick_t date)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    aout->play(aout, block, date);
 }
 
 static int stream_CheckReady (vlc_aout_stream_owner *stream)
@@ -302,7 +320,7 @@ static int stream_CheckReady (vlc_aout_stream_owner *stream)
 
             msg_Dbg (aout, "restarting output...");
             if (stream->mixer_format.i_format)
-                aout_OutputDelete (aout);
+                aout_OutputDelete (aout, stream);
             stream->filter_format = stream->mixer_format = stream->input_format;
             stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
             if (aout_OutputNew(aout, stream, &stream->mixer_format, stream->input_profile,
@@ -334,7 +352,7 @@ static int stream_CheckReady (vlc_aout_stream_owner *stream)
                                                        &stream->filters_cfg);
             if (stream->filters == NULL)
             {
-                aout_OutputDelete (aout);
+                aout_OutputDelete (aout, stream);
                 stream->mixer_format.i_format = 0;
             }
             aout_FiltersSetClockDelay(stream->filters, stream->sync.delay);
@@ -396,7 +414,7 @@ static void stream_Silence (vlc_aout_stream_owner *stream, vlc_tick_t length, vl
        vlc_clock_ConvertToSystem(stream->sync.clock, system_now, pts,
                                  stream->sync.rate);
     stream->timing.played_samples += block->i_nb_samples;
-    aout->play(aout, block, system_pts);
+    stream_Play(stream, block, system_pts);
 }
 
 static void stream_HandleDrift(vlc_aout_stream_owner *stream, vlc_tick_t drift,
@@ -740,7 +758,7 @@ int vlc_aout_stream_Play(vlc_aout_stream_owner *stream, block_t *block)
     /* Output */
     stream->sync.discontinuity = false;
     stream->timing.played_samples += block->i_nb_samples;
-    aout->play(aout, block, play_date);
+    stream_Play(stream, block, play_date);
 
     atomic_fetch_add_explicit(&stream->buffers_played, 1, memory_order_relaxed);
     return ret;
@@ -871,7 +889,7 @@ void vlc_aout_stream_Drain(vlc_aout_stream_owner *stream)
     {
         block_t *block = aout_FiltersDrain (stream->filters);
         if (block)
-            aout->play(aout, block, vlc_tick_now());
+            stream_Play(stream, block, vlc_tick_now());
     }
 
     if (aout->drain)

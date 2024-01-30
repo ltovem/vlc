@@ -192,7 +192,7 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
  * \note This can only be called after a successful aout_OutputNew().
  * \warning The caller must NOT hold the audio output lock.
  */
-void aout_OutputDelete( audio_output_t * p_aout );
+void aout_OutputDelete( audio_output_t * p_aout, vlc_aout_stream_owner *stream );
 
 vlc_audio_meter_plugin *
 aout_AddMeterPlugin(audio_output_t *aout, const char *chain,
@@ -224,6 +224,8 @@ struct vlc_aout_stream_cfg
 
 vlc_aout_stream_owner *vlc_aout_stream_New(audio_output_t *p_aout,
                                      const struct vlc_aout_stream_cfg *cfg);
+int vlc_aout_stream_Start(vlc_aout_stream_owner *stream, audio_sample_format_t * restrict fmt);
+void vlc_aout_stream_Stop(vlc_aout_stream_owner *stream);
 void vlc_aout_stream_Delete(vlc_aout_stream_owner *);
 int vlc_aout_stream_Play(vlc_aout_stream_owner *stream, block_t *block);
 void vlc_aout_stream_GetResetStats(vlc_aout_stream_owner *stream, unsigned *, unsigned *);

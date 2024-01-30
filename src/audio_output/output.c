@@ -768,7 +768,7 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
     {
         filter_fmt->i_format = fmt->i_format = formats[i];
         owner->main_stream = stream;
-        ret = aout->start(aout, fmt);
+        ret = vlc_aout_stream_Start(stream, fmt);
         if (ret != 0)
             owner->main_stream = NULL;
     }
@@ -802,11 +802,11 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
     return 0;
 }
 
-void aout_OutputDelete (audio_output_t *aout)
+void aout_OutputDelete (audio_output_t *aout, vlc_aout_stream_owner *stream)
 {
     aout_owner_t *owner = aout_owner(aout);
     vlc_mutex_lock(&owner->lock);
-    aout->stop (aout);
+    vlc_aout_stream_Stop(stream);
     owner->main_stream = NULL;
     vlc_mutex_unlock(&owner->lock);
 }
