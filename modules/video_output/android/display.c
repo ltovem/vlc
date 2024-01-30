@@ -99,10 +99,11 @@ static int subpicture_Control(vout_display_t *vd, int query)
     case VOUT_DISPLAY_CHANGE_ZOOM:
     {
         struct vout_display_placement dp = vd->cfg->display;
+        vout_display_place_t old_place = sub->place;
 
         FlipVerticalAlign(&dp);
         vout_display_PlacePicture(&sub->place, vd->source, &dp);
-        sub->place_changed = true;
+        sub->place_changed = !vout_display_PlaceEquals(&sub->place, &old_place);
         return VLC_SUCCESS;
     }
 
