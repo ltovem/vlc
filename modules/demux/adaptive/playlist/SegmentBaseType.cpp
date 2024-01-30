@@ -27,36 +27,26 @@
 #include "SegmentTimeline.h"
 
 #include <limits>
+#include <algorithm>
 
 using namespace adaptive::playlist;
 
-Segment * AbstractSegmentBaseType::findSegmentByScaledTime(const std::vector<Segment *> &segments,
+Segment * AbstractSegmentBaseType::findSegmentByScaledTime(const std::vector<std::unique_ptr<Segment>> &segments,
                                                                  stime_t time)
 {
     if(segments.empty() || (segments.size() > 1 && segments[1]->startTime.Get() == 0) )
         return nullptr;
 
-    Segment *ret = nullptr;
-    std::vector<Segment *>::const_iterator it = segments.begin();
-    while(it != segments.end())
-    {
-        Segment *seg = *it;
-        if(seg->startTime.Get() > time)
-        {
-            if(it == segments.begin())
-                return nullptr;
-            else
-                break;
-        }
+    auto it = std::find_if(std::begin(segments), std::end(segments), [time](const auto &seg) {
+        return seg->startTime.Get() > time;
+    });
 
-        ret = seg;
-        it++;
-    }
-
-    return ret;
+    if (it == segments.begin())
+        return nullptr;
+    return (it-1)->get();
 }
 
-uint64_t AbstractSegmentBaseType::findSegmentNumberByScaledTime(const std::vector<Segment *> &segments,
+uint64_t AbstractSegmentBaseType::findSegmentNumberByScaledTime(const std::vector<std::unique_ptr<Segment>> &segments,
                                                                stime_t time)
 {
     Segment *s = findSegmentByScaledTime(segments, time);

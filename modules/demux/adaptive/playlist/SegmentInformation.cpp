@@ -257,10 +257,10 @@ static void insertIntoSegment(Segment *container, size_t start,
 {
     if(end == 0 || container->contains(end))
     {
-        SubSegment *subsegment = new SubSegment(container, start, (end != 0) ? end : 0);
+        auto subsegment = std::make_unique<SubSegment>(container, start, (end != 0) ? end : 0);
         subsegment->startTime.Set(time);
         subsegment->duration.Set(duration);
-        container->addSubSegment(subsegment);
+        container->addSubSegment(std::move(subsegment));
     }
 }
 

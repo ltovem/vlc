@@ -209,7 +209,7 @@ SegmentChunk* Segment::createChunk(AbstractChunkSource *source, BaseRepresentati
     return new (std::nothrow) SegmentChunk(source, rep);
 }
 
-void Segment::addSubSegment(SubSegment *subsegment)
+void Segment::addSubSegment(std::unique_ptr<SubSegment>&& subsegment)
 {
     if(!subsegments.empty())
     {
@@ -217,15 +217,10 @@ void Segment::addSubSegment(SubSegment *subsegment)
            uneffective, also for next subsegments numbering */
         subsegment->setSequenceNumber(subsegments.size());
     }
-    subsegments.push_back(subsegment);
+    subsegments.push_back(std::move(subsegment));
 }
 
-Segment::~Segment()
-{
-    std::vector<Segment*>::iterator it;
-    for(it=subsegments.begin();it!=subsegments.end();++it)
-        delete *it;
-}
+Segment::~Segment() { }
 
 void                    Segment::setSourceUrl   ( const std::string &url )
 {
@@ -245,8 +240,8 @@ void Segment::debug(vlc_object_t *obj, int indent) const
         text.append("Segment");
         msg_Dbg(obj, "%s", text.c_str());
         std::vector<Segment *>::const_iterator l;
-        for(l = subsegments.begin(); l != subsegments.end(); ++l)
-            (*l)->debug(obj, indent + 1);
+        for (const auto &l : subsegments)
+            l->debug(obj, indent + 1);
     }
 }
 
@@ -265,7 +260,7 @@ Url Segment::getUrlSegment() const
     }
 }
 
-const std::vector<Segment*> & Segment::subSegments() const
+const std::vector<std::unique_ptr<Segment>> & Segment::subSegments() const
 {
     return subsegments;
 }
@@ -288,5 +283,3 @@ SubSegment::SubSegment(Segment *main, size_t start, size_t end) :
     setByteRange(start, end);
     debugName = "SubSegment";
 }
-
-
