@@ -223,6 +223,7 @@ vlc_aout_stream_owner * vlc_aout_stream_New(audio_output_t *p_aout,
 
     stream->filters = NULL;
     stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
+    aout_OutputPushStream(p_aout, stream);
     if (aout_OutputNew(p_aout, stream, &stream->mixer_format, stream->input_profile,
                        &stream->filter_format, &stream->filters_cfg))
         goto error;
@@ -242,6 +243,7 @@ vlc_aout_stream_owner * vlc_aout_stream_New(audio_output_t *p_aout,
         if (stream->filters == NULL)
         {
             aout_OutputDelete (p_aout, stream);
+            aout_OutputRemoveStream(p_aout, stream);
             vlc_audio_meter_Reset(&owner->meter, NULL);
 
 error:
@@ -255,16 +257,81 @@ error:
     return stream;
 }
 
+static void vlc_aout_stream_TimingNotify(vlc_aout_stream *s, vlc_tick_t system_ts, vlc_tick_t audio_ts)
+{
+    vlc_aout_stream_owner *stream = s->owner;
+    vlc_aout_stream_NotifyTiming(stream, system_ts, audio_ts);
+}
+
+static void vlc_aout_stream_DrainedNotify(vlc_aout_stream *s)
+{
+    vlc_aout_stream_owner *stream = s->owner;
+    vlc_aout_stream_NotifyDrained(stream);
+}
+
+static const struct vlc_aout_stream_events stream_events = {
+    vlc_aout_stream_TimingNotify,
+    vlc_aout_stream_DrainedNotify
+};
+
+/**
+ * Creates a new vlc_aout_stream object
+ */
+vlc_aout_stream *vlc_aout_stream_Create(vlc_aout_stream_owner *stream, audio_output_t *aout)
+{
+    size_t size = sizeof(vlc_aout_stream);
+    void *obj = vlc_object_create(aout, size);
+    if (unlikely(obj == NULL))
+        return NULL;
+    vlc_aout_stream *s = obj;
+    s->owner = stream;
+    s->ops = NULL;
+    s->events = &stream_events;
+    return s;
+}
+
+/**
+  * Starts a stream and stores the module stream in the core (if the aout module is adapted to support multiple streams)
+  */
 int vlc_aout_stream_Start(vlc_aout_stream_owner *stream, audio_sample_format_t * restrict fmt)
 {
     audio_output_t *aout = aout_stream_aout(stream);
-    return aout->start(aout, fmt);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = vlc_aout_stream_Create(stream, aout);
+        if(unlikely(s == NULL))
+            return -1;
+        stream->module_stream = s;
+        int ret = aout->start_stream(aout, s, fmt);
+        if(ret)
+        {
+            stream->module_stream = NULL;
+            vlc_object_delete(s);
+        }
+
+        return ret;
+    }
+    else
+    {
+        return aout->start(aout, fmt);
+    }
 }
 
+/**
+  * Stops a stream and deletes the vlc_aout_stream object (if the aout module is adapted to support multiple streams)
+  */
 void vlc_aout_stream_Stop(vlc_aout_stream_owner *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
-    aout->stop(aout);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->stop(s, aout);
+        stream->module_stream = NULL;
+        vlc_object_delete(s);
+    }
+    else
+        aout->stop(aout);
 }
 
 /**
@@ -282,6 +349,7 @@ void vlc_aout_stream_Delete (vlc_aout_stream_owner *stream)
         if (stream->filters)
             aout_FiltersDelete (aout, stream->filters);
         aout_OutputDelete (aout, stream);
+        aout_OutputRemoveStream(aout, stream);
     }
     if (stream->volume != NULL)
         aout_volume_Delete(stream->volume);
@@ -289,10 +357,19 @@ void vlc_aout_stream_Delete (vlc_aout_stream_owner *stream)
     free(stream);
 }
 
+/**
+  * Plays a stream from audio_output_t/vlc_aout_stream object depending on whether the aout module has been adapted
+  */
 static void stream_Play (vlc_aout_stream_owner *stream, block_t *block, vlc_tick_t date)
 {
     audio_output_t *aout = aout_stream_aout(stream);
-    aout->play(aout, block, date);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->play(s, block, date);
+    }
+    else
+        aout->play(aout, block, date);
 }
 
 static int stream_CheckReady (vlc_aout_stream_owner *stream)
@@ -353,6 +430,7 @@ static int stream_CheckReady (vlc_aout_stream_owner *stream)
             if (stream->filters == NULL)
             {
                 aout_OutputDelete (aout, stream);
+                aout_OutputRemoveStream(aout, stream);
                 stream->mixer_format.i_format = 0;
             }
             aout_FiltersSetClockDelay(stream->filters, stream->sync.delay);
@@ -806,10 +884,21 @@ void vlc_aout_stream_ChangePause(vlc_aout_stream_owner *stream, bool paused, vlc
             stream->timing.pause_date = VLC_TICK_INVALID;
         }
 
-        if (aout->pause != NULL)
-            aout->pause(aout, paused, date);
-        else if (paused)
-            vlc_aout_stream_Flush(stream);
+        if(aout->start_stream != NULL)
+        {
+            vlc_aout_stream *s = stream->module_stream;
+            if(s->ops->pause != NULL)
+                s->ops->pause(s, paused);
+            else if(paused)
+                s->ops->flush(s);
+        }
+        else
+        {
+            if (aout->pause != NULL)
+                aout->pause(aout, paused, date);
+            else if (paused)
+                vlc_aout_stream_Flush(stream);
+        }
 
         /* Update the rate point after the pause */
         if (aout->time_get == NULL && !paused
@@ -843,7 +932,15 @@ void vlc_aout_stream_Flush(vlc_aout_stream_owner *stream)
         vlc_tracer_TraceEvent(tracer, "RENDER", stream->str_id, "flushed");
 
     if (stream->mixer_format.i_format)
-        aout->flush(aout);
+    {
+        if(aout->start_stream != NULL)
+        {
+            vlc_aout_stream *s = stream->module_stream;
+            s->ops->flush(s);
+        }
+        else
+            aout->flush(aout);
+    }
     stream_Reset(stream);
 }
 
@@ -897,6 +994,13 @@ void vlc_aout_stream_Drain(vlc_aout_stream_owner *stream)
         assert(!atomic_load_explicit(&stream->drained, memory_order_relaxed));
 
         aout->drain(aout);
+    }
+    else if (aout->start_stream)
+    {
+        assert(!atomic_load_explicit(&stream->drained, memory_order_relaxed));
+
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->drain(s);
     }
     else
     {

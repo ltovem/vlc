@@ -50,6 +50,7 @@ typedef struct
     bool bitexact;
 
     vlc_aout_stream_owner *main_stream;
+    struct vlc_list stream_list; /** List to store the nodes of vlc_aout_stream_owner* objects in a particular aout device */
 
     struct
     {
@@ -92,6 +93,9 @@ static inline aout_owner_t *aout_owner (audio_output_t *aout)
 
 struct vlc_aout_stream_owner
 {
+    vlc_aout_stream *module_stream;
+    struct vlc_list node;
+
     aout_instance_t *instance;
     aout_volume_t *volume;
     aout_filters_t *filters;
@@ -193,6 +197,16 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
  * \warning The caller must NOT hold the audio output lock.
  */
 void aout_OutputDelete( audio_output_t * p_aout, vlc_aout_stream_owner *stream );
+
+/**
+ * Pushes the audio output stream(to be started) to the vector of currently running streams
+ */
+void aout_OutputPushStream(audio_output_t *aout, vlc_aout_stream_owner *stream);
+
+/**
+ * Removes the stopped audio output stream from the vector of currently running streams
+ */
+void aout_OutputRemoveStream(audio_output_t *aout, vlc_aout_stream_owner *stream);
 
 vlc_audio_meter_plugin *
 aout_AddMeterPlugin(audio_output_t *aout, const char *chain,
