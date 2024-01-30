@@ -97,6 +97,10 @@ libvlc_int_t * libvlc_InternalCreate( void )
     priv->p_vlm = NULL;
     priv->media_source_provider = NULL;
 
+    atomic_init(&priv->tracer_enabled, false);
+    priv->libvlc_tracer = NULL;
+    priv->tracer = NULL;
+
     vlc_ExitInit( &priv->exit );
 
     return p_libvlc;
@@ -182,9 +186,8 @@ int libvlc_InternalInit( libvlc_int_t *p_libvlc, int i_argc,
 
     vlc_LogInit(p_libvlc);
 
-    char *tracer_name = var_InheritString(p_libvlc, "tracer");
-    priv->tracer = vlc_tracer_Create(VLC_OBJECT(p_libvlc), tracer_name);
-    free(tracer_name);
+    if (vlc_TracerInit(p_libvlc) == VLC_ENOMEM)
+        goto error;
 
     /*
      * Support for gettext
@@ -397,8 +400,7 @@ void libvlc_InternalCleanup( libvlc_int_t *p_libvlc )
         config_AutoSaveConfigFile( p_libvlc );
 
     vlc_LogDestroy(p_libvlc->obj.logger);
-    if (priv->tracer != NULL)
-        vlc_tracer_Destroy(priv->tracer);
+    vlc_TracerDestroy(p_libvlc);
     /* Free module bank. It is refcounted, so we call this each time  */
     module_EndBank (true);
 #if defined(_WIN32) || defined(__OS2__)

@@ -106,6 +106,11 @@ struct vlc_tracer_operations
 typedef struct vlc_tracer_operations *(*vlc_tracer_open_cb)(vlc_object_t *obj,
                                                             void **restrict sysp);
 
+struct vlc_tracer {
+    void *opaque;
+    const struct vlc_tracer_operations *ops;
+};
+
 /**
  * @}
  *

@@ -33,10 +33,6 @@
 #include <vlc_tracer.h>
 #include "../libvlc.h"
 
-struct vlc_tracer {
-    const struct vlc_tracer_operations *ops;
-};
-
 /**
  * Module-based message trace.
  */
@@ -44,31 +40,28 @@ struct vlc_tracer_module {
     struct vlc_object_t obj;
     struct vlc_tracer tracer;
     void *opaque;
+    const struct vlc_tracer_operations *ops;
 };
 
 void vlc_tracer_vaTraceWithTs(struct vlc_tracer *tracer, vlc_tick_t ts,
                               va_list entries)
 {
     assert(tracer->ops->trace != NULL);
-    struct vlc_tracer_module *module =
-            container_of(tracer, struct vlc_tracer_module, tracer);
 
     va_list copy;
     va_copy(copy, entries);
-    tracer->ops->trace(module->opaque, ts, copy);
+    tracer->ops->trace(tracer->opaque, ts, copy);
     va_end(copy);
 }
 
 void vlc_tracer_TraceWithTs(struct vlc_tracer *tracer, vlc_tick_t ts, ...)
 {
     assert(tracer->ops->trace != NULL);
-    struct vlc_tracer_module *module =
-            container_of(tracer, struct vlc_tracer_module, tracer);
 
     /* Pass message to the callback */
     va_list entries;
     va_start(entries, ts);
-    tracer->ops->trace(module->opaque, ts, entries);
+    tracer->ops->trace(tracer->opaque, ts, entries);
     va_end(entries);
 }
 
@@ -78,8 +71,25 @@ static int vlc_tracer_load(void *func, bool forced, va_list ap)
     struct vlc_tracer_module *module = va_arg(ap, struct vlc_tracer_module *);
 
     (void) forced;
-    module->tracer.ops = activate(VLC_OBJECT(module), &module->opaque);
-    return (module->tracer.ops != NULL) ? VLC_SUCCESS : VLC_EGENERIC;
+    module->ops = activate(VLC_OBJECT(module), &module->opaque);
+    return (module->ops != NULL) ? VLC_SUCCESS : VLC_EGENERIC;
+}
+
+static void vlc_tracer_module_Trace(void *opaque, vlc_tick_t ts,
+                                    va_list entries)
+{
+    struct vlc_tracer_module *module = opaque;
+    module->ops->trace(module->opaque, ts, entries);
+}
+
+static void vlc_tracer_module_Destroy(void *opaque)
+{
+    struct vlc_tracer_module *module = opaque;
+
+    if (module->ops->destroy != NULL)
+        module->ops->destroy(module->opaque);
+
+    vlc_object_delete(VLC_OBJECT(module));
 }
 
 struct vlc_tracer *vlc_tracer_Create(vlc_object_t *parent, const char *module_name)
@@ -96,16 +106,20 @@ struct vlc_tracer *vlc_tracer_Create(vlc_object_t *parent, const char *module_na
         return NULL;
     }
 
+    static const struct vlc_tracer_operations vlc_tracer_module_ops =
+    {
+        .trace = vlc_tracer_module_Trace,
+        .destroy = vlc_tracer_module_Destroy,
+    };
+
+    module->tracer.opaque = module;
+    module->tracer.ops = &vlc_tracer_module_ops;
+
     return &module->tracer;
 }
 
 void vlc_tracer_Destroy(struct vlc_tracer *tracer)
 {
-    struct vlc_tracer_module *module =
-        container_of(tracer, struct vlc_tracer_module, tracer);
-
-    if (module->tracer.ops->destroy != NULL)
-        module->tracer.ops->destroy(module->opaque);
-
-    vlc_object_delete(VLC_OBJECT(module));
+    if (tracer->ops != NULL && tracer->ops->destroy != NULL)
+        tracer->ops->destroy(tracer->opaque);
 }
