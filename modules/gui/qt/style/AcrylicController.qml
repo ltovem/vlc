@@ -26,7 +26,7 @@ import org.videolan.compat 0.1
 Item {
     id: root
 
-    property real uiTransluency: (enabled && MainCtx.intfMainWindow.active) ? 1 : 0
+    property real uiTransluency: (enabled) ? 1 : 0
 
     enabled: MainCtx.hasAcrylicSurface
 
