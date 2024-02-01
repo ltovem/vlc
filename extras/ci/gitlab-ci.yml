@@ -409,7 +409,7 @@ debian-meson:
             make -f package.mak snap
     after_script:
         - export VLC_CONTRIB_SHA="$(extras/ci/get-contrib-sha.sh snap)"
-        - mv extras/package/snap/parts/vlc/build/contrib/vlc-contrib-*.tar.bz2 contrib/vlc-contrib-${TRIPLET}-${VLC_CONTRIB_SHA}.tar.bz2 2>/dev/null || true
+        - mv contrib/linux/vlc-contrib-*.tar.bz2 contrib/vlc-contrib-${TRIPLET}-${VLC_CONTRIB_SHA}.tar.bz2 2>/dev/null || true
     allow_failure: true
     variables: *variables-snap
 
@@ -420,6 +420,8 @@ nightly-snap:
     extends: .snap-common
     rules:
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    before_script:
+        - touch snap-save-prebuilt
     after_script:
         - if [ "$CI_PROJECT_NAMESPACE" = "videolan" ]; then /bin/true; else exit 0; fi
         - mkdir nightlies
