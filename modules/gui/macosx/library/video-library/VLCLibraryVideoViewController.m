@@ -43,8 +43,6 @@
 
 #import "library/playlist-library/VLCLibraryPlaylistViewController.h"
 
-#import "library/video-library/VLCLibraryVideoCollectionViewsStackViewController.h"
-#import "library/video-library/VLCLibraryVideoCollectionViewContainerViewDataSource.h"
 #import "library/video-library/VLCLibraryVideoDataSource.h"
 #import "library/video-library/VLCLibraryVideoTableViewDelegate.h"
 
