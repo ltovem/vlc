@@ -166,6 +166,8 @@ static void PlacePicture(vout_display_t *vd, vout_display_place_t *place,
         dp.height = width;
     }
 
+    vout_display_place_t old_place = *place;
+
     FlipVerticalAlign(&dp);
 
     vout_display_PlacePicture(place, &source, &dp);
@@ -179,7 +181,7 @@ static void PlacePicture(vout_display_t *vd, vout_display_place_t *place,
             .height = place->width,
         };
     }
-    sys->place_changed = true;
+    sys->place_changed = !vout_display_PlaceEquals(place, &old_place);
 
     video_format_Clean(&source);
 }
@@ -333,24 +335,18 @@ static int Control (vout_display_t *vd, int query)
     {
 
       case VOUT_DISPLAY_CHANGE_DISPLAY_SIZE:
+        vlc_gl_Resize (sys->gl, vd->cfg->display.width, vd->cfg->display.height);
+        // fallthrough
       case VOUT_DISPLAY_CHANGE_DISPLAY_FILLED:
       case VOUT_DISPLAY_CHANGE_ZOOM:
-      {
-        struct vout_display_placement dp = vd->cfg->display;
-
-        PlacePicture(vd, &sys->place, dp);
-        sys->place_changed = true;
-        vlc_gl_Resize (sys->gl, dp.width, dp.height);
-        return VLC_SUCCESS;
-      }
-
       case VOUT_DISPLAY_CHANGE_SOURCE_ASPECT:
       case VOUT_DISPLAY_CHANGE_SOURCE_CROP:
       {
         struct vout_display_placement dp = vd->cfg->display;
+        vout_display_place_t old_place = sys->place;
 
         PlacePicture(vd, &sys->place, dp);
-        sys->place_changed = true;
+        sys->place_changed = !vout_display_PlaceEquals(&sys->place, &old_place);
         return VLC_SUCCESS;
       }
       default:

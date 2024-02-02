@@ -410,14 +410,16 @@ static int Open (vout_display_t *vd,
         glsys->cgl = cgl_ctx;
         glsys->cgl_prev = NULL;
 
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            // Reverse vertical alignment as the GL tex are Y inverted
-           sys->cfg = *vd->cfg;
-           if (sys->cfg.display.align.vertical == VLC_VIDEO_ALIGN_TOP)
-               sys->cfg.display.align.vertical = VLC_VIDEO_ALIGN_BOTTOM;
-           else if (sys->cfg.display.align.vertical == VLC_VIDEO_ALIGN_BOTTOM)
-               sys->cfg.display.align.vertical = VLC_VIDEO_ALIGN_TOP;
+        // Reverse vertical alignment as the GL tex are Y inverted
+        sys->cfg = *vd->cfg;
+        if (sys->cfg.display.align.vertical == VLC_VIDEO_ALIGN_TOP)
+            sys->cfg.display.align.vertical = VLC_VIDEO_ALIGN_BOTTOM;
+        else if (sys->cfg.display.align.vertical == VLC_VIDEO_ALIGN_BOTTOM)
+            sys->cfg.display.align.vertical = VLC_VIDEO_ALIGN_TOP;
 
+        vout_display_PlacePicture(&sys->place, vd->source, &sys->cfg.display);
+
+        dispatch_sync(dispatch_get_main_queue(), ^{
             // Create video view
             sys->videoView = [[VLCVideoLayerView alloc] initWithVoutDisplay:vd];
             sys->videoLayer = (VLCCAOpenGLLayer*)[[sys->videoView layer] retain];
@@ -434,8 +436,6 @@ static int Open (vout_display_t *vd,
                 sys->videoView = nil;
                 sys->videoLayer = nil;
             }
-
-            vout_display_PlacePicture(&sys->place, vd->source, &sys->cfg.display);
         });
 
         if (sys->videoView == nil) {
