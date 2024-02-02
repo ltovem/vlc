@@ -21,6 +21,8 @@ import QtQuick 2.12
 import org.videolan.vlc 0.1
 
 ScaledImage {
+    id: root
+
     property var blurRadius: null
     property var color: null
     property var xOffset: null
@@ -33,20 +35,14 @@ ScaledImage {
 
     fillMode: Image.Pad
 
-    onSourceSizeChanged: {
-        // Do not load the image when size is not valid:
-        if (sourceSize.width > 0 && sourceSize.height > 0)
-            source = Qt.binding(function() {
-                return Effects.url((xRadius > 0 || yRadius > 0) ? Effects.RoundedRectDropShadow
-                                                                : Effects.RectDropShadow,
-                                   {"blurRadius": blurRadius,
-                                    "color": color,
-                                    "xOffset": xOffset,
-                                    "yOffset": yOffset,
-                                    "xRadius": xRadius,
-                                    "yRadius": yRadius})
-            })
-        else
-            source = ""
-    }
+    acceptPartialSourceSize: false
+
+    targetSource: Effects.url((xRadius > 0 || yRadius > 0) ? Effects.RoundedRectDropShadow
+                                                     : Effects.RectDropShadow,
+                              {"blurRadius": blurRadius,
+                               "color": color,
+                               "xOffset": xOffset,
+                               "yOffset": yOffset,
+                               "xRadius": xRadius,
+                               "yRadius": yRadius})
 }

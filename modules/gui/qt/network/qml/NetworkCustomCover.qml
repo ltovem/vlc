@@ -72,13 +72,11 @@ Item {
 
         visible: !artwork.visible
 
-        sourceSize: Qt.size(width, height)
-
         fillMode: root.fillMode
         horizontalAlignment: root.horizontalAlignment
         verticalAlignment: root.verticalAlignment
 
-        source: {
+        targetSource: {
             if (!networkModel || !visible)
                 return ""
 
@@ -100,13 +98,11 @@ Item {
 
         visible: status === Image.Ready
 
-        sourceSize: Qt.size(width, height)
-
         fillMode: root.fillMode
         horizontalAlignment: root.horizontalAlignment
         verticalAlignment: root.verticalAlignment
 
-        source: {
+        targetSource: {
             if (!!networkModel && !!networkModel.artwork && networkModel.artwork.length > 0)
                 return networkModel.artwork
 

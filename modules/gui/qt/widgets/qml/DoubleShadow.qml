@@ -58,7 +58,7 @@ Item {
         xRadius: root.xRadius
         yRadius: root.yRadius
 
-        sourceSize: Qt.size(parent.width, parent.height)
+        targetSourceSize: Qt.size(parent.width, parent.height)
     }
 
     DropShadowImage {
@@ -73,7 +73,7 @@ Item {
         xRadius: root.xRadius
         yRadius: root.yRadius
 
-        sourceSize: Qt.size(parent.width, parent.height)
+        targetSourceSize: Qt.size(parent.width, parent.height)
 
         cache: root.cache
     }

@@ -247,7 +247,7 @@ T.Control {
             xRadius: parent.width
             yRadius: xRadius
 
-            sourceSize: Qt.size(xRadius, yRadius)
+            targetSourceSize: Qt.size(xRadius, yRadius)
         }
 
         Widgets.DropShadowImage {
@@ -266,12 +266,12 @@ T.Control {
             xRadius: parent.width
             yRadius: xRadius
 
-            sourceSize: Qt.size(xRadius, yRadius)
+            targetSourceSize: Qt.size(xRadius, yRadius)
         }
 
         Widgets.ScaledImage {
             anchors.fill: parent
-            source: "qrc:/misc/play_button.svg"
+            targetSource: "qrc:/misc/play_button.svg"
         }
     }
 }
