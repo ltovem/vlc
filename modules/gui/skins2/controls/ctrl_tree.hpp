@@ -37,7 +37,8 @@ class CtrlTree: public CtrlGeneric, public Observer<VarTree, tree_update>
 {
 public:
     using CtrlGeneric::onUpdate;
-    typedef VarTree::IteratorVisible Iterator;
+
+    using Iterator = VarTree::IteratorVisible;
 
     CtrlTree( intf_thread_t *pIntf,
               VarTree &rTree,
