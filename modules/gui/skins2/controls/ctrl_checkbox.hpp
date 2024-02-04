@@ -38,6 +38,8 @@ class CmdGeneric;
 class CtrlCheckbox: public CtrlGeneric, public Observer<AnimBitmap>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     /// Create a checkbox with 6 images
     CtrlCheckbox( intf_thread_t *pIntf,
                   const GenericBitmap &rBmpUp1,

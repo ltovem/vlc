@@ -38,6 +38,8 @@ class VarPercent;
 class CtrlRadialSlider: public CtrlGeneric, public Observer<VarPercent>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     /// Create a radial slider with the given image, which must be
     /// composed of numImg subimages of the same size
     CtrlRadialSlider( intf_thread_t *pIntf, const GenericBitmap &rBmpSeq,

@@ -41,6 +41,8 @@ class VarPercent;
 class CtrlSliderCursor: public CtrlGeneric, public Observer<VarPercent>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     /// Create a cursor with 3 images (which are NOT copied, be careful)
     /// If pVisible is NULL, the control is always visible
     CtrlSliderCursor( intf_thread_t *pIntf, const GenericBitmap &rBmpUp,
@@ -131,6 +133,8 @@ private:
 class CtrlSliderBg: public CtrlGeneric, public Observer<VarPercent>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     CtrlSliderBg( intf_thread_t *pIntf,
                   const Bezier &rCurve, VarPercent &rVariable,
                   int thickness, GenericBitmap *pBackground, int nbHoriz,

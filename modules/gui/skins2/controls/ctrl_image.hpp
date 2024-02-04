@@ -38,6 +38,8 @@ class VarString;
 class CtrlImage: public CtrlFlat, public Observer<VarString>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     /// Resize methods
     enum resize_t
     {

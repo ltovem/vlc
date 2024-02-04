@@ -38,6 +38,8 @@ class CtrlList: public CtrlGeneric, public Observer<VarList>,
     public Observer<VarPercent>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     CtrlList( intf_thread_t *pIntf, VarList &rList,
               const GenericFont &rFont, const GenericBitmap *pBitmap,
               uint32_t fgcolor, uint32_t playcolor, uint32_t bgcolor1,
