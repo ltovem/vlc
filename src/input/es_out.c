@@ -1017,10 +1017,9 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
     EsOutStopFreeVout( out );
 
     /* */
-    const vlc_tick_t i_wakeup_delay = VLC_TICK_FROM_MS(10); /* FIXME CLEANUP thread wake up time*/
     const vlc_tick_t i_current_date = p_sys->b_paused ? p_sys->i_pause_date : vlc_tick_now();
 
-    const vlc_tick_t update = i_current_date + i_wakeup_delay - i_buffering_duration;
+    const vlc_tick_t update = i_current_date - i_buffering_duration;
 
     /* The call order of these 3 input_clock_t/vlc_clock_main_t functions is
      * important:
