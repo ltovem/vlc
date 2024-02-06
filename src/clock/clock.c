@@ -490,6 +490,10 @@ static vlc_tick_t vlc_clock_master_to_system(vlc_clock_t *clock,
                                              double rate)
 {
     vlc_clock_main_t *main_clock = clock->owner;
+    (void)now;
+
+    if (main_clock->start_time.system == VLC_TICK_INVALID)
+        return VLC_TICK_INVALID;
 
     vlc_tick_t system = main_stream_to_system(main_clock, ts);
     if (system == VLC_TICK_INVALID)
@@ -557,13 +561,10 @@ vlc_clock_output_start(vlc_clock_t *clock,
     vlc_mutex_assert(&main_clock->lock);
 
 #if 0
-    /* Disabled for now, the handling will be done in later commit. */
     /* vlc_clock_Start must have already been called. */
     assert (main_clock->start_time.system != VLC_TICK_INVALID);
     assert (main_clock->start_time.stream != VLC_TICK_INVALID);
 #endif
-    if (main_clock->start_time.system == VLC_TICK_INVALID)
-        return;
 
     if (clock->priority >= main_clock->wait_sync_ref_priority)
         goto end;
