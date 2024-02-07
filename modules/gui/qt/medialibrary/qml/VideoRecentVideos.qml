@@ -36,6 +36,8 @@ FocusScope {
     readonly property bool isSearchable: true
 
     property alias subtitleText: subtitleLabel.text
+    property alias subtitleLeftPadding: subtitleLabel.leftPadding
+    property alias subtitleRightPadding: subtitleLabel.rightPadding
 
     property int bottomPadding: recentVideosColumn.bottomPadding
     property int leftPadding: VLCStyle.margin_xsmall
@@ -167,9 +169,6 @@ FocusScope {
 
             visible: text !== ""
             color: theme.fg.primary
-
-            leftPadding: view.currentItem.contentLeftMargin
-            rightPadding: view.currentItem.contentRightMargin
         }
     }
 }
