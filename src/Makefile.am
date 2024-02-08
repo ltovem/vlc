@@ -20,7 +20,7 @@ SUFFIXES = .pc.in .pc .rc.in .rc
 
 pluginsincludedir = $(pkgincludedir)/plugins
 
-pluginsinclude_HEADERS = \
+pluginsinclude_HEADERS.h = \
 	../include/vlc_access.h \
 	../include/vlc_actions.h \
 	../include/vlc_addons.h \
@@ -41,7 +41,6 @@ pluginsinclude_HEADERS = \
 	../include/vlc_config_cat.h \
 	../include/vlc_configuration.h \
 	../include/vlc_cpu.h \
-	../include/vlc_cxx_helpers.hpp \
 	../include/vlc_clock.h \
 	../include/vlc_decoder.h \
 	../include/vlc_demux.h \
@@ -124,6 +123,14 @@ pluginsinclude_HEADERS = \
 	../include/vlc_xlib.h \
 	../include/vlc_xml.h \
 	$(NULL)
+
+pluginsinclude_HEADERS.hpp = \
+	../include/vlc_cxx_helpers.hpp \
+	$(NULL)
+
+pluginsinclude_HEADERS = \
+	$(pluginsinclude_HEADERS.h) \
+	$(pluginsinclude_HEADERS.hpp)
 nodist_pluginsinclude_HEADERS = ../include/vlc_about.h
 
 noinst_HEADERS = \
@@ -718,33 +725,46 @@ stamp-revision:
 
 checkheader_verbose = $(checkheader_verbose_$(V))
 checkheader_verbose_ = $(checkheader_verbose_$(AM_DEFAULT_VERBOSITY))
-checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%_h=%.h)";
-skip_checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%_h=%.h) (SKIPPED)";
 checkheader_verbose__0 = $(checkheader_verbose_0)
 
-nodist_check_SCRIPTS = $(pluginsinclude_HEADERS:../include/%.h=checkheader_%_h)
-MOSTLYCLEANFILES += \
-	$(pluginsinclude_HEADERS:../include/%.h=checkheader_%_h.c) \
-	$(pluginsinclude_HEADERS:../include/%.h=checkheader_%_h.lo)
+checkheaders.h   = $(pluginsinclude_HEADERS.h:../include/%=checkheader_%.check)
+checkheaders.hpp = $(pluginsinclude_HEADERS.hpp:../include/%=checkheader_%.check)
+checkheaders.all = $(checkheaders.h) $(checkheaders.hpp)
 
-checkheaders: $(pluginsinclude_HEADERS:../include/%.h=checkheader_%_h)
-checkheader_%_h:
-	@echo "#include <stdbool.h>" > $@.c
-	@echo "#include <vlc_common.h>" >> $@.c
-	@echo "#include <$*.h>" >> $@.c
-	$(checkheader_verbose)$(LTCOMPILE) $(CHECK_CFLAGS) -c $@.c -o $@.lo
+$(checkheaders.all): checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%.check=%)";
+$(checkheaders.all): skip_checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%.check=%) (SKIPPED)";
+#$(checkheaders.hpp): checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%_hpp=%.hpp)";
+#$(checkheaders.hpp): skip_checkheader_verbose_0 = @echo "  CHECK  $(@:checkheader_%_hpp=%.hpp) (SKIPPED)";
+
+nodist_check_SCRIPTS = $(checkheaders.all)
+MOSTLYCLEANFILES += \
+	$(checkheaders.h:%=%.c) $(checkheaders.h:%=%.lo) \
+	$(checkheaders.hpp:%=%.cpp) $(checkheaders.hpp:%=%.lo)
+
+checkheaders: $(checkheaders.all)
+checkheader_%.check:
+	$(checkheader_verbose) \
+	sourcefile="$@.$(CHECKHEADER_SOURCE_EXT)"; exec 3>$${sourcefile} && \
+	echo "#include <stdbool.h>" >&3 && \
+	echo "#include <vlc_common.h>" >&3 && \
+	echo "#include <$*>" >&3 && \
+	$(CHECKCOMPILE) $(CHECK_CFLAGS) -c $${sourcefile} -o $@.lo
+$(checkheaders.h): CHECKHEADER_SOURCE_EXT=c
+$(checkheaders.h): CHECKCOMPILE=$(LTCOMPILE)
+$(checkheaders.hpp): CHECKHEADER_SOURCE_EXT=cpp
+$(checkheaders.hpp): CHECKCOMPILE=$(LTCXXCOMPILE)
 
 # Some exceptions for headers depending on other libraries
-checkheader_vlc_gcrypt_h: CHECK_CFLAGS = "-Dgcry_check_version(x)="
-checkheader_vlc_xlib_h: CHECK_CFLAGS = $(X_CFLAGS)
+checkheader_vlc_gcrypt.h.check: CHECK_CFLAGS = "-Dgcry_check_version(x)="
+checkheader_vlc_xlib.h.check: CHECK_CFLAGS = $(X_CFLAGS)
 
 SKIPPED_CHECKHEADERS =
 if !HAVE_X
 SKIPPED_CHECKHEADERS += vlc_xlib.h
 endif
 
-$(SKIPPED_CHECKHEADERS:%.h=checkheader_%_h): checkheader_verbose_0 = $(skip_checkheader_verbose_0)
-$(SKIPPED_CHECKHEADERS:%.h=checkheader_%_h): LTCOMPILE = exit 0;
+$(SKIPPED_CHECKHEADERS:%=checkheader_%): checkheader_verbose_0 = $(skip_checkheader_verbose_0)
+$(SKIPPED_CHECKHEADERS:%=checkheader_%): CHECKCOMPILE = exit 0;
 
 dist_check_SCRIPTS = check_headers check_symbols
 

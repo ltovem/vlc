@@ -586,12 +586,11 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         i_row = ( i_real_index / p_sys->i_cols ) % p_sys->i_rows;
         i_col = i_real_index % p_sys->i_cols ;
 
-        video_format_Init( &fmt_in, 0 );
-        video_format_Init( &fmt_out, 0 );
-
         p_converted = vlc_picture_chain_PeekFront( &p_es->pictures );
         if ( !p_sys->b_keep )
         {
+            video_format_Init( &fmt_in, 0 );
+            video_format_Init( &fmt_out, 0 );
             /* Convert the images */
             fmt_in.i_chroma = p_converted->format.i_chroma;
             fmt_in.i_height = p_converted->format.i_height;
@@ -625,32 +624,22 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
 
             p_converted = image_Convert( p_sys->p_image, p_converted,
                                          &fmt_in, &fmt_out );
+            video_format_Clean( &fmt_in );
+            video_format_Clean( &fmt_out );
             if( !p_converted )
             {
                 msg_Warn( p_filter,
                            "image resizing and chroma conversion failed" );
-                video_format_Clean( &fmt_in );
-                video_format_Clean( &fmt_out );
                 continue;
             }
         }
-        else
-        {
-            fmt_in.i_width = fmt_out.i_width = p_converted->format.i_width;
-            fmt_in.i_height = fmt_out.i_height = p_converted->format.i_height;
-            fmt_in.i_chroma = fmt_out.i_chroma = p_converted->format.i_chroma;
-            fmt_out.i_visible_width = fmt_out.i_width;
-            fmt_out.i_visible_height = fmt_out.i_height;
-        }
 
-        p_region = subpicture_region_ForPicture( &fmt_out, p_converted );
+        p_region = subpicture_region_ForPicture( NULL, p_converted );
         if( !p_sys->b_keep )
             picture_Release( p_converted );
 
         if( !p_region )
         {
-            video_format_Clean( &fmt_in );
-            video_format_Clean( &fmt_out );
             msg_Err( p_filter, "cannot allocate SPU region" );
             subpicture_Delete( p_spu );
             vlc_global_unlock( VLC_MOSAIC_MUTEX );
@@ -670,7 +659,7 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
         }
         else
         {
-            if( fmt_out.i_width > col_inner_width ||
+            if( p_converted->format.i_width > col_inner_width ||
                 p_sys->b_ar || p_sys->b_keep )
             {
                 /* we don't have to center the video since it takes the
@@ -685,10 +674,10 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
                 p_region->i_x = p_sys->i_xoffset
                         + i_col * ( p_sys->i_width / p_sys->i_cols )
                         + ( i_col * p_sys->i_borderw ) / p_sys->i_cols
-                        + ( col_inner_width - fmt_out.i_width ) / 2;
+                        + ( col_inner_width - p_converted->format.i_width ) / 2;
             }
 
-            if( fmt_out.i_height > row_inner_height
+            if( p_converted->format.i_height > row_inner_height
                 || p_sys->b_ar || p_sys->b_keep )
             {
                 /* we don't have to center the video since it takes the
@@ -703,16 +692,13 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
                 p_region->i_y = p_sys->i_yoffset
                         + i_row * ( p_sys->i_height / p_sys->i_rows )
                         + ( i_row * p_sys->i_borderh ) / p_sys->i_rows
-                        + ( row_inner_height - fmt_out.i_height ) / 2;
+                        + ( row_inner_height - p_converted->format.i_height ) / 2;
             }
         }
         p_region->i_align = p_sys->i_align;
         p_region->i_alpha = p_es->i_alpha;
 
         vlc_spu_regions_push(&p_spu->regions, p_region);
-
-        video_format_Clean( &fmt_in );
-        video_format_Clean( &fmt_out );
     }
 
     vlc_global_unlock( VLC_MOSAIC_MUTEX );

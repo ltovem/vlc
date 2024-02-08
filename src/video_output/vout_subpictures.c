@@ -593,17 +593,25 @@ static void SpuRegionPlace(int *x, int *y,
     } else {
         if (i_align & SUBPICTURE_ALIGN_TOP)
             *y = region->i_y;
-        else if (i_align & SUBPICTURE_ALIGN_BOTTOM)
-            *y = subpic->i_original_picture_height - region->fmt.i_visible_height - region->i_y;
         else
-            *y = subpic->i_original_picture_height / 2 - region->fmt.i_visible_height / 2;
+        {
+            assert(subpic->i_original_picture_height != 0);
+            if (i_align & SUBPICTURE_ALIGN_BOTTOM)
+                *y = subpic->i_original_picture_height - region->fmt.i_visible_height - region->i_y;
+            else
+                *y = subpic->i_original_picture_height / 2 - region->fmt.i_visible_height / 2;
+        }
 
         if (i_align & SUBPICTURE_ALIGN_LEFT)
             *x = region->i_x;
-        else if (i_align & SUBPICTURE_ALIGN_RIGHT)
-            *x = subpic->i_original_picture_width - region->fmt.i_visible_width - region->i_x;
         else
-            *x = subpic->i_original_picture_width / 2 - region->fmt.i_visible_width / 2;
+        {
+            assert(subpic->i_original_picture_width != 0);
+            if (i_align & SUBPICTURE_ALIGN_RIGHT)
+                *x = subpic->i_original_picture_width - region->fmt.i_visible_width - region->i_x;
+            else
+                *x = subpic->i_original_picture_width / 2 - region->fmt.i_visible_width / 2;
+        }
     }
 }
 
@@ -851,9 +859,6 @@ static subpicture_region_t *SpuRenderRegion(spu_t *spu,
     video_format_t region_fmt;
     picture_t *region_picture;
 
-    /* Invalidate area by default */
-    *dst_area = spu_area_create(0,0, 0,0, scale_size);
-
     /* Force palette if requested
      * FIXME b_force_palette and force_crop are applied to all subpictures using palette
      * instead of only the right one (being the dvd spu).
@@ -983,7 +988,7 @@ static subpicture_region_t *SpuRenderRegion(spu_t *spu,
 
     bool convert_chroma = true;
     for (int i = 0; chroma_list[i] && convert_chroma; i++) {
-        if (region_fmt.i_chroma == chroma_list[i])
+        if (region->fmt.i_chroma == chroma_list[i])
             convert_chroma = false;
     }
 
@@ -1145,7 +1150,6 @@ static subpicture_region_t *SpuRenderRegion(spu_t *spu,
         }
     }
 
-    assert(video_format_IsSameChroma( &region_fmt, &region_picture->format ));
     subpicture_region_t *dst = subpicture_region_ForPicture(&region_fmt, region_picture);
     if (dst == NULL)
         return NULL;
@@ -1246,54 +1250,12 @@ static vlc_render_subpicture *SpuRenderSubpictures(spu_t *spu,
         const unsigned i_original_width = subpic->i_original_picture_width;
         const unsigned i_original_height = subpic->i_original_picture_height;
 
-        vlc_spu_regions_foreach(region, &subpic->regions)
-            region_FixFmt(region);
-
         /* Render all regions
          * We always transform non absolute subtitle into absolute one on the
          * first rendering to allow good subtitle overlap support.
          */
         vlc_spu_regions_foreach(region, &subpic->regions) {
             spu_area_t area;
-
-            /* Compute region scale AR */
-            vlc_rational_t region_sar = (vlc_rational_t) {
-                .num = region->fmt.i_sar_num,
-                .den = region->fmt.i_sar_den
-            };
-            if (region_sar.num <= 0 || region_sar.den <= 0) {
-
-                const uint64_t i_sar_num = (uint64_t)fmt_dst->i_visible_width  *
-                                           fmt_dst->i_sar_num * subpic->i_original_picture_height;
-                const uint64_t i_sar_den = (uint64_t)fmt_dst->i_visible_height *
-                                           fmt_dst->i_sar_den * subpic->i_original_picture_width;
-
-                vlc_ureduce(&region_sar.num, &region_sar.den,
-                            i_sar_num, i_sar_den, 65536);
-            }
-
-            /* Compute scaling from original size to destination size */
-            // ensures that the heights match, the width being cropped.
-            spu_scale_t scale_h = spu_scale_createq((uint64_t)fmt_dst->i_visible_height         * fmt_dst->i_sar_den * region_sar.num,
-                                                  (uint64_t)subpic->i_original_picture_height * fmt_dst->i_sar_num * region_sar.den,
-                                                  fmt_dst->i_visible_height,
-                                                  subpic->i_original_picture_height);
-
-            // ensures that the widths match, the height being cropped.
-            spu_scale_t scale_w = spu_scale_createq((uint64_t)fmt_dst->i_visible_width         * fmt_dst->i_sar_den * region_sar.num,
-                                      (uint64_t)subpic->i_original_picture_width * fmt_dst->i_sar_num * region_sar.den,
-                                      fmt_dst->i_visible_width,
-                                      subpic->i_original_picture_width);
-
-            // take the scale that will crop the least
-            spu_scale_t scale;
-            if (scale_h.h * scale_h.w > scale_w.h * scale_w.w)
-                scale = scale_w;
-            else
-                scale = scale_h;
-
-            /* Check scale validity */
-            assert(scale.w != 0 && scale.h != 0);
 
             /* last minute text rendering */
             subpicture_region_t *rendered_region = region;
@@ -1307,8 +1269,47 @@ static vlc_render_subpicture *SpuRenderSubpictures(spu_t *spu,
                     // not a rendering error for Text-To-Speech
                     continue;
                 rendered_region = rendered_text;
-                region_FixFmt(rendered_text);
             }
+            region_FixFmt(rendered_region);
+
+            /* Compute region scale AR */
+            vlc_rational_t region_sar = (vlc_rational_t) {
+                .num = region->fmt.i_sar_num,
+                .den = region->fmt.i_sar_den
+            };
+            if (region_sar.num <= 0 || region_sar.den <= 0) {
+
+                const uint64_t i_sar_num = (uint64_t)fmt_dst->i_visible_width  *
+                                           fmt_dst->i_sar_num * i_original_height;
+                const uint64_t i_sar_den = (uint64_t)fmt_dst->i_visible_height *
+                                           fmt_dst->i_sar_den * i_original_width;
+
+                vlc_ureduce(&region_sar.num, &region_sar.den,
+                            i_sar_num, i_sar_den, 65536);
+            }
+
+            /* Compute scaling from original size to destination size */
+            // ensures that the heights match, the width being cropped.
+            spu_scale_t scale_h = spu_scale_createq((uint64_t)fmt_dst->i_visible_height * fmt_dst->i_sar_den * region_sar.num,
+                                                    (uint64_t)i_original_height         * fmt_dst->i_sar_num * region_sar.den,
+                                                    fmt_dst->i_visible_height,
+                                                    i_original_height);
+
+            // ensures that the widths match, the height being cropped.
+            spu_scale_t scale_w = spu_scale_createq((uint64_t)fmt_dst->i_visible_width * fmt_dst->i_sar_den * region_sar.num,
+                                                    (uint64_t)i_original_width         * fmt_dst->i_sar_num * region_sar.den,
+                                                    fmt_dst->i_visible_width,
+                                                    i_original_width);
+
+            // take the scale that will crop the least
+            spu_scale_t scale;
+            if (scale_h.h * scale_h.w > scale_w.h * scale_w.w)
+                scale = scale_w;
+            else
+                scale = scale_h;
+
+            /* Check scale validity */
+            assert(scale.w != 0 && scale.h != 0);
 
             const bool do_external_scale = external_scale && !subpicture_region_IsText( region );
             spu_scale_t virtual_scale = external_scale ? (spu_scale_t){ SCALE_UNIT, SCALE_UNIT } : scale;

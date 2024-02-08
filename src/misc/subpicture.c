@@ -147,10 +147,7 @@ subpicture_t *subpicture_NewFromPicture( vlc_object_t *p_obj,
     p_subpic->i_original_picture_width  = fmt_out.i_visible_width;
     p_subpic->i_original_picture_height = fmt_out.i_visible_height;
 
-    fmt_out.i_sar_num =
-    fmt_out.i_sar_den = 0;
-
-    subpicture_region_t *p_region = subpicture_region_ForPicture( &fmt_out, p_pip );
+    subpicture_region_t *p_region = subpicture_region_ForPicture( NULL, p_pip );
     picture_Release( p_pip );
 
     if (likely(p_region == NULL))
@@ -158,6 +155,10 @@ subpicture_t *subpicture_NewFromPicture( vlc_object_t *p_obj,
         subpicture_Delete(p_subpic);
         return NULL;
     }
+
+    p_region->fmt.i_sar_num =
+    p_region->fmt.i_sar_den = 0;
+
 
     vlc_spu_regions_push( &p_subpic->regions, p_region );
     return p_subpic;
@@ -278,12 +279,16 @@ subpicture_region_t *subpicture_region_NewText( void )
 
 subpicture_region_t *subpicture_region_ForPicture( const video_format_t *p_fmt, picture_t *pic )
 {
-    if ( !video_format_IsSameChroma( p_fmt, &pic->format ) )
+    assert( !p_fmt || video_format_IsSameChroma( p_fmt, &pic->format ) );
+    if ( p_fmt && !video_format_IsSameChroma( p_fmt, &pic->format ) )
         return NULL;
 
     subpicture_region_t *p_region = subpicture_region_NewInternal( );
     if( !p_region )
         return NULL;
+
+    if (p_fmt == NULL)
+        p_fmt = &pic->format;
 
     video_format_Copy( &p_region->fmt, p_fmt );
     if ( p_fmt->i_chroma == VLC_CODEC_YUVP || p_fmt->i_chroma == VLC_CODEC_RGBP )

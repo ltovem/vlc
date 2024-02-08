@@ -500,17 +500,8 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
     {
         /* Display the feed's image */
         picture_t *p_pic = p_feed->p_pic;
-        video_format_t fmt_out;
 
-        video_format_Copy( &fmt_out, &p_pic->format );
-
-        fmt_out.i_sar_num = fmt_out.i_sar_den = 1;
-        fmt_out.i_width =
-            fmt_out.i_visible_width = p_pic->p[Y_PLANE].i_visible_pitch;
-        fmt_out.i_height =
-            fmt_out.i_visible_height = p_pic->p[Y_PLANE].i_visible_lines;
-
-        p_region = subpicture_region_ForPicture( &fmt_out, p_pic );
+        p_region = subpicture_region_ForPicture( NULL, p_pic );
         if( !p_region )
         {
             msg_Err( p_filter, "cannot allocate SPU region" );
@@ -522,9 +513,8 @@ static subpicture_t *Filter( filter_t *p_filter, vlc_tick_t date )
             vlc_spu_regions_push( &p_spu->regions, p_region );
 
             /* Offset text to display right next to the image */
-            region->i_x += fmt_out.i_visible_width;
+            region->i_x += p_pic->format.i_visible_width;
         }
-        video_format_Clean(&fmt_out);
     }
 
     vlc_mutex_unlock( &p_sys->lock );
