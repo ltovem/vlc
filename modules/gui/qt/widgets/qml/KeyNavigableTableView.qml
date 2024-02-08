@@ -268,7 +268,7 @@ FocusScope {
                          && view.contentY > (row.height - col.height - row.topPadding)
             }
 
-            Column {
+            ColumnLayout {
                 id: col
 
                 anchors.left: parent.left
@@ -277,8 +277,7 @@ FocusScope {
                 Loader {
                     id: headerLoader
 
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    Layout.maximumWidth: parent.width
 
                     sourceComponent: root.header
                 }
