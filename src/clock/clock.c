@@ -416,6 +416,9 @@ vlc_clock_input_start(vlc_clock_t *clock,
     main_clock->wait_sync_ref_priority = UINT_MAX;
     main_clock->wait_sync_ref =
         clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
+
+    if (main_clock->tracer != NULL)
+        vlc_tracer_TraceEvent(main_clock->tracer, "clock", clock->track_str_id, "start");
 }
 
 static vlc_tick_t
@@ -552,7 +555,7 @@ vlc_clock_output_start(vlc_clock_t *clock,
         return;
 
     if (clock->priority >= main_clock->wait_sync_ref_priority)
-        return;
+        goto end;
 
     /**
      * The clock should have already been started, so we have a valid
@@ -625,6 +628,10 @@ vlc_clock_output_start(vlc_clock_t *clock,
 
     main_clock->wait_sync_ref_priority = clock->priority;
     main_clock->wait_sync_ref = clock_point_Create(start_date + delay, first_ts);
+
+end:
+    if (main_clock->tracer != NULL)
+        vlc_tracer_TraceEvent(main_clock->tracer, "clock", clock->track_str_id, "start");
 }
 
 void vlc_clock_Lock(vlc_clock_t *clock)
