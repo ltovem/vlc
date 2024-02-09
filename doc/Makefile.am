@@ -90,6 +90,7 @@ EXTRA_DIST = \
 	translations.txt \
 	demo.sh \
 	doc_helper.sh \
+	ldoc-config.ld \
 	$(NULL)
 
 DISTCLEANFILES = Doxyfile
@@ -101,6 +102,9 @@ Doxyfile: Doxyfile.in $(top_builddir)/config.status
 doc: Doxyfile
 	doxygen
 
+luadoc: ldoc-config.ld
+	ldoc -c '$<' -d $(abs_builddir)/luadoc .
+
 $(CHANGELOGS): Makefile.am
 	if test -e "$(top_srcdir)/.git"; then \
 		y="$@"; y="$${y##ChangeLog-}" ; \
@@ -111,7 +115,7 @@ $(CHANGELOGS): Makefile.am
 	fi
 
 # This one needs to be rebuilt all the time :)
-.PHONY: ChangeLog-2021 changelogs doc
+.PHONY: ChangeLog-2021 changelogs doc luadoc
 
 changelogs: $(CHANGELOGS)
 
