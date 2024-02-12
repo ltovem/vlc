@@ -1,18 +1,18 @@
-diff --git a/src/mkheader.c b/src/mkheader.c
-index 5aeb1e7..121d029 100644
---- a/src/mkheader.c
-+++ b/src/mkheader.c
-@@ -91,23 +91,41 @@ canon_host_triplet (const char *triplet)
+--- libgpg-error/src/mkheader.c.orig	2023-05-15 14:30:51.215213400 +0200
++++ libgpg-error/src/mkheader.c	2023-05-15 14:37:16.624071400 +0200
+@@ -116,6 +116,8 @@ canon_host_triplet (const char *triplet,
      {"armv5-unknown-linux-musleabi"   },
      {"armv6-unknown-linux-musleabihf" },
-
+ 
 +    {"armv7-apple-darwin", "arm-apple-darwin"},
 +
      { NULL }
    };
    int i;
-   const char *lastalias = NULL;
-
+@@ -124,19 +126,34 @@ canon_host_triplet (const char *triplet,
+   char *p;
+   char *result;
+ 
 +    /* Darwin triplet de-versioning */
 +  char *res_triplet = xstrdup (triplet);
 +
@@ -36,11 +36,38 @@ index 5aeb1e7..121d029 100644
          {
            if (!lastalias)
              break; /* Ooops: first entry has no alias.  */
-+          free(res_triplet);
-           return xstrdup (lastalias);
++          xfree (res_triplet);
+           result = xstrdup (lastalias);
+           goto leave;
          }
      }
--  return xstrdup (triplet);
-+
-+  return res_triplet;
- }
+-  for (i=0, s=triplet; *s; s++)
++  for (i=0, s=res_triplet; *s; s++)
+     if (*s == '-')
+       i++;
+   if (i > 2 && !no_vendor_hack)
+@@ -146,9 +163,9 @@ canon_host_triplet (const char *triplet,
+        * The VENDOR part is then in general useless because
+        * KERNEL-SYSTEM is specific enough.  We now do a second pass by
+        * replacing VENDOR with "unknown".  */
+-      char *buf = xmalloc (strlen (triplet) + 7 + 1);
++      char *buf = xmalloc (strlen (res_triplet) + 7 + 1);
+ 
+-      for (p=buf,s=triplet,i=0; *s; s++)
++      for (p=buf,s=res_triplet,i=0; *s; s++)
+         {
+           *p++ = *s;
+           if (*s == '-' && ++i == 1)
+@@ -162,10 +179,11 @@ canon_host_triplet (const char *triplet,
+       *p = 0;
+       result = canon_host_triplet (buf, 1, NULL);
+       xfree (buf);
++      xfree (res_triplet);
+       goto leave;
+     }
+ 
+-  result = xstrdup (triplet);
++  result = res_triplet;
+  leave:
+   /* Find the OS part.  */
+   if (r_os)

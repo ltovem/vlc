@@ -1,0 +1,65 @@
+From 26ac67ddf9107e838a8825b614a9b2b0dda80584 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 09:54:37 +0200
+Subject: [PATCH 1/5] Use a WCHAR string for the temporary file path
+
+The current code would be possibly crash when compiled with the UNICODE define.
+It's better use explicit calls and the wide char variant is the safest.
+---
+ src/estream.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/estream.c b/src/estream.c
+index 17d599f..4c25618 100644
+--- a/src/estream.c
++++ b/src/estream.c
+@@ -5016,28 +5016,28 @@ tmpfd (void)
+ {
+ #ifdef HAVE_W32_SYSTEM
+   int attempts, n;
+-  char buffer[MAX_PATH+9+12+1];
+-# define mystrlen(a) strlen (a)
+-  char *name, *p;
++  WCHAR buffer[MAX_PATH+9+12+1];
++# define mystrlen(a) wcslen (a)
++  WCHAR *name, *p;
+   HANDLE file;
+   int pid = GetCurrentProcessId ();
+   unsigned int value;
+   int i;
+ 
+-  n = GetTempPath (MAX_PATH+1, buffer);
++  n = GetTempPathW (MAX_PATH+1, buffer);
+   if (!n || n > MAX_PATH || mystrlen (buffer) > MAX_PATH)
+     {
+       _set_errno (ENOENT);
+       return -1;
+     }
+   p = buffer + mystrlen (buffer);
+-  strcpy (p, "_estream");
++  wcscpy (p, L"_estream");
+   p += 8;
+   /* We try to create the directory but don't care about an error as
+      it may already exist and the CreateFile would throw an error
+      anyway.  */
+-  CreateDirectory (buffer, NULL);
+-  *p++ = '\\';
++  CreateDirectoryW (buffer, NULL);
++  *p++ = L'\\';
+   name = p;
+   for (attempts=0; attempts < 10; attempts++)
+     {
+@@ -5048,8 +5048,8 @@ tmpfd (void)
+           *p++ = tohex (((value >> 28) & 0x0f));
+           value <<= 4;
+         }
+-      strcpy (p, ".tmp");
+-      file = CreateFile (buffer,
++      wcscpy (p, L".tmp");
++      file = CreateFileW (buffer,
+                          GENERIC_READ | GENERIC_WRITE,
+                          0,
+                          NULL,
+-- 
+2.37.3.windows.1
+

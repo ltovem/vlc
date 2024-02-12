@@ -1,0 +1,35 @@
+From 99ca1f1515d524bf003296cad36ccc6441bded1b Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Tue, 30 May 2023 10:01:03 +0200
+Subject: [PATCH 3/5] Disable GetUserNameW calls in UWP builds
+
+The call is forbidden.
+---
+ src/sysutils.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/sysutils.c b/src/sysutils.c
+index fac72bf..b66d43e 100644
+--- a/src/sysutils.c
++++ b/src/sysutils.c
+@@ -570,6 +570,7 @@ _gpgrt_getusername (void)
+   char *result = NULL;
+ 
+ #ifdef HAVE_W32_SYSTEM
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   wchar_t wtmp[1];
+   wchar_t *wbuf;
+   DWORD wsize = 1;
+@@ -591,6 +592,9 @@ _gpgrt_getusername (void)
+   buf = _gpgrt_wchar_to_utf8 (wbuf, wsize);
+   xfree (wbuf);
+   return buf;
++#else /* !WINAPI_PARTITION_DESKTOP */
++  return NULL;
++#endif /* !WINAPI_PARTITION_DESKTOP */
+ 
+ #else /* !HAVE_W32_SYSTEM */
+ 
+-- 
+2.37.3.windows.1
+

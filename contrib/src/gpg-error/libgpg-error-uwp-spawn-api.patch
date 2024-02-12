@@ -1,0 +1,88 @@
+--- libgpg-error/src/spawn-w32.c.orig	2022-12-16 17:20:45.000000000 +0100
++++ libgpg-error/src/spawn-w32.c	2023-05-15 13:23:52.132267900 +0200
+@@ -229,6 +229,7 @@ build_w32_commandline (const char *pgmna
+ static int
+ create_inheritable_pipe (HANDLE filedes[2], int flags)
+ {
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   HANDLE r, w;
+   SECURITY_ATTRIBUTES sec_attr;
+ 
+@@ -261,6 +262,7 @@ create_inheritable_pipe (HANDLE filedes[
+                     (int)GetLastError ());
+   CloseHandle (r);
+   CloseHandle (w);
++#endif /* !WINAPI_PARTITION_DESKTOP */
+   return -1;
+ }
+ 
+@@ -551,6 +553,7 @@ _gpgrt_spawn_process (const char *pgmnam
+     nullhd[2] = ((flags & GPGRT_SPAWN_KEEP_STDOUT)?
+                  GetStdHandle (STD_ERROR_HANDLE) : w32_open_null (1));
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   memset (&si, 0, sizeof si);
+   si.cb = sizeof (si);
+   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+@@ -576,6 +579,9 @@ _gpgrt_spawn_process (const char *pgmnam
+                       &si,           /* Startup information. */
+                       &pi            /* Returns process information.  */
+                         );
++#else /* !WINAPI_PARTITION_DESKTOP */
++  ret = 0;
++#endif /* !WINAPI_PARTITION_DESKTOP */
+   if (!ret)
+     {
+       _gpgrt_log_error ("CreateProcess failed: ec=%d\n", (int)GetLastError ());
+@@ -622,6 +628,7 @@ _gpgrt_spawn_process (const char *pgmnam
+                     (int) pi.dwProcessId, (int) pi.dwThreadId);
+   _gpgrt_log_debug ("                     outfp=%p errfp=%p\n", outfp, errfp);
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   if ((flags & GPGRT_SPAWN_RUN_ASFW))
+     {
+       /* Fixme: For unknown reasons AllowSetForegroundWindow returns
+@@ -631,6 +638,7 @@ _gpgrt_spawn_process (const char *pgmnam
+         _gpgrt_log_info ("AllowSetForegroundWindow() failed: ec=%d\n",
+                          (int)GetLastError ());
+     }
++#endif /* WINAPI_PARTITION_DESKTOP */
+ 
+   /* Process has been created suspended; resume it now. */
+   _gpgrt_pre_syscall ();
+@@ -687,6 +695,7 @@ _gpgrt_spawn_process_fd (const char *pgm
+   if (err)
+     return err;
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   memset (&si, 0, sizeof si);
+   si.cb = sizeof (si);
+   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+@@ -713,6 +722,9 @@ _gpgrt_spawn_process_fd (const char *pgm
+                       &si,           /* Startup information. */
+                       &pi            /* Returns process information.  */
+                       );
++#else /* !WINAPI_PARTITION_DESKTOP */
++  ret = 0;
++#endif /* !WINAPI_PARTITION_DESKTOP */
+   if (!ret)
+     {
+       _gpgrt_log_error ("CreateProcess failed: ec=%d\n", (int)GetLastError ());
+@@ -873,6 +885,7 @@ _gpgrt_spawn_process_detached (const cha
+   if (err)
+     return err;
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   /* Start the process.  */
+   memset (&si, 0, sizeof si);
+   si.cb = sizeof (si);
+@@ -896,6 +909,9 @@ _gpgrt_spawn_process_detached (const cha
+                       &si,           /* Startup information. */
+                       &pi            /* Returns process information.  */
+                        );
++#else /* !WINAPI_PARTITION_DESKTOP */
++  ret = 0;
++#endif /* !WINAPI_PARTITION_DESKTOP */
+   if (!ret)
+     {
+       _gpgrt_log_error ("CreateProcess(detached) failed: ec=%d\n",

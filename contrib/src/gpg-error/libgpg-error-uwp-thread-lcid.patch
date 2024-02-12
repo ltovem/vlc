@@ -1,0 +1,15 @@
+--- libgpg-error/src/w32-gettext.c.orig	2022-03-04 13:44:26.000000000 +0100
++++ libgpg-error/src/w32-gettext.c	2023-05-15 12:49:49.542674000 +0200
+@@ -648,8 +648,12 @@ my_nl_locale_name (const char *categoryn
+       if (retval != NULL && retval[0] != '\0')
+         return retval;
+ 
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+       /* Use native Win32 API locale ID.  */
+       lcid = GetThreadLocale ();
++#else /* !WINAPI_PARTITION_DESKTOP */
++      lcid = LocaleNameToLCID(LOCALE_NAME_USER_DEFAULT, 0);
++#endif /* !WINAPI_PARTITION_DESKTOP */
+       /* Strip off the sorting rules, keep only the language part.  */
+       langid = LANGIDFROMLCID (lcid);
+     }

@@ -1,0 +1,20 @@
+--- libgpg-error/src/w32-reg.c.orig	2022-08-02 14:53:50.000000000 +0200
++++ libgpg-error/src/w32-reg.c	2023-05-15 13:05:50.151544600 +0200
+@@ -46,6 +46,7 @@ char *
+ _gpgrt_w32_reg_query_string (const char *root, const char *dir,
+                              const char *name)
+ {
++#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+   HKEY root_key, key_handle;
+   DWORD n1, nbytes, type;
+   char *result = NULL;
+@@ -164,6 +165,9 @@ _gpgrt_w32_reg_query_string (const char
+  leave:
+   RegCloseKey (key_handle);
+   return result;
++#else  /* !WINAPI_PARTITION_DESKTOP */
++  return NULL;
++#endif  /* !WINAPI_PARTITION_DESKTOP */
+ }
+ 
+ 
