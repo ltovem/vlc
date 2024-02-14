@@ -50,6 +50,7 @@ static void test_media_player_record(const char** argv, int argc)
     libvlc_media_player_t *mp = libvlc_media_player_new (vlc, LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                                          &recording_cbs, &ctx);
     assert (mp != NULL);
+    mp_event_ctx_set_mp(&ctx, mp);
     libvlc_media_player_set_media (mp, md);
     libvlc_media_release (md);
 

@@ -117,6 +117,7 @@ static void test_media_player_set_media(const char** argv, int argc)
         libvlc_media_player_new (vlc, LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                  &state_cbs, &ctx);
     assert (mp != NULL);
+    mp_event_ctx_set_mp(&ctx, mp);
 
     libvlc_media_player_set_media (mp, md);
 
@@ -152,6 +153,7 @@ static void test_media_player_play_stop(const char** argv, int argc)
                                              LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                              &state_cbs, &ctx);
     assert (mi != NULL);
+    mp_event_ctx_set_mp(&ctx, mi);
 
     libvlc_media_release (md);
 
@@ -185,6 +187,7 @@ static void test_media_player_pause_stop(const char** argv, int argc)
                                              LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                              &state_cbs, &ctx);
     assert (mi != NULL);
+    mp_event_ctx_set_mp(&ctx, mi);
 
     libvlc_media_release (md);
 
@@ -315,6 +318,7 @@ static void test_media_player_tracks(const char** argv, int argc)
         libvlc_media_player_new (vlc, LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                  &tracks_cbs, &ctx);
     assert (mp != NULL);
+    mp_event_ctx_set_mp(&ctx, mp);
     libvlc_media_player_set_media (mp, md);
     libvlc_media_release (md);
 
@@ -520,6 +524,7 @@ static void test_media_player_programs(const char** argv, int argc)
         libvlc_media_player_new (vlc, LIBVLC_MEDIA_PLAYER_CBS_VER_LATEST,
                                  &programs_cbs, &ctx);
     assert (mp != NULL);
+    mp_event_ctx_set_mp(&ctx, mp);
     libvlc_media_player_set_media (mp, md);
     libvlc_media_release (md);
 
