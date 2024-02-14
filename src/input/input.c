@@ -69,9 +69,8 @@ static  int             Init    ( input_thread_t *p_input );
 static void             End     ( input_thread_t *p_input );
 static void             MainLoop( input_thread_t *p_input, bool b_interactive );
 
-static inline int ControlPop( input_thread_t *, int *, input_control_param_t *, vlc_tick_t i_deadline, bool b_postpone_seek );
+static inline int ControlPop( input_thread_t *, int *, input_control_param_t *, vlc_tick_t i_deadline );
 static void       ControlRelease( int i_type, const input_control_param_t *p_param );
-static bool       ControlIsSeekRequest( int i_type );
 static bool       Control( input_thread_t *, int, input_control_param_t );
 static void       ControlPause( input_thread_t *, vlc_tick_t );
 
@@ -632,7 +631,6 @@ static void MainLoopStatistics( input_thread_t *p_input )
 static void MainLoop( input_thread_t *p_input, bool b_interactive )
 {
     vlc_tick_t i_intf_update = 0;
-    vlc_tick_t i_last_seek_mdate = 0;
 
     if( b_interactive && var_InheritBool( p_input, "start-paused" ) )
         ControlPause( p_input, vlc_tick_now() );
@@ -713,41 +711,16 @@ static void MainLoop( input_thread_t *p_input, bool b_interactive )
         {
             vlc_tick_t i_deadline = i_wakeup;
 
-            /* Postpone seeking until ES buffering is complete or at most
-             * 125 ms. */
-            bool b_postpone = es_out_GetBuffering( input_priv(p_input)->p_es_out )
-                            && !input_priv(p_input)->master->b_eof;
-            if( b_postpone )
-            {
-                vlc_tick_t now = vlc_tick_now();
-
-                /* Recheck ES buffer level every 20 ms when seeking */
-                if( now < i_last_seek_mdate + VLC_TICK_FROM_MS(125)
-                 && (i_deadline < 0 || i_deadline > now + VLC_TICK_FROM_MS(20)) )
-                    i_deadline = now + VLC_TICK_FROM_MS(20);
-                else
-                    b_postpone = false;
-            }
-
             int i_type;
             input_control_param_t param;
-
-            if( ControlPop( p_input, &i_type, &param, i_deadline, b_postpone ) )
-            {
-                if( b_postpone )
-                    continue;
+            if( ControlPop( p_input, &i_type, &param, i_deadline ) )
                 break; /* Wake-up time reached */
-            }
 
 #ifndef NDEBUG
             msg_Dbg( p_input, "control type=%d", i_type );
 #endif
             if( Control( p_input, i_type, param ) )
-            {
-                if( ControlIsSeekRequest( i_type ) )
-                    i_last_seek_mdate = vlc_tick_now();
                 i_intf_update = 0;
-            }
 
             /* Update the wakeup time */
             if( i_wakeup != 0 )
@@ -1547,13 +1520,12 @@ int input_ControlPush( input_thread_t *p_input,
 
 static inline int ControlPop( input_thread_t *p_input,
                               int *pi_type, input_control_param_t *p_param,
-                              vlc_tick_t i_deadline, bool b_postpone_seek )
+                              vlc_tick_t i_deadline )
 {
     input_thread_private_t *p_sys = input_priv(p_input);
 
     vlc_mutex_lock( &p_sys->lock_control );
-    while( p_sys->i_control <= 0 ||
-           ( b_postpone_seek && ControlIsSeekRequest( p_sys->control[0].i_type ) ) )
+    while( p_sys->i_control <= 0 )
     {
         if( p_sys->is_stopped )
         {
@@ -1585,30 +1557,6 @@ static inline int ControlPop( input_thread_t *p_input,
     vlc_mutex_unlock( &p_sys->lock_control );
 
     return VLC_SUCCESS;
-}
-static bool ControlIsSeekRequest( int i_type )
-{
-    switch( i_type )
-    {
-    case INPUT_CONTROL_SET_POSITION:
-    case INPUT_CONTROL_SET_TIME:
-    case INPUT_CONTROL_SET_TITLE:
-    case INPUT_CONTROL_SET_TITLE_NEXT:
-    case INPUT_CONTROL_SET_TITLE_PREV:
-    case INPUT_CONTROL_SET_SEEKPOINT:
-    case INPUT_CONTROL_SET_SEEKPOINT_NEXT:
-    case INPUT_CONTROL_SET_SEEKPOINT_PREV:
-    case INPUT_CONTROL_NAV_ACTIVATE:
-    case INPUT_CONTROL_NAV_UP:
-    case INPUT_CONTROL_NAV_DOWN:
-    case INPUT_CONTROL_NAV_LEFT:
-    case INPUT_CONTROL_NAV_RIGHT:
-    case INPUT_CONTROL_NAV_POPUP:
-    case INPUT_CONTROL_NAV_MENU:
-        return true;
-    default:
-        return false;
-    }
 }
 
 static void ControlRelease( int i_type, const input_control_param_t *p_param )
