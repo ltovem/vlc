@@ -765,6 +765,17 @@ error:
     return result;
 }
 
+const vlc_chroma_description_t *NVDECChromaDesc(vlc_video_context *vctx, vlc_fourcc_t chroma)
+{
+    VLC_UNUSED(vctx);
+    assert(is_nvdec_opaque(chroma));
+    return vlc_fourcc_GetChromaDescription(NVDECToVlcChroma(chroma));
+}
+
+static const struct vlc_video_context_operations nvdec_ops = {
+    NULL, NVDECChromaDesc,
+};
+
 static int OpenDecoder(vlc_object_t *p_this)
 {
     decoder_t *p_dec = (decoder_t *) p_this;
@@ -845,7 +856,7 @@ static int OpenDecoder(vlc_object_t *p_this)
             hxxx_helper_clean(&p_sys->hh);
         goto early_exit;
     }
-    p_sys->vctx_out = vlc_video_context_Create( dec_device, VLC_VIDEO_CONTEXT_NVDEC, 0, NULL );
+    p_sys->vctx_out = vlc_video_context_Create( dec_device, VLC_VIDEO_CONTEXT_NVDEC, 0, &nvdec_ops );
     vlc_decoder_device_Release(dec_device);
     if (unlikely(p_sys->vctx_out == NULL))
     {

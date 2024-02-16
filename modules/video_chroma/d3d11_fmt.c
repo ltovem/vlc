@@ -948,8 +948,19 @@ void D3D11_LogResources(d3d11_decoder_device_t *dev_sys)
 #endif
 }
 
+static const vlc_chroma_description_t *D3D11ChromaDesc(vlc_video_context * vctx, vlc_fourcc_t chroma)
+{
+    assert(is_d3d11_opaque(chroma));
+
+    const d3d11_video_context_t *priv = GetD3D11ContextPrivate(vctx);
+    chroma = DxgiFormatFourcc(priv->format);
+    if (unlikely(chroma == 0)) // doesn't correspond to anything we know
+        return NULL;
+    return vlc_fourcc_GetChromaDescription(chroma);
+}
+
 const struct vlc_video_context_operations d3d11_vctx_ops = {
-    NULL,
+    NULL, D3D11ChromaDesc,
 };
 
 vlc_video_context *D3D11CreateVideoContext(vlc_decoder_device *dec_dev, DXGI_FORMAT vctx_fmt)

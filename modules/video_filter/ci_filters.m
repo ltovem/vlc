@@ -635,7 +635,7 @@ Open(filter_t *filter, char const *psz_filter)
     else
     {
         static const struct vlc_video_context_operations ops = {
-            cvpx_video_context_Destroy,
+            cvpx_video_context_Destroy, NULL,
         };
         vlc_decoder_device *dec_dev =
             filter_HoldDecoderDeviceType(filter,

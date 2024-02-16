@@ -40,7 +40,6 @@
 #include <new>
 
 #include "../../video_chroma/d3d11_fmt.h"
-#include "../../hw/nvdec/nvdec_fmt.h"
 
 #include "d3d11_quad.h"
 #include "d3d11_shaders.h"
@@ -909,15 +908,8 @@ static int SetupOutputFormat(vout_display_t *vd, video_format_t *fmt, vlc_video_
     {
         uint8_t bits_per_channel;
         uint8_t widthDenominator, heightDenominator;
-        vlc_fourcc_t cpu_chroma;
-        if (is_d3d11_opaque(fmt->i_chroma))
-            cpu_chroma = DxgiFormatFourcc(vtcx_sys->format);
-        else if (is_nvdec_opaque(fmt->i_chroma))
-            cpu_chroma = NVDECToVlcChroma(fmt->i_chroma);
-        else
-            cpu_chroma = fmt->i_chroma;
 
-        const auto *p_format = vlc_fourcc_GetChromaDescription(cpu_chroma);
+        const auto *p_format = vlc_video_context_ChromaDescription(vctx, fmt->i_chroma);
         if (unlikely(p_format == NULL || p_format->plane_count == 0))
         {
             bits_per_channel = 8;

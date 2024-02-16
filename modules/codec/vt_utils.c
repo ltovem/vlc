@@ -512,7 +512,7 @@ vlc_video_context_CreateCVPX(vlc_decoder_device *device,
 {
     static const struct vlc_video_context_operations vctx_ops =
     {
-        cvpx_video_context_Destroy,
+        cvpx_video_context_Destroy, NULL,
     };
     vlc_video_context *vctx =
         vlc_video_context_Create(device, VLC_VIDEO_CONTEXT_CVPX,

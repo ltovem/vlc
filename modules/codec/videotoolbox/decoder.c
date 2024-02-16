@@ -1274,7 +1274,7 @@ CreateVideoContext(decoder_t *p_dec)
 
     static const struct vlc_video_context_operations ops =
     {
-        pic_pacer_Destroy,
+        pic_pacer_Destroy, NULL,
     };
     p_sys->vctx =
         vlc_video_context_CreateCVPX(dec_dev,

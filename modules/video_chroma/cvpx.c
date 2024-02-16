@@ -341,7 +341,7 @@ static int Open(filter_t *p_filter)
             goto error;
         }
         const static struct vlc_video_context_operations vt_vctx_ops = {
-            NULL,
+            NULL, NULL,
         };
         p_filter->vctx_out =
             vlc_video_context_CreateCVPX(dec_dev, CVPX_VIDEO_CONTEXT_DEFAULT,

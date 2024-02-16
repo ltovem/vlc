@@ -631,7 +631,7 @@ static picture_pool_t *OutputPoolAlloc(vlc_object_t *obj,
 }
 
 const struct vlc_video_context_operations vdpau_vctx_ops = {
-    NULL,
+    NULL, NULL,
 };
 
 static void OutputClose(filter_t *filter)
