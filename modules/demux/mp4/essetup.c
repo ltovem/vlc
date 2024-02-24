@@ -44,7 +44,7 @@ static void CopyExtradata( const uint8_t *p_extra, size_t i_extra,
     if( i_extra > 0 && !fmt->i_extra )
     {
         fmt->p_extra = malloc( i_extra );
-        if( i_extra )
+        if( fmt->p_extra )
         {
             fmt->i_extra = i_extra;
             memcpy( fmt->p_extra, p_extra, i_extra );
@@ -132,9 +132,9 @@ static void SetupESDS( demux_t *p_demux, const mp4_track_t *p_track,
                    p_fmt );
 
     if( p_fmt->i_codec == VLC_CODEC_SPU &&
-            p_fmt->i_extra >= sizeof(p_fmt->subs.spu.palette) )
+            p_fmt->i_extra >= (int)sizeof(p_fmt->subs.spu.palette) )
     {
-        for( int i = 0; i < ARRAY_SIZE(p_fmt->subs.spu.palette); i++ )
+        for( size_t i = 0; i < ARRAY_SIZE(p_fmt->subs.spu.palette); i++ )
         {
             p_fmt->subs.spu.palette[i] = GetDWBE((char*)p_fmt->p_extra + i * 4);
         }
