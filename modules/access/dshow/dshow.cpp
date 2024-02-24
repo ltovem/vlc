@@ -441,9 +441,7 @@ static int CommonOpen( vlc_object_t *p_this, access_sys_t *p_sys,
     free( psz_val );
 
     /* Chroma */
-    psz_val = var_InheritString( p_this, "dshow-chroma" );
-    i_chroma = vlc_fourcc_GetCodecFromString( VIDEO_ES, psz_val );
-    free( psz_val );
+    i_chroma = var_InheritCodecFourCC( p_this, VIDEO_ES, "dshow-chroma" );
 
     var_Create( p_this, "dshow-fps", VLC_VAR_FLOAT | VLC_VAR_DOINHERIT );
     var_Create( p_this, "dshow-tuner-channel",

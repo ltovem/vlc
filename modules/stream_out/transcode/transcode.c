@@ -250,15 +250,12 @@ static void SetAudioEncoderConfig( sout_stream_t *p_stream, transcode_encoder_co
     }
     free( psz_string );
 
-    psz_string = var_GetString( p_stream, SOUT_CFG_PREFIX "acodec" );
-    p_cfg->i_codec = 0;
-    if( psz_string && *psz_string )
+    p_cfg->i_codec = var_GetCodecFourCC( VLC_OBJECT(p_stream), AUDIO_ES,
+                                         SOUT_CFG_PREFIX "acodec" );
+    if( p_cfg->i_codec )
     {
-        p_cfg->i_codec = vlc_fourcc_GetCodecFromString( AUDIO_ES, psz_string );
-        msg_Dbg( p_stream, "Checking codec mapping for %s got %4.4s ",
-                            psz_string, (char*)&p_cfg->i_codec);
+        msg_Dbg( p_stream, "Audio codec %4.4s ", (char*)&p_cfg->i_codec);
     }
-    free( psz_string );
 
     p_cfg->audio.i_bitrate = var_GetInteger( p_stream, SOUT_CFG_PREFIX "ab" );
     if( p_cfg->audio.i_bitrate < 4000 )
@@ -299,14 +296,12 @@ static void SetVideoEncoderConfig( sout_stream_t *p_stream, transcode_encoder_co
     }
     free( psz_string );
 
-    psz_string = var_GetString( p_stream, SOUT_CFG_PREFIX "vcodec" );
-    if( psz_string && *psz_string )
+    p_cfg->i_codec = var_GetCodecFourCC( VLC_OBJECT(p_stream), VIDEO_ES,
+                                         SOUT_CFG_PREFIX "vcodec" );
+    if( p_cfg->i_codec )
     {
-        p_cfg->i_codec = vlc_fourcc_GetCodecFromString( VIDEO_ES, psz_string );
-        msg_Dbg( p_stream, "Checking video codec mapping for %s got %4.4s ",
-                 psz_string, (char*)&p_cfg->i_codec);
+        msg_Dbg( p_stream, "Video codec %4.4s ", (char*)&p_cfg->i_codec);
     }
-    free( psz_string );
 
     p_cfg->video.i_bitrate = var_GetInteger( p_stream, SOUT_CFG_PREFIX "vb" );
     if( p_cfg->video.i_bitrate < 16000 )
@@ -339,14 +334,12 @@ static void SetSPUEncoderConfig( sout_stream_t *p_stream, transcode_encoder_conf
     }
     free( psz_string );
 
-    psz_string = var_GetString( p_stream, SOUT_CFG_PREFIX "scodec" );
-    if( psz_string && *psz_string )
+    p_cfg->i_codec = var_GetCodecFourCC( VLC_OBJECT(p_stream), SPU_ES,
+                                         SOUT_CFG_PREFIX "scodec" );
+    if( p_cfg->i_codec )
     {
-        p_cfg->i_codec = vlc_fourcc_GetCodecFromString( SPU_ES, psz_string );
-        msg_Dbg( p_stream, "Checking spu codec mapping for %s got %4.4s ", psz_string, (char*)&p_cfg->i_codec);
+        msg_Dbg( p_stream, "SPU codec %4.4s ", (char*)&p_cfg->i_codec);
     }
-    free( psz_string );
-
 }
 /*****************************************************************************
  * Control

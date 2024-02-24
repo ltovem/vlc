@@ -73,14 +73,10 @@ static void Open(vout_display_t *vd, video_format_t *fmt)
 {
     /* p_vd->info is not modified */
 
-    char *chroma = var_InheritString(vd, "dummy-chroma");
-    if (chroma) {
-        vlc_fourcc_t fcc = vlc_fourcc_GetCodecFromString(VIDEO_ES, chroma);
-        if (fcc != 0) {
-            msg_Dbg(vd, "forcing chroma 0x%.8x (%4.4s)", fcc, (char*)&fcc);
-            fmt->i_chroma = fcc;
-        }
-        free(chroma);
+    vlc_fourcc_t fcc = var_InheritCodecFourCC(VLC_OBJECT(vd), VIDEO_ES, "dummy-chroma");
+    if (fcc != 0) {
+        msg_Dbg(vd, "forcing chroma 0x%.8x (%4.4s)", fcc, (char*)&fcc);
+        fmt->i_chroma = fcc;
     }
 }
 

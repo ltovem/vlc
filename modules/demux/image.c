@@ -720,9 +720,7 @@ static int Open(vlc_object_t *object)
 
     block_t *data = Load(demux);
     if (data && var_InheritBool(demux, "image-decode")) {
-        char *string = var_InheritString(demux, "image-chroma");
-        vlc_fourcc_t chroma = vlc_fourcc_GetCodecFromString(VIDEO_ES, string);
-        free(string);
+        vlc_fourcc_t chroma = var_InheritCodecFourCC(object, VIDEO_ES, "image-chroma");
 
         data = Decode(demux, &fmt, chroma, data);
     }

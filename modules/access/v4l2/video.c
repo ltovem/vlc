@@ -687,20 +687,6 @@ static size_t vlc_v4l2_fmt_rank (const vlc_v4l2_fmt_t *fmt)
     return d;
 }
 
-static vlc_fourcc_t var_InheritFourCC (vlc_object_t *obj, const char *varname)
-{
-    char *str = var_InheritString (obj, varname);
-    if (str == NULL)
-        return 0;
-
-    vlc_fourcc_t fourcc = vlc_fourcc_GetCodecFromString (VIDEO_ES, str);
-    if (fourcc == 0)
-        msg_Err (obj, "invalid codec %s", str);
-    free (str);
-    return fourcc;
-}
-#define var_InheritFourCC(o, v) var_InheritFourCC(VLC_OBJECT(o), v)
-
 static void GetAR (int fd, unsigned *restrict num, unsigned *restrict den)
 {
     struct v4l2_cropcap cropcap = { .type = V4L2_BUF_TYPE_VIDEO_CAPTURE };
@@ -732,7 +718,9 @@ int SetupVideo(vlc_object_t *obj, int fd, uint32_t caps,
 
     /* Picture format negotiation */
     const vlc_v4l2_fmt_t *selected = NULL;
-    vlc_fourcc_t reqfourcc = var_InheritFourCC(obj, CFG_PREFIX"chroma");
+    vlc_fourcc_t reqfourcc = var_InheritCodecFourCC(obj, VIDEO_ES, CFG_PREFIX"chroma");
+    if (reqfourcc == 0)
+        msg_Err (obj, "invalid chroma");
     bool native = false;
 
     for (struct v4l2_fmtdesc codec = { .type = V4L2_BUF_TYPE_VIDEO_CAPTURE };

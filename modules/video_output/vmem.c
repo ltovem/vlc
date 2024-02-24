@@ -164,9 +164,7 @@ static int Open(vout_display_t *vd,
         fmt.i_height = heights[0];
 
     } else {
-        char *chroma = var_InheritString(vd, "vmem-chroma");
-        fmt.i_chroma = vlc_fourcc_GetCodecFromString(VIDEO_ES, chroma);
-        free(chroma);
+        fmt.i_chroma = var_InheritCodecFourCC(VLC_OBJECT(vd), VIDEO_ES, "vmem-chroma");
 
         fmt.i_width  = var_InheritInteger(vd, "vmem-width");
         fmt.i_height = var_InheritInteger(vd, "vmem-height");
