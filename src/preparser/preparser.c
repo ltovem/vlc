@@ -209,6 +209,7 @@ OnArtFetchEnded(input_item_t *item, bool fetched, void *userdata)
 
 static const input_fetcher_callbacks_t input_fetcher_callbacks = {
     .on_art_fetch_ended = OnArtFetchEnded,
+    .on_attachments_added = OnParserAttachmentsAdded,
 };
 
 static void
