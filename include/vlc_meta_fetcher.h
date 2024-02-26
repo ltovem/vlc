@@ -21,6 +21,8 @@
 #ifndef VLC_META_FETCHER_H
 #define VLC_META_FETCHER_H 1
 
+#include <vlc_input.h>
+
 typedef enum meta_fetcher_scope_t
 {
     FETCHER_SCOPE_LOCAL   = 0x01,
@@ -33,6 +35,22 @@ typedef struct meta_fetcher_t
     struct vlc_object_t obj;
     input_item_t *p_item;
     meta_fetcher_scope_t e_scope;
+    input_attachment_t *attachment_artwork;
 } meta_fetcher_t;
+
+static inline int
+meta_fetcher_SetAttachmentArtwork(meta_fetcher_t *fetcher, const char *mime,
+                                  const void *data, size_t data_size)
+{
+    fetcher->attachment_artwork =
+        vlc_input_attachment_New("meta_fetcher_artwork", mime, NULL, data,
+                                 data_size);
+    if (fetcher->attachment_artwork == NULL)
+        return VLC_ENOMEM;
+
+    input_item_SetArtworkURL(fetcher->p_item, "attachment://meta_fetcher_artwork");
+
+    return VLC_SUCCESS;
+}
 
 #endif

@@ -233,6 +233,15 @@ static int InvokeModule(struct task *task, input_item_t* item,
 
     module_t* mf_module = module_need( mf, type, NULL, false );
 
+    if (mf->attachment_artwork != NULL)
+    {
+        if (task->cbs != NULL && task->cbs->on_attachments_added != NULL)
+            task->cbs->on_attachments_added(item, &mf->attachment_artwork, 1,
+                                            task->userdata);
+
+        vlc_input_attachment_Release(mf->attachment_artwork);
+    }
+
     if( mf_module )
         module_unneed( mf, mf_module );
 
