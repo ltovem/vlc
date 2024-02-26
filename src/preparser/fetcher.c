@@ -219,9 +219,10 @@ static void AddAlbumCache( input_fetcher_t* fetcher, input_item_t* item,
     free( key );
 }
 
-static int InvokeModule( input_fetcher_t* fetcher, input_item_t* item,
-                         int scope, char const* type )
+static int InvokeModule(struct task *task, input_item_t* item,
+                        int scope, char const* type )
 {
+    input_fetcher_t *fetcher = task->fetcher;
     meta_fetcher_t* mf = vlc_custom_create( fetcher->owner,
                                             sizeof( *mf ), type );
     if( unlikely( !mf ) )
@@ -260,9 +261,9 @@ static int CheckArt( input_item_t* item )
     return error;
 }
 
-static int SearchArt( input_fetcher_t* fetcher, input_item_t* item, int scope)
+static int SearchArt(struct task *task, input_item_t* item, int scope)
 {
-    InvokeModule( fetcher, item, scope, "art finder" );
+    InvokeModule(task, item, scope, "art finder");
     return CheckArt( item );
 }
 
@@ -272,7 +273,7 @@ static int SearchByScope(struct task *task, int scope)
     input_item_t* item = task->item;
 
     if( CheckMeta( item ) &&
-        InvokeModule( fetcher, item, scope, "meta fetcher" ) )
+        InvokeModule( task, item, scope, "meta fetcher" ) )
     {
         return VLC_EGENERIC;
     }
@@ -281,7 +282,7 @@ static int SearchByScope(struct task *task, int scope)
         ! ReadAlbumCache( fetcher, item )          ||
         ! input_FindArtInCacheUsingItemUID( item ) ||
         ! input_FindArtInCache( item )             ||
-        ! SearchArt( fetcher, item, scope ) )
+        ! SearchArt(task, item, scope ) )
     {
         AddAlbumCache( fetcher, task->item, false );
         int ret = Submit(fetcher, fetcher->executor_downloader, item,
