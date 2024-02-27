@@ -725,7 +725,7 @@ static int CreateAndStartHandlerThread(
     vlc_sem_init(&handler->sem_ready, 0);
 
     /* The looper is created in the target thread */
-    int ret = vlc_clone(&handler->thread, HandlerThread, handler, VLC_THREAD_PRIORITY_LOW);
+    int ret = vlc_clone(&handler->thread, HandlerThread, handler);
     if (ret != VLC_SUCCESS)
         goto error;
 
