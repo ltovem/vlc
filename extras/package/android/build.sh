@@ -7,8 +7,8 @@ VLC_MIN_SDK=${ANDROID_API}
 VLC_SDK=${ANDROID_API}
 
 VLC_BUILD_TOOLS_VERSION="30.0.3"
-VLC_BUILD_ARCH="darwin-x86_64"
-VLC_HOST_ARCH="armv7a"
+VLC_BUILD_ARCH="linux-x86_64"
+VLC_HOST_ARCH="aarch64"
 
 TRIPLET_HOST="${VLC_HOST_ARCH}-linux-android"
 
@@ -29,16 +29,20 @@ export PKG_CONFIG_SYSROOT_DIR=""
 
 export CC=${VLC_HOST_ARCH}-linux-android${ABI_SUFFIX}${VLC_MIN_SDK}-clang
 export CXX=${VLC_HOST_ARCH}-linux-android${ABI_SUFFIX}${VLC_MIN_SDK}-clang++
-export AR="${TOOL_PREFIX}ar"
-export AS="${TOOL_PREFIX}as"
-export RANLIB="${TOOL_PREFIX}ranlib"
+export AR="llvm-ar"
+export AS="llvm-as"
+export RANLIB="llvm-ranlib"
 
-if [ ! -f ${VLC_BUILD_DIR}/config.h ]; then
 ${VLC_SRC_DIR}/configure \
+    CC="$(command -v "${CC}")" \
+    CXX="$(command -v "${CXX}")" \
+    AR="$(command -v "${AR}")" \
+    AS="$(command -v "${AS}")" \
+    RANLIB="$(command -v "${RANLIB}")" \
+    CFLAGS="-mno-outline-atomics" \
+    CXXFLAGS="-mno-outline-atomics" \
     --host=${VLC_HOST_ARCH}-linux-android${ABI_SUFFIX}${ANDROID_API} \
     --with-android-jar=${ANDROID_SDK}/platforms/android-${VLC_SDK}/android.jar \
     --disable-vlc --disable-chromecast --disable-avcodec --disable-avformat \
-    --disable-a52 --disable-swscale --disable-lua --disable-xcb --disable-v4l2
-fi
-
-V=1 VERBOSE=1 make
+    --disable-a52 --disable-swscale --disable-lua --disable-xcb --disable-v4l2 \
+    --disable-alsa
