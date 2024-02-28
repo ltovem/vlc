@@ -49,7 +49,7 @@ struct rtp_pcm {
     uint8_t channel_map[RTP_MAX_CHANS];
 };
 
-static void *rtp_pcm_init(struct vlc_rtp_pt *pt)
+static int rtp_pcm_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_pcm *sys = pt->opaque;
     es_format_t fmt;
@@ -59,7 +59,8 @@ static void *rtp_pcm_init(struct vlc_rtp_pt *pt)
     fmt.audio.i_physical_channels = sys->channel_mask;
     fmt.audio.i_channels = sys->channel_count;
     aout_FormatPrepare(&fmt.audio);
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static void rtp_pcm_destroy(struct vlc_rtp_pt *pt, void *data)
@@ -140,7 +141,7 @@ static const struct vlc_rtp_pt_operations rtp_pcm_ops = {
 };
 
 
-static void *rtp_g722_init(struct vlc_rtp_pt *pt)
+static int rtp_g722_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_pcm *sys = pt->opaque;
     es_format_t fmt;
@@ -152,7 +153,8 @@ static void *rtp_g722_init(struct vlc_rtp_pt *pt)
     fmt.audio.i_physical_channels = sys->channel_mask;
     fmt.audio.i_channels = sys->channel_count;
     aout_FormatPrepare(&fmt.audio);
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static const struct vlc_rtp_pt_operations rtp_g722_ops = {
@@ -160,7 +162,7 @@ static const struct vlc_rtp_pt_operations rtp_g722_ops = {
 };
 
 
-static void *rtp_g726_init(struct vlc_rtp_pt *pt)
+static int rtp_g726_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_pcm *sys = pt->opaque;
     es_format_t fmt;
@@ -172,7 +174,8 @@ static void *rtp_g726_init(struct vlc_rtp_pt *pt)
     /* By VLC convention, the decoder knows the bit depth from the bit rate. */
     fmt.i_bitrate = sys->sample_bits * sys->channel_count * 8000;
     aout_FormatPrepare(&fmt.audio);
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static const struct vlc_rtp_pt_operations rtp_g726_ops = {

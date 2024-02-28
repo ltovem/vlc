@@ -47,11 +47,11 @@ struct rtp_mpa {
     struct vlc_rtp_es *es;
 };
 
-static void *rtp_mpa_init(struct vlc_rtp_pt *pt)
+static int rtp_mpa_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_mpa *sys = malloc(sizeof (*sys));
     if (unlikely(sys == NULL))
-        return NULL;
+        return VLC_ENOMEM;
 
     sys->frags = NULL;
     sys->frag_end = &sys->frags;
@@ -61,7 +61,8 @@ static void *rtp_mpa_init(struct vlc_rtp_pt *pt)
 
     es_format_Init(&fmt, AUDIO_ES, VLC_CODEC_MPGA);
     sys->es = vlc_rtp_pt_request_es(pt, &fmt);
-    return sys;
+    *ppriv = sys;
+    return VLC_SUCCESS;
 }
 
 static void rtp_mpa_send(struct rtp_mpa *sys)
@@ -211,11 +212,11 @@ struct rtp_mpv {
     struct vlc_rtp_es *es;
 };
 
-static void *rtp_mpv_init(struct vlc_rtp_pt *pt)
+static int rtp_mpv_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_mpv *sys = malloc(sizeof (*sys));
     if (unlikely(sys == NULL))
-        return NULL;
+        return VLC_ENOMEM;
 
     sys->frags = NULL;
     sys->frag_end = &sys->frags;
@@ -225,7 +226,8 @@ static void *rtp_mpv_init(struct vlc_rtp_pt *pt)
 
     es_format_Init(&fmt, VIDEO_ES, VLC_CODEC_MPGV);
     sys->es = vlc_rtp_pt_request_es(pt, &fmt);
-    return sys;
+    *ppriv = sys;
+    return VLC_SUCCESS;
 }
 
 static void rtp_mpv_send(struct rtp_mpv *sys)
@@ -337,9 +339,10 @@ static const struct vlc_rtp_pt_operations rtp_mpv_ops = {
 };
 
 /* video/MP1S, video/MP2P: MPEG-1/2 system streams */
-static void *rtp_mp2p_init(struct vlc_rtp_pt *pt)
+static int rtp_mp2p_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
-    return vlc_rtp_pt_request_mux(pt, "ps");
+    *ppriv = vlc_rtp_pt_request_mux(pt, "ps");
+    return VLC_SUCCESS;
 }
 
 static void rtp_mp2p_destroy(struct vlc_rtp_pt *pt, void *data)
@@ -363,9 +366,10 @@ static const struct vlc_rtp_pt_operations rtp_mp2p_ops = {
 };
 
 /* video/MP2T: MPEG-2 Transport Stream */
-static void *rtp_mp2t_init(struct vlc_rtp_pt *pt)
+static int rtp_mp2t_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
-    return vlc_rtp_pt_request_mux(pt, "ts");
+    *ppriv = vlc_rtp_pt_request_mux(pt, "ts");
+    return VLC_SUCCESS;
 }
 
 static void rtp_mp2t_destroy(struct vlc_rtp_pt *pt, void *data)

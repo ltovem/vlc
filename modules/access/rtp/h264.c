@@ -111,12 +111,12 @@ static block_t * h264_fillextradata (const char *psz)
     return xps;
 }
 
-static void *rtp_h264_init(struct vlc_rtp_pt *pt)
+static int rtp_h264_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     block_t *sdpparams = pt->opaque;
     struct rtp_h26x_sys *sys = malloc(sizeof(*sys));
     if(!sys)
-        return NULL;
+        return VLC_ENOMEM;
     rtp_h26x_init(sys);
 
     es_format_t fmt;
@@ -127,7 +127,8 @@ static void *rtp_h264_init(struct vlc_rtp_pt *pt)
     if(sdpparams)
         sys->xps = block_Duplicate(sdpparams);
 
-    return sys;
+    *ppriv = sys;
+    return VLC_SUCCESS;
 }
 
 static void rtp_h264_destroy(struct vlc_rtp_pt *pt, void *data)

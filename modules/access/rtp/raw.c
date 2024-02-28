@@ -53,7 +53,7 @@ struct rtp_raw {
     enum vlc_rtp_colorimetry colorimetry;
 };
 
-static void *rtp_raw_begin(struct vlc_rtp_pt *pt)
+static int rtp_raw_begin(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_raw *sys = pt->opaque;
     es_format_t fmt;
@@ -90,7 +90,8 @@ static void *rtp_raw_begin(struct vlc_rtp_pt *pt)
     fmt.p_extra = sys->sampling;
     fmt.i_extra = strlen(sys->sampling) + 1;
 
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static void rtp_raw_end(struct vlc_rtp_pt *pt, void *data)

@@ -59,14 +59,15 @@ static void codec_decode(struct vlc_rtp_pt *pt, void *data, block_t *block,
 /* PT=3
  * GSM
  */
-static void *gsm_init(struct vlc_rtp_pt *pt)
+static int gsm_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     es_format_t fmt;
 
     es_format_Init (&fmt, AUDIO_ES, VLC_CODEC_GSM);
     fmt.audio.i_rate = 8000;
     fmt.audio.i_physical_channels = AOUT_CHAN_CENTER;
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static const struct vlc_rtp_pt_operations rtp_audio_gsm = {
@@ -76,14 +77,15 @@ static const struct vlc_rtp_pt_operations rtp_audio_gsm = {
 /* PT=12
  * QCELP
  */
-static void *qcelp_init(struct vlc_rtp_pt *pt)
+static int qcelp_init(struct vlc_rtp_pt *pt, void **ppriv)
 {
     es_format_t fmt;
 
     es_format_Init (&fmt, AUDIO_ES, VLC_CODEC_QCELP);
     fmt.audio.i_rate = 8000;
     fmt.audio.i_physical_channels = AOUT_CHAN_CENTER;
-    return vlc_rtp_pt_request_es(pt, &fmt);
+    *ppriv = vlc_rtp_pt_request_es(pt, &fmt);
+    return VLC_SUCCESS;
 }
 
 static const struct vlc_rtp_pt_operations rtp_audio_qcelp = {

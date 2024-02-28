@@ -48,12 +48,12 @@ struct rtp_ac3_source {
     struct vlc_rtp_es *es;
 };
 
-static void *rtp_ac3_begin(struct vlc_rtp_pt *pt)
+static int rtp_ac3_begin(struct vlc_rtp_pt *pt, void **ppriv)
 {
     struct rtp_ac3 *sys = pt->opaque;
     struct rtp_ac3_source *src = malloc(sizeof (*src));
     if (unlikely(src == NULL))
-        return NULL;
+        return VLC_ENOMEM;
 
     src->frags = NULL;
     src->frag_end = &src->frags;
@@ -66,7 +66,8 @@ static void *rtp_ac3_begin(struct vlc_rtp_pt *pt)
     if (!sys->enhanced)
         fmt.audio.i_channels = pt->channel_count ? pt->channel_count : 6;
     src->es = vlc_rtp_pt_request_es(pt, &fmt);
-    return src;
+    *ppriv = src;
+    return VLC_SUCCESS;
 }
 
 static void rtp_ac3_end(struct vlc_rtp_pt *pt, void *data)
