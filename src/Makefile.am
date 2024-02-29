@@ -736,19 +736,32 @@ stamp-revision:
 # - Malefile.am: sources directories for java package handling
 
 if HAVE_ANDROID_JAR
+AM_V_JAVAC	  = $(AM_V_JAVAC_$(V))
+AM_V_JAVAC_   = $(AM_V_JAVAC_$(AM_DEFAULT_VERBOSITY))
+AM_V_JAVAC_0  = @echo "  JAVAC  $@";
+AM_V_JAVAC__0 = $(AM_V_JAVAC_0)
+
 vlc_android_support_jar_JAVASOURCES = \
 	android/java/org/videolan/vlccore/SurfaceTextureListener.java
 
-vlc_android_support.jar: $(vlc_android_support_jar_JAVASOURCES)
-	$(AM_V_at)rm -rf $(builddir)/android/java
-	$(AM_V_at)mkdir -p $(builddir)/android/java
-	$(AM_V_at)$(JAVAC) -source 1.7 -target 1.7 \
-		-d $(builddir)/android/java/ \
-		-sourcepath $(srcdir)/android/java \
-		-cp $(ANDROID_SDK_PATH)/ \
-		$^
-	$(AM_V_at)$(ANDROID_DX) --output=$@ --dex $(builddir)/android/java
-	$(AM_V_GEN)zip -r $@ $(builddir)/android/java/*
+$(vlc_android_support_jar_JAVASOURCES:%.java=%.class): JAVA_PACKAGE_ROOT=android/java/
+
+%.class: %.java
+	$(AM_V_at)mkdir -p "$(builddir)/$(dirname "$<")"
+	$(AM_V_JAVAC)$(JAVAC) -source 1.7 -target 1.7 \
+		-d $(builddir)/$(JAVA_PACKAGE_ROOT) \
+		-sourcepath $(srcdir)/$(JAVA_PACKAGE_ROOT) \
+		-cp $(ANDROID_SDK_PATH)/ $^
+
+%.dex: %.class
+	$(AM_V_at)$(ANDROID_DX) \
+		--output $(builddir)/android/java/$(dirname "$^") \
+		--classpath $(ANDROID_SDK_PATH)/ \
+		--file-per-class-file $^
+
+vlc_android_support.jar: $(vlc_android_support_jar_JAVASOURCES:%.java=%.dex)
+	$(AM_V_GEN)zip -r $@.tmp $(vlc_android_support_jar_JAVASOURCES:%.java=$(builddir)/%.dex)
+	$(AM_V_at)mv $@.tmp $@
 
 androidsupportdir = $(libdir)
 androidsupport_DATA = vlc_android_support.jar
