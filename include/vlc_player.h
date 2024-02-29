@@ -187,6 +187,19 @@ VLC_API void
 vlc_player_CondWait(vlc_player_t *player, vlc_cond_t *cond);
 
 /**
+ * Set the media provider of the player
+ *
+ * @param player locked player instance
+ * @param media_provider pointer to a media_provider structure or NULL, the
+ * structure must be valid during the lifetime of the player
+ * @param media_provider_data opaque data used by provider callbacks
+ */
+VLC_API void
+vlc_player_SetMediaProvider(vlc_player_t *player,
+                            const struct vlc_player_media_provider *media_provider,
+                            void *media_provider_data);
+
+/**
  * Setup an action when a media is stopped
  *
  * @param player locked player instance

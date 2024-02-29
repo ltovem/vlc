@@ -2018,6 +2018,18 @@ error:
     return NULL;
 }
 
+void
+vlc_player_SetMediaProvider(vlc_player_t *player,
+                            const struct vlc_player_media_provider *media_provider,
+                            void *media_provider_data)
+{
+    vlc_player_assert_locked(player);
+    assert(!media_provider || media_provider->get_next);
+
+    player->media_provider = media_provider;
+    player->media_provider_data = media_provider_data;
+}
+
 vlc_object_t *
 vlc_player_GetObject(vlc_player_t *player)
 {
