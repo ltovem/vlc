@@ -534,20 +534,27 @@ AS_IF([test "${VENDOR}" = "android"],[
       ac_cv_func_uselocale=no
     ])
 
-    AC_CHECK_TOOL(JAVAC, javac, :)
-    AC_CHECK_TOOL(ANDROID_DX, d8, :)
+    AC_CHECK_TOOL(JAVAC, javac, no)
+
+    AC_ARG_VAR([ANDROID_DX], [Android dx executable from the Sdk])
+    AC_PATH_PROG(ANDROID_DX, dx, no)
+
+    AC_ARG_VAR([ANDROID_D8], [Android d8 executable from the Sdk])
+    AC_PATH_PROG(ANDROID_D8, d8nonexistant, no)
 
     dnl ANDROID_SDK/platforms/android-$ANDROID_API/android.jar"
 
     AS_IF([test ! -z "$with_android_jar"],[
       AS_IF([test ! -f "$with_android_jar"], [AC_MSG_ERROR([Compiling with --with-android-jar but was not a file])])
-      AS_IF([test "$JAVAC" = ":"], [AC_MSG_ERROR([Compiling with --with-android-jar but javac was not found])])
-      AS_IF([test "$ANDROID_DX" = ":"], [AC_MSG_ERROR([Compiling with --with-android-jar but d8 was not found])])
+      AS_IF([test "$JAVAC" = "no"], [AC_MSG_ERROR([Compiling with --with-android-jar but javac was not found])])
+      AS_IF([test "$ANDROID_DX" = "no" -a "$ANDROID_D8" = "no"], [AC_MSG_ERROR([Compiling with --with-android-jar but neither d8 nor dx was found])])
       ANDROID_SDK_PATH="$with_android_jar"
       AC_SUBST([ANDROID_SDK_PATH])
     ])
 ])
 AM_CONDITIONAL([HAVE_ANDROID_JAR], [test "${ANDROID_SDK_PATH}" != ""])
+AM_CONDITIONAL([HAVE_ANDROID_D8], [test "${ANDROID_D8}" != "no"])
+AM_CONDITIONAL([HAVE_ANDROID_DX], [test "${ANDROID_DX}" != "no"])
 
 dnl
 dnl  Check for the contrib directory
