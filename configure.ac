@@ -520,7 +520,7 @@ AC_ARG_WITH(android-jar,
     [specify the path to android.jar, to build android java code]))
 
 ANDROID_SDK_PATH=""
-AS_IF([test "${SYS}" = "android"],[
+AS_IF([test "${VENDOR}" = "android"],[
 
     AS_IF([test "$ANDROID_API" -lt "26"],[
       dnl Android SDK before 26 have the header but it's not
