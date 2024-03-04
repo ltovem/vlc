@@ -171,6 +171,17 @@ vlc_clock_t *vlc_clock_main_CreateMaster(vlc_clock_main_t *main_clock,
 vlc_clock_t *vlc_clock_main_CreateInputMaster(vlc_clock_main_t *main_clock);
 
 /**
+ * Create a new vlc_clock_t for a non-ticking input
+ *
+ * This creates a clock to register the input PCR updates and track the
+ * current drift from the input.
+ *
+ * @param main_clock the locked main_clock
+ * @return a vlc_clock_t instance, must be released using vlc_clock_Delete
+ */
+vlc_clock_t *vlc_clock_main_CreateInputSlave(vlc_clock_main_t *main_clock);
+
+/**
  * This function creates a new slave vlc_clock_t interface
  *
  * You must use vlc_clock_Delete to free it.
