@@ -126,6 +126,8 @@ protected:
     void commonWindowEnable();
     void commonWindowDisable();
 
+    virtual bool kWindowEffectsEnableBlurBehind() const;
+
 protected:
     bool commonGUICreate(QWindow* window, QmlUISurface* , CompositorVideo::Flags flags);
     bool commonGUICreate(QWindow* window, QQuickView* , CompositorVideo::Flags flags);
