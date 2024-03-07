@@ -610,6 +610,22 @@ endif
 endif
 endif
 
+if HAVE_KF6WINDOWSYSTEM
+
+libqt_plugin_la_CPPFLAGS += -DQT_HAS_KWINDOWSYSTEM_PLUGIN
+
+libqt_kwindowsystem_plugin_la_CXXFLAGS = $(AM_CXXFLAGS) $(KF6WINDOWSYSTEM_CFLAGS)
+libqt_kwindowsystem_plugin_la_LIBADD =  $(KF6WINDOWSYSTEM_LIBS)
+libqt_kwindowsystem_plugin_la_SOURCES = \
+	util/kwindowsystem_module.cpp \
+	util/kwindowsystem_module.hpp
+
+if ENABLE_QT
+gui_LTLIBRARIES += libqt_kwindowsystem_plugin.la
+endif
+
+endif
+
 # User interface compilation
 
 uic_verbose = $(uic_verbose_$(V))
