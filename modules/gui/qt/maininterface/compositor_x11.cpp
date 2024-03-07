@@ -168,6 +168,9 @@ bool CompositorX11::makeMainInterface(MainCtx* mainCtx)
     if (!m_renderWindow->init())
         return false;
 
+    if (kWindowEffectsEnableBlurBehind())
+        m_renderWindow->m_hasAcrylic = true;
+
     m_videoWidget = std::make_unique<DummyNativeWidget>();
     // widget would normally require WindowTransparentForInput, without this
     // we end up with an invisible area within our window that grabs our mouse events.
