@@ -53,6 +53,7 @@ extern "C" char **environ;
 #include <QLoggingCategory>
 #include <QQmlError>
 #include <QList>
+#include <QSurfaceFormat>
 
 #include "qt.hpp"
 
@@ -744,6 +745,19 @@ static void *Thread( void *obj )
 #endif
     // at the moment, the vout is created in another thread than the rendering thread
     QApplication::setAttribute( Qt::AA_DontCheckOpenGLContextThreadAffinity );
+
+    {
+        // Request 30-bit color depth.
+        // Due to pre-multiplied alpha color representation,
+        // 24-bit is not enough to represent most of the
+        // non-opaque dark colors.
+        QSurfaceFormat format;
+        format.setRedBufferSize(10);
+        format.setGreenBufferSize(10);
+        format.setBlueBufferSize(10);
+        QSurfaceFormat::setDefaultFormat(format);
+    }
+
     QQuickWindow::setDefaultAlphaBuffer(true);
 
     /* Start the QApplication here */
