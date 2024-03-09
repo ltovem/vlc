@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
+import QtQml.Models 2.12
 
 import QtQuick 2.12
 import QtQuick.Window 2.12
@@ -50,6 +51,8 @@ ListView {
     //       to set it to null, so that the item is not created
     //       if the effect is not wanted.
     property alias fadingEdge: fadingEdge
+
+    property bool rubberBandSelectorEnabled: false
 
     //forward view properties
 
@@ -96,7 +99,9 @@ ListView {
     Component.onCompleted: {
         if (typeof root.reuseItems === "boolean") {
             // Qt 5.15 feature, on by default here:
-            root.reuseItems = true
+            root.reuseItems = Qt.binding(() => { return (backgroundInteractionAccessoryLoader.item &&
+                                                         (backgroundInteractionAccessoryLoader.item instanceof RubberBandSelector)) ?
+                                                         !backgroundInteractionAccessoryLoader.item.active : true })
         }
     }
 
@@ -305,30 +310,83 @@ ListView {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
+    Loader {
+        id: backgroundInteractionAccessoryLoader
 
+        parent: root
+        anchors.fill: parent
         z: -1
 
-        preventStealing: true
+        sourceComponent: (root.rubberBandSelectorEnabled && !!root.selectionModel) ? rubberBandSelectorComponent
+                                                                                   : backgroundMouseArea
 
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        Component {
+            id: rubberBandSelectorComponent
 
-        onPressed: (mouse) => {
-            focus = true // Grab the focus from delegate
-            root.forceActiveFocus(Qt.MouseFocusReason) // Re-focus the list
+            RubberBandSelector {
+                containerItem: root.contentItem
 
-            if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
-                if (selectionModel)
-                    selectionModel.clearSelection()
+                horizontalLock: (root.orientation === ListView.Vertical)
+                verticalLock: (root.orientation === ListView.Horizontal)
+
+                property list<Item> delayRemoveItems
+
+                Component.onCompleted: {
+                    showContextMenu.connect(root.showContextMenu)
+                }
+
+                onClearSelection: {
+                    root.selectionModel.clearSelection()
+                }
+
+                onToggleSelection: function(item) {
+                    console.assert(item)
+                    console.assert(root.model)
+
+                    if (typeof item._index !== 'undefined') {
+                        root.selectionModel.select(root.model.index(item._index, 0), ItemSelectionModel.Toggle)
+                        item.ListView.delayRemove = true
+                        delayRemoveItems.push(item)
+                    }
+                }
+
+                onActiveChanged: {
+                    if (!active) {
+                        for (const item in delayRemoveItems) {
+                            if (item)
+                                item.delayRemove = false
+                        }
+                        delayRemoveItems.length = 0
+                    }
+                }
             }
-
-            mouse.accepted = true
         }
 
-        onReleased: (mouse) => {
-            if (mouse.button & Qt.RightButton) {
-                root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
+        Component {
+            id: backgroundMouseArea
+
+            MouseArea {
+                preventStealing: true
+
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                onPressed: (mouse) => {
+                    focus = true // Grab the focus from delegate
+                    root.forceActiveFocus(Qt.MouseFocusReason) // Re-focus the list
+
+                    if (!(mouse.modifiers & (Qt.ShiftModifier | Qt.ControlModifier))) {
+                        if (selectionModel)
+                            selectionModel.clearSelection()
+                    }
+
+                    mouse.accepted = true
+                }
+
+                onReleased: (mouse) => {
+                    if (mouse.button & Qt.RightButton) {
+                        root.showContextMenu(mapToGlobal(mouse.x, mouse.y))
+                    }
+                }
             }
         }
     }

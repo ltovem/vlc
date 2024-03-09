@@ -248,6 +248,8 @@ T.Pane {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            rubberBandSelectorEnabled: true
+
             focus: true
 
             clip: true // else out of view items will overlap with surronding items
@@ -420,6 +422,8 @@ T.Pane {
                 isDropAcceptable: root.isDropAcceptable
                 acceptDrop: root.acceptDrop
 
+                readonly property int _index: index
+                
                 onContainsDragChanged: listView.updateItemContainsDrag(this, containsDrag)
             }
 
