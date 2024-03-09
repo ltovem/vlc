@@ -268,6 +268,9 @@ VideoAll {
 
         subtitleText: (root.model && root.model.count > 0) ? I18n.qtr("Videos") : ""
 
+        subtitleLeftPadding: root.currentItem.contentLeftMargin
+        subtitleRightPadding: root.currentItem.contentRightMargin
+
         Navigation.parentItem: root
 
         Navigation.downAction: function() {
