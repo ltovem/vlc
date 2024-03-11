@@ -55,6 +55,14 @@ QtObject {
     readonly property double margin_xlarge: MainCtx.dp(32, scale);
     readonly property double margin_xxlarge: MainCtx.dp(36, scale);
 
+    readonly property real resizeHandleWidth: {
+        const scrollBarObject = Qt.createQmlObject("import QtQuick.Controls 2.12; ScrollBar { }", this)
+        console.assert(scrollBarObject)
+        const scrollBarWidth = scrollBarObject.width
+        scrollBarObject.destroy()
+        return (scrollBarWidth / 2)
+    }
+
     // Borders
     readonly property int border: MainCtx.dp(1, scale)
     readonly property int focus_border: border
