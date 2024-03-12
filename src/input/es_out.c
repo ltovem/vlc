@@ -1348,15 +1348,13 @@ static void EsOutProgramHandleClockSource( es_out_t *out, es_out_pgrm_t *p_pgrm 
     if (p_pgrm->active_clock_source != VLC_CLOCK_MASTER_INPUT)
     {
         vlc_clock_main_Lock(p_pgrm->clocks.main);
-        p_pgrm->clocks.input = vlc_clock_main_CreateSlave(
-            p_pgrm->clocks.main, "pcr", UNKNOWN_ES, NULL, NULL);
+        p_pgrm->clocks.input =
+            vlc_clock_main_CreateInputSlave(p_pgrm->clocks.main);
         vlc_clock_main_Unlock(p_pgrm->clocks.main);
 
         if (p_pgrm->clocks.input != NULL)
-        {
             input_clock_AttachListener(p_pgrm->p_input_clock, &clock_cbs,
                                        p_pgrm);
-        }
     }
 
     msg_Dbg( p_input, "program(%d): using clock source: '%s'",
