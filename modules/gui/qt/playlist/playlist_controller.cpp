@@ -384,6 +384,13 @@ PlaylistItem PlaylistController::getCurrentItem() const
     return d->m_currentItem;
 }
 
+void PlaylistController::resetCurrentItem()
+{
+    Q_D(PlaylistController);
+    d->m_currentItem = PlaylistItem{};
+    currentItemChanged();
+}
+
 void PlaylistController::append(const QVariantList& sourceList, bool startPlaying)
 {
     append(toMediaList(sourceList), startPlaying);
