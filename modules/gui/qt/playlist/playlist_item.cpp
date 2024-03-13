@@ -89,7 +89,7 @@ void PlaylistItem::sync() {
         d->title = media->psz_name;
 }
 
-PlaylistItem::operator bool() const
+bool PlaylistItem::valid() const
 {
     return d && d->item.get();
 }

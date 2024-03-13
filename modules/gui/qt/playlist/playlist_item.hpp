@@ -55,10 +55,15 @@ public:
     Q_PROPERTY(QUrl artwork READ getArtwork CONSTANT  FINAL)
     Q_PROPERTY(vlc_tick_t duration READ getDuration CONSTANT  FINAL)
     Q_PROPERTY(QUrl url READ getUrl CONSTANT  FINAL)
+    Q_PROPERTY(bool valid READ valid CONSTANT FINAL)
 
     PlaylistItem(vlc_playlist_item_t *item = nullptr);
 
-    operator bool() const;
+    operator bool() const {
+        return valid();
+    }
+
+    bool valid() const;
 
     vlc_playlist_item_t *raw() const {
         return d ? d->item.get() : nullptr;
