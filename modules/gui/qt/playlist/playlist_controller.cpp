@@ -422,6 +422,11 @@ PlaylistController::append(const QVector<Media> &media, bool startPlaying)
         ret = vlc_playlist_GoTo(d->m_playlist, playIndex);
         if (ret != VLC_SUCCESS)
             return;
+
+        // At this point, we can assume that the current item is going to change.
+        // Do not hold an invalid current item from this point on:
+        resetCurrentItem();
+
         vlc_playlist_Start(d->m_playlist);
     }
 }
