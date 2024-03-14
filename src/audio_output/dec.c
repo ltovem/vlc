@@ -460,8 +460,8 @@ static void stream_Silence (vlc_aout_stream *stream, vlc_tick_t length, vlc_tick
     const vlc_tick_t system_now = vlc_tick_now();
     vlc_clock_Lock(stream->sync.clock);
     const vlc_tick_t system_pts =
-       vlc_clock_ConvertToSystem(stream->sync.clock, system_now, pts,
-                                 stream->sync.rate);
+       vlc_clock_ConvertToSystem(stream->sync.clock, VLC_CLOCK_ID_LAST,
+                                 system_now, pts, stream->sync.rate);
     vlc_clock_Unlock(stream->sync.clock);
     stream->timing.played_samples += block->i_nb_samples;
     aout->play(aout, block, system_pts);
@@ -662,8 +662,8 @@ static void stream_Synchronize(vlc_aout_stream *stream, vlc_tick_t system_now,
         }
 
         vlc_clock_Lock(stream->sync.clock);
-        drift = vlc_clock_Update(stream->sync.clock, system_now + delay,
-                                 dec_pts, stream->sync.rate);
+        drift = vlc_clock_Update(stream->sync.clock, VLC_CLOCK_ID_LAST,
+                                 system_now + delay, dec_pts, stream->sync.rate);
         vlc_clock_Unlock(stream->sync.clock);
     }
 
@@ -696,7 +696,7 @@ void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
     stream->timing.audio_ts = audio_ts;
     vlc_clock_Lock(stream->sync.clock);
     stream->timing.last_drift =
-        vlc_clock_Update(stream->sync.clock, system_ts,
+        vlc_clock_Update(stream->sync.clock, VLC_CLOCK_ID_LAST, system_ts,
                          audio_ts, stream->timing.rate);
     vlc_clock_Unlock(stream->sync.clock);
     vlc_mutex_unlock(&stream->timing.lock);
@@ -771,8 +771,8 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
 
     vlc_clock_Lock(stream->sync.clock);
     vlc_tick_t play_date =
-        vlc_clock_ConvertToSystem(stream->sync.clock, system_now, original_pts,
-                                  stream->sync.rate);
+        vlc_clock_ConvertToSystem(stream->sync.clock, VLC_CLOCK_ID_LAST,
+                                  system_now, original_pts, stream->sync.rate);
     vlc_clock_Unlock(stream->sync.clock);
     stream_Synchronize(stream, system_now, play_date, original_pts);
 
@@ -791,8 +791,8 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
          * for a timing update that could come too late (after 1second). */
         vlc_clock_Lock(stream->sync.clock);
         stream->timing.last_drift =
-            vlc_clock_Update(stream->sync.clock, play_date, original_pts,
-                             stream->sync.rate);
+            vlc_clock_Update(stream->sync.clock, VLC_CLOCK_ID_LAST, play_date,
+                             original_pts, stream->sync.rate);
         vlc_clock_Unlock(stream->sync.clock);
         vlc_mutex_unlock(&stream->timing.lock);
     }
@@ -859,8 +859,8 @@ void vlc_aout_stream_ChangePause(vlc_aout_stream *stream, bool paused, vlc_tick_
         {
             vlc_clock_Lock(stream->sync.clock);
             vlc_tick_t play_date =
-                vlc_clock_ConvertToSystem(stream->sync.clock, date,
-                                          stream->timing.rate_audio_ts,
+                vlc_clock_ConvertToSystem(stream->sync.clock, VLC_CLOCK_ID_LAST,
+                                          date, stream->timing.rate_audio_ts,
                                           stream->sync.rate);
             vlc_clock_Unlock(stream->sync.clock);
             stream->timing.rate_system_ts = play_date;

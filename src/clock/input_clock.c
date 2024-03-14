@@ -221,12 +221,14 @@ void input_clock_AttachListener(input_clock_t *cl,
  *****************************************************************************/
 vlc_tick_t input_clock_Update( input_clock_t *cl, vlc_object_t *p_log,
                          bool b_can_pace_control, bool b_buffering_allowed,
-                         vlc_tick_t i_ck_stream, vlc_tick_t i_ck_system )
+                         vlc_tick_t i_ck_stream, vlc_tick_t i_ck_system,
+                         bool *discontinuity)
 {
     bool b_reset_reference = false;
 
     assert( i_ck_stream != VLC_TICK_INVALID && i_ck_system != VLC_TICK_INVALID );
 
+    *discontinuity = false;
     if( !cl->b_has_reference )
     {
         /* */
@@ -244,6 +246,7 @@ vlc_tick_t input_clock_Update( input_clock_t *cl, vlc_object_t *p_log,
         /* */
         msg_Warn( p_log, "feeding synchro with a new reference point trying to recover from clock gap" );
         b_reset_reference= true;
+        *discontinuity = true;
     }
 
     /* */

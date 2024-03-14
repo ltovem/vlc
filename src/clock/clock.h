@@ -30,6 +30,8 @@ enum vlc_clock_master_source
     VLC_CLOCK_MASTER_MONOTONIC,
 };
 
+#define VLC_CLOCK_ID_LAST UINT32_MAX
+
 /**
  * Callbacks for the owner of the main clock
  */
@@ -113,8 +115,8 @@ void vlc_clock_main_Reset(vlc_clock_main_t *main_clock);
  *
  * @param main_clock the locked main_clock
  */
-void vlc_clock_main_SetFirstPcr(vlc_clock_main_t *main_clock,
-                                vlc_tick_t system_now, vlc_tick_t ts);
+uint32_t vlc_clock_main_SetFirstPcr(vlc_clock_main_t *main_clock,
+                                    vlc_tick_t system_now, vlc_tick_t ts);
 
 /**
  * Set the input dejitter
@@ -212,8 +214,8 @@ void vlc_clock_Delete(vlc_clock_t *clock);
  * @return a valid drift relative time, VLC_TICK_INVALID if there is no drift
  * (clock is master)
  */
-vlc_tick_t vlc_clock_Update(vlc_clock_t *clock, vlc_tick_t system_now,
-                            vlc_tick_t ts, double rate);
+vlc_tick_t vlc_clock_Update(vlc_clock_t *clock, uint32_t clock_id,
+                            vlc_tick_t system_now, vlc_tick_t ts, double rate);
 
 /**
  * This function will update the video clock drift and returns the drift
@@ -221,8 +223,9 @@ vlc_tick_t vlc_clock_Update(vlc_clock_t *clock, vlc_tick_t system_now,
  * Same behavior than vlc_clock_Update() except that the video is passed to the
  * clock, this will be used for clock update callbacks.
  */
-vlc_tick_t vlc_clock_UpdateVideo(vlc_clock_t *clock, vlc_tick_t system_now,
-                                 vlc_tick_t ts, double rate,
+vlc_tick_t vlc_clock_UpdateVideo(vlc_clock_t *clock, uint32_t clock_id,
+                                 vlc_tick_t system_now, vlc_tick_t ts,
+                                 double rate,
                                  unsigned frame_rate, unsigned frame_rate_base);
 
 /**
@@ -314,7 +317,7 @@ vlc_clock_RemoveListener(vlc_clock_t *clock, vlc_clock_listener_id *listener_id)
  * @param clock the locked clock used by the source
  * @return the valid system time
  */
-vlc_tick_t vlc_clock_ConvertToSystem(vlc_clock_t *clock,
+vlc_tick_t vlc_clock_ConvertToSystem(vlc_clock_t *clock, uint32_t clock_id,
                                      vlc_tick_t system_now, vlc_tick_t ts,
                                      double rate);
 

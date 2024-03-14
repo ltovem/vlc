@@ -1263,7 +1263,8 @@ ClockListenerUpdate(void *opaque, vlc_tick_t ck_system,
     es_out_pgrm_t *pgrm = opaque;
     vlc_clock_Lock(pgrm->clocks.input);
     vlc_tick_t drift =
-        vlc_clock_Update(pgrm->clocks.input, ck_system, ck_stream, rate);
+        vlc_clock_Update(pgrm->clocks.input, VLC_CLOCK_ID_LAST, ck_system,
+                         ck_stream, rate);
     vlc_clock_Unlock(pgrm->clocks.input);
     return drift;
 }
@@ -3397,11 +3398,12 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
         /* TODO do not use vlc_tick_now() but proper stream acquisition date */
         const bool b_low_delay = priv->b_low_delay;
         bool b_extra_buffering_allowed = !b_low_delay && EsOutIsExtraBufferingAllowed( out );
+        bool discontinuity;
         vlc_tick_t i_late = input_clock_Update(
                             p_pgrm->p_input_clock, VLC_OBJECT(p_sys->p_input),
                             input_CanPaceControl(p_sys->p_input) || p_sys->b_buffering,
                             b_extra_buffering_allowed,
-                            i_pcr, vlc_tick_now() );
+                            i_pcr, vlc_tick_now(), &discontinuity );
 
         if( !p_sys->p_pgrm )
             return VLC_SUCCESS;
@@ -3411,6 +3413,21 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
             /* Check buffering state on master clock update */
             EsOutDecodersStopBuffering( out, false );
             return VLC_SUCCESS;
+        }
+        else if( discontinuity )
+        {
+            vlc_tick_t stream_start, unused;
+            if (input_clock_GetState(p_sys->p_pgrm->p_input_clock,
+                                     &stream_start, &unused,
+                                     &unused, &unused) == VLC_SUCCESS)
+            {
+                const vlc_tick_t current_date =
+                    p_sys->b_paused ? p_sys->i_pause_date : vlc_tick_now();
+                vlc_clock_main_Lock(p_sys->p_pgrm->clocks.main);
+                vlc_clock_main_SetFirstPcr(p_sys->p_pgrm->clocks.main, current_date,
+                                           stream_start);
+                vlc_clock_main_Unlock(p_sys->p_pgrm->clocks.main);
+            }
         }
 
         if (p_pgrm != p_sys->p_pgrm || p_sys->p_next_frame_es != NULL)
