@@ -69,7 +69,6 @@ struct vlc_clock_main_t
 
     unsigned wait_sync_ref_priority;
     clock_point_t wait_sync_ref; /* When the master */
-    clock_point_t first_pcr;
 
     /**
      * Start point emitted by the buffering to indicate when we supposedly
@@ -213,7 +212,6 @@ static void vlc_clock_main_reset(vlc_clock_main_t *main_clock)
 
     main_clock->wait_sync_ref_priority = UINT_MAX;
     main_clock->wait_sync_ref
-        = main_clock->first_pcr
         = main_clock->last
         = clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
 
@@ -430,40 +428,11 @@ vlc_clock_input_start(vlc_clock_t *clock,
 }
 
 static vlc_tick_t
-vlc_clock_monotonic_to_system(vlc_clock_t *clock, vlc_tick_t now,
-                              vlc_tick_t ts, double rate)
+vlc_clock_monotonic_to_system(vlc_clock_t *clock, vlc_tick_t ts, double rate)
 {
     vlc_clock_main_t *main_clock = clock->owner;
+    vlc_mutex_assert(&main_clock->lock);
 
-    if (clock->priority < main_clock->wait_sync_ref_priority)
-    {
-        /* XXX: This input_delay calculation is needed until we (finally) get
-         * ride of the input clock. This code is adapted from input_clock.c and
-         * is used to introduce the same delay than the input clock (first PTS
-         * - first PCR). */
-        vlc_tick_t pcr_delay = 0;
-        if (main_clock->start_time.system != VLC_TICK_INVALID)
-            pcr_delay = (ts - main_clock->start_time.stream) / rate +
-                main_clock->start_time.system - now;
-        else if (main_clock->first_pcr.system != VLC_TICK_INVALID)
-            pcr_delay = (ts - main_clock->first_pcr.stream) / rate +
-                main_clock->first_pcr.system - now;
-
-        if (pcr_delay > CR_MAX_GAP)
-        {
-            if (main_clock->logger != NULL)
-                vlc_error(main_clock->logger, "Invalid PCR delay ! Ignoring it...");
-            pcr_delay = 0;
-        }
-
-        const vlc_tick_t input_delay = main_clock->input_dejitter + pcr_delay;
-
-        const vlc_tick_t delay =
-            __MAX(input_delay, main_clock->output_dejitter);
-
-        main_clock->wait_sync_ref_priority = clock->priority;
-        main_clock->wait_sync_ref = clock_point_Create(now + delay, ts);
-    }
     return (ts - main_clock->wait_sync_ref.stream) / rate
         + main_clock->wait_sync_ref.system;
 }
@@ -473,6 +442,7 @@ static vlc_tick_t vlc_clock_slave_to_system(vlc_clock_t *clock,
                                             double rate)
 {
     vlc_clock_main_t *main_clock = clock->owner;
+    (void)now;
 
     if (main_clock->start_time.system == VLC_TICK_INVALID)
         return VLC_TICK_INVALID;
@@ -482,7 +452,7 @@ static vlc_tick_t vlc_clock_slave_to_system(vlc_clock_t *clock,
     {
         /* We don't have a master sync point, let's fallback to a monotonic ref
          * point */
-        system = vlc_clock_monotonic_to_system(clock, now, ts, rate);
+        system = vlc_clock_monotonic_to_system(clock, ts, rate);
     }
 
     return system + (clock->delay - main_clock->delay) * rate;
@@ -503,7 +473,7 @@ static vlc_tick_t vlc_clock_master_to_system(vlc_clock_t *clock,
     {
         /* We don't have a master sync point, let's fallback to a monotonic ref
          * point */
-        system = vlc_clock_monotonic_to_system(clock, now, ts, rate);
+        system = vlc_clock_monotonic_to_system(clock, ts, rate);
     }
 
     return system;
@@ -711,8 +681,6 @@ vlc_clock_main_t *vlc_clock_main_New(struct vlc_logger *parent_logger, struct vl
     main_clock->offset = VLC_TICK_INVALID;
     main_clock->delay = 0;
 
-    main_clock->first_pcr =
-        clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
     main_clock->wait_sync_ref_priority = UINT_MAX;
     main_clock->wait_sync_ref = main_clock->last =
         clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
@@ -737,25 +705,8 @@ void vlc_clock_main_Reset(vlc_clock_main_t *main_clock)
     vlc_mutex_assert(&main_clock->lock);
 
     vlc_clock_main_reset(main_clock);
-    main_clock->first_pcr =
-        clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
-
     main_clock->start_time =
         clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
-}
-
-void vlc_clock_main_SetFirstPcr(vlc_clock_main_t *main_clock,
-                                vlc_tick_t system_now, vlc_tick_t ts)
-{
-    vlc_mutex_assert(&main_clock->lock);
-
-    if (main_clock->first_pcr.system == VLC_TICK_INVALID)
-    {
-        main_clock->first_pcr = clock_point_Create(system_now, ts);
-        main_clock->wait_sync_ref_priority = UINT_MAX;
-        main_clock->wait_sync_ref =
-            clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
-    }
 }
 
 void vlc_clock_main_SetInputDejitter(vlc_clock_main_t *main_clock,
@@ -794,8 +745,6 @@ void vlc_clock_main_ChangePause(vlc_clock_main_t *main_clock, vlc_tick_t now,
     const vlc_tick_t delay = now - main_clock->pause_date;
     if (main_clock->last.system != VLC_TICK_INVALID)
         main_clock->last.system += delay;
-    if (main_clock->first_pcr.system != VLC_TICK_INVALID)
-        main_clock->first_pcr.system += delay;
     if (main_clock->start_time.system != VLC_TICK_INVALID)
         main_clock->start_time.system += delay;
     if (main_clock->wait_sync_ref.system != VLC_TICK_INVALID)
