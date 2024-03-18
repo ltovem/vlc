@@ -89,8 +89,7 @@ struct vlc_clock_ops
                          unsigned frame_rate, unsigned frame_rate_base);
     void (*reset)(vlc_clock_t *clock);
     vlc_tick_t (*set_delay)(vlc_clock_t *clock, vlc_tick_t delay);
-    vlc_tick_t (*to_system)(vlc_clock_t *clock, vlc_tick_t system_now,
-                            vlc_tick_t ts, double rate);
+    vlc_tick_t (*to_system)(vlc_clock_t *clock, vlc_tick_t ts, double rate);
 
     /**
      * Signal the clock bus that this clock is ready to be started.
@@ -438,11 +437,9 @@ vlc_clock_monotonic_to_system(vlc_clock_t *clock, vlc_tick_t ts, double rate)
 }
 
 static vlc_tick_t vlc_clock_slave_to_system(vlc_clock_t *clock,
-                                            vlc_tick_t now, vlc_tick_t ts,
-                                            double rate)
+                                            vlc_tick_t ts, double rate)
 {
     vlc_clock_main_t *main_clock = clock->owner;
-    (void)now;
 
     if (main_clock->start_time.system == VLC_TICK_INVALID)
         return VLC_TICK_INVALID;
@@ -459,11 +456,9 @@ static vlc_tick_t vlc_clock_slave_to_system(vlc_clock_t *clock,
 }
 
 static vlc_tick_t vlc_clock_master_to_system(vlc_clock_t *clock,
-                                             vlc_tick_t now, vlc_tick_t ts,
-                                             double rate)
+                                             vlc_tick_t ts, double rate)
 {
     vlc_clock_main_t *main_clock = clock->owner;
-    (void)now;
 
     if (main_clock->start_time.system == VLC_TICK_INVALID)
         return VLC_TICK_INVALID;
@@ -494,8 +489,7 @@ static vlc_tick_t vlc_clock_slave_update(vlc_clock_t *clock,
         return VLC_TICK_MAX;
     }
 
-    vlc_tick_t computed = clock->ops->to_system(clock, system_now, ts, rate);
-
+    vlc_tick_t computed = clock->ops->to_system(clock, ts, rate);
     vlc_tick_t drift = computed - system_now;
     vlc_clock_on_update(clock, computed, ts, drift, rate,
                         frame_rate, frame_rate_base);
@@ -807,8 +801,9 @@ vlc_tick_t vlc_clock_ConvertToSystem(vlc_clock_t *clock,
                                      vlc_tick_t system_now, vlc_tick_t ts,
                                      double rate)
 {
+    (void)system_now;
     AssertLocked(clock);
-    return clock->ops->to_system(clock, system_now, ts, rate);
+    return clock->ops->to_system(clock, ts, rate);
 }
 
 static const struct vlc_clock_ops master_ops = {
