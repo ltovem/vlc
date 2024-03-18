@@ -405,8 +405,7 @@ static void play_scenario(libvlc_int_t *vlc, struct vlc_tracer *tracer,
             {
                 vlc_clock_Lock(ctx.slave);
                 vlc_tick_t play_date =
-                    vlc_clock_ConvertToSystem(ctx.slave, video_system, video_ts,
-                                              1.0f);
+                    vlc_clock_ConvertToSystem(ctx.slave, video_ts, 1.0f);
                 vlc_clock_Update(ctx.slave, play_date, video_ts, 1.0f);
                 vlc_clock_Unlock(ctx.slave);
                 video_system += video_increment;
@@ -568,8 +567,7 @@ static void normal_check(const struct clock_ctx *ctx, size_t update_count,
 
     vlc_clock_Lock(ctx->slave);
     vlc_tick_t converted =
-        vlc_clock_ConvertToSystem(ctx->slave, expected_system_end,
-                                  stream_end, 1.0f);
+        vlc_clock_ConvertToSystem(ctx->slave, stream_end, 1.0f);
     vlc_clock_Unlock(ctx->slave);
     assert(converted == expected_system_end);
 }
@@ -650,8 +648,7 @@ static void drift_check(const struct clock_ctx *ctx, size_t update_count,
 
     vlc_clock_Lock(ctx->slave);
     vlc_tick_t converted =
-        vlc_clock_ConvertToSystem(ctx->slave, expected_system_end,
-                                  stream_end, 1.0f);
+        vlc_clock_ConvertToSystem(ctx->slave, stream_end, 1.0f);
     vlc_clock_Unlock(ctx->slave);
 
     assert(converted - expected_system_end == scenario->total_drift_duration);
@@ -692,7 +689,7 @@ static void pause_common(const struct clock_ctx *ctx, vlc_clock_t *updater)
 
     {
         vlc_clock_Lock(ctx->slave);
-        vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, system, ctx->stream_start, 1.0f);
+        vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, ctx->stream_start, 1.0f);
         assert(converted == system);
         vlc_clock_Unlock(ctx->slave);
     }
@@ -711,7 +708,7 @@ static void pause_common(const struct clock_ctx *ctx, vlc_clock_t *updater)
     system += 1;
 
     vlc_clock_Lock(ctx->slave);
-    vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, system, ctx->stream_start, 1.0f);
+    vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, ctx->stream_start, 1.0f);
     vlc_clock_Unlock(ctx->slave);
     assert(converted == system_start + pause_duration);
 }
@@ -744,7 +741,7 @@ static void convert_paused_common(const struct clock_ctx *ctx, vlc_clock_t *upda
     system += 1;
 
     vlc_clock_Lock(ctx->slave);
-    vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, system, ctx->stream_start, 1.0f);
+    vlc_tick_t converted = vlc_clock_ConvertToSystem(ctx->slave, ctx->stream_start, 1.0f);
     vlc_clock_Unlock(ctx->slave);
     assert(converted == system_start);
 }

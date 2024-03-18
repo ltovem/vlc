@@ -798,10 +798,8 @@ vlc_tick_t vlc_clock_SetDelay(vlc_clock_t *clock, vlc_tick_t delay)
 }
 
 vlc_tick_t vlc_clock_ConvertToSystem(vlc_clock_t *clock,
-                                     vlc_tick_t system_now, vlc_tick_t ts,
-                                     double rate)
+                                     vlc_tick_t ts, double rate)
 {
-    (void)system_now;
     AssertLocked(clock);
     return clock->ops->to_system(clock, ts, rate);
 }
