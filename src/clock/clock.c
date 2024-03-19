@@ -181,7 +181,7 @@ static inline void TraceRender(struct vlc_tracer *tracer, const char *type,
 static vlc_tick_t main_stream_to_system(vlc_clock_main_t *main_clock,
                                         vlc_tick_t ts)
 {
-    if (main_clock->offset == VLC_TICK_INVALID)
+    if (main_clock->last.system == VLC_TICK_INVALID)
         return VLC_TICK_INVALID;
     return ((vlc_tick_t) (ts * main_clock->coeff / main_clock->rate))
             + main_clock->offset;
@@ -634,7 +634,7 @@ void vlc_clock_main_ChangePause(vlc_clock_main_t *main_clock, vlc_tick_t now,
      * messing up the timings if the stream was paused then seeked
      */
     const vlc_tick_t delay = now - main_clock->pause_date;
-    if (main_clock->offset != VLC_TICK_INVALID)
+    if (main_clock->last.system != VLC_TICK_INVALID)
     {
         main_clock->last.system += delay;
         main_clock->offset += delay;
