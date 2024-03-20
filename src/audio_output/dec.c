@@ -63,12 +63,11 @@ struct vlc_aout_stream
 
     struct
     {
-        vlc_mutex_t lock; /* Guard first_pts, last_drift, rate_system_ts,
+        vlc_mutex_t lock; /* Guard last_drift, rate_system_ts,
                              rate_audio_ts, system_ts, audio_ts */
 
         vlc_tick_t last_drift;
 
-        vlc_tick_t first_pts;
         int64_t played_samples; /* Used for stream_GetDelay() emulation */
 
         vlc_tick_t rate_system_ts;
@@ -144,7 +143,7 @@ static int stream_GetDelay(vlc_aout_stream *stream, vlc_tick_t *delay)
     vlc_tick_t played_length =
         vlc_tick_from_samples(stream->timing.played_samples,
                               stream->mixer_format.i_rate);
-    vlc_tick_t last_pts = stream->timing.first_pts + played_length;
+    vlc_tick_t last_pts = played_length;
 
     /* Equivalent to vlc_clock_ConvertToSystem(), but assume the
      * coefficient is 1.0 (audio at the same speed than the monotonic
@@ -162,7 +161,6 @@ static void stream_Discontinuity(vlc_aout_stream *stream)
     stream->original_pts = VLC_TICK_INVALID;
 
     vlc_mutex_lock(&stream->timing.lock);
-    stream->timing.first_pts = VLC_TICK_INVALID;
     stream->timing.last_drift = VLC_TICK_INVALID;
     stream->timing.system_ts = VLC_TICK_INVALID;
     stream->timing.audio_ts = VLC_TICK_INVALID;
@@ -677,19 +675,8 @@ void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
 {
     vlc_mutex_lock(&stream->timing.lock);
 
-    if (unlikely(stream->timing.first_pts == VLC_TICK_INVALID))
-    {
-        /* While closing the stream, it is possible (but unlikely) that the
-         * module updates a timing point just after the stream is reset, and
-         * just before the module is stopped. */
-        vlc_mutex_unlock(&stream->timing.lock);
-        return;
-    }
-
     vlc_tick_t rate_audio_ts = stream->timing.rate_audio_ts;
     vlc_tick_t rate_system_ts = stream->timing.rate_system_ts;
-
-    audio_ts += stream->timing.first_pts;
 
     if (rate_audio_ts != VLC_TICK_INVALID)
     {
@@ -807,13 +794,6 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
             vlc_clock_Update(stream->sync.clock, play_date, original_pts,
                              stream->sync.rate);
         vlc_clock_Unlock(stream->sync.clock);
-        vlc_mutex_unlock(&stream->timing.lock);
-    }
-
-    if (stream->timing.first_pts == VLC_TICK_INVALID)
-    {
-        vlc_mutex_lock(&stream->timing.lock);
-        stream->timing.first_pts = original_pts;
         vlc_mutex_unlock(&stream->timing.lock);
     }
 
