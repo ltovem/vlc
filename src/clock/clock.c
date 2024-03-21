@@ -527,11 +527,9 @@ vlc_clock_output_start(vlc_clock_t *clock,
     vlc_clock_main_t *main_clock = clock->owner;
     vlc_mutex_assert(&main_clock->lock);
 
-#if 0
-    /* vlc_clock_Start must have already been called. */
-    assert (main_clock->start_time.system != VLC_TICK_INVALID);
-    assert (main_clock->start_time.stream != VLC_TICK_INVALID);
-#endif
+    /* vlc_clock_Start must have already been called on the input clock. */
+    //assert (main_clock->start_time.system != VLC_TICK_INVALID);
+    //assert (main_clock->start_time.stream != VLC_TICK_INVALID);
 
     if (clock->priority >= main_clock->wait_sync_ref_priority)
         goto end;
