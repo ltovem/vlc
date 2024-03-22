@@ -313,12 +313,32 @@ namespace
 // global RoundImage cache
 RoundImageCache g_imageCache = {};
 
+void clearCache()
+{
+    g_imageCache.clear();
+}
+
+QQuickWindow* firstTopLevelQuickWindow()
+{
+    QQuickWindow* window = nullptr;
+    const auto topLevelWindows = qGuiApp->topLevelWindows();
+    for (const auto i : topLevelWindows)
+    {
+        if (qobject_cast<QQuickWindow*>(i))
+        {
+            window = static_cast<QQuickWindow*>(i);
+            break;
+        }
+    }
+    return window;
+}
+
 }
 
 // RoundImageCache
 
 RoundImageCache::RoundImageCache()
-    : m_imageCache(32 * 1024 * 1024) // 32 MiB
+    : m_imageCache(32 * 1024 * 1024 / 4) // 32 MiB
 {}
 
 std::shared_ptr<RoundImageRequest> RoundImageCache::requestImage(const ImageCacheKey& key, qreal dpr, QQmlEngine *engine)
@@ -374,15 +394,33 @@ void RoundImageRequest::handleImageResponseFinished()
     g_imageCache.removeRequest(m_key);
 
     const QString error = m_imageResponse->errorString();
-    QImage image;
+    std::shared_ptr<QSGTexture> texture;
 
     if (auto textureFactory = m_imageResponse->textureFactory())
     {
-        image = textureFactory->image();
+        static QQuickWindow* const window = firstTopLevelQuickWindow();
+        assert(window);
+
+        connect(window, &QQuickWindow::sceneGraphInvalidated, window, clearCache, static_cast<Qt::ConnectionType>(Qt::DirectConnection | Qt::UniqueConnection));
+
+        auto image = textureFactory->image();
+        image.setDevicePixelRatio(m_dpr);
+
+        QQuickWindow::CreateTextureOptions flags = QQuickWindow::TextureCanUseAtlas;
+        if (!image.hasAlphaChannel())
+            flags |= QQuickWindow::TextureIsOpaque;
+
+        // We are safe, QQuickWindow::createTextureFromImage can be called from any thread.
+        // Since textures do not have window affinity, we can use textures generated
+        // by different windows within the items that belong to other windows.
+        texture = std::shared_ptr<QSGTexture>(window->createTextureFromImage(textureFactory->image(), flags));
+        if (Q_UNLIKELY(!texture))
+            qmlWarning(window->contentItem()) << "Could not generate texture from " << image;
+
         delete textureFactory;
     }
 
-    if (image.isNull())
+    if (!texture || texture->textureSize().isEmpty())
     {
         qDebug() << "failed to get image, error" << error << m_key.url;
         m_status = RoundImage::Status::Error;
@@ -390,10 +428,8 @@ void RoundImageRequest::handleImageResponseFinished()
         return;
     }
 
-    image.setDevicePixelRatio(m_dpr);
-
-    g_imageCache.insert(m_key, new QImage(image), image.sizeInBytes());
-    emit requestCompleted(RoundImage::Status::Ready, image);
+    g_imageCache.insert(m_key, texture, texture->textureSize().width() * texture->textureSize().height());
+    emit requestCompleted(RoundImage::Status::Ready, texture);
 }
 
 
@@ -472,7 +508,7 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         oldNode = nullptr;
     }
 
-    if (m_roundImage.isNull())
+    if (!m_texture || m_texture->textureSize().isEmpty())
     {
         delete oldNode;
         m_dirty = false;
@@ -490,36 +526,21 @@ QSGNode *RoundImage::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             assert(window());
             imageNode = window()->createImageNode();
             assert(imageNode);
-            imageNode->setOwnsTexture(true);
+            imageNode->setOwnsTexture(false);
         }
+
+        m_dirty = true;
     }
 
     if (m_dirty)
     {
         m_dirty = false;
-        assert(window());
+        assert(m_texture);
 
-        QQuickWindow::CreateTextureOptions flags = QQuickWindow::TextureCanUseAtlas;
-
-        if (!m_roundImage.hasAlphaChannel())
-            flags |= QQuickWindow::TextureIsOpaque;
-
-        if (std::unique_ptr<QSGTexture> texture { window()->createTextureFromImage(m_roundImage, flags) })
-        {
-            if (m_QSGCustomGeometry)
-            {
-                customImageNode->setTexture(std::move(texture));
-            }
-            else
-            {
-                // No need to delete the old texture manually as it is owned by the node.
-                imageNode->setTexture(texture.release());
-            }
-        }
+        if (m_QSGCustomGeometry)
+            customImageNode->setTexture(m_texture);
         else
-        {
-            qmlWarning(this) << "Could not generate texture from " << m_roundImage;
-        }
+            imageNode->setTexture(m_texture.get());
     }
 
     // Geometry:
@@ -611,9 +632,9 @@ void RoundImage::load()
 
     const ImageCacheKey key {source(), QSizeF {scaledWidth, scaledHeight}.toSize(), scaledRadius};
 
-    if (auto image = g_imageCache.object(key)) // should only by called in mainthread
+    if (const auto image = g_imageCache.object(key)) // should only by called in mainthread
     {
-        onRequestCompleted(Status::Ready, *image);
+        onRequestCompleted(Status::Ready, image);
         return;
     }
 
@@ -629,9 +650,9 @@ void RoundImage::load()
     onRequestCompleted(RoundImage::Loading, {});
 }
 
-void RoundImage::onRequestCompleted(Status status, const QImage& image)
+void RoundImage::onRequestCompleted(Status status, const std::shared_ptr<QSGTexture>& texture)
 {
-    setRoundImage(image);
+    setRoundImage(texture);
     switch (status)
     {
     case RoundImage::Error:
@@ -640,7 +661,7 @@ void RoundImage::onRequestCompleted(Status status, const QImage& image)
         break;
     case RoundImage::Ready:
     {
-        if (image.isNull())
+        if (!texture || texture->textureSize().isEmpty())
             setStatus(Status::Error);
         else
             setStatus(Status::Ready);
@@ -656,20 +677,20 @@ void RoundImage::onRequestCompleted(Status status, const QImage& image)
     }
 }
 
-void RoundImage::setRoundImage(QImage image)
+void RoundImage::setRoundImage(const std::shared_ptr<QSGTexture> &texture)
 {
-    if (m_roundImage.isNull() && image.isNull())
-        return;
-
     m_dirty = true;
-    m_roundImage = image;
+    m_texture = texture;
+
+    static QQuickWindow* const topWindow = firstTopLevelQuickWindow();
+    connect(topWindow, &QQuickWindow::sceneGraphInvalidated, this, &RoundImage::clear, static_cast<Qt::ConnectionType>(Qt::DirectConnection | Qt::UniqueConnection));
 
     // remove old contents, setting ItemHasContent to false will
     // inhibit updatePaintNode() call and old content will remain
-    if (image.isNull())
+    if (!texture || texture->textureSize().isEmpty())
         update();
 
-    setFlag(ItemHasContents, !image.isNull());
+    setFlag(ItemHasContents, texture && !texture->textureSize().isEmpty());
     update();
 }
 

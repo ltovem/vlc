@@ -23,13 +23,13 @@
 #ifndef VLC_QT_ROUNDIMAGE_HPP
 #define VLC_QT_ROUNDIMAGE_HPP
 
-#include <QImage>
 #include <QQuickItem>
 #include <QUrl>
 #include <memory>
 
 class QQuickImageResponse;
 class RoundImageRequest;
+class QSGTexture;
 
 class RoundImage : public QQuickItem
 {
@@ -79,13 +79,14 @@ private:
     void setDPR(qreal value);
     void handleImageResponseFinished();
     void load();
-    void setRoundImage(QImage image);
+    void setRoundImage(const std::shared_ptr<QSGTexture>& texture);
     void setStatus(const Status status);
     void regenerateRoundImage();
 
 private slots:
     void adjustQSGCustomGeometry(const QQuickWindow* const window);
-    void onRequestCompleted(Status status, const QImage& image);
+    void onRequestCompleted(Status status, const std::shared_ptr<QSGTexture>& texture);
+    void clear() { setRoundImage(nullptr); };
 
 private:
     QUrl m_source;
@@ -95,7 +96,7 @@ private:
 
     bool m_QSGCustomGeometry = false;
 
-    QImage m_roundImage;
+    std::shared_ptr<QSGTexture> m_texture;
     bool m_dirty = false;
 
     std::shared_ptr<RoundImageRequest> m_activeImageResponse;
