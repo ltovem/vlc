@@ -23,10 +23,12 @@ import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
 
 import org.videolan.vlc 0.1
+import org.videolan.compat 0.1
 
 import "qrc:///style/"
 import "qrc:///util/" as Util
 import "qrc:///util/Helpers.js" as Helpers
+import "qrc:///widgets/" as Widgets
 
 ListView {
     id: root
@@ -40,6 +42,13 @@ ListView {
         model: root.model
     }
 
+    // Optional property for drop indicator placement and auto scroll feature:
+    property var itemContainsDrag: undefined
+    
+    // Optional functions for the optional drag accessory footer:
+    property var isDropAcceptableFunc
+    property var acceptDropFunc
+
     // Private
 
     property bool _keyPressed: false
@@ -50,6 +59,8 @@ ListView {
     //       to set it to null, so that the item is not created
     //       if the effect is not wanted.
     property alias fadingEdge: fadingEdge
+
+    property alias autoScrollDirection: viewDragAutoScrollHandlerLoader.scrollingDirection
 
     //forward view properties
 
@@ -89,7 +100,107 @@ ListView {
     section.criteria: ViewSection.FullString
     section.delegate: sectionHeading
 
+    // Content width is set to the width by default
+    // If the delegate does not obey it, calculate
+    // the content width appropriately.
+    contentWidth: width
+    
+    footer: !!root.acceptDropFunc ? footerDragAccessoryComponent : null
+
+    Component {
+        id: footerDragAccessoryComponent
+
+        Item {
+            implicitWidth: parent.width
+
+            BindingCompat on implicitHeight {
+                delayed: true
+                value: Math.max(VLCStyle.icon_normal, root.height - y)
+            }
+
+            property alias firstItemIndicatorVisible: firstItemIndicator.visible
+
+            readonly property bool containsDrag: dropArea.containsDrag
+            readonly property bool topContainsDrag: containsDrag
+            readonly property bool bottomContainsDrag: false
+
+            property alias drag: dropArea.drag
+
+            Rectangle {
+                id: firstItemIndicator
+
+                anchors.fill: parent
+                anchors.margins: VLCStyle.margin_small
+
+                border.width: VLCStyle.dp(2)
+                border.color: theme.accent
+
+                color: "transparent"
+
+                visible: (root.model.count === 0 && dropArea.containsDrag)
+
+                opacity: 0.8
+
+                Widgets.IconLabel {
+                    anchors.centerIn: parent
+
+                    text: VLCIcons.add
+
+                    font.pixelSize: VLCStyle.fontHeight_xxxlarge
+
+                    color: theme.accent
+                }
+            }
+
+            DropArea {
+                id: dropArea
+
+                anchors.fill: parent
+
+                onEntered: function(drag) {
+                    if(!!root.isDropAcceptableFunc && !root.isDropAcceptableFunc(drag, root.model.rowCount())) {
+                        drag.accepted = false
+                        return
+                    }
+
+                    drag.accepted = true
+                }
+
+                onDropped: function(drop) {
+                    console.assert(!!root.acceptDropFunc)
+                    root.acceptDropFunc(root.model.count, drop)
+                }
+            }
+        }
+    }
+
     Accessible.role: Accessible.List
+
+    add: Transition {
+        SequentialAnimation {
+            PropertyAction {
+                // TODO: Remove this >= Qt 5.15
+                property: "opacity"
+                value: 0.0
+            }
+
+            OpacityAnimator {
+                from: 0.0 // QTBUG-66475
+                to: 1.0
+                duration: VLCStyle.duration_long
+                easing.type: Easing.OutSine
+            }
+        }
+    }
+
+    displaced: Transition {
+        NumberAnimation {
+            // TODO: Use YAnimator >= Qt 6.0 (QTBUG-66475)
+            property: "y"
+            duration: VLCStyle.duration_long
+            easing.type: Easing.OutSine
+        }
+    }
 
     // Events
 
@@ -171,6 +282,23 @@ ListView {
     function updateSelection(modifiers, oldIndex, newIndex) {
         if (selectionModel)
             selectionModel.updateSelection(modifiers, oldIndex, newIndex)
+    }
+
+    function updateItemContainsDrag(item, set) {
+        if (set) {
+            // This callLater is needed because in Qt 5.15,
+            // an item might set itemContainsDrag, before
+            // the owning item releases it.
+            Qt.callLater(function() {
+                if (itemContainsDrag)
+                    console.debug(item + " set itemContainsDrag before it was released!")
+                itemContainsDrag = item
+            })
+        } else {
+            if (itemContainsDrag !== item)
+                console.debug(item + " released itemContainsDrag that is not owned!")
+            itemContainsDrag = null
+        }
     }
 
     Keys.onPressed: (event) => {
@@ -271,6 +399,34 @@ ListView {
         listView: root
 
         backgroundColor: theme.bg.primary
+
+        BindingCompat on enableBeginningFade {
+            when: (root.autoScrollDirection === Util.ViewDragAutoScrollHandler.Direction.Backward)
+            value: false
+        }
+
+        BindingCompat on enableEndFade {
+            when: (root.autoScrollDirection === Util.ViewDragAutoScrollHandler.Direction.Forward)
+            value: false
+        }
+    }
+
+    Loader {
+        id: viewDragAutoScrollHandlerLoader
+
+        active: root.itemContainsDrag !== undefined
+
+        readonly property int scrollingDirection: item ? item.scrollingDirection : -1
+
+        sourceComponent: Util.ViewDragAutoScrollHandler {
+            view: root
+            dragging: root.itemContainsDrag !== null
+            dragPosProvider: function () {
+                const source = root.itemContainsDrag
+                const point = source.drag
+                return root.mapFromItem(source, point.x, point.y)
+            }
+        }
     }
 
     Component {
@@ -303,6 +459,39 @@ ListView {
                 currentItem.focus = true
             }
         }
+    }
+
+    Rectangle {
+        id: dropIndicator
+
+        parent: {
+            const item = listView.itemContainsDrag
+            if (!item || item.topContainsDrag === undefined || item.bottomContainsDrag === undefined)
+              return null
+            return item
+        }
+
+        z: 99
+
+        anchors {
+            left: !!parent ? parent.left : undefined
+            right: !!parent ? parent.right : undefined
+            top: {
+                if (parent === null)
+                    return undefined
+                else if (parent.topContainsDrag === true)
+                    return parent.top
+                else if (parent.bottomContainsDrag === true)
+                    return parent.bottom
+                else
+                    return undefined
+            }
+        }
+
+        implicitHeight: VLCStyle.dp(1)
+
+        visible: !!parent
+        color: theme.accent
     }
 
     MouseArea {
