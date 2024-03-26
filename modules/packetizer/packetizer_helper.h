@@ -188,6 +188,7 @@ static block_t *packetizer_PacketizeBlock( packetizer_t *p_pack, block_t **pp_bl
             }
             p_pic->i_pts = p_block_bytestream->i_pts;
             p_pic->i_dts = p_block_bytestream->i_dts;
+            p_pic->clock_id = p_block_bytestream->clock_id;
 
             /* Do not wait for next sync code if notified block ends AU */
             if( (p_block_bytestream->i_flags & BLOCK_FLAG_AU_END) &&
