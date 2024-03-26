@@ -325,10 +325,10 @@ static void QueuePic( decoder_t *dec, picture_t *pic )
     vlc_mutex_unlock(&p_sys->lock);
 }
 
-static vlc_tick_t GetDisplayDate( decoder_t *dec, vlc_tick_t sys_now, vlc_tick_t ts)
+static vlc_tick_t GetDisplayDate( decoder_t *dec, uint32_t clock_id, vlc_tick_t sys_now, vlc_tick_t ts)
 {
     decoder_t *bdec = container_of(vlc_object_parent(dec), decoder_t, obj);
-    return decoder_GetDisplayDate(bdec, sys_now, ts);
+    return decoder_GetDisplayDate(bdec, clock_id, sys_now, ts);
 }
 
 static float GetDisplayRate( decoder_t *dec )
