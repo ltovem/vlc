@@ -126,7 +126,8 @@
  */
 
 struct vlc_audio_output_events {
-    void (*timing_report)(audio_output_t *, vlc_tick_t system_ts, vlc_tick_t audio_ts);
+    void (*timing_report)(audio_output_t *, uint32_t clock_id,
+                          vlc_tick_t system_ts, vlc_tick_t audio_ts);
     void (*drained_report)(audio_output_t *);
     void (*volume_report)(audio_output_t *, float);
     void (*mute_report)(audio_output_t *, bool);
@@ -325,7 +326,8 @@ struct audio_output
 static inline void aout_TimingReport(audio_output_t *aout, vlc_tick_t system_ts,
                                      vlc_tick_t audio_ts)
 {
-    aout->events->timing_report(aout, system_ts, audio_ts);
+    /* TODO: replace aout_TimingReport arguments */
+    aout->events->timing_report(aout, UINT32_MAX /* VLC_CLOCK_ID_LAST */, system_ts, audio_ts);
 }
 
 /**

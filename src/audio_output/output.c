@@ -64,12 +64,13 @@ static int var_CopyDevice (vlc_object_t *src, const char *name,
     return var_Set (dst, "audio-device", value);
 }
 
-static void aout_TimingNotify(audio_output_t *aout, vlc_tick_t system_ts,
-                              vlc_tick_t audio_ts)
+static void aout_TimingNotify(audio_output_t *aout, uint32_t clock_id,
+                              vlc_tick_t system_ts, vlc_tick_t audio_ts)
 {
     aout_owner_t *owner = aout_owner (aout);
     assert(owner->main_stream);
-    vlc_aout_stream_NotifyTiming(owner->main_stream, system_ts, audio_ts);
+    vlc_aout_stream_NotifyTiming(owner->main_stream, clock_id,
+                                 system_ts, audio_ts);
 }
 
 static void aout_DrainedNotify(audio_output_t *aout)
