@@ -367,6 +367,7 @@ static block_t *ForwardRawBlock(decoder_t *p_dec, block_t **pp_block)
     *pp_block = NULL; /* Don't reuse this block */
 
     vlc_tick_t i_diff = 0;
+    date_UpdateClockId(&p_sys->end_date, p_block->i_pts, p_block->clock_id);
     if (p_block->i_pts != VLC_TICK_INVALID &&
         p_block->i_pts != date_Get(&p_sys->end_date))
     {
@@ -1131,6 +1132,7 @@ static void SetupOutput(decoder_t *p_dec, block_t *p_block)
 #endif
 
     p_block->i_pts = p_block->i_dts = date_Get(&p_sys->end_date);
+    p_block->clock_id = date_GetClockId(&p_sys->end_date);
 
     p_block->i_length =
         date_Increment(&p_sys->end_date, p_sys->i_frame_length) - p_block->i_pts;
@@ -1214,6 +1216,8 @@ static block_t *PacketizeStreamBlock(decoder_t *p_dec, block_t **pp_block)
     case STATE_SYNC:
         /* New frame, set the Presentation Time Stamp */
         p_sys->i_pts = p_sys->bytestream.p_block->i_pts;
+        date_UpdateClockId(&p_sys->end_date, p_sys->i_pts,
+                           p_sys->bytestream.p_block->clock_id);
         if (p_sys->i_pts != VLC_TICK_INVALID &&
             p_sys->i_pts != date_Get(&p_sys->end_date))
             date_Set(&p_sys->end_date, p_sys->i_pts);
