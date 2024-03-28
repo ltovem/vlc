@@ -444,12 +444,51 @@ FocusScope {
 
         active: MainCtx.mediaLibraryAvailable
 
+        property bool delayedMLThreadBusy: false
+
+        Component.onCompleted: {
+            if (MainCtx.mediaLibrary.threadBusy)
+                delayedMLThreadBusy = true
+        }
+
+        Timer {
+            // The progress bar should not be shown immediately
+            // since most of the time the tasks will be completed
+            // in a short time. Wait until human moment is passed and
+            // still there are tasks ongoing, then it is time to show
+            // the progress bar to indicate that media library is busy.
+            // Note that this does not apply for media library's own
+            // idle scanning status.
+            id: timer
+            interval: VLCStyle.duration_humanMoment
+
+            onTriggered: {
+                loaderProgress.delayedMLThreadBusy = MainCtx.mediaLibraryAvailable ? true : false
+            }
+        }
+
+        Connections {
+            enabled: MainCtx.mediaLibraryAvailable
+            target: MainCtx.mediaLibrary
+
+            onThreadBusyChanged: {
+                if (MainCtx.mediaLibrary.threadBusy)
+                    timer.restart()
+                else {
+                    timer.stop()
+                    loaderProgress.delayedMLThreadBusy = false
+                }
+            }
+        }
+
         visible: height > 0
         height: 0
 
         Binding on height {
+            // This delayed binding here is to prevent twitching due to
+            // fast idle status changes.
             delayed: true
-            value: !MainCtx.mediaLibrary.idle ? loaderProgress.implicitHeight : 0
+            value: (!MainCtx.mediaLibrary.idle || loaderProgress.delayedMLThreadBusy) ? loaderProgress.implicitHeight : 0
         }
 
         Behavior on height {
