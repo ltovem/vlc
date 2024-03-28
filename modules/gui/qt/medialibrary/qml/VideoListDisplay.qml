@@ -64,31 +64,19 @@ MainInterface.MainTableView {
     }]
 
     property var _modelMedium: [{
-        size: 1,
-
-        model: ({
-            type: "image",
-
-            criteria: "thumbnail",
-
-            text: I18n.qtr("Cover"),
-
-            showSection: "",
-
-            placeHolder: VLCStyle.noArtVideoCover,
-
-            headerDelegate: tableColumns.titleHeaderDelegate,
-            colDelegate   : tableColumns.titleDelegate
-        })
-    }, {
-        size: Math.max(1, _nbCols - 2),
+        size: Math.max(1, _nbCols - 1),
 
         model: ({
             criteria: mainCriteria,
 
             showSection: "title",
 
-            text: I18n.qtr("Title")
+            text: I18n.qtr("Title"),
+
+            headerDelegate: tableColumns.titleHeaderDelegate,
+            colDelegate   : tableColumns.titleDelegate,
+
+            placeHolder: VLCStyle.noArtVideoCover,
         })
     }, {
         size: 1,
@@ -122,8 +110,7 @@ MainInterface.MainTableView {
     Widgets.TableColumns {
         id: tableColumns
 
-        showTitleText: (listView_id.sortModel === listView_id._modelSmall)
-        showCriterias: showTitleText
+        showCriterias: (listView_id.sortModel === listView_id._modelSmall)
 
         criteriaCover: "thumbnail"
 

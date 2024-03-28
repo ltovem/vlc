@@ -210,7 +210,7 @@ MainInterface.MainViewLoader {
             id: tableView
 
             readonly property real _nbCols: VLCStyle.gridColumnsForWidth(tableView.availableRowWidth)
-            readonly property real _nameColSpan: Math.max((_nbCols - 1) / 2, 1)
+            readonly property real _size: (_nbCols - 0.5) / 2
             property Component thumbnailHeader: Widgets.IconLabel {
                 height: VLCStyle.listAlbumCover_height
                 width: VLCStyle.listAlbumCover_width
@@ -243,7 +243,7 @@ MainInterface.MainViewLoader {
             }]
 
             property var _modelMedium: [{
-                size: 1,
+                size: 0.5,
 
                 model: {
                     criteria: "thumbnail",
@@ -254,7 +254,7 @@ MainInterface.MainViewLoader {
                     colDelegate: thumbnailColumn
                 }
             }, {
-                size: tableView._nameColSpan,
+                size: _size,
 
                 model: {
                     criteria: "name",
@@ -262,7 +262,7 @@ MainInterface.MainViewLoader {
                     text: I18n.qtr("Name")
                 }
             }, {
-                size: Math.max(_nbCols - _nameColSpan - 1, 1),
+                size: _size,
 
                 model: {
                     criteria: "mrl",

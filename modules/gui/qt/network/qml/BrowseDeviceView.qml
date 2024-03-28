@@ -237,7 +237,7 @@ FocusScope {
 
             readonly property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
-            readonly property real _size: (_nbCols - 1) / 2
+            readonly property real _size: (_nbCols - 0.5) / 2
 
             property var _modelSmall: [{
                 size: Math.max(1.5, _nbCols),
@@ -257,7 +257,7 @@ FocusScope {
             }]
 
             property var _modelMedium: [{
-                size: 1,
+                size: 0.5,
 
                 model: {
                     criteria: "artwork",
@@ -276,7 +276,7 @@ FocusScope {
                     text: I18n.qtr("Name")
                 }
             }, {
-                size: Math.max(_nbCols - _size - 1, 1),
+                size: _size,
 
                 model: {
                     criteria: "mrl",

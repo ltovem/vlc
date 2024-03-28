@@ -64,27 +64,17 @@ MainInterface.MainTableView {
     }]
 
     property var _modelMedium: [{
-        size: 1,
+        size: Math.max(1, _nbCols - 1),
 
         model: {
-            criteria: "thumbnail",
+            criteria: "title",
 
-            text: I18n.qtr("Cover"),
-
-            type: "image",
+            text: I18n.qtr("Title"),
 
             headerDelegate: table.titleHeaderDelegate,
             colDelegate   : table.titleDelegate,
 
             placeHolder: VLCStyle.noArtAlbumCover
-        }
-    }, {
-        size: Math.max(1, _nbCols - 2),
-
-        model: {
-            criteria: "title",
-
-            text: I18n.qtr("Title")
         }
     }, {
         size: 1,
@@ -244,8 +234,7 @@ MainInterface.MainTableView {
         titleCover_radius: isMusic ? VLCStyle.trackListAlbumCover_radius
                                    : VLCStyle.listAlbumCover_radius
 
-        showTitleText: (root.sortModel === root._modelSmall)
-        showCriterias: showTitleText
+        showCriterias: (root.sortModel === root._modelSmall)
 
         criteriaCover: "thumbnail"
 

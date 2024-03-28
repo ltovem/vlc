@@ -249,7 +249,7 @@ MainInterface.MainViewLoader {
             //-------------------------------------------------------------------------------------
             // Properties
 
-            property real _nbCols: Math.max(1, VLCStyle.gridColumnsForWidth(availableRowWidth) - 2)
+            property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
             property var _modelSmall: [{
                 size: Math.max(1.5, _nbCols),
@@ -267,23 +267,15 @@ MainInterface.MainViewLoader {
             }]
 
             property var _modelMedium: [{
-                size: 1,
-
-                model: {
-                    criteria: "thumbnail",
-
-                    text: I18n.qtr("Cover"),
-
-                    headerDelegate: columns.titleHeaderDelegate,
-                    colDelegate   : columns.titleDelegate
-                }
-            }, {
-                size: _nbCols,
+                size: Math.max(1, _nbCols - 1),
 
                 model: {
                     criteria: "name",
 
-                    text: I18n.qtr("Name")
+                    text: I18n.qtr("Name"),
+
+                    headerDelegate: columns.titleHeaderDelegate,
+                    colDelegate   : columns.titleDelegate
                 }
             }, {
                 size: 1,
@@ -334,8 +326,7 @@ MainInterface.MainViewLoader {
             Widgets.TableColumns {
                 id: columns
 
-                showTitleText: (tableView.sortModel === tableView._modelSmall)
-                showCriterias: showTitleText
+                showCriterias: (tableView.sortModel === tableView._modelSmall)
 
                 criteriaCover: "thumbnail"
 
