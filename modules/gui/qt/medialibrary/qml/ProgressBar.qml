@@ -23,6 +23,7 @@ import QtQuick.Templates 2.12 as T
 import org.videolan.vlc 0.1
 import org.videolan.medialib 0.1
 
+import "qrc:///widgets/" as Widgets
 import "qrc:///style/"
 
 T.ProgressBar {
@@ -134,7 +135,7 @@ T.ProgressBar {
             }
         }
 
-        SubtitleLabel {
+        Widgets.SubtitleLabel {
             anchors.left: parent.left
             anchors.right: parent.right
 
