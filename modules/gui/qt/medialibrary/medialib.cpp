@@ -510,6 +510,8 @@ void MediaLib::cancelMLTask(const QObject* object, quint64 taskId)
     if (removed)
         delete task;
     m_runningTasks.remove(taskId);
+    if (m_runningTasks.isEmpty())
+        emit threadBusyChanged();
     m_objectTasks.remove(object, taskId);
     if (m_objectTasks.count(object) == 0)
         disconnect(object, &QObject::destroyed, this, &MediaLib::runOnMLThreadTargetDestroyed);
@@ -534,6 +536,8 @@ void MediaLib::runOnMLThreadDone(RunOnMLThreadBaseRunner* runner, quint64 target
         if (status == ML_TASK_STATUS_SUCCEED)
             runner->runUICallback();
         m_runningTasks.remove(target);
+        if (m_runningTasks.isEmpty())
+            emit threadBusyChanged();
         m_objectTasks.remove(object, target);
         if (m_objectTasks.count(object) == 0)
             disconnect(object, &QObject::destroyed, this, &MediaLib::runOnMLThreadTargetDestroyed);
@@ -554,6 +558,8 @@ void MediaLib::runOnMLThreadTargetDestroyed(QObject * object)
                 delete task;
             m_runningTasks.remove(taskId);
         }
+        if (m_runningTasks.isEmpty())
+            emit threadBusyChanged();
         m_objectTasks.remove(object);
         //no need to disconnect QObject::destroyed, as object is currently being destroyed
     }
