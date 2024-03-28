@@ -442,9 +442,28 @@ FocusScope {
         anchors.right: parent.right
         anchors.bottom: miniPlayer.top
 
-        active: (MainCtx.mediaLibraryAvailable && MainCtx.mediaLibrary.idle === false)
+        active: MainCtx.mediaLibraryAvailable
 
-        height: active ? implicitHeight : 0
+        visible: height > 0
+        height: 0
+
+        Binding on height {
+            delayed: true
+            value: !MainCtx.mediaLibrary.idle ? loaderProgress.implicitHeight : 0
+        }
+
+        Behavior on height {
+            enabled: false
+
+            Component.onCompleted: {
+                Qt.callLater(function() { enabled = true; })
+            }
+
+            NumberAnimation {
+                easing.type: Easing.InOutSine
+                duration: VLCStyle.duration_long
+            }
+        }
 
         source: "qrc:///medialibrary/ProgressBar.qml"
 
