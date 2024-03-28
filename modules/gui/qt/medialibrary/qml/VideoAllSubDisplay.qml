@@ -264,6 +264,9 @@ VideoAll {
         leftPadding: root.leftPadding
         rightPadding: root.rightPadding
 
+        allVideosContentLeftMargin: Helpers.get(root.currentItem, "contentLeftMargin", 0)
+        allVideosContentRightMargin: Helpers.get(root.currentItem, "contentRightMargin", 0)
+
         nbItemPerRow: Helpers.get(root.currentItem, "nbItemPerRow", 0)
 
         subtitleText: (root.model && root.model.count > 0) ? I18n.qtr("Videos") : ""
