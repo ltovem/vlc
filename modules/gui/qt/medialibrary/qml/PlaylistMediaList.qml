@@ -130,12 +130,17 @@ MainInterface.MainViewLoader {
     }
 
     function _getCount(model) {
-        const count = model.count;
+        if(model && model.count !== undefined){
+            const count = model.count;
 
-        if (count < 100)
-            return count;
+            if (count < 100)
+                return count;
+            else
+                return I18n.qtr("99+");
+        }
+
         else
-            return I18n.qtr("99+");
+            return I18n.qtr("0");
     }
 
     //---------------------------------------------------------------------------------------------
@@ -201,8 +206,10 @@ MainInterface.MainViewLoader {
                 title: (model.name) ? model.name
                                     : I18n.qtr("Unknown title")
 
-                labels: (model.count > 1) ? [ I18n.qtr("%1 Tracks").arg(_getCount(model)) ]
-                                          : [ I18n.qtr("%1 Track") .arg(_getCount(model)) ]
+                property int trackCount: _getCount(model)
+
+                labels: (model.count > 1) ? [ I18n.qtr("%1 Tracks").arg(trackCount) ]
+                                          : [ I18n.qtr("%1 Track") .arg(trackCount) ]
 
                 dragItem: dragItemPlaylist
 
