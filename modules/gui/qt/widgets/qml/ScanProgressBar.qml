@@ -46,7 +46,7 @@ T.ProgressBar {
         colorSet: ColorContext.Window
     }
 
-    indeterminate: MediaLib.discoveryPending
+    indeterminate: MediaLib.discoveryPending || MediaLib.threadBusy
 
     background: Rectangle {
         color: theme.bg.primary
@@ -138,10 +138,14 @@ T.ProgressBar {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            text: (MediaLib.discoveryPending) ? qsTr("Scanning %1")
-                                                .arg(MediaLib.discoveryEntryPoint)
-                                              : qsTr("Indexing Medias (%1%)")
-                                                .arg(MediaLib.parsingProgress)
+            text: {
+                if (MediaLib.discoveryPending)
+                    return qsTr("Scanning %1").arg(MediaLib.discoveryEntryPoint)
+                else if (MediaLib.threadBusy)
+                    return qsTr("Processing...")
+                else
+                    return qsTr("Indexing Medias (%1%)").arg(MediaLib.parsingProgress)
+            }
 
             elide: Text.ElideMiddle
 
