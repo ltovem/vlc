@@ -64,7 +64,7 @@ MainInterface.MainTableView {
     }]
 
     property var _modelMedium: [{
-        size: Math.max(1, _nbCols - 1),
+        size: Math.max(1, _nbCols - 0.5),
 
         model: {
             criteria: "title",
@@ -77,7 +77,7 @@ MainInterface.MainTableView {
             placeHolder: VLCStyle.noArtAlbumCover
         }
     }, {
-        size: 1,
+        size: 0.5,
 
         model: {
             criteria: "duration",

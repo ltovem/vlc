@@ -216,7 +216,7 @@ MainInterface.MainViewLoader {
                     placeHolder: VLCStyle.noArtAlbumCover
                 }
             }, {
-                size: Math.max(1, tableView_id._nbCols - 3),
+                size: Math.max(1, tableView_id._nbCols - 2.5),
 
                 model: {
                     criteria: "main_artist",
@@ -224,7 +224,7 @@ MainInterface.MainViewLoader {
                     text: I18n.qtr("Artist")
                 }
             }, {
-                size: 1,
+                size: 0.5,
 
                 model: {
                     criteria: "duration",

@@ -487,7 +487,7 @@ FocusScope {
                     colDelegate: tableColumns.titleDelegate
                 }
             }, {
-                size: Math.max(1, tableView_id._nbCols - 3),
+                size: Math.max(1, tableView_id._nbCols - 2.5),
 
                 model: {
                     criteria: "album_title",
@@ -495,7 +495,7 @@ FocusScope {
                     text: I18n.qtr("Album")
                 }
             }, {
-                size: 1,
+                size: 0.5,
 
                 model: {
                     criteria: "duration",

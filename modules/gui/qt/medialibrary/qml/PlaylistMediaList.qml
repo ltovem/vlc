@@ -267,7 +267,7 @@ MainInterface.MainViewLoader {
             }]
 
             property var _modelMedium: [{
-                size: Math.max(1, _nbCols - 1),
+                size: Math.max(1, _nbCols - 0.5),
 
                 model: {
                     criteria: "name",
@@ -278,7 +278,7 @@ MainInterface.MainViewLoader {
                     colDelegate   : columns.titleDelegate
                 }
             }, {
-                size: 1,
+                size: 0.5,
 
                 model: {
                     criteria: "count",

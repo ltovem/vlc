@@ -44,8 +44,8 @@ Widgets.KeyNavigableTableView {
     // Private
     property real _nbCols: VLCStyle.gridColumnsForWidth(availableRowWidth)
 
-    readonly property real _sizeA: (_nbCols - 3) / 3
-    readonly property real _sizeB: (_nbCols - 2) / 2
+    readonly property real _sizeA: (_nbCols - 2.5) / 3
+    readonly property real _sizeB: (_nbCols - 1.5) / 2
 
     property var _lineTitle: ({
         criteria: "title",
@@ -116,7 +116,7 @@ Widgets.KeyNavigableTableView {
 
         model: _lineArtist
     }, {
-        size: 1,
+        size: 0.5,
 
         model: _lineDuration
     }, {
@@ -142,7 +142,7 @@ Widgets.KeyNavigableTableView {
 
         model: _lineArtist
     }, {
-        size: 1,
+        size: 0.5,
 
         model: _lineDuration
     }]
