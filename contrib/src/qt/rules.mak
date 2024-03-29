@@ -109,10 +109,6 @@ ifeq ($(V),1)
 QT_CONFIG += -verbose
 endif
 
-ifdef HAVE_MINGW_W64
-QT_CONFIG += -no-direct2d
-endif
-
 QT_ENV_VARS := $(HOSTVARS) DXSDK_DIR=$(PREFIX)/bin
 QT_QINSTALL="$(shell cd $(SRC)/qt/; pwd -P)/install_wrapper.sh"
 

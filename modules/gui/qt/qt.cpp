@@ -910,7 +910,7 @@ static void *Thread( void *obj )
             // Workaround for popup widgets not closing on mouse press on wayland:
             app.installEventFilter(new DismissPopupEventFilter(&app));
         }
-        else if( platform == QLatin1String("windows") )
+        else if( platform == QLatin1String("windows") || platform == QLatin1String("direct2d") )
             p_intf->voutWindowType = VLC_WINDOW_TYPE_HWND;
         else if( platform == QLatin1String("cocoa") )
             p_intf->voutWindowType = VLC_WINDOW_TYPE_NSOBJECT;
