@@ -61,6 +61,8 @@
 #import "library/audio-library/VLCLibraryAudioViewController.h"
 #import "library/audio-library/VLCLibraryAudioDataSource.h"
 
+#import "library/playlist-library/VLCLibraryPlaylistViewController.h"
+
 #import "media-source/VLCMediaSourceBaseDataSource.h"
 #import "media-source/VLCLibraryMediaSourceViewController.h"
 
@@ -255,6 +257,7 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     _libraryVideoViewController = [[VLCLibraryVideoViewController alloc] initWithLibraryWindow:self];
     _libraryAudioViewController = [[VLCLibraryAudioViewController alloc] initWithLibraryWindow:self];
     _libraryMediaSourceViewController = [[VLCLibraryMediaSourceViewController alloc] initWithLibraryWindow:self];
+    _libraryPlaylistViewController = [[VLCLibraryPlaylistViewController alloc] initWithLibraryWindow:self];
 
     self.upNextLabel.font = NSFont.VLClibrarySectionHeaderFont;
     self.upNextLabel.stringValue = _NS("Playlist");
@@ -443,6 +446,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     case VLCLibrarySongsMusicSubSegment:
         _currentSelectedViewModeSegment = preferences.songsLibraryViewMode;
         break;
+    case VLCLibraryPlaylistsSegment:
+        _currentSelectedViewModeSegment = preferences.playlistLibraryViewMode;
+        break;
     case VLCLibraryBrowseSegment:
         _currentSelectedViewModeSegment = preferences.browseLibraryViewMode;
         break;
@@ -471,6 +477,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     case VLCLibrarySongsMusicSubSegment:
     case VLCLibraryGenresMusicSubSegment:
         [self showAudioLibrary];
+        break;
+    case VLCLibraryPlaylistsSegment:
+        [self showPlaylistLibrary];
         break;
     case VLCLibraryBrowseSegment:
     case VLCLibraryStreamsSegment:
@@ -523,6 +532,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
         break;
     case VLCLibrarySongsMusicSubSegment:
         preferences.songsLibraryViewMode = _currentSelectedViewModeSegment;
+        break;
+    case VLCLibraryPlaylistsSegment:
+        preferences.playlistLibraryViewMode = _currentSelectedViewModeSegment;
         break;
     case VLCLibraryBrowseSegment:
         preferences.browseLibraryViewMode = _currentSelectedViewModeSegment;
@@ -672,6 +684,15 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     [self setViewModeToolbarItemVisible:YES];
 
     self.libraryAudioViewController.currentSegmentType = self.librarySegmentType;
+}
+
+- (void)showPlaylistLibrary
+{
+    [self setForwardsBackwardsToolbarItemsVisible:NO];
+    [self setSortOrderToolbarItemVisible:YES];
+    [self setLibrarySearchToolbarItemVisible:YES];
+
+    [_libraryPlaylistViewController presentPlaylistsView];
 }
 
 - (void)showMediaSourceLibrary

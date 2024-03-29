@@ -1,5 +1,5 @@
 /*****************************************************************************
- * VLCLibraryRepresentedItem.h: MacOS X interface module
+ * VLCLibraryPlaylistDataSource.h: MacOS X interface module
  *****************************************************************************
  * Copyright (C) 2023 VLC authors and VideoLAN
  *
@@ -22,29 +22,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "library/VLCLibraryDataTypes.h"
+#import "library/VLCLibraryCollectionViewDataSource.h"
+
+@class VLCLibraryModel;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class VLCMediaLibraryMediaItem;
-@protocol VLCMediaLibraryItemProtocol;
+@interface VLCLibraryPlaylistDataSource : NSObject<VLCLibraryCollectionViewDataSource>
 
-@interface VLCLibraryRepresentedItem : NSObject
-
-@property (readonly) id<VLCMediaLibraryItemProtocol> item;
-// Parent media array is lazy loaded
-@property (readonly) NSArray<VLCMediaLibraryMediaItem *> *parentMediaArray;
-// If unknown, will always default to individual play mode
-@property (readonly) VLCMediaLibraryParentGroupType parentType;
-@property (readonly) NSInteger itemIndexInParent;
-
-- (instancetype)initWithItem:(const id<VLCMediaLibraryItemProtocol>)item
-                  parentType:(const VLCMediaLibraryParentGroupType)parentType;
-
-- (void)play;
-- (void)queue;
-- (void)revealInFinder;
-- (void)moveToTrash;
+@property (readonly) VLCLibraryModel *libraryModel;
+@property (readwrite, nonatomic) NSArray<NSCollectionView *> *collectionViews;
 
 @end
 

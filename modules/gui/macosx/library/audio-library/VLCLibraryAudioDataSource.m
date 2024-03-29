@@ -149,7 +149,6 @@ NSString * const VLCLibraryAudioDataSourceDisplayedCollectionChangedNotification
 
 - (void)libraryModelAudioMediaItemsReset:(NSNotification * const)aNotification
 {
-    NSLog(@"Pre aa currentParentType %i %i %i", self.currentParentType, VLCMediaLibraryParentGroupTypeAudioLibrary, VLCMediaLibraryParentGroupTypeRecentAudios);
     if (self.currentParentType != VLCMediaLibraryParentGroupTypeAudioLibrary
         && self.currentParentType != VLCMediaLibraryParentGroupTypeRecentAudios) {
         return;
