@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 import QtQuick 2.12
+import QtQuick.Templates 2.12 as T
 import QtQuick.Controls 2.12
 
 import org.videolan.vlc 0.1
@@ -23,11 +24,17 @@ import org.videolan.vlc 0.1
 import "qrc:///style/"
 import "qrc:///widgets/" as Widgets
 
-ComboBox {
+T.ComboBox {
     id: control
 
+    implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                            implicitContentWidth + spacing + implicitIndicatorWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             implicitContentHeight + topPadding + bottomPadding,
+                             implicitIndicatorHeight + topPadding + bottomPadding)
+
+    padding: VLCStyle.margin_xxsmall
     font.pixelSize: VLCStyle.fontSize_large
-    leftPadding: 5
 
     readonly property ColorContext colorContext: ColorContext {
         id: theme
@@ -46,65 +53,47 @@ ComboBox {
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
 
-    delegate: ItemDelegate {
+    delegate: T.ItemDelegate {
         width: control.width
+        height: implicitContentHeight + topPadding + bottomPadding
+        padding: VLCStyle.margin_xsmall
         leftPadding: control.leftPadding
-        background: Item {}
-        contentItem: Text {
+        contentItem: Widgets.ListLabel {
             text: control.textRole ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
             color: control.color
-            font: control.font
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
         }
         highlighted: control.highlightedIndex === index
     }
 
-    indicator: Canvas {
-        id: canvas
-        x: control.width - width - control.rightPadding
+    indicator: Widgets.IconLabel {
+        x: control.width - width - rightPadding
         y: control.topPadding + (control.availableHeight - height) / 2
-        width: 10
-        height: 6
-        contextType: "2d"
-
-        Connections {
-            target: control
-            onPressedChanged: canvas.requestPaint()
-        }
-
-        onPaint: {
-            if (context === null)
-                return
-
-            context.reset();
-            context.moveTo(0, 0);
-            context.lineTo(width, 0);
-            context.lineTo(width / 2, height);
-            context.closePath();
-            context.fillStyle = control.activeFocus ? theme.accent : control.color;
-            context.fill();
-        }
+        font.pixelSize: VLCStyle.icon_normal
+        font.bold: true
+        text: VLCIcons.expand
+        color: control.color
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
     }
 
-    contentItem: Text {
-        leftPadding: 5
-        rightPadding: control.indicator.width + control.spacing
+    contentItem: Widgets.ListLabel {
+        rightPadding: control.spacing + control.indicator.width
 
         text: control.displayText
-        font: control.font
         color: control.color
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
 
-    background: Rectangle {
-        implicitWidth: control.width
-        implicitHeight: control.height
-        color: control.bgColor
-        border.color: control.borderColor
-        border.width: control.activeFocus ? 2 : 1
-        radius: 2
+    background: Widgets.AnimatedBackground {
+        animate: theme.initialized
+        active: control.visualFocus
+        backgroundColor: control.bgColor
+        border.color: theme.border
+        border.width: VLCStyle.dp(2, VLCStyle.scale)
+        radius: VLCStyle.dp(2, VLCStyle.scale)
     }
 
     popup: Popup {
@@ -114,7 +103,6 @@ ComboBox {
         z: 100
 
         width: control.width
-        implicitHeight: contentItem.implicitHeight
         padding: 1
 
         contentItem: ListView {
