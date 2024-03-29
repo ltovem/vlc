@@ -40,7 +40,10 @@
 #  include "compositor_x11.hpp"
 #endif
 
+#include "util/kwindowsystem_module.hpp"
+
 #include <vlc_window.h>
+#include <vlc_modules.h>
 
 using namespace vlc;
 
@@ -319,4 +322,33 @@ void CompositorVideo::commonIntfDestroy()
     m_videoWindowHandler.reset();
     m_videoSurfaceProvider.reset();
     unloadGUI();
+}
+
+bool CompositorVideo::kWindowEffectsEnableBlurBehind() const
+{
+    assert(interfaceMainWindow());
+    assert(m_intf);
+
+    const auto kWindowSystemModule = vlc_object_create<KWindowSystemModule>(m_intf);
+    if (!kWindowSystemModule)
+        return false;
+
+    kWindowSystemModule->p_module = module_need(kWindowSystemModule, "qtkwindowsystem", "QtKWindowSystem", true);
+    if (!kWindowSystemModule->p_module)
+    {
+        msg_Info(m_intf, "KWindowSystem module could not be instantiated. Background blur effect will not be available.");
+        vlc_object_delete(kWindowSystemModule);
+        return false;
+    }
+
+    if (kWindowSystemModule->isEffectAvailable(7 /* BlurBehind */))
+    {
+        kWindowSystemModule->enableBlurBehind(interfaceMainWindow(), true, {});
+        vlc_object_delete(kWindowSystemModule);
+        return true;
+    }
+    {
+        vlc_object_delete(kWindowSystemModule);
+        return false;
+    }
 }
