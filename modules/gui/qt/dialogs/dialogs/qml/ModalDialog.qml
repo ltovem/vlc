@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Templates 2.12 as T
-import QtQuick.Layouts 1.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Templates as T
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 import org.videolan.vlc 0.1
 
@@ -54,7 +54,7 @@ Dialog {
     }
 
     Overlay.modal: Item {
-        GaussianBlur {
+        FastBlur {
             anchors.fill: parent
             anchors.topMargin: MainCtx.windowExtendedMargin
             anchors.leftMargin: MainCtx.windowExtendedMargin
@@ -66,7 +66,6 @@ Dialog {
                 live: true
             }
             radius: 12
-            samples: 16
         }
     }
 

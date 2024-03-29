@@ -1,8 +1,8 @@
 name: vlc
-version-script: cat $SNAPCRAFT_STAGE/version
+adopt-info: vlc
 version: "daily"
 grade: stable
-base: core20
+base: core22
 summary: Read, capture, broadcast your multimedia streams
 description: |
   VLC is a free and open source cross-platform multimedia player and
@@ -12,15 +12,46 @@ description: |
 confinement: strict
 compression: lzo
 plugs:
+  desktop:
+    mount-host-font-cache: false
   dot-config-aacs:
     interface: personal-files
     read:
     - $HOME/.config/aacs
-
+  #this is usually provided by kde-neon
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+hooks:
+  configure:
+    plugs:
+      - desktop
+    command-chain:
+      - command-chain/hooks-configure-fonts
+environment:
+  #for snapcraft-desktop-integration, this is usually provided by kde-neon
+  SNAP_DESKTOP_RUNTIME: $SNAP
+  QT_QPA_PLATFORMTHEME: flatpak
+  QT_QPA_FLATPAK_PLATFORMTHEME: kde
 apps:
   vlc:
-    desktop: usr/share/applications/vlc.desktop
-    command: bin/desktop-launch $SNAP/bin/vlc-snap-wrapper.sh
+    desktop: vlc.desktop
+    command: bin/vlc-snap-wrapper.sh
+    command-chain:
+      - command-chain/desktop-launch
+    #kde-neon is broken right now, see https://github.com/snapcore/snapcraft/issues/4569
+    #also it doesn't support qt6,
+    #extensions:
+    #  - kde-neon
     common-id: org.videolan.vlc
     plugs:
       - unity7
@@ -28,6 +59,7 @@ apps:
       - network-bind
       - home
       - opengl
+      - alsa
       - pulseaudio
       - mount-observe
       - optical-drive
@@ -35,6 +67,7 @@ apps:
       - removable-media
       - screen-inhibit-control
       - x11
+      - wayland
       - desktop
       - desktop-legacy
       - dvb
@@ -45,42 +78,76 @@ apps:
       - dot-config-aacs
     slots:
       - mpris
-
 parts:
-  desktop-qt5-vlc:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-commit: c12ad1891667b49b8401e606341ad7ba7ba6a69e
-    source-subdir: qt/
-    plugin: make
-    make-parameters: ["FLAVOR=qt5"]
-    build-packages:
-      - qtbase5-dev
-      - dpkg-dev
+  #usually provided by kde-neon
+  mesa:
+    after: []
+    plugin: nil
+    build-attributes:
+    - no-patchelf
+    build-packages: []
     stage-packages:
-      - libxkbcommon0
-      - ttf-ubuntu-font-family
-      - dmz-cursor-theme
-      - light-themes
-      - shared-mime-info
-      - libqt5gui5
-      - libgdk-pixbuf2.0-0
-      - libqt5svg5
-      - locales-all
+    - libgl1-mesa-dri
+    - libglx-mesa0
+    prime:
+    - -lib/udev
+    - -usr/doc
+    - -usr/doc-base
+    - -usr/share/applications
+    - -usr/share/apport
+    - -usr/share/bug
+    - -usr/share/doc
+    - -usr/share/doc-base
+    - -usr/share/icons
+    - -usr/share/libdrm
+    - -usr/share/libwacom
+    - -usr/share/lintian
+    - -usr/share/man
+    - -usr/share/pkgconfig
+  #usually provided by kde-neon
+  desktop-hook:
+    source: https://github.com/snapcore/snapcraft-desktop-integration.git
+    source-type: git
+    plugin: make
+    make-parameters:
+      - -C
+      - qt-framework
+      #any existing plug, desktop integration usually check that their base snap is present
+      #but we don't use one
+      - PLATFORM_PLUG=desktop
   vlc:
-    after: [desktop-qt5-vlc]
-    source: ../../../
+    after:
+      - desktop-hook
+    #  - kde-neon
+    source: .
     source-type: git
     plugin: autotools
+    build-environment:
+      # ubuntu core 22 ship Qt6.2.4 which doesn't provide .pc files,
+      # use our own for compatibility
+      - PKG_CONFIG_PATH: ${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}${CRAFT_PROJECT_DIR}/extras/package/snap/qt6-pkg-config/usr/lib/pkgconfig/
+    autotools-configure-parameters:
+      - --host=${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+      - --prefix=/usr
+      - --enable-merge-ffmpeg
+      - --enable-extra-checks
+      - --enable-debug
+      - --disable-wayland
+    override-pull: |
+      craftctl default
+      craftctl set version=$(git describe --always HEAD)
     override-build: |
-      sed -i 's|0\.19\.8|0\.19\.7|'  configure.ac
       cd extras/tools
       ./bootstrap
       make -j $(getconf _NPROCESSORS_ONLN)
       cd ../../
       export PATH=$PWD/extras/tools/build/bin:$PATH
+      export VLC_CONTRIB_SHA="$(extras/ci/get-contrib-sha.sh)"
+      export VLC_PREBUILT_CONTRIBS_URL="https://artifacts.videolan.org/vlc/snap/vlc-contrib-${CRAFT_ARCH_TRIPLET_BUILD_FOR}-${VLC_CONTRIB_SHA}.tar.bz2"
+      if ! extras/ci/check-url.sh "$VLC_PREBUILT_CONTRIBS_URL"; then unset VLC_PREBUILT_CONTRIBS_URL; fi
       cd contrib && mkdir linux && cd linux
       ../bootstrap \
-          --host=$TRIPLET \
+          --host=${CRAFT_ARCH_TRIPLET_BUILD_FOR} \
           --enable-libdsm \
           --enable-dvdcss
       if [ -v VLC_PREBUILT_CONTRIBS_URL ]; then
@@ -90,22 +157,17 @@ parts:
           make list
           make -j $(getconf _NPROCESSORS_ONLN) fetch
           make -j $(getconf _NPROCESSORS_ONLN) -k || make -j1
-          make package
+          #export prebuilt for CI jobs
+          if [ -f "$CRAFT_PROJECT_DIR/snap-save-prebuilt" ]; then
+              make package
+          fi
       fi
-      cd ../../
-      export NOCONFIGURE=1
-      ./bootstrap
-      ./configure \
-          --prefix=$SNAPCRAFT_PART_INSTALL/usr \
-          --host=$TRIPLET \
-          --disable-wayland \
-          --enable-merge-ffmpeg \
-          --enable-extra-checks
-      make -j $(getconf _NPROCESSORS_ONLN)
-      echo $(git describe --always HEAD) > $SNAPCRAFT_STAGE/version
-      make -j $(getconf _NPROCESSORS_ONLN) install
-      sed -i 's|Icon=vlc|Icon=/usr/share/icons/hicolor/256x256/apps/vlc\.png|' $SNAPCRAFT_PART_INSTALL/usr/share/applications/vlc.desktop
-      sed -i 's|TryExec=.*|TryExec=/snap/bin/vlc|' $SNAPCRAFT_PART_INSTALL/usr/share/applications/vlc.desktop
+      cd ../..
+      craftctl default
+      cp ${CRAFT_PART_INSTALL}/usr/share/icons/hicolor/256x256/apps/vlc.png ${CRAFT_PART_INSTALL}/vlc.png
+      cp ${CRAFT_PART_INSTALL}/usr/share/applications/vlc.desktop ${CRAFT_PART_INSTALL}/vlc.desktop
+      sed -i 's/\(^Icon=\).*$/\1\/vlc.png/' ${CRAFT_PART_INSTALL}/vlc.desktop
+      sed -i 's|TryExec=.*|TryExec=/snap/bin/vlc|' ${CRAFT_PART_INSTALL}/vlc.desktop
     build-packages:
       - ant
       - git
@@ -117,20 +179,25 @@ parts:
       - cmake
       - automake
       - build-essential
+      - curl
+      - gettext
+      - openjdk-11-jdk-headless
       - libxcb-xfixes0-dev
-      - libqt5svg5-dev
       - libasound2-dev
       - libavahi-client-dev
       - libcdio-dev
       - libdbus-1-dev
       - libdirectfb-dev
+      - libdrm-dev
       - libegl1-mesa-dev
       - libfreetype6-dev
       - libfribidi-dev
+      - libgbm-dev
       - libgles2-mesa-dev
       - libgnutls28-dev
-      - libgtk2.0-dev
-      - libidn11-dev
+      - libglib2.0-dev
+      - libgtk-3-dev
+      - libidn-dev
       - libjack-dev
       - liblircclient-dev
       - liblua5.2-dev
@@ -138,8 +205,6 @@ parts:
       - libncursesw5-dev
       - libpng-dev
       - libpulse-dev
-      - libqt5x11extras5-dev
-      - qtbase5-private-dev
       - librsvg2-dev
       - libsecret-1-dev
       - libudev-dev
@@ -163,20 +228,38 @@ parts:
       - libzvbi-dev
       - lua5.2
       - pkg-config
-      - qtbase5-dev
       - xz-utils
       - zlib1g-dev
       - bison
       - flex
       - libvulkan-dev
-      - qtdeclarative5-dev
-      - qtquickcontrols2-5-dev
-      - qml-module-qtquick-controls2
-      - qml-module-qtquick-layouts
-      - qml-module-qtquick-templates2
-      - qml-module-qtgraphicaleffects
       - libgcrypt20-dev
       - libsystemd-dev
+      - libprotobuf-dev
+      - protobuf-compiler
+      - wayland-protocols
+      # qt6
+      # kde_neon-sdk is broken right now and doesn't ship qt6, install dev package
+      - qt6-shader-baker
+      - libqt6svg6-dev
+      - libqt6opengl6-dev
+      - libqt6shadertools6-dev
+      - qt6-wayland-dev
+      - qt6-base-dev
+      - qt6-base-private-dev
+      - qt6-declarative-dev
+      - qt6-declarative-private-dev
+      - qml6-module-qttest
+      - qml6-module-qt5compat-graphicaleffects
+      - qml6-module-qtcore
+      - qml6-module-qtqml
+      - qml6-module-qtqml-models
+      - qml6-module-qtquick
+      - qml6-module-qtquick-controls
+      - qml6-module-qtquick-layouts
+      - qml6-module-qtquick-templates
+      - qml6-module-qtquick-window
+
     stage-packages:
       - fonts-freefont-ttf
       - dbus-x11
@@ -189,8 +272,6 @@ parts:
       - libgles2-mesa
       - libglib2.0-0
       - libpulse0
-      - libqt5core5a
-      - libqt5gui5
       - librsvg2-2
       - libsecret-1-0
       - libva-drm2
@@ -211,15 +292,14 @@ parts:
       - libxkbcommon-x11-0
       - libxpm4
       - vdpau-driver-all
-      - i965-va-driver
+      - on amd64:
+          - i965-va-driver
+          - intel-media-va-driver
       - mesa-utils
       - mesa-vdpau-drivers
+      - mesa-vulkan-drivers
+      - mesa-va-drivers
       - zlib1g
-      - kde-style-breeze
-      - breeze-icon-theme
-      - frameworkintegration
-      - plasma-integration
-      - phonon4qt5-backend-null
       - libjack0
       - libasound2
       - libgtk-3-0
@@ -229,37 +309,64 @@ parts:
       - libnotify4
       - libvulkan1
       - libaacs0
-      - mesa-vulkan-drivers
       - libvulkan-dev
       - openjdk-8-jdk
-      - qml-module-qtquick-controls2
-      - qml-module-qtquick-layouts
-      - qml-module-qtquick-templates2
-      - qml-module-qtgraphicaleffects
       - libgcrypt20
-      - libidn11
+      - libidn12
       - libxcomposite1
       - libxcursor1
       - libxrandr2
       - libatk1.0-0
-      - libgtk2.0-0
-    filesets:
-      exclusion:
+      - libva-wayland2
+      - libprotobuf23
+
+      # following are usually shiped with kde-neon
+      - qt6-wayland
+      - qt6-qpa-plugins
+      - qml6-module-qt5compat-graphicaleffects
+      - qml6-module-qtcore
+      - qml6-module-qtqml
+      - qml6-module-qtqml-models
+      - qml6-module-qtquick
+      - qml6-module-qtquick-controls
+      - qml6-module-qtquick-layouts
+      - qml6-module-qtquick-templates
+      - qml6-module-qtquick-window
+      - qml6-module-qtqml-workerscript
+      - libqt6core6
+      - libqt6gui6
+      - libqt6widgets6
+      - libqt6network6
+      - libqt6svg6
+      - libqt6qmlmodels6
+      - libqt6qmlworkerscript6
+      - libqt6quick6
+      - libqt6quickcontrols2-6
+      - libqt6quicklayouts6
+      - libqt6quickparticles6
+      - libqt6quickshapes6
+      - libqt6quicktemplates2-6
+      - libqt6qml6
+      - libqt6opengl6
+      - libqt6shadertools6
+      - qt6-xdgdesktopportal-platformtheme
+    prime:
+      #excluded
       - "-usr/lib/*/cmake/*"
       - "-usr/include/*"
       - "-usr/share/ECM/*"
       - "-usr/share/doc/*"
       - "-usr/share/man/*"
+      - "-usr/share/icons/breeze-dark*"
       - "-usr/bin/X11"
-      - "-usr/lib/gcc/x86_64-linux-gnu/6.0.0"
+      - "-usr/lib/gcc/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/6.0.0"
       - "-usr/lib/aspell/*"
-    prime:
-      - "$exclusion"
+      - "-usr/share/lintain"
 
   wrapper:
     plugin: dump
     after: [vlc]
-    source: .
+    source: extras/package/snap
     organize:
       vlc-snap-wrapper.sh: bin/vlc-snap-wrapper.sh
 
@@ -267,4 +374,4 @@ parts:
     plugin: nil
     after: [wrapper]
     override-build: |
-      sed -i -E 's,(^.+"library_path": ")/.*/,\1,' $SNAPCRAFT_STAGE/usr/share/vulkan/icd.d/*.json
+      sed -i -E 's,(^.+"library_path": ")/.*/,\1,' ${CRAFT_STAGE}/usr/share/vulkan/icd.d/*.json

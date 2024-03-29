@@ -15,10 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 import org.videolan.vlc 0.1
 
@@ -226,8 +226,7 @@ FocusScope {
 
                 color: theme.bg.primary
 
-                layer.enabled: (((GraphicsInfo.shaderType === GraphicsInfo.GLSL)) &&
-                               ((GraphicsInfo.shaderSourceType & GraphicsInfo.ShaderSourceString))) &&
+                layer.enabled: (GraphicsInfo.shaderType === GraphicsInfo.RhiShader) &&
                                (miniPlayer.visible || (loaderProgress.active && loaderProgress.item.visible))
 
                 layer.effect: Widgets.PartialEffect {

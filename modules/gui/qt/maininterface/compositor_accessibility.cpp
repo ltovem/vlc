@@ -20,7 +20,7 @@
 #include <QGuiApplication>
 #include <QQuickItem>
 
-#if !defined(QT_NO_ACCESSIBILITY) && defined(QT5_DECLARATIVE_PRIVATE)
+#if !defined(QT_NO_ACCESSIBILITY) && defined(QT_DECLARATIVE_PRIVATE)
 
 #include <QAccessibleObject>
 
@@ -29,11 +29,11 @@
 #include "compositor_accessibility.hpp"
 #include "compositor.hpp"
 
-#ifdef QT5_HAS_X11_COMPOSITOR
+#ifdef QT_HAS_X11_COMPOSITOR
 #  include "compositor_x11_renderwindow.hpp"
 #endif
 #ifdef HAVE_DCOMP_H
-#  include "compositor_dcomp_uisurface.hpp"
+#  include "compositor_dcomp.hpp"
 #endif
 
 namespace vlc {
@@ -257,21 +257,11 @@ private:
 
 QAccessibleInterface* compositionAccessibleFactory(const QString &classname, QObject *object)
 {
-#ifdef QT5_HAS_X11_COMPOSITOR
+#ifdef QT_HAS_X11_COMPOSITOR
     if (classname == QLatin1String("vlc::CompositorX11RenderWindow"))
     {
 
         CompositorX11RenderWindow* renderWindow =  qobject_cast<CompositorX11RenderWindow *>(object);
-        assert(renderWindow);
-        return new QAccessibleRenderWindow(renderWindow, renderWindow);
-    }
-#endif
-
-#ifdef HAVE_DCOMP_H
-    if (classname == QLatin1String("vlc::DCompRenderWindow"))
-    {
-
-        DCompRenderWindow* renderWindow =  qobject_cast<DCompRenderWindow *>(object);
         assert(renderWindow);
         return new QAccessibleRenderWindow(renderWindow, renderWindow);
     }

@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-import QtQuick 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import Qt5Compat.GraphicalEffects
 
 import "qrc:///style/"
 
@@ -46,37 +46,6 @@ FastBlur {
 
         blending: root.blending
 
-        fragmentShader: "
-            uniform lowp sampler2D source;
-            varying highp vec2 qt_TexCoord0;
-
-            uniform lowp float qt_Opacity;
-
-            uniform lowp vec4 tint;
-
-            uniform lowp float exclusionStrength;
-            uniform lowp float noiseStrength;
-            uniform lowp float tintStrength;
-
-            highp float rand(highp vec2 co){
-                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-            }
-
-            highp vec4 exclude(highp vec4 src, highp vec4 dst)
-            {
-                return src + dst - 2.0 * src * dst;
-            }
-
-            void main() {
-               highp float r = rand(qt_TexCoord0) - 0.5;
-               highp vec4 noise = vec4(r,r,r,1.0) * noiseStrength;
-               highp vec4 blurred  = texture2D(source, qt_TexCoord0);
-
-               highp vec4 exclColor = vec4(exclusionStrength, exclusionStrength, exclusionStrength, 0.0);
-
-               blurred = exclude(blurred, exclColor);
-
-               gl_FragColor = (mix(blurred, tint, tintStrength) + noise) * qt_Opacity;
-            }"
+        fragmentShader: "qrc:///shaders/FrostedGlass.frag.qsb"
     }
 }

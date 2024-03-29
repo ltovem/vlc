@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
-import QtQuick 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import Qt5Compat.GraphicalEffects
 
 import "qrc:///style/"
 
@@ -31,13 +31,11 @@ Item {
     property alias primaryVerticalOffset: primaryShadow.verticalOffset
     property alias primaryHorizontalOffset: primaryShadow.horizontalOffset
     property alias primaryBlurRadius: primaryShadow.radius
-    property alias primarySamples: primaryShadow.samples
 
     property alias secondaryColor: secondaryShadow.color
     property alias secondaryVerticalOffset: secondaryShadow.verticalOffset
     property alias secondaryHorizontalOffset: secondaryShadow.horizontalOffset
     property alias secondaryBlurRadius: secondaryShadow.radius
-    property alias secondarySamples: secondaryShadow.samples
 
     DropShadow {
         id: primaryShadow
@@ -46,7 +44,6 @@ Item {
         horizontalOffset: 0
         spread: 0
         color: Qt.rgba(0, 0, 0, .22)
-        samples: 1 + radius * 2
     }
 
     DropShadow {
@@ -57,7 +54,6 @@ Item {
         horizontalOffset: 0
         spread: 0
         color: Qt.rgba(0, 0, 0, .18)
-        samples: 1 + radius * 2
         cached: root.cached
     }
 }
