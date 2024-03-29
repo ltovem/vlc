@@ -99,8 +99,8 @@ static HINSTANCE Direct3D11LoadShaderLibrary(void)
     /* d3dcompiler_47 is the latest on windows 8.1 */
     for (int i = 47; i > 41; --i) {
         WCHAR filename[19];
-        _snwprintf(filename, 19, TEXT("D3DCOMPILER_%d.dll"), i);
-        instance = LoadLibrary(filename);
+        _snwprintf(filename, 19, L"D3DCOMPILER_%d.dll", i);
+        instance = LoadLibraryW(filename);
         if (instance) break;
     }
     return instance;

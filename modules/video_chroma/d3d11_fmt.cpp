@@ -154,7 +154,7 @@ static void SetDriverString(vlc_object_t *obj, d3d11_device_t *d3d_dev, const WC
 {
     int wddm, d3d_features, revision, build;
     /* see https://docs.microsoft.com/en-us/windows-hardware/drivers/display/wddm-2-1-features#driver-versioning */
-    if (swscanf(szData, TEXT("%d.%d.%d.%d"), &wddm, &d3d_features, &revision, &build) != 4)
+    if (swscanf(szData, L"%d.%d.%d.%d", &wddm, &d3d_features, &revision, &build) != 4)
     {
         msg_Warn(obj, "the adapter DriverVersion '%ls' doesn't match the expected format", szData);
         return;

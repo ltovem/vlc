@@ -680,8 +680,8 @@ int D3D_CreateShaderCompiler(vlc_object_t *obj, d3d_shader_compiler_t **compiler
     for (int i = 47; i > 41; --i)
     {
         WCHAR filename[19];
-        _snwprintf(filename, ARRAY_SIZE(filename), TEXT("D3DCOMPILER_%d.dll"), i);
-        (*compiler)->compiler_dll = LoadLibrary(filename);
+        _snwprintf(filename, ARRAY_SIZE(filename), L"D3DCOMPILER_%d.dll", i);
+        (*compiler)->compiler_dll = LoadLibraryW(filename);
         if ((*compiler)->compiler_dll) break;
     }
     if ((*compiler)->compiler_dll)

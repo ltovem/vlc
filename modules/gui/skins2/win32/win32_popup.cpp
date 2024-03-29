@@ -69,7 +69,7 @@ void Win32Popup::hide()
 
 void Win32Popup::addItem( const std::string &rLabel, int pos )
 {
-    MENUITEMINFO menuItem;
+    MENUITEMINFOW menuItem;
     menuItem.cbSize = sizeof( MENUITEMINFO );
 //     menuItem.fMask = MIIM_FTYPE | MIIM_ID | MIIM_TYPE | MIIM_STRING;
 //     menuItem.fType = MFT_STRING;
@@ -78,7 +78,7 @@ void Win32Popup::addItem( const std::string &rLabel, int pos )
     menuItem.dwTypeData = ToWide(rLabel.c_str());
     menuItem.cch = rLabel.size();
 
-    InsertMenuItem( m_hMenu, findInsertionPoint( pos ), TRUE, &menuItem );
+    InsertMenuItemW( m_hMenu, findInsertionPoint( pos ), TRUE, &menuItem );
     free(menuItem.dwTypeData);
 }
 

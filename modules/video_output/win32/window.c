@@ -44,6 +44,9 @@
 #include <shellapi.h>                                         /* ExtractIcon */
 #include "../wasync_resize_compressor.h"
 
+#define WIDEN_(x) L ## x
+#define WIDEN(x) WIDEN_(x)
+
 #define RECTWidth(r)   (LONG)((r).right - (r).left)
 #define RECTHeight(r)  (LONG)((r).bottom - (r).top)
 
@@ -585,7 +588,7 @@ static void Close(vlc_window_t *wnd)
     vlc_wasync_resize_compressor_destroy(&sys->compressor);
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
-    UnregisterClass( sys->class_main, hInstance );
+    UnregisterClassW( sys->class_main, hInstance );
     DestroyCursor( sys->cursor_empty );
     if( sys->vlc_icon )
         DestroyIcon( sys->vlc_icon );
@@ -718,9 +721,9 @@ static void *EventThread( void *p_this )
 
     /* Create the window */
     sys->hwnd =
-        CreateWindowEx( WS_EX_NOPARENTNOTIFY,
+        CreateWindowExW( WS_EX_NOPARENTNOTIFY,
                     sys->class_main,                 /* name of window class */
-                    TEXT(VOUT_TITLE) TEXT(" (VLC Video Output)"),/* window title */
+                    WIDEN(VOUT_TITLE) L" (VLC Video Output)",/* window title */
                     i_window_style,                          /* window style */
                     CW_USEDEFAULT,                   /* default X coordinate */
                     CW_USEDEFAULT,                   /* default Y coordinate */
@@ -800,13 +803,13 @@ static int Open(vlc_window_t *wnd)
         return VLC_ENOMEM;
 
     _snwprintf( sys->class_main, ARRAY_SIZE(sys->class_main),
-               TEXT("VLC standalone window %p"), (void *)sys );
+                L"VLC standalone window %p", (void *)sys );
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     WCHAR app_path[MAX_PATH];
-    if( GetModuleFileName( NULL, app_path, MAX_PATH ) )
-        sys->vlc_icon = ExtractIcon( hInstance, app_path    , 0 );
+    if( GetModuleFileNameW( NULL, app_path, MAX_PATH ) )
+        sys->vlc_icon = ExtractIconW( hInstance, app_path    , 0 );
 
     sys->button_pressed = 0;
     sys->is_cursor_hidden = false;
@@ -814,7 +817,7 @@ static int Open(vlc_window_t *wnd)
     sys->cursor_arrow = LoadCursor(NULL, IDC_ARROW);
     sys->cursor_empty = EmptyCursor(hInstance);
 
-    WNDCLASS wc = { 0 };
+    WNDCLASSW wc = { 0 };
     /* Fill in the window class structure */
     wc.style         = CS_OWNDC|CS_DBLCLKS;           /* style: dbl click */
     wc.lpfnWndProc   = WinVoutEventProc;                 /* event handler */
@@ -824,7 +827,7 @@ static int Open(vlc_window_t *wnd)
     wc.hCursor       = sys->cursor_arrow;
 
     /* Register the window class */
-    if( !RegisterClass(&wc) )
+    if( !RegisterClassW(&wc) )
     {
         if( sys->vlc_icon )
             DestroyIcon( sys->vlc_icon );

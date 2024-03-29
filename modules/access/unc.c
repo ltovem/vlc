@@ -69,7 +69,7 @@ static void Win32AddConnection(stream_t *access, const char *server,
             return;
     }
 
-    NETRESOURCE net_resource = {
+    NETRESOURCEW net_resource = {
         .dwType = RESOURCETYPE_DISK,
         .lpRemoteName = ToWide(remote_name),
     };
@@ -80,7 +80,7 @@ static void Win32AddConnection(stream_t *access, const char *server,
     wchar_t *wpwd  = pwd  ? ToWide(pwd)  : NULL;
     wchar_t *wuser = user ? ToWide(user) : NULL;
 
-    switch (WNetAddConnection2(&net_resource, wpwd, wuser, 0))
+    switch (WNetAddConnection2W(&net_resource, wpwd, wuser, 0))
     {
         case NO_ERROR:
             msg = "connected to %ls";

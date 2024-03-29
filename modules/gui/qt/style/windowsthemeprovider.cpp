@@ -57,11 +57,16 @@ public:
 #endif
     {
         MSG* msg = static_cast<MSG*>( message );
-        if ( msg->message == WM_SETTINGCHANGE
-             && !lstrcmp( LPCTSTR( msg->lParam ), L"ImmersiveColorSet" ) )
+        if ( msg->message == WM_SETTINGCHANGE )
         {
-            if (m_obj->paletteUpdated)
-                m_obj->paletteUpdated(m_obj, m_obj->paletteUpdatedData);
+            LPCTSTR setting = LPCTSTR( msg->lParam );
+#ifdef UNICODE
+            if (!wcscmp( setting, L"ImmersiveColorSet" ) )
+#else
+            if (!strcmp( setting, "ImmersiveColorSet" ) )
+#endif
+                if (m_obj->paletteUpdated)
+                    m_obj->paletteUpdated(m_obj, m_obj->paletteUpdatedData);
         }
         else if (msg->message == WM_SYSCOLORCHANGE)
         {
