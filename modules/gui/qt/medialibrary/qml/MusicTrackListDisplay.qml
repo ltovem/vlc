@@ -116,10 +116,6 @@ Widgets.KeyNavigableTableView {
 
         model: _lineArtist
     }, {
-        size: 0.5,
-
-        model: _lineDuration
-    }, {
         size: 1,
 
         model: _lineTrack
@@ -127,6 +123,10 @@ Widgets.KeyNavigableTableView {
         size: 1,
 
         model: _lineDisc
+    }, {
+        size: 0.5,
+
+        model: _lineDuration
     }]
 
     property var _modelMedium: [{
