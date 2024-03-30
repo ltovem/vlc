@@ -226,7 +226,7 @@ MainInterface.MainViewLoader {
             }
 
             property var _modelSmall: [{
-                size: Math.max(2, _nbCols),
+                size: Math.max(1.5, _nbCols),
 
                 model: ({
                     criteria: "name",

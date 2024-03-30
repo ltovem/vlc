@@ -240,7 +240,7 @@ FocusScope {
             readonly property real _size: (_nbCols - 1) / 2
 
             property var _modelSmall: [{
-                size: Math.max(2, _nbCols),
+                size: Math.max(1.5, _nbCols),
 
                 model: ({
                     criteria: "name",

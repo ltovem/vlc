@@ -186,7 +186,7 @@ MainInterface.MainViewLoader {
             readonly property real _nbCols: VLCStyle.gridColumnsForWidth(tableView_id.availableRowWidth)
 
             property var _modelSmall: [{
-                size: Math.max(2, tableView_id._nbCols),
+                size: Math.max(1.5, tableView_id._nbCols),
 
                 model: ({
                     criteria: "title",
