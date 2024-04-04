@@ -4,7 +4,7 @@ QT = core gui qml svg quick widgets quickcontrols2 network
 QTPLUGIN = qsvgicon qsvg qjpeg qico
 
 win32 {
-QTPLUGIN += qwindows qwindowsvistastyle
+QTPLUGIN += qwindows qmodernwindowsstyle
 }
 
 linux {

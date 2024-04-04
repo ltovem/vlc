@@ -1,7 +1,7 @@
 # QtDeclarative
 
-QTDECLARATIVE_VERSION_MAJOR := 6.6
-QTDECLARATIVE_VERSION := $(QTDECLARATIVE_VERSION_MAJOR).2
+QTDECLARATIVE_VERSION_MAJOR := 6.7
+QTDECLARATIVE_VERSION := $(QTDECLARATIVE_VERSION_MAJOR).0
 QTDECLARATIVE_URL := $(QT)/$(QTDECLARATIVE_VERSION_MAJOR)/$(QTDECLARATIVE_VERSION)/submodules/qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz
 
 DEPS_qtdeclarative-tools := qt-tools $(DEPS_qt-tools)
@@ -40,6 +40,8 @@ $(TARBALLS)/qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz:
 qtdeclarative: qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz .sum-qtdeclarative
 	$(UNPACK)
 	$(APPLY) $(SRC)/qtdeclarative/0001-Fix-incorrect-library-inclusion.patch
+	$(APPLY) $(SRC)/qtdeclarative/0002-Fix-build-with-no-feature-network.patch
+	$(APPLY) $(SRC)/qtdeclarative/0003-Disable-svgtoqml-tool.patch
 	$(MOVE)
 
 QT_DECLARATIVE_CONFIG := \

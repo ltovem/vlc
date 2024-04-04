@@ -1,0 +1,27 @@
+From 67e1a86fee2ad14704f1970de325ef8897400631 Mon Sep 17 00:00:00 2001
+From: Fatih Uzunoglu <fuzun54@outlook.com>
+Date: Mon, 1 Apr 2024 19:43:59 +0300
+Subject: [PATCH 3/3] Disable svgtoqml tool
+
+This tool requires a more extended build of host.
+We do not use svgtoqml, so disable it instead.
+---
+ tools/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index 5770183d88..21bf5f6fd7 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -75,7 +75,7 @@ if(TARGET Qt::Quick
+         AND NOT IOS
+         AND NOT WASM
+         AND NOT rtems)
+-    add_subdirectory(svgtoqml)
++    # add_subdirectory(svgtoqml)
+ endif()
+ if(QT_FEATURE_thread AND TARGET Qt::QuickTest AND NOT ANDROID AND NOT WASM AND NOT rtems)
+     add_subdirectory(qmltestrunner)
+-- 
+2.44.0
+
