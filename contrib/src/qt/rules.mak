@@ -70,7 +70,7 @@ ifdef HAVE_CROSS_COMPILE
 QTBASE_PLATFORM := -device-option CROSS_COMPILE=$(HOST)-
 endif
 
-QTBASE_CONFIG += -static -opensource -confirm-license -opengl desktop -no-pkg-config -no-openssl \
+QTBASE_CONFIG += -static -opensource -confirm-license -opengl dynamic -no-pkg-config -no-openssl \
     -no-gif -no-dbus -no-pch -no-feature-zstd -no-feature-concurrent -no-feature-androiddeployqt \
 	-no-feature-sql -no-feature-testlib -system-freetype -system-harfbuzz -system-libjpeg \
 	-no-feature-xml -no-feature-printsupport -system-libpng -system-zlib -no-feature-networklistmanager \
