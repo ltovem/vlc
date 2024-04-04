@@ -304,7 +304,7 @@ debian:
 
         # Configure VLC
         ./bootstrap
-        ./configure
+        ./configure --enable-qt
 
         # Allow core dumps for tracing test failures
         ulimit -c unlimited
