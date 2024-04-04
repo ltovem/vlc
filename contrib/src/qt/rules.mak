@@ -60,6 +60,13 @@ QTBASE_CONFIG := -release
 # So add debug symbols in release mode instead:
 ifndef WITH_OPTIMIZATION
 QTBASE_CONFIG += -force-debug-info
+
+# With Qt 6.7.0, release with debug information seems
+# to exceed 2GB size. This apparently causes issues
+# with LoadLibraryEx.
+ifndef ENABLE_PDB
+QTBASE_CONFIG += -optimize-size
+endif
 endif
 
 ifeq ($(V),1)
