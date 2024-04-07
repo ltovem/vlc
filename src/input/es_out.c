@@ -91,6 +91,8 @@ typedef struct
 
     vlc_meta_t *p_meta;
     struct vlc_list node;
+
+    vlc_tick_t buffering_duration;
 } es_out_pgrm_t;
 
 
@@ -657,7 +659,7 @@ static vlc_tick_t EsOutGetWakeup( es_out_t *out )
         p_sys->b_buffering )
         return 0;
 
-    return input_clock_GetWakeup( p_sys->p_pgrm->p_input_clock );
+    return input_clock_GetWakeup(p_sys->p_pgrm->p_input_clock) - p_sys->p_pgrm->buffering_duration;
 }
 
 static es_out_id_t es_cat[DATA_ES];
@@ -913,7 +915,10 @@ static void EsOutChangePosition( es_out_t *out, bool b_flush,
     vlc_list_foreach(pgrm, &p_sys->programs, node)
     {
         input_clock_Reset(pgrm->p_input_clock);
+        vlc_clock_main_Lock(pgrm->clocks.main);
         pgrm->i_last_pcr = VLC_TICK_INVALID;
+        vlc_clock_main_Reset(pgrm->clocks.main);
+        vlc_clock_main_Unlock(pgrm->clocks.main);
     }
 
     p_sys->b_buffering = true;
@@ -986,6 +991,7 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
 
         return;
     }
+    p_sys->p_pgrm->buffering_duration = i_buffering_duration;
     input_SendEventCache( p_sys->p_input, 1.0 );
 
     msg_Dbg( p_sys->p_input, "Stream buffering done (%d ms in %d ms)",
@@ -1017,44 +1023,22 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
     EsOutStopFreeVout( out );
 
     /* */
-    const vlc_tick_t i_wakeup_delay = VLC_TICK_FROM_MS(10); /* FIXME CLEANUP thread wake up time*/
-    const vlc_tick_t i_current_date = p_sys->b_paused ? p_sys->i_pause_date : vlc_tick_now();
+    const vlc_tick_t now = p_sys->b_paused ? p_sys->i_pause_date : vlc_tick_now();
+    const vlc_tick_t media_start = i_stream_start + i_preroll_duration;
 
-    const vlc_tick_t update = i_current_date + i_wakeup_delay - i_buffering_duration;
-
-    /* The call order of these 3 input_clock_t/vlc_clock_main_t functions is
-     * important:
-     *
-     * - vlc_clock_main_Reset() must be called after
-     *   input_clock_ChangeSystemOrigin() since we want to use update points
-     *   after the buffering step. Indeed, in case of an input clock source,
-     *   input_clock_ChangeSystemOrigin() also forward the updated point to the
-     *   output clock.
-     *
-     * - vlc_clock_main_SetFirstPcr() must be called after
-     *   vlc_clock_main_Reset() since the reset function also reset the first
-     *   PCR point.
-     */
-
-    input_clock_ChangeSystemOrigin( p_sys->p_pgrm->p_input_clock, true, update );
-
-    vlc_clock_main_Lock(p_sys->p_pgrm->clocks.main);
-    /* Resetting the main_clock here will drop all points that were sent during
-     * the buffering step. Only points coming from the input_clock are dropped
-     * here. Indeed, decoders should not send any output frames while buffering
-     * so outputs could not update the clock while buffering.
-     *
-     * Reset the main clock once all decoders are ready to output their first
-     * frames and not from EsOutChangePosition(), like the input clock. Indeed,
-     * flush is asynchronous and the output used by the decoder may still need
-     * a valid reference of the clock to output their last frames. */
-    vlc_clock_main_Reset(p_sys->p_pgrm->clocks.main);
-
-    /* Send the first PCR to the output clock. This will be used as a reference
-     * point for the sync point. */
-    vlc_clock_main_SetFirstPcr(p_sys->p_pgrm->clocks.main, update,
-                               i_stream_start);
-    vlc_clock_main_Unlock(p_sys->p_pgrm->clocks.main);
+    if (input_CanPaceControl(p_sys->p_input))
+    {
+        vlc_clock_Lock(p_sys->p_pgrm->clocks.input);
+        vlc_clock_main_Reset(p_sys->p_pgrm->clocks.main);
+        vlc_clock_Start(p_sys->p_pgrm->clocks.input, now, media_start);
+        vlc_clock_Unlock(p_sys->p_pgrm->clocks.input);
+    }
+    else
+    {
+        vlc_clock_Lock(p_sys->p_pgrm->clocks.input);
+        vlc_clock_Start(p_sys->p_pgrm->clocks.input, now, media_start);
+        vlc_clock_Unlock(p_sys->p_pgrm->clocks.input);
+    }
 
     foreach_es_then_es_slaves(p_es)
     {
@@ -1346,15 +1330,13 @@ static void EsOutProgramHandleClockSource( es_out_t *out, es_out_pgrm_t *p_pgrm 
     if (p_pgrm->active_clock_source != VLC_CLOCK_MASTER_INPUT)
     {
         vlc_clock_main_Lock(p_pgrm->clocks.main);
-        p_pgrm->clocks.input = vlc_clock_main_CreateSlave(
-            p_pgrm->clocks.main, "pcr", UNKNOWN_ES, NULL, NULL);
+        p_pgrm->clocks.input =
+            vlc_clock_main_CreateInputSlave(p_pgrm->clocks.main);
         vlc_clock_main_Unlock(p_pgrm->clocks.main);
 
         if (p_pgrm->clocks.input != NULL)
-        {
             input_clock_AttachListener(p_pgrm->p_input_clock, &clock_cbs,
                                        p_pgrm);
-        }
     }
 
     msg_Dbg( p_input, "program(%d): using clock source: '%s'",
