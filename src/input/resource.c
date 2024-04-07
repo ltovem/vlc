@@ -82,6 +82,7 @@ struct input_resource_t
      * only lock or lock_hold to read them */
     struct vlc_list vout_rscs;
 
+    int audio_streams; /* Number of audio streams in the audio output device */
     bool            b_aout_busy;
     audio_output_t *p_aout;
 };
@@ -238,7 +239,10 @@ audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
 
         vlc_mutex_lock( &p_resource->lock_hold );
         if( p_resource->p_aout == NULL )
+        {
             p_resource->p_aout = p_aout;
+            p_resource->audio_streams = 0;
+        }
     }
     else
         msg_Dbg( p_resource->p_parent, "reusing audio output" );
@@ -246,7 +250,10 @@ audio_output_t *input_resource_GetAout( input_resource_t *p_resource )
     if( p_resource->p_aout == p_aout )
     {
         assert( !p_resource->b_aout_busy );
-        p_resource->b_aout_busy = true;
+        if( p_aout->start_stream != NULL )
+            p_resource->audio_streams++;
+        else
+            p_resource->b_aout_busy = true;
     }
     vlc_mutex_unlock( &p_resource->lock_hold );
     return p_aout;
@@ -260,17 +267,26 @@ void input_resource_PutAout( input_resource_t *p_resource,
     vlc_mutex_lock( &p_resource->lock_hold );
     if( p_aout == p_resource->p_aout )
     {
-        assert( p_resource->b_aout_busy );
-        p_resource->b_aout_busy = false;
-        msg_Dbg( p_resource->p_parent, "keeping audio output" );
-        p_aout = NULL;
+        if( p_aout->start_stream != NULL )
+            p_resource->audio_streams--;
+        else
+            assert( p_resource->b_aout_busy );
+
+        if(p_resource->audio_streams == 0)
+        {
+            p_resource->b_aout_busy = false;
+            msg_Dbg( p_resource->p_parent, "keeping audio output" );
+            p_aout = NULL;
+        }
+        vlc_mutex_unlock( &p_resource->lock_hold );
     }
     else
+    {
         msg_Dbg( p_resource->p_parent, "destroying extra audio output" );
-    vlc_mutex_unlock( &p_resource->lock_hold );
-
-    if( p_aout != NULL )
-        aout_Release( p_aout );
+        vlc_mutex_unlock( &p_resource->lock_hold );
+        if( p_aout != NULL )
+            aout_Release( p_aout );
+    }
 }
 
 audio_output_t *input_resource_HoldAout( input_resource_t *p_resource )

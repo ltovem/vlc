@@ -39,87 +39,23 @@
 #include "clock/clock.h"
 #include "libvlc.h"
 
-struct vlc_aout_stream
-{
-    aout_instance_t *instance;
-    aout_volume_t *volume;
-    aout_filters_t *filters;
-    aout_filters_cfg_t filters_cfg;
-
-    atomic_bool drained;
-    _Atomic vlc_tick_t drain_deadline;
-
-    struct
-    {
-        struct vlc_clock_t *clock;
-        float rate; /**< Play-out speed rate */
-        vlc_tick_t resamp_start_drift; /**< Resampler drift absolute value */
-        int resamp_type; /**< Resampler mode (FIXME: redundant / resampling) */
-        bool discontinuity;
-        vlc_tick_t request_delay;
-        vlc_tick_t delay;
-    } sync;
-    vlc_tick_t original_pts;
-
-    struct
-    {
-        vlc_mutex_t lock; /* Guard first_pts, last_drift, rate_system_ts,
-                             rate_audio_ts, system_ts, audio_ts */
-
-        vlc_tick_t last_drift;
-
-        vlc_tick_t first_pts;
-        int64_t played_samples; /* Used for stream_GetDelay() emulation */
-
-        vlc_tick_t rate_system_ts;
-        vlc_tick_t rate_audio_ts;
-
-        vlc_tick_t system_ts;
-        vlc_tick_t audio_ts;
-
-        vlc_tick_t pause_date;
-        float rate;
-    } timing;
-
-    const char *str_id;
-
-    /* Original input format and profile, won't change for the lifetime of a
-     * stream (between vlc_aout_stream_New() and vlc_aout_stream_Delete()). */
-    int                   input_profile;
-    audio_sample_format_t input_format;
-
-    /* Format used to configure the conversion filters. It is based on the
-     * input_format but its fourcc can be different when the module is handling
-     * codec passthrough. Indeed, in case of DTSHD->DTS or EAC3->AC3 fallback,
-     * the filter need to know which codec is handled by the output. */
-    audio_sample_format_t filter_format;
-
-    /* Output format used and modified by the module. */
-    audio_sample_format_t mixer_format;
-
-    atomic_uchar restart;
-
-    atomic_uint buffers_lost;
-    atomic_uint buffers_played;
-};
-
-static inline aout_owner_t *aout_stream_owner(vlc_aout_stream *stream)
+static inline aout_owner_t *aout_stream_owner(vlc_aout_stream_owner *stream)
 {
     return &stream->instance->owner;
 }
 
-static inline audio_output_t *aout_stream_aout(vlc_aout_stream *stream)
+static inline audio_output_t *aout_stream_aout(vlc_aout_stream_owner *stream)
 {
     return &stream->instance->output;
 }
 
-static inline struct vlc_tracer *aout_stream_tracer(vlc_aout_stream *stream)
+static inline struct vlc_tracer *aout_stream_tracer(vlc_aout_stream_owner *stream)
 {
     return stream->str_id == NULL ? NULL :
         vlc_object_get_tracer(VLC_OBJECT(aout_stream_aout(stream)));
 }
 
-static int stream_GetDelay(vlc_aout_stream *stream, vlc_tick_t *delay)
+static int stream_GetDelay(vlc_aout_stream_owner *stream, vlc_tick_t *delay)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
@@ -156,7 +92,7 @@ static int stream_GetDelay(vlc_aout_stream *stream, vlc_tick_t *delay)
     return 0;
 }
 
-static void stream_Discontinuity(vlc_aout_stream *stream)
+static void stream_Discontinuity(vlc_aout_stream_owner *stream)
 {
     stream->sync.discontinuity = true;
     stream->original_pts = VLC_TICK_INVALID;
@@ -172,7 +108,7 @@ static void stream_Discontinuity(vlc_aout_stream *stream)
     stream->timing.played_samples = 0;
 }
 
-static void stream_Reset(vlc_aout_stream *stream)
+static void stream_Reset(vlc_aout_stream_owner *stream)
 {
     aout_owner_t *owner = aout_stream_owner(stream);
 
@@ -220,7 +156,7 @@ static void stream_Reset(vlc_aout_stream *stream)
 /**
  * Creates an audio output
  */
-vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
+vlc_aout_stream_owner * vlc_aout_stream_New(audio_output_t *p_aout,
                                       const struct vlc_aout_stream_cfg *cfg)
 {
     assert(p_aout);
@@ -256,7 +192,7 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
 
     aout_owner_t *owner = aout_owner(p_aout);
 
-    vlc_aout_stream *stream = malloc(sizeof(*stream));
+    vlc_aout_stream_owner *stream = malloc(sizeof(*stream));
     if (stream == NULL)
         return NULL;
     stream->instance = aout_instance(p_aout);
@@ -291,6 +227,7 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
 
     stream->filters = NULL;
     stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
+    aout_OutputPushStream(p_aout, stream);
     if (aout_OutputNew(p_aout, stream, &stream->mixer_format, stream->input_profile,
                        &stream->filter_format, &stream->filters_cfg))
         goto error;
@@ -309,7 +246,8 @@ vlc_aout_stream * vlc_aout_stream_New(audio_output_t *p_aout,
                                                    &stream->filters_cfg);
         if (stream->filters == NULL)
         {
-            aout_OutputDelete (p_aout);
+            aout_OutputDelete (p_aout, stream);
+            aout_OutputRemoveStream(p_aout, stream);
             vlc_audio_meter_Reset(&owner->meter, NULL);
 
 error:
@@ -323,10 +261,87 @@ error:
     return stream;
 }
 
+static void vlc_aout_stream_TimingNotify(vlc_aout_stream *s, vlc_tick_t system_ts, vlc_tick_t audio_ts)
+{
+    vlc_aout_stream_owner *stream = s->owner;
+    vlc_aout_stream_NotifyTiming(stream, system_ts, audio_ts);
+}
+
+static void vlc_aout_stream_DrainedNotify(vlc_aout_stream *s)
+{
+    vlc_aout_stream_owner *stream = s->owner;
+    vlc_aout_stream_NotifyDrained(stream);
+}
+
+static const struct vlc_aout_stream_events stream_events = {
+    vlc_aout_stream_TimingNotify,
+    vlc_aout_stream_DrainedNotify
+};
+
+/**
+ * Creates a new vlc_aout_stream object
+ */
+vlc_aout_stream *vlc_aout_stream_Create(vlc_aout_stream_owner *stream, audio_output_t *aout)
+{
+    size_t size = sizeof(vlc_aout_stream);
+    void *obj = vlc_object_create(aout, size);
+    if (unlikely(obj == NULL))
+        return NULL;
+    vlc_aout_stream *s = obj;
+    s->owner = stream;
+    s->ops = NULL;
+    s->events = &stream_events;
+    return s;
+}
+
+/**
+  * Starts a stream and stores the module stream in the core (if the aout module is adapted to support multiple streams)
+  */
+int vlc_aout_stream_Start(vlc_aout_stream_owner *stream, audio_sample_format_t * restrict fmt)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = vlc_aout_stream_Create(stream, aout);
+        if(unlikely(s == NULL))
+            return -1;
+        stream->module_stream = s;
+        int ret = aout->start_stream(aout, s, fmt);
+        if(ret)
+        {
+            stream->module_stream = NULL;
+            vlc_object_delete(s);
+        }
+
+        return ret;
+    }
+    else
+    {
+        return aout->start(aout, fmt);
+    }
+}
+
+/**
+  * Stops a stream and deletes the vlc_aout_stream object (if the aout module is adapted to support multiple streams)
+  */
+void vlc_aout_stream_Stop(vlc_aout_stream_owner *stream)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->stop(s, aout);
+        stream->module_stream = NULL;
+        vlc_object_delete(s);
+    }
+    else
+        aout->stop(aout);
+}
+
 /**
  * Stops all plugins involved in the audio output.
  */
-void vlc_aout_stream_Delete (vlc_aout_stream *stream)
+void vlc_aout_stream_Delete (vlc_aout_stream_owner *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
     aout_owner_t *owner = aout_stream_owner(stream);
@@ -337,7 +352,8 @@ void vlc_aout_stream_Delete (vlc_aout_stream *stream)
         vlc_audio_meter_Reset(&owner->meter, NULL);
         if (stream->filters)
             aout_FiltersDelete (aout, stream->filters);
-        aout_OutputDelete (aout);
+        aout_OutputDelete (aout, stream);
+        aout_OutputRemoveStream(aout, stream);
     }
     if (stream->volume != NULL)
         aout_volume_Delete(stream->volume);
@@ -345,7 +361,22 @@ void vlc_aout_stream_Delete (vlc_aout_stream *stream)
     free(stream);
 }
 
-static int stream_CheckReady (vlc_aout_stream *stream)
+/**
+  * Plays a stream from audio_output_t/vlc_aout_stream object depending on whether the aout module has been adapted
+  */
+static void stream_Play (vlc_aout_stream_owner *stream, block_t *block, vlc_tick_t date)
+{
+    audio_output_t *aout = aout_stream_aout(stream);
+    if(aout->start_stream != NULL)
+    {
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->play(s, block, date);
+    }
+    else
+        aout->play(aout, block, date);
+}
+
+static int stream_CheckReady (vlc_aout_stream_owner *stream)
 {
     aout_owner_t *owner = aout_stream_owner(stream);
     audio_output_t *aout = aout_stream_aout(stream);
@@ -370,7 +401,7 @@ static int stream_CheckReady (vlc_aout_stream *stream)
 
             msg_Dbg (aout, "restarting output...");
             if (stream->mixer_format.i_format)
-                aout_OutputDelete (aout);
+                aout_OutputDelete (aout, stream);
             stream->filter_format = stream->mixer_format = stream->input_format;
             stream->filters_cfg = AOUT_FILTERS_CFG_INIT;
             if (aout_OutputNew(aout, stream, &stream->mixer_format, stream->input_profile,
@@ -402,7 +433,8 @@ static int stream_CheckReady (vlc_aout_stream *stream)
                                                        &stream->filters_cfg);
             if (stream->filters == NULL)
             {
-                aout_OutputDelete (aout);
+                aout_OutputDelete (aout, stream);
+                aout_OutputRemoveStream(aout, stream);
                 stream->mixer_format.i_format = 0;
             }
             aout_FiltersSetClockDelay(stream->filters, stream->sync.delay);
@@ -422,7 +454,7 @@ static int stream_CheckReady (vlc_aout_stream *stream)
  * Marks the audio output for restart, to update any parameter of the output
  * plug-in (e.g. output device or channel mapping).
  */
-void vlc_aout_stream_RequestRestart(vlc_aout_stream *stream, unsigned mode)
+void vlc_aout_stream_RequestRestart(vlc_aout_stream_owner *stream, unsigned mode)
 {
     audio_output_t *aout = aout_stream_aout(stream);
     atomic_fetch_or_explicit(&stream->restart, mode, memory_order_release);
@@ -433,7 +465,7 @@ void vlc_aout_stream_RequestRestart(vlc_aout_stream *stream, unsigned mode)
  * Buffer management
  */
 
-static void stream_StopResampling(vlc_aout_stream *stream)
+static void stream_StopResampling(vlc_aout_stream_owner *stream)
 {
     assert(stream->filters);
 
@@ -441,7 +473,7 @@ static void stream_StopResampling(vlc_aout_stream *stream)
     aout_FiltersAdjustResampling (stream->filters, 0);
 }
 
-static void stream_Silence (vlc_aout_stream *stream, vlc_tick_t length, vlc_tick_t pts)
+static void stream_Silence (vlc_aout_stream_owner *stream, vlc_tick_t length, vlc_tick_t pts)
 {
     audio_output_t *aout = aout_stream_aout(stream);
     const audio_sample_format_t *fmt = &stream->mixer_format;
@@ -466,10 +498,10 @@ static void stream_Silence (vlc_aout_stream *stream, vlc_tick_t length, vlc_tick
                                  stream->sync.rate);
     vlc_clock_Unlock(stream->sync.clock);
     stream->timing.played_samples += block->i_nb_samples;
-    aout->play(aout, block, system_pts);
+    stream_Play(stream, block, system_pts);
 }
 
-static void stream_HandleDrift(vlc_aout_stream *stream, vlc_tick_t drift,
+static void stream_HandleDrift(vlc_aout_stream_owner *stream, vlc_tick_t drift,
                                vlc_tick_t audio_ts)
 {
     aout_owner_t *owner = aout_stream_owner(stream);
@@ -597,7 +629,7 @@ static void stream_HandleDrift(vlc_aout_stream *stream, vlc_tick_t drift,
     }
 }
 
-static void stream_Synchronize(vlc_aout_stream *stream, vlc_tick_t system_now,
+static void stream_Synchronize(vlc_aout_stream_owner *stream, vlc_tick_t system_now,
                                vlc_tick_t play_date, vlc_tick_t dec_pts)
 {
     /**
@@ -672,7 +704,7 @@ static void stream_Synchronize(vlc_aout_stream *stream, vlc_tick_t system_now,
     stream_HandleDrift(stream, drift, dec_pts);
 }
 
-void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
+void vlc_aout_stream_NotifyTiming(vlc_aout_stream_owner *stream, vlc_tick_t system_ts,
                                   vlc_tick_t audio_ts)
 {
     vlc_mutex_lock(&stream->timing.lock);
@@ -718,7 +750,7 @@ void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
 /*****************************************************************************
  * vlc_aout_stream_Play : filter & mix the decoded buffer
  *****************************************************************************/
-int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
+int vlc_aout_stream_Play(vlc_aout_stream_owner *stream, block_t *block)
 {
     aout_owner_t *owner = aout_stream_owner(stream);
     audio_output_t *aout = aout_stream_aout(stream);
@@ -820,7 +852,7 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
     /* Output */
     stream->sync.discontinuity = false;
     stream->timing.played_samples += block->i_nb_samples;
-    aout->play(aout, block, play_date);
+    stream_Play(stream, block, play_date);
 
     atomic_fetch_add_explicit(&stream->buffers_played, 1, memory_order_relaxed);
     return ret;
@@ -831,7 +863,7 @@ drop:
     return ret;
 }
 
-void vlc_aout_stream_GetResetStats(vlc_aout_stream *stream, unsigned *restrict lost,
+void vlc_aout_stream_GetResetStats(vlc_aout_stream_owner *stream, unsigned *restrict lost,
                            unsigned *restrict played)
 {
     *lost = atomic_exchange_explicit(&stream->buffers_lost, 0,
@@ -840,7 +872,7 @@ void vlc_aout_stream_GetResetStats(vlc_aout_stream *stream, unsigned *restrict l
                                        memory_order_relaxed);
 }
 
-void vlc_aout_stream_ChangePause(vlc_aout_stream *stream, bool paused, vlc_tick_t date)
+void vlc_aout_stream_ChangePause(vlc_aout_stream_owner *stream, bool paused, vlc_tick_t date)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
@@ -868,10 +900,21 @@ void vlc_aout_stream_ChangePause(vlc_aout_stream *stream, bool paused, vlc_tick_
             stream->timing.pause_date = VLC_TICK_INVALID;
         }
 
-        if (aout->pause != NULL)
-            aout->pause(aout, paused, date);
-        else if (paused)
-            vlc_aout_stream_Flush(stream);
+        if(aout->start_stream != NULL)
+        {
+            vlc_aout_stream *s = stream->module_stream;
+            if(s->ops->pause != NULL)
+                s->ops->pause(s, paused);
+            else if(paused)
+                s->ops->flush(s);
+        }
+        else
+        {
+            if (aout->pause != NULL)
+                aout->pause(aout, paused, date);
+            else if (paused)
+                vlc_aout_stream_Flush(stream);
+        }
 
         /* Update the rate point after the pause */
         if (aout->time_get == NULL && !paused
@@ -888,17 +931,17 @@ void vlc_aout_stream_ChangePause(vlc_aout_stream *stream, bool paused, vlc_tick_
     }
 }
 
-void vlc_aout_stream_ChangeRate(vlc_aout_stream *stream, float rate)
+void vlc_aout_stream_ChangeRate(vlc_aout_stream_owner *stream, float rate)
 {
     stream->sync.rate = rate;
 }
 
-void vlc_aout_stream_ChangeDelay(vlc_aout_stream *stream, vlc_tick_t delay)
+void vlc_aout_stream_ChangeDelay(vlc_aout_stream_owner *stream, vlc_tick_t delay)
 {
     stream->sync.request_delay = delay;
 }
 
-void vlc_aout_stream_Flush(vlc_aout_stream *stream)
+void vlc_aout_stream_Flush(vlc_aout_stream_owner *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
@@ -907,22 +950,30 @@ void vlc_aout_stream_Flush(vlc_aout_stream *stream)
         vlc_tracer_TraceEvent(tracer, "RENDER", stream->str_id, "flushed");
 
     if (stream->mixer_format.i_format)
-        aout->flush(aout);
+    {
+        if(aout->start_stream != NULL)
+        {
+            vlc_aout_stream *s = stream->module_stream;
+            s->ops->flush(s);
+        }
+        else
+            aout->flush(aout);
+    }
     stream_Reset(stream);
 }
 
-void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain)
+void vlc_aout_stream_NotifyGain(vlc_aout_stream_owner *stream, float gain)
 {
     if (stream->volume != NULL)
         aout_volume_SetVolume(stream->volume, gain);
 }
 
-void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream)
+void vlc_aout_stream_NotifyDrained(vlc_aout_stream_owner *stream)
 {
     atomic_store_explicit(&stream->drained, true, memory_order_relaxed);
 }
 
-bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
+bool vlc_aout_stream_IsDrained(vlc_aout_stream_owner *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
@@ -937,7 +988,7 @@ bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream)
         return atomic_load_explicit(&stream->drained, memory_order_relaxed);
 }
 
-void vlc_aout_stream_Drain(vlc_aout_stream *stream)
+void vlc_aout_stream_Drain(vlc_aout_stream_owner *stream)
 {
     audio_output_t *aout = aout_stream_aout(stream);
 
@@ -953,7 +1004,7 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
     {
         block_t *block = aout_FiltersDrain (stream->filters);
         if (block)
-            aout->play(aout, block, vlc_tick_now());
+            stream_Play(stream, block, vlc_tick_now());
     }
 
     if (aout->drain)
@@ -961,6 +1012,13 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream)
         assert(!atomic_load_explicit(&stream->drained, memory_order_relaxed));
 
         aout->drain(aout);
+    }
+    else if (aout->start_stream)
+    {
+        assert(!atomic_load_explicit(&stream->drained, memory_order_relaxed));
+
+        vlc_aout_stream *s = stream->module_stream;
+        s->ops->drain(s);
     }
     else
     {

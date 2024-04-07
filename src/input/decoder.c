@@ -180,7 +180,7 @@ struct vlc_input_decoder_t
 
     /* If p_aout is valid, then p_astream is valid too */
     audio_output_t *p_aout;
-    vlc_aout_stream *p_astream;
+    vlc_aout_stream_owner *p_astream;
 
     vout_thread_t   *p_vout;
     bool             vout_started;
@@ -430,7 +430,7 @@ static int DecoderThread_Reload( vlc_input_decoder_t *p_owner,
     {
         assert( p_owner->fmt.i_cat == AUDIO_ES );
         audio_output_t *p_aout = p_owner->p_aout;
-        vlc_aout_stream *p_astream = p_owner->p_astream;
+        vlc_aout_stream_owner *p_astream = p_owner->p_astream;
         // no need to lock, the decoder and ModuleThread are dead
         p_owner->p_aout = NULL;
         p_owner->p_astream = NULL;
@@ -517,7 +517,7 @@ static int ModuleThread_UpdateAudioFormat( decoder_t *p_dec )
          p_dec->fmt_out.i_profile != p_owner->fmt.i_profile ) )
     {
         audio_output_t *p_aout = p_owner->p_aout;
-        vlc_aout_stream *p_astream = p_owner->p_astream;
+        vlc_aout_stream_owner *p_astream = p_owner->p_astream;
 
         /* Parameters changed, restart the aout */
         vlc_fifo_Lock(p_owner->p_fifo);
@@ -559,7 +559,7 @@ static int ModuleThread_UpdateAudioFormat( decoder_t *p_dec )
         }
 
         audio_output_t *p_aout;
-        vlc_aout_stream *p_astream;
+        vlc_aout_stream_owner *p_astream;
 
         p_aout = input_resource_GetAout( p_owner->p_resource );
         if( p_aout )
@@ -1475,7 +1475,7 @@ static int ModuleThread_PlayAudio( vlc_input_decoder_t *p_owner, vlc_frame_t *p_
         return VLC_EGENERIC;
     }
 
-    vlc_aout_stream *p_astream = p_owner->p_astream;
+    vlc_aout_stream_owner *p_astream = p_owner->p_astream;
     if( p_astream == NULL )
     {
         msg_Dbg( p_dec, "discarded audio buffer" );

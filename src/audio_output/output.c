@@ -158,8 +158,11 @@ out:
 static void aout_RestartNotify (audio_output_t *aout, unsigned mode)
 {
     aout_owner_t *owner = aout_owner (aout);
-    if (owner->main_stream)
-        vlc_aout_stream_RequestRestart(owner->main_stream, mode);
+    vlc_aout_stream_owner *stream;
+    vlc_list_foreach(stream, &owner->stream_list, node)
+    {
+        vlc_aout_stream_RequestRestart(stream, mode);
+    }
 }
 
 void aout_InputRequestRestart(audio_output_t *aout)
@@ -265,6 +268,7 @@ audio_output_t *aout_New (vlc_object_t *parent)
     vlc_audio_meter_Init(&owner->meter, aout);
 
     owner->main_stream = NULL;
+    vlc_list_init(&owner->stream_list);
 
     /* Audio output module callbacks */
     var_Create (aout, "volume", VLC_VAR_FLOAT);
@@ -282,6 +286,7 @@ audio_output_t *aout_New (vlc_object_t *parent)
     aout->volume_set = NULL;
     aout->mute_set = NULL;
     aout->device_select = NULL;
+    aout->start_stream = NULL;
     owner->module = module_need_var(aout, "audio output", "aout");
     if (owner->module == NULL)
     {
@@ -289,7 +294,7 @@ audio_output_t *aout_New (vlc_object_t *parent)
         vlc_object_delete(aout);
         return NULL;
     }
-    assert(aout->start && aout->stop);
+    assert((aout->start && aout->stop) || aout->start_stream);
 
     /*
      * Persistent audio output variables
@@ -411,6 +416,11 @@ static void aout_Destroy (audio_output_t *aout)
     aout->mute_set = NULL;
     aout->device_select = NULL;
     vlc_audio_meter_Destroy(&owner->meter);
+    vlc_aout_stream_owner *stream;
+    vlc_list_foreach(stream, &owner->stream_list, node)
+    {
+        vlc_list_remove(&stream->node);
+    }
     vlc_mutex_unlock(&owner->lock);
 
     var_DelCallback (aout, "viewpoint", ViewpointCallback, NULL);
@@ -676,7 +686,17 @@ static void aout_UpdateMixMode(audio_output_t *aout, int mode,
     var_Change(aout, "mix-mode", VLC_VAR_SETVALUE, (vlc_value_t) { .i_int = mode});
 }
 
-int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
+void aout_OutputPushStream(audio_output_t *aout, vlc_aout_stream_owner *stream)
+{
+    aout_owner_t *owner = aout_owner (aout);
+    
+    if (vlc_list_is_empty(&owner->stream_list)) // Store the first stream in owner->main_stream
+        owner->main_stream = stream;
+    
+    vlc_list_append(&stream->node, &owner->stream_list);
+}
+
+int aout_OutputNew(audio_output_t *aout, vlc_aout_stream_owner *stream,
                    audio_sample_format_t *fmt, int input_profile,
                    audio_sample_format_t *filter_fmt,
                    aout_filters_cfg_t *filters_cfg)
@@ -760,17 +780,18 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
     aout->current_sink_info.headphones = false;
 
     vlc_mutex_lock(&owner->lock);
-    /* XXX: Remove when aout/stream support is complete (in all modules) */
-    assert(owner->main_stream == NULL);
 
     int ret = VLC_EGENERIC;
     for (size_t i = 0; formats[i] != 0 && ret != VLC_SUCCESS; ++i)
     {
         filter_fmt->i_format = fmt->i_format = formats[i];
-        owner->main_stream = stream;
-        ret = aout->start(aout, fmt);
+        ret = vlc_aout_stream_Start(stream, fmt);
         if (ret != 0)
-            owner->main_stream = NULL;
+        {
+            vlc_list_remove(&stream->node);
+            if (owner->main_stream == stream)
+                owner->main_stream = NULL;
+        }
     }
     vlc_mutex_unlock(&owner->lock);
     if (ret)
@@ -782,7 +803,7 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
                       "failing back to linear format");
         return -1;
     }
-    assert(aout->flush != NULL && aout->play != NULL);
+    assert((aout->flush && aout->play && aout->pause) || aout->start_stream);
 
     /* Autoselect the headphones mode if available and if the user didn't
      * request any mode */
@@ -802,12 +823,23 @@ int aout_OutputNew(audio_output_t *aout, vlc_aout_stream *stream,
     return 0;
 }
 
-void aout_OutputDelete (audio_output_t *aout)
+void aout_OutputRemoveStream(audio_output_t *aout, vlc_aout_stream_owner *stream)
+{
+    aout_owner_t *owner = aout_owner(aout);
+    bool isMainStream = vlc_list_is_first(&stream->node, &owner->stream_list);
+    vlc_list_remove(&stream->node);
+
+    if (vlc_list_is_empty(&owner->stream_list)) // If all streams are removed
+        owner->main_stream = NULL;
+    else if (isMainStream) // If first stream is removed, replace it with the second stream
+        owner->main_stream = vlc_list_entry(&owner->stream_list, vlc_aout_stream_owner, node);
+}
+
+void aout_OutputDelete (audio_output_t *aout, vlc_aout_stream_owner *stream)
 {
     aout_owner_t *owner = aout_owner(aout);
     vlc_mutex_lock(&owner->lock);
-    aout->stop (aout);
-    owner->main_stream = NULL;
+    vlc_aout_stream_Stop(stream);
     vlc_mutex_unlock(&owner->lock);
 }
 
