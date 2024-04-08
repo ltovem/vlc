@@ -1058,7 +1058,7 @@ static void Prepare(vout_display_t *vd, picture_t *picture, subpicture_t *subpic
                 return;
             p_sys = D3D11_TonemapperGetOutput(sys->tonemapProc);
         }
-        else if (sys->scaleProc && D3D11_UpscalerUsed(sys->scaleProc))
+        if (sys->scaleProc && D3D11_UpscalerUsed(sys->scaleProc))
         {
             if (D3D11_UpscalerScale(VLC_OBJECT(vd), sys->scaleProc, p_sys) != VLC_SUCCESS)
                 return;
@@ -1554,7 +1554,8 @@ static void InitScaleProcessor(vout_display_t *vd)
     if (sys->scaleProc == NULL)
         sys->upscaleMode = upscale_LinearSampler;
 
-    msg_Dbg(vd, "Using %s scaler", ppsz_upscale_mode_text[sys->upscaleMode]);
+    msg_Dbg(vd, "Using %s scaler with %s output", ppsz_upscale_mode_text[sys->upscaleMode],
+        sys->picQuad.formatInfo->name);
 }
 
 static int Direct3D11Open(vout_display_t *vd, bool external_device)
