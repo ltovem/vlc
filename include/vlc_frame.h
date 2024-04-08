@@ -129,6 +129,7 @@ struct vlc_frame_t
 
     uint32_t    i_flags;
     unsigned    i_nb_samples; /* Used for audio */
+    uint32_t    clock_id;
 
     vlc_tick_t  i_pts;
     vlc_tick_t  i_dts;
@@ -569,6 +570,7 @@ static inline vlc_frame_t *vlc_frame_ChainGather( vlc_frame_t *p_list )
     g->i_pts   = p_list->i_pts;
     g->i_dts   = p_list->i_dts;
     g->i_length = i_length;
+    g->clock_id = p_list->clock_id;
 
     /* free p_list */
     vlc_frame_ChainRelease( p_list );

@@ -108,7 +108,8 @@ void input_clock_Delete(input_clock_t *);
  */
 vlc_tick_t input_clock_Update( input_clock_t *clock, vlc_object_t *p_log,
                             bool b_can_pace_control, bool b_buffering_allowed,
-                            vlc_tick_t i_clock, vlc_tick_t i_system );
+                            vlc_tick_t i_clock, vlc_tick_t i_system,
+                            bool *discontinuity);
 /**
  * This function will reset the drift of a input_clock_t.
  *

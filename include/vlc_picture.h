@@ -140,6 +140,7 @@ struct picture_t
      * but should never be written directly */
     /**@{*/
     vlc_tick_t      date;                                  /**< display date */
+    uint32_t        clock_id;
     bool            b_force;
     bool            b_still;
     /**@}*/

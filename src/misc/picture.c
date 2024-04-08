@@ -210,6 +210,7 @@ static bool picture_InitPrivate(const video_format_t *restrict p_fmt,
 
     memset( p_picture, 0, sizeof( *p_picture ) );
     p_picture->date = VLC_TICK_INVALID;
+    p_picture->clock_id = 0;
 
     video_format_Copy(&p_picture->format, p_fmt);
     /* Make sure the real dimensions are a multiple of 16 */
@@ -403,6 +404,7 @@ void plane_CopyPixels( plane_t *p_dst, const plane_t *p_src )
 void picture_CopyProperties( picture_t *p_dst, const picture_t *p_src )
 {
     p_dst->date = p_src->date;
+    p_dst->clock_id = p_src->clock_id;
     p_dst->b_force = p_src->b_force;
     p_dst->b_still = p_src->b_still;
 

@@ -68,6 +68,7 @@ struct frame_info_s
 {
     bool b_eos;
     bool b_display;
+    uint32_t clock_id;
 };
 
 /*****************************************************************************
@@ -921,7 +922,7 @@ static void update_late_frame_count( decoder_t *p_dec, block_t *p_block,
    /* Update frame late count (except when doing preroll) */
    vlc_tick_t i_display_date = VLC_TICK_INVALID;
    if( !p_block || !(p_block->i_flags & BLOCK_FLAG_PREROLL) )
-       i_display_date = decoder_GetDisplayDate( p_dec, current_time, i_pts );
+       i_display_date = decoder_GetDisplayDate( p_dec, p_block->clock_id, current_time, i_pts );
 
    vlc_tick_t i_threshold = i_next_pts != VLC_TICK_INVALID
                           ? (i_next_pts - i_pts) / 2 : VLC_TICK_FROM_MS(20);
@@ -1344,6 +1345,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
             struct frame_info_s *p_frame_info = &p_sys->frame_info[p_context->reordered_opaque % FRAME_INFO_DEPTH];
             p_frame_info->b_eos = p_block && (p_block->i_flags & BLOCK_FLAG_END_OF_SEQUENCE);
             p_frame_info->b_display = b_need_output_picture;
+            p_frame_info->clock_id = p_block ? p_block->clock_id : 0;
 
             p_context->reordered_opaque++;
             i_used = ret != AVERROR(EAGAIN) ? pkt->size : 0;
@@ -1542,6 +1544,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t **pp_block )
         {
             if(p_frame_info->b_eos)
                 p_pic->b_still = true;
+            p_pic->clock_id = p_frame_info->clock_id;
             p_sys->b_first_frame = false;
             vlc_mutex_unlock(&p_sys->lock);
             decoder_QueueVideo( p_dec, p_pic );

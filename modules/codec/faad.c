@@ -274,6 +274,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
     }
 
     const vlc_tick_t i_pts = p_block->i_pts;
+    uint32_t clock_id = p_block->clock_id;
 
     /* Append block as temporary buffer */
     if( p_sys->p_block == NULL )
@@ -331,6 +332,8 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
             = mpeg4_asc_channelsbyindex[i_channels];
         date_Init( &p_sys->date, i_rate, 1 );
     }
+
+    date_UpdateClockId(&p_sys->date, i_pts, clock_id);
 
     if( i_pts != VLC_TICK_INVALID && i_pts != date_Get( &p_sys->date ) )
     {
@@ -571,6 +574,7 @@ static int DecodeBlock( decoder_t *p_dec, block_t *p_block )
         if( p_out )
         {
             p_out->i_pts = date_Get( &p_sys->date );
+            p_out->clock_id = date_GetClockId( &p_sys->date );
             p_out->i_length = date_Increment( &p_sys->date,
                                               frame.samples / frame.channels )
                               - p_out->i_pts;

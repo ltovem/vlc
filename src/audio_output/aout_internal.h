@@ -172,8 +172,8 @@ void vlc_aout_stream_Drain(vlc_aout_stream *stream);
  * any threads */
 bool vlc_aout_stream_IsDrained(vlc_aout_stream *stream);
 /* Called from output.c */
-void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, vlc_tick_t system_ts,
-                                  vlc_tick_t audio_ts);
+void vlc_aout_stream_NotifyTiming(vlc_aout_stream *stream, uint32_t clock_id,
+                                  vlc_tick_t system_ts, vlc_tick_t audio_ts);
 void vlc_aout_stream_NotifyDrained(vlc_aout_stream *stream);
 void vlc_aout_stream_NotifyGain(vlc_aout_stream *stream, float gain);
 

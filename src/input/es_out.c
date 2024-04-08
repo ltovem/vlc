@@ -69,6 +69,7 @@ typedef struct
 
     /* Program ID */
     int i_id;
+    uint32_t clock_id;
 
     /* Number of es for this pgrm */
     int i_es;
@@ -156,6 +157,8 @@ struct es_out_id_t
 
     vlc_mouse_event mouse_event_cb;
     void* mouse_event_userdata;
+
+    uint32_t clock_id;
 };
 
 typedef struct
@@ -933,6 +936,21 @@ static void EsOutStopFreeVout( es_out_t *out )
         input_resource_StopFreeVout( input_priv(p_sys->p_input)->p_resource );
 }
 
+static void EsOutProgramSetClockId(es_out_t *out, es_out_pgrm_t *pgrm,
+                                   uint32_t clock_id)
+{
+    es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
+    pgrm->clock_id = clock_id;
+
+    es_out_id_t *it;
+    foreach_es_then_es_slaves(it)
+    {
+        if (it->p_pgrm != pgrm)
+            continue;
+        it->clock_id = clock_id;
+    }
+}
+
 static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
 {
     es_out_sys_t *p_sys = container_of(out, es_out_sys_t, out);
@@ -1052,9 +1070,12 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
 
     /* Send the first PCR to the output clock. This will be used as a reference
      * point for the sync point. */
-    vlc_clock_main_SetFirstPcr(p_sys->p_pgrm->clocks.main, update,
-                               i_stream_start);
+    uint32_t clock_id =
+        vlc_clock_main_SetFirstPcr(p_sys->p_pgrm->clocks.main, update,
+                                   i_stream_start);
     vlc_clock_main_Unlock(p_sys->p_pgrm->clocks.main);
+
+    EsOutProgramSetClockId(out, p_sys->p_pgrm, clock_id);
 
     foreach_es_then_es_slaves(p_es)
     {
@@ -1263,7 +1284,8 @@ ClockListenerUpdate(void *opaque, vlc_tick_t ck_system,
     es_out_pgrm_t *pgrm = opaque;
     vlc_clock_Lock(pgrm->clocks.input);
     vlc_tick_t drift =
-        vlc_clock_Update(pgrm->clocks.input, ck_system, ck_stream, rate);
+        vlc_clock_Update(pgrm->clocks.input, VLC_CLOCK_ID_LAST, ck_system,
+                         ck_stream, rate);
     vlc_clock_Unlock(pgrm->clocks.input);
     return drift;
 }
@@ -1493,6 +1515,7 @@ static es_out_pgrm_t *EsOutProgramAdd( es_out_t *out, input_source_t *source, in
     /* Init */
     p_pgrm->source = source;
     p_pgrm->i_id = i_group;
+    p_pgrm->clock_id = 0;
     p_pgrm->i_es = 0;
     p_pgrm->b_selected = false;
     p_pgrm->b_scrambled = false;
@@ -2217,6 +2240,7 @@ static es_out_id_t *EsOutAddLocked( es_out_t *out, input_source_t *source,
     es->mouse_event_userdata = NULL;
     es->i_pts_level = VLC_TICK_INVALID;
     es->delay = VLC_TICK_MAX;
+    es->clock_id = p_pgrm->clock_id;
 
     vlc_list_append(&es->node, es->p_master ? &p_sys->es_slaves : &p_sys->es);
 
@@ -2986,6 +3010,8 @@ static int EsOutSend( es_out_t *out, es_out_id_t *es, block_t *p_block )
         }
     }
 
+    p_block->clock_id = es->clock_id;
+
     /* Decode */
     assert(es->p_master == NULL);
     if( es->p_dec_record )
@@ -3397,11 +3423,12 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
         /* TODO do not use vlc_tick_now() but proper stream acquisition date */
         const bool b_low_delay = priv->b_low_delay;
         bool b_extra_buffering_allowed = !b_low_delay && EsOutIsExtraBufferingAllowed( out );
+        bool discontinuity;
         vlc_tick_t i_late = input_clock_Update(
                             p_pgrm->p_input_clock, VLC_OBJECT(p_sys->p_input),
                             input_CanPaceControl(p_sys->p_input) || p_sys->b_buffering,
                             b_extra_buffering_allowed,
-                            i_pcr, vlc_tick_now() );
+                            i_pcr, vlc_tick_now(), &discontinuity );
 
         if( !p_sys->p_pgrm )
             return VLC_SUCCESS;
@@ -3411,6 +3438,24 @@ static int EsOutVaControlLocked( es_out_t *out, input_source_t *source,
             /* Check buffering state on master clock update */
             EsOutDecodersStopBuffering( out, false );
             return VLC_SUCCESS;
+        }
+        else if( discontinuity )
+        {
+            vlc_tick_t stream_start, unused;
+            if (input_clock_GetState(p_sys->p_pgrm->p_input_clock,
+                                     &stream_start, &unused,
+                                     &unused, &unused) == VLC_SUCCESS)
+            {
+                const vlc_tick_t current_date =
+                    p_sys->b_paused ? p_sys->i_pause_date : vlc_tick_now();
+                vlc_clock_main_Lock(p_sys->p_pgrm->clocks.main);
+                uint32_t clock_id =
+                    vlc_clock_main_SetFirstPcr(p_sys->p_pgrm->clocks.main, current_date,
+                                               stream_start);
+                vlc_clock_main_Unlock(p_sys->p_pgrm->clocks.main);
+
+                EsOutProgramSetClockId(out, p_sys->p_pgrm, clock_id);
+            }
         }
 
         if (p_pgrm != p_sys->p_pgrm || p_sys->p_next_frame_es != NULL)

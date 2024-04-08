@@ -62,7 +62,8 @@ struct decoder_owner_callbacks
 
             /* Display date
              * cf. decoder_GetDisplayDate */
-            vlc_tick_t  (*get_display_date)( decoder_t *, vlc_tick_t, vlc_tick_t );
+            vlc_tick_t  (*get_display_date)( decoder_t *, uint32_t clock_id,
+                                             vlc_tick_t, vlc_tick_t );
             /* Display rate
              * cf. decoder_GetDisplayRate */
             float       (*get_display_rate)( decoder_t * );
@@ -545,6 +546,7 @@ static inline int decoder_GetInputAttachments( decoder_t *dec,
  */
 VLC_USED
 static inline vlc_tick_t decoder_GetDisplayDate( decoder_t *dec,
+                                                 uint32_t clock_id,
                                                  vlc_tick_t system_now,
                                                  vlc_tick_t i_ts )
 {
@@ -553,7 +555,7 @@ static inline vlc_tick_t decoder_GetDisplayDate( decoder_t *dec,
     if( !dec->cbs->video.get_display_date )
         return VLC_TICK_INVALID;
 
-    return dec->cbs->video.get_display_date( dec, system_now, i_ts );
+    return dec->cbs->video.get_display_date( dec, clock_id, system_now, i_ts );
 }
 
 /**

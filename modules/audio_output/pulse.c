@@ -80,6 +80,9 @@ typedef struct
     } fifo;
 
     pa_usec_t flush_rt;
+    vlc_tick_t first_pts;
+    uint32_t clock_id;
+    size_t written_bytes;
 
     pa_volume_t volume_force; /**< Forced volume (stream must be NULL) */
     pa_stream_flags_t flags_force; /**< Forced flags (stream must be NULL) */
@@ -286,10 +289,10 @@ static void stream_latency_cb(pa_stream *s, void *userdata)
     if (sys->start_date_reached
      && likely(rt >= sys->flush_rt + silence_us))
     {
-        vlc_tick_t audio_ts = VLC_TICK_0 +
+        vlc_tick_t audio_ts = sys->first_pts +
             VLC_TICK_FROM_US(rt - sys->flush_rt - silence_us);
 
-        aout_TimingReport(aout, sys->timing_system_ts, audio_ts);
+        aout->events->timing_report(aout, sys->clock_id, sys->timing_system_ts, audio_ts);
     }
 #ifndef NDEBUG
     else
@@ -412,6 +415,14 @@ static size_t stream_write(pa_stream *s, audio_output_t *aout, size_t nbytes)
         if (unlikely(first == NULL))
             return written;
 
+        if (first->clock_id != sys->clock_id)
+        {
+            const pa_sample_spec *ss = pa_stream_get_sample_spec(s);
+            pa_usec_t written_usec = pa_bytes_to_usec(sys->written_bytes, ss);
+            sys->first_pts = first->i_pts - written_usec;
+            sys->clock_id = first->clock_id;
+        }
+
         const void *data;
         size_t tocopy;
         pa_free_cb_t free_cb;
@@ -446,6 +457,7 @@ static size_t stream_write(pa_stream *s, audio_output_t *aout, size_t nbytes)
         nbytes -= tocopy;
         written += tocopy;
         sys->fifo.size -= tocopy;
+        sys->written_bytes += tocopy;
     }
 
     return written;
@@ -650,6 +662,9 @@ static void Play(audio_output_t *aout, block_t *block, vlc_tick_t date)
 
     if (!sys->start_date_reached)
     {
+        if (sys->first_pts == VLC_TICK_INVALID)
+            sys->first_pts = block->i_pts;
+
         vlc_tick_t now = vlc_tick_now();
         sys->start_date = date
                         - pa_bytes_to_usec(sys->fifo.size, ss);
@@ -732,11 +747,14 @@ static void Flush(audio_output_t *aout)
     sys->start_date = VLC_TICK_INVALID;
     sys->total_silence_bytes = 0;
     sys->timing_system_ts = VLC_TICK_INVALID;
+    sys->written_bytes = 0;
 
     const pa_sample_spec *ss = pa_stream_get_sample_spec(s);
     const pa_timing_info *ti = pa_stream_get_timing_info(s);
     if (ti != NULL && !ti->read_index_corrupt)
         sys->flush_rt = pa_bytes_to_usec(ti->read_index, ss);
+    sys->first_pts = VLC_TICK_INVALID;
+    sys->clock_id = 0;
 
     pa_threaded_mainloop_unlock(sys->mainloop);
 }
@@ -981,6 +999,9 @@ static int Start(audio_output_t *aout, audio_sample_format_t *restrict fmt)
     sys->draining = false;
     pa_cvolume_init(&sys->cvolume);
     sys->flush_rt = 0;
+    sys->first_pts = VLC_TICK_INVALID;
+    sys->clock_id = 0;
+    sys->written_bytes = 0;
 
     sys->start_date_reached = false;
     sys->start_date = VLC_TICK_INVALID;

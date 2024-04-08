@@ -239,6 +239,7 @@ struct date_t
     uint32_t i_divider_num;
     uint32_t i_divider_den;
     uint32_t i_remainder;
+    uint32_t clock_id;
 };
 
 /**
@@ -271,6 +272,16 @@ static inline void date_Set(date_t *restrict date, vlc_tick_t value)
     date->i_remainder = 0;
 }
 
+static inline void date_UpdateClockId(date_t *restrict date, vlc_tick_t value,
+                                      uint32_t clock_id)
+{
+    if (clock_id != date->clock_id && value != VLC_TICK_INVALID)
+    {
+        date->clock_id = clock_id;
+        date_Set(date, value);
+    }
+}
+
 /**
  * Gets the current timestamp from a date_t.
  *
@@ -280,6 +291,11 @@ static inline void date_Set(date_t *restrict date, vlc_tick_t value)
 VLC_USED static inline vlc_tick_t date_Get(const date_t *restrict date)
 {
     return date->date;
+}
+
+VLC_USED static inline uint32_t date_GetClockId(const date_t *restrict date)
+{
+    return date->clock_id;
 }
 
 /**
