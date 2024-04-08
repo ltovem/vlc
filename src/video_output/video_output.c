@@ -149,6 +149,24 @@ static vout_thread_t *VoutCreate(vlc_object_t *object,
     /* Take care of some "interface/control" related initialisations */
     vout_IntfInit(vout);
 
+#if VLC_WINSTORE_APP
+    if (cfg->input)
+    {
+        // forward D3D input options to the vout
+        vlc_value_t val;
+        if (var_GetChecked(cfg->input, "winrt-swapchain", VLC_VAR_INTEGER, &val) == VLC_SUCCESS)
+        {
+            var_Create( vout, "winrt-swapchain", VLC_VAR_INTEGER);
+            var_SetInteger( vout, "winrt-swapchain", val.i_int );
+        }
+        if (var_GetChecked(cfg->input, "winrt-d3dcontext", VLC_VAR_INTEGER, &val) == VLC_SUCCESS)
+        {
+            var_Create( vout, "winrt-d3dcontext", VLC_VAR_INTEGER);
+            var_SetInteger( vout, "winrt-d3dcontext", val.i_int );
+        }
+    }
+#endif
+
     /* Initialize subpicture unit */
     vout->p->spu = spu_Create(vout, vout);
 
