@@ -51,6 +51,7 @@ qt: qtbase-everywhere-src-$(QTBASE_VERSION_FULL).tar.xz .sum-qt
 	$(APPLY) $(SRC)/qt/0007-Try-DCompositionCreateDevice3-first-if-available.patch
 	$(APPLY) $(SRC)/qt/0008-Try-to-satisfy-Windows-7-compatibility.patch
 	$(APPLY) $(SRC)/qt/0001-disable-precompiled-headers-when-forcing-WINVER-inte.patch
+	$(APPLY) $(SRC)/qt/0001-QTypeInfo-Add-a-missing-include.patch
 	$(MOVE)
 
 QTBASE_CONFIG := -release
@@ -83,7 +84,7 @@ QTBASE_NATIVE_CONFIG := -DQT_BUILD_EXAMPLES=FALSE -DQT_BUILD_TESTS=FALSE -DFEATU
 	-DFEATURE_zstd=OFF -DFEATURE_xkbcommon=OFF -DFEATURE_evdev=OFF -DFEATURE_sessionmanager=OFF -DFEATURE_png=OFF \
 	-DFEATURE_dbus=OFF -DINPUT_openssl=no -DFEATURE_concurrent=OFF -DFEATURE_glib=OFF -DFEATURE_icu=OFF \
 	-DFEATURE_texthtmlparser=OFF -DFEATURE_cssparser=OFF -DFEATURE_textodfwriter=OFF -DFEATURE_textmarkdownreader=OFF \
-	-DFEATURE_textmarkdownwriter=OFF -DINPUT_libb2=no -DFEATURE_harfbuzz=OFF -DFEATURE_freetype=OFF
+	-DFEATURE_textmarkdownwriter=OFF -DINPUT_libb2=no -DFEATURE_harfbuzz=OFF -DFEATURE_freetype=OFF -DINPUT_opengl=no
 
 .qt-tools: BUILD_DIR=$</vlc_native
 .qt-tools: qt
