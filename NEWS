@@ -84,6 +84,9 @@ Contribs:
  * Update of zlib to 1.2.13 (CVE-2022-37434)
  * Update of FFmpeg, vpx (CVE-2023-5217), ebml, dav1d, libass
 
+libVLC:
+ * Add meta extra related API
+
 Misc:
  * Improve muxing timestamps in a few formats (reset to 0)
  * Fix some rendering issues on Linux with the fullscreen controller

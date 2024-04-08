@@ -203,6 +203,9 @@ input_item_slave_GetType
 input_item_slave_New
 input_item_AddSlave
 input_Read
+input_item_GetMetaExtra
+input_item_GetMetaExtraNames
+input_item_SetMetaExtra
 input_resource_New
 input_resource_Release
 input_resource_TerminateVout
@@ -618,7 +621,7 @@ vlc_killed
 vlc_join
 vlc_list_children
 vlc_list_release
-vlc_meta_AddExtra
+vlc_meta_SetExtra
 vlc_meta_CopyExtraNames
 vlc_meta_Delete
 vlc_meta_Get
