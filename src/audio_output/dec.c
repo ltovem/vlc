@@ -621,6 +621,17 @@ static void stream_Synchronize(vlc_aout_stream *stream, vlc_tick_t system_now,
     if (aout->time_get == NULL)
     {
         vlc_mutex_lock(&stream->timing.lock);
+        if (stream->sync.rate != stream->timing.rate)
+        {
+            /* Save the first timing point seeing a rate change */
+            stream->timing.rate_system_ts = play_date;
+            stream->timing.rate_audio_ts = dec_pts;
+            stream->timing.rate = stream->sync.rate;
+        }
+
+        if (stream->timing.first_pts == VLC_TICK_INVALID)
+            stream->timing.first_pts = dec_pts;
+
         bool is_drifting = stream->timing.last_drift != VLC_TICK_INVALID;
         vlc_mutex_unlock(&stream->timing.lock);
 
@@ -776,32 +787,6 @@ int vlc_aout_stream_Play(vlc_aout_stream *stream, block_t *block)
     stream_Synchronize(stream, system_now, play_date, block->i_pts);
 
     vlc_audio_meter_Process(&owner->meter, block, play_date);
-
-    if (aout->time_get == NULL
-     && stream->sync.rate != stream->timing.rate)
-    {
-        vlc_mutex_lock(&stream->timing.lock);
-        /* Save the first timing point seeing a rate change */
-        stream->timing.rate_system_ts = play_date;
-        stream->timing.rate_audio_ts = block->i_pts;
-        stream->timing.rate = stream->sync.rate;
-
-        /* Update the clock immediately with the new rate, instead of waiting
-         * for a timing update that could come too late (after 1second). */
-        vlc_clock_Lock(stream->sync.clock);
-        stream->timing.last_drift =
-            vlc_clock_Update(stream->sync.clock, play_date, block->i_pts,
-                             stream->sync.rate);
-        vlc_clock_Unlock(stream->sync.clock);
-        vlc_mutex_unlock(&stream->timing.lock);
-    }
-
-    if (stream->timing.first_pts == VLC_TICK_INVALID)
-    {
-        vlc_mutex_lock(&stream->timing.lock);
-        stream->timing.first_pts = block->i_pts;
-        vlc_mutex_unlock(&stream->timing.lock);
-    }
 
     /* Output */
     stream->sync.discontinuity = false;
