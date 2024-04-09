@@ -1360,6 +1360,8 @@ static void D3D11SetColorSpace(vout_display_t *vd)
         msg_Warn(vd, "no matching colorspace found force %s", color_spaces[best].name);
     }
 
+#define WINDOWS_SDR_BRIGHTNESS 270
+    unsigned read_peak_luminance = WINDOWS_SDR_BRIGHTNESS;
 #ifdef HAVE_DXGI1_6_H
     if (sys->hdrMode == hdr_Auto || sys->hdrMode == hdr_Fake) // match the screen
     if (SUCCEEDED(IDXGISwapChain_GetContainingOutput( sys->dxgiswapChain, &dxgiOutput )))
@@ -1387,7 +1389,7 @@ static void D3D11SetColorSpace(vout_display_t *vd)
                 }
 
                 msg_Dbg(vd, "Output max luminance: %.1f, colorspace %s, bits per pixel %d", desc1.MaxFullFrameLuminance, csp?csp->name:"unknown", desc1.BitsPerColor);
-                //sys->display.luminance_peak = desc1.MaxFullFrameLuminance;
+                read_peak_luminance = desc1.MaxFullFrameLuminance;
             }
             IDXGIOutput6_Release( dxgiOutput6 );
         }
@@ -1409,7 +1411,7 @@ done:
     {
     case TRANSFER_FUNC_LINEAR:
     case TRANSFER_FUNC_SRGB:
-        sys->display.luminance_peak = DEFAULT_SRGB_BRIGHTNESS;
+        sys->display.luminance_peak = DEFAULT_SRGB_BRIGHTNESS * read_peak_luminance / WINDOWS_SDR_BRIGHTNESS;
         break;
     case TRANSFER_FUNC_SMPTE_ST2084:
         sys->display.luminance_peak = MAX_PQ_BRIGHTNESS;
