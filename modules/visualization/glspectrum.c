@@ -525,8 +525,7 @@ static void *Thread( void *p_data )
         fft_perform (p_buffer1, p_output, p_state);
 
         for (i = 0; i< FFT_BUFFER_SIZE; ++i)
-            p_dest[i] = p_output[i] *  (2 ^ 16)
-                        / ((FFT_BUFFER_SIZE / 2 * 32768) ^ 2);
+            p_dest[i] = p_output[i] * FFT_SCALING_FACTOR;
 
         for (i = 0 ; i < NB_BANDS; i++)
         {
