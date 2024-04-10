@@ -316,6 +316,11 @@ ca_Play(audio_output_t * p_aout, block_t * p_block, vlc_tick_t date)
 {
     struct aout_sys_common *p_sys = (struct aout_sys_common *) p_aout->sys;
 
+    if (p_sys->b_muted) {
+        block_Release(p_block);
+        return;
+    }
+
     /* Do the channel reordering */
     if (p_sys->chans_to_reorder)
        aout_ChannelReorder(p_block->p_buffer, p_block->i_buffer,
