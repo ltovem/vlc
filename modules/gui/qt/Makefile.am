@@ -190,6 +190,8 @@ libqt_plugin_la_SOURCES = \
 	maininterface/video_window_handler.hpp \
 	medialibrary/medialib.cpp \
 	medialibrary/medialib.hpp \
+	medialibrary/mlmediastore.cpp \
+	medialibrary/mlmediastore.hpp \
 	medialibrary/mlalbum.cpp \
 	medialibrary/mlalbum.hpp \
 	medialibrary/mlalbummodel.cpp \
@@ -420,6 +422,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	maininterface/videosurface.moc.cpp \
 	maininterface/video_window_handler.moc.cpp \
 	medialibrary/medialib.moc.cpp \
+	medialibrary/mlmediastore.moc.cpp \
 	medialibrary/mlalbum.moc.cpp \
 	medialibrary/mlalbummodel.moc.cpp \
 	medialibrary/mlalbumtrack.moc.cpp \
