@@ -37,6 +37,10 @@
 
 #import "views/VLCWrappableTextField.h"
 
+#import "windows/video/VLCMainVideoViewController.h"
+#import "windows/video/VLCVideoOutputProvider.h"
+#import "windows/video/VLCVideoWindowCommon.h"
+
 @interface VLCMainVideoViewControlsBar ()
 {
     VLCPlaylistController *_playlistController;
@@ -66,6 +70,10 @@
     [notificationCenter addObserver:self
                            selector:@selector(updateDetailLabel:)
                                name:VLCPlayerCurrentMediaItemChanged
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateFloatOnTopButton:)
+                               name:VLCWindowFloatOnTopChangedNotificationName
                              object:nil];
 }
 
@@ -101,6 +109,35 @@
     [menu popUpMenuPositioningItem:nil
                         atLocation:_audioButton.frame.origin
                             inView:((NSView *)sender).superview];
+}
+
+- (IBAction)toggleFloatOnTop:(id)sender
+{
+    VLCVideoWindowCommon * const window = (VLCVideoWindowCommon *)self.floatOnTopButton.window;
+    if (window == nil) {
+        return;
+    }
+    vout_thread_t * const p_vout = window.videoViewController.voutView.voutThread;
+    if (!p_vout) {
+        return;
+    }
+    var_ToggleBool(p_vout, "video-on-top");
+    vout_Release(p_vout);
+}
+
+- (void)updateFloatOnTopButton:(NSNotification *)notification
+{
+    VLCVideoWindowCommon * const videoWindow = (VLCVideoWindowCommon *)notification.object;
+    NSAssert(videoWindow != nil, @"Received video window should not be nil!");
+    NSDictionary<NSString *, NSNumber *> * const userInfo = notification.userInfo;
+    NSAssert(userInfo != nil, @"Received user info should not be nil!");
+    NSNumber * const enabledNumberWrapper = userInfo[VLCWindowFloatOnTopEnabledNotificationKey];
+    NSAssert(enabledNumberWrapper != nil, @"Received user info enabled wrapper should not be nil!");
+
+    if (@available(macOS 10.14, *)) {
+        self.floatOnTopButton.contentTintColor =
+            enabledNumberWrapper.boolValue ? NSColor.controlAccentColor : NSColor.controlTextColor;
+    }
 }
 
 @end

@@ -29,8 +29,10 @@
 @class VLCVideoWindowCommon;
 @class VLCVoutView;
 
-extern NSString *VLCWindowShouldUpdateLevel;
-extern NSString *VLCWindowLevelKey;
+extern NSString * const VLCWindowShouldUpdateLevel;
+extern NSString * const VLCWindowLevelKey;
+extern NSString * const VLCWindowFloatOnTopChangedNotificationName;
+extern NSString * const VLCWindowFloatOnTopEnabledNotificationKey;
 
 @interface VLCVideoOutputProvider : NSObject
 

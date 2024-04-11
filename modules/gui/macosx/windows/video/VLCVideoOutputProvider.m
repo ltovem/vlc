@@ -47,8 +47,10 @@
 #include <vlc_configuration.h>
 #include <vlc_vout_display.h>
 
-NSString *VLCWindowShouldUpdateLevel = @"VLCWindowShouldUpdateLevel";
-NSString *VLCWindowLevelKey = @"VLCWindowLevelKey";
+NSString * const VLCWindowShouldUpdateLevel = @"VLCWindowShouldUpdateLevel";
+NSString * const VLCWindowLevelKey = @"VLCWindowLevelKey";
+NSString * const VLCWindowFloatOnTopChangedNotificationName = @"VLCWindowFloatOnTopChanged";
+NSString * const VLCWindowFloatOnTopEnabledNotificationKey = @"VLCWindowFloatOnTopEnabled";
 
 static int WindowEnable(vlc_window_t *p_wnd, const vlc_window_cfg_t *cfg)
 {
@@ -110,16 +112,16 @@ static void WindowSetState(vlc_window_t *p_wnd, unsigned i_state)
         msg_Dbg(p_wnd, "Ignore change to VLC_WINDOW_STATE_BELOW");
 
     @autoreleasepool {
-        VLCVideoOutputProvider *voutProvider = VLCMain.sharedInstance.voutProvider;
+        VLCVideoOutputProvider * const voutProvider = VLCMain.sharedInstance.voutProvider;
 
         NSInteger i_cocoa_level = NSNormalWindowLevel;
-
         if (i_state & VLC_WINDOW_STATE_ABOVE)
             i_cocoa_level = NSStatusWindowLevel;
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [voutProvider setWindowLevel:i_cocoa_level forWindow:p_wnd];
         });
+
     }
 }
 
@@ -173,6 +175,28 @@ int WindowOpen(vlc_window_t *p_wnd)
     p_wnd->type = VLC_WINDOW_TYPE_NSOBJECT;
     p_wnd->ops = &ops;
     return VLC_SUCCESS;
+}
+
+static int WindowFloatOnTop(vlc_object_t *obj,
+                     char const *psz_var,
+                     vlc_value_t oldval,
+                     vlc_value_t newval,
+                     void *p_data)
+{
+    VLC_UNUSED(obj); VLC_UNUSED(psz_var); VLC_UNUSED(oldval);
+    @autoreleasepool {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            VLCVideoWindowCommon * const videoWindow = (__bridge VLCVideoWindowCommon *)p_data;
+            NSNotificationCenter * const notificationCenter = NSNotificationCenter.defaultCenter;
+            NSDictionary<NSString *, NSNumber *> * const userInfo = @{
+                VLCWindowFloatOnTopEnabledNotificationKey: @(newval.b_bool)
+            };
+            [notificationCenter postNotificationName:VLCWindowFloatOnTopChangedNotificationName
+                                              object:videoWindow
+                                            userInfo:userInfo];
+        });
+        return VLC_SUCCESS;
+    }
 }
 
 @interface VLCVideoOutputProvider ()
@@ -390,12 +414,14 @@ int WindowOpen(vlc_window_t *p_wnd)
 - (void)setupVideoOutputForVideoWindow:(VLCVideoWindowCommon *)videoWindow
                          withVlcWindow:(vlc_window_t *)p_wnd
 {
-    VLCVoutView *voutView = videoWindow.videoViewController.voutView;
+    VLCVoutView * const voutView = videoWindow.videoViewController.voutView;
 
-    [videoWindow setAlphaValue:config_GetFloat("macosx-opaqueness")];
+    videoWindow.alphaValue = config_GetFloat("macosx-opaqueness");
     [_voutWindows setObject:videoWindow forKey:[NSValue valueWithPointer:p_wnd]];
-    [voutView setVoutThread:(vout_thread_t *)vlc_object_parent(p_wnd)];
-    [voutView setVoutWindow:p_wnd];
+    vout_thread_t * const p_vout = (vout_thread_t *)vlc_object_parent(p_wnd);
+    var_AddCallback(p_vout, "video-on-top", WindowFloatOnTop, (__bridge void *)videoWindow);
+    voutView.voutThread = p_vout;
+    voutView.voutWindow = p_wnd;
     videoWindow.hasActiveVideo = YES;
     _playerController.activeVideoPlayback = YES;
     VLCMain.sharedInstance.libraryWindow.nonembedded = !b_mainWindowHasVideo;
@@ -511,7 +537,8 @@ int WindowOpen(vlc_window_t *p_wnd)
 
 - (void)setWindowLevel:(NSInteger)i_level forWindow:(vlc_window_t *)p_wnd
 {
-    VLCVideoWindowCommon *o_window = [_voutWindows objectForKey:[NSValue valueWithPointer:p_wnd]];
+    NSValue * const windowKey = [NSValue valueWithPointer:p_wnd];
+    VLCVideoWindowCommon * const o_window = [_voutWindows objectForKey:windowKey];
     if (!o_window) {
         msg_Err(getIntf(), "Cannot set level for nonexisting window");
         return;
@@ -521,18 +548,27 @@ int WindowOpen(vlc_window_t *p_wnd)
     if(i_level == NSStatusWindowLevel) {
         _statusLevelWindowCounter++;
         // window level need to stay on normal in fullscreen mode
-        if (![o_window fullscreen] && ![o_window inFullscreenTransition])
+        if (!o_window.fullscreen && !o_window.inFullscreenTransition) {
+            // make sure float on top can join all spaces, including full-screen ones
+            NSApp.activationPolicy = NSApplicationActivationPolicyAccessory;
             [self updateWindowLevelForHelperWindows:i_level];
+            o_window.collectionBehavior = NSWindowCollectionBehaviorCanJoinAllSpaces |
+                                          NSWindowCollectionBehaviorIgnoresCycle |
+                                          NSWindowCollectionBehaviorTransient |
+                                          NSWindowCollectionBehaviorFullScreenAuxiliary;
+        }
     } else {
-        if (_statusLevelWindowCounter > 0)
+        if (_statusLevelWindowCounter > 0) {
             _statusLevelWindowCounter--;
-
+        } 
         if (_statusLevelWindowCounter == 0) {
+            NSApp.activationPolicy = NSApplicationActivationPolicyRegular;
             [self updateWindowLevelForHelperWindows:i_level];
         }
+        o_window.collectionBehavior = NSWindowCollectionBehaviorDefault;
     }
 
-    [o_window setWindowLevel:i_level];
+    o_window.level = i_level;
 }
 
 - (void)setFullscreen:(int)i_full forWindow:(vlc_window_t *)p_wnd withAnimation:(BOOL)b_animation
