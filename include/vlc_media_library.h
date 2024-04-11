@@ -222,6 +222,7 @@ typedef struct vlc_ml_media_t
     vlc_ml_thumbnail_t thumbnails[VLC_ML_THUMBNAIL_SIZE_COUNT];
 
     bool b_is_favorite;
+    bool b_is_public;
 
     union
     {
@@ -443,6 +444,7 @@ typedef struct vlc_ml_query_params_t
     vlc_ml_sorting_criteria_t i_sort;
     bool b_desc;
     bool b_favorite_only;
+    bool b_public_only;
 } vlc_ml_query_params_t;
 
 enum vlc_ml_get_queries
@@ -575,6 +577,9 @@ enum vlc_ml_control
      * res: can't fail
      */
     VLC_ML_RELOAD_FOLDER,
+
+    VLC_ML_SET_FOLDER_PUBLIC,       /**< arg1: mrl (const char *); res: can't fail */
+    VLC_ML_SET_FOLDER_PRIVATE,      /**< arg1: mrl (const char *); res: can't fail */
 
     /* Pause/resume background operations, such as media discovery & media analysis */
     VLC_ML_PAUSE_BACKGROUND,        /**< no args; can't fail */
@@ -1008,6 +1013,16 @@ static inline int vlc_ml_is_indexed( vlc_medialibrary_t* p_ml,
 static inline int vlc_ml_reload_folder( vlc_medialibrary_t* p_ml, const char* psz_mrl )
 {
     return vlc_ml_control( p_ml, VLC_ML_RELOAD_FOLDER, psz_mrl );
+}
+
+static inline int vlc_ml_set_folder_public( vlc_medialibrary_t* p_ml, const char* psz_mrl )
+{
+    return vlc_ml_control( p_ml, VLC_ML_SET_FOLDER_PUBLIC, psz_mrl );
+}
+
+static inline int vlc_ml_set_folder_private( vlc_medialibrary_t* p_ml, const char* psz_mrl )
+{
+    return vlc_ml_control( p_ml, VLC_ML_SET_FOLDER_PRIVATE, psz_mrl );
 }
 
 static inline int vlc_ml_pause_background( vlc_medialibrary_t* p_ml )
