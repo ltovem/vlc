@@ -4,9 +4,11 @@ protoc = disabler()
 chromecast_proto = []
 
 if protobuf_dep.found()
-    protobuf_version_list = protobuf_dep.version().split('.')
+    protobuf_version = protobuf_dep.version().split('.')
+    protoc_min_version = '@0@.@1@'.format(protobuf_version[0], protobuf_version[1])
+    protoc_max_version = '@0@.@1@'.format(protobuf_version[0], protobuf_version[1].to_int() + 1)
     protoc = find_program('protoc',
-        version: '@0@.@1@'.format(protobuf_version_list[0], protobuf_version_list[1]),
+        version: ['>=' + protoc_min_version, '<' + protoc_max_version],
         required: get_option('chromecast'))
     protobuf_gen = generator(protoc,
         output: [
