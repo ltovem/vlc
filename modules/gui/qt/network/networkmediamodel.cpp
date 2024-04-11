@@ -42,6 +42,7 @@ static const char* const ML_FOLDER_ADD_QUEUE = "ML_FOLDER_ADD_QUEUE";
 struct NetworkMediaItem
 {
     QString name;
+    QString uri;
     QUrl mainMrl;
     QString protocol;
     bool indexed;
@@ -157,6 +158,7 @@ public:
             item->protocol = "";
             item->indexed = false;
             item->type = static_cast<NetworkMediaModel::ItemType>(inputItem->i_type);
+            item->uri = QString(inputItem->psz_uri);
             item->mainMrl = (item->type == NetworkMediaModel::TYPE_DIRECTORY || item->type == NetworkMediaModel::TYPE_NODE) ?
                                QUrl::fromEncoded(QByteArray(inputItem->psz_uri).append('/')) :
                                QUrl::fromEncoded(inputItem->psz_uri);
@@ -215,7 +217,7 @@ public:
                     });
             }
 
-            m_items.push_back(item);
+            m_items[item->uri] = item;
         }
 
         ++m_revision;
@@ -406,15 +408,14 @@ protected:
 
     std::vector<NetworkMediaItemPtr> getModelData(const QString& pattern) const override
     {
-        if (pattern.isEmpty())
-            return m_items;
         std::vector<NetworkMediaItemPtr> items;
-        std::copy_if(
-            m_items.cbegin(), m_items.cend(),
-            std::back_inserter(items),
-            [&pattern](const NetworkMediaItemPtr& item){
-                return item->name.contains(pattern, Qt::CaseInsensitive);
-            });
+        items.reserve(m_items.size() / 2);
+        for (const auto &item : m_items)
+        {
+            if (item->name.contains(pattern, Qt::CaseInsensitive))
+                items.push_back(item);
+        }
+
         return items;
     }
 
@@ -425,7 +426,7 @@ public:
     QSemaphore m_preparseSem;
     std::unique_ptr<MediaTreeListener> m_listener;
     size_t m_revision = 0;
-    std::vector<NetworkMediaItemPtr> m_items;
+    QHash<QString, NetworkMediaItemPtr> m_items;
 };
 
 // NetworkMediaModel::ListenerCb implementation
