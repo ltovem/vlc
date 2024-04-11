@@ -458,11 +458,24 @@ FocusScope {
 
     P.PIPPlayer {
         id: playerPip
-        anchors {
-            bottom: miniPlayer.top
-            left: parent.left
-            bottomMargin: VLCStyle.margin_normal
-            leftMargin: VLCStyle.margin_normal + VLCStyle.applicationHorizontalMargin
+
+        x: {
+            let pipPlayerX
+            if (_settingX !== null)
+                pipPlayerX = _settingX
+            else
+                pipPlayerX = VLCStyle.margin_normal + VLCStyle.applicationHorizontalMargin
+            return Helpers.clamp(pipPlayerX, dragXMin, dragXMax)
+        }
+
+        y: {
+            let pipPlayerY
+            if (_settingY !== null)
+                pipPlayerY = _settingY
+            else
+                pipPlayerY = miniPlayer.y - VLCStyle.margin_normal
+
+            return Helpers.clamp(pipPlayerY, dragYMin, dragYMax)
         }
 
         width: VLCStyle.dp(320, VLCStyle.scale)
@@ -475,6 +488,21 @@ FocusScope {
         dragXMax: g_mainDisplay.width - playerPip.width
         dragYMin: sourcesBanner.y + sourcesBanner.height
         dragYMax: miniPlayer.y - playerPip.height
+
+        readonly property var _settingX: MainCtx.settingValue("PIPPlayerX", null)
+        readonly property var _settingY: MainCtx.settingValue("PIPPlayerY", null)
+
+        property bool _posChanged: false
+
+        Component.onDestruction: {
+            if (_posChanged) {
+                MainCtx.setSettingValue("PIPPlayerX", x)
+                MainCtx.setSettingValue("PIPPlayerY", y)
+            }
+        }
+
+        onXChanged: _posChanged = true
+        onYChanged: _posChanged = true
 
         //keep the player visible on resize
         Connections {
