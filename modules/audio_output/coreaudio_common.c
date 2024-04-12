@@ -232,7 +232,11 @@ ca_Render(audio_output_t *p_aout, uint64_t host_time,
 
         p_sys->started = true;
 
-        memcpy(data, f->p_buffer, tocopy);
+        if (p_sys->b_muted) {
+            memset(data, 0, tocopy);
+        } else {
+            memcpy(data, f->p_buffer, tocopy);
+        }
 
         data += tocopy;
         bytes -= tocopy;
@@ -315,11 +319,6 @@ void
 ca_Play(audio_output_t * p_aout, block_t * p_block, vlc_tick_t date)
 {
     struct aout_sys_common *p_sys = (struct aout_sys_common *) p_aout->sys;
-
-    if (p_sys->b_muted) {
-        block_Release(p_block);
-        return;
-    }
 
     /* Do the channel reordering */
     if (p_sys->chans_to_reorder)
