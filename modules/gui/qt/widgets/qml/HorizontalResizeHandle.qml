@@ -41,6 +41,7 @@ MouseArea {
     cursorShape: Qt.SplitHCursor
     width: VLCStyle.dp(8, VLCStyle.scale)
     acceptedButtons: Qt.LeftButton
+    preventStealing: true
 
     onPressed: (mouse) => {
         MainCtx.setCursor(cursorShape)

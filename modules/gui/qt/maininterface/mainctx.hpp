@@ -278,6 +278,8 @@ public:
     Q_INVOKABLE double dp(const double px) const;
 
     Q_INVOKABLE bool useXmasCone() const;
+    
+    Q_INVOKABLE static void setFiltersChildMouseEvents(QQuickItem *item, const bool value);
 
 protected:
     /* Systray */
