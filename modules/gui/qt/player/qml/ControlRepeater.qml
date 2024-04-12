@@ -94,6 +94,12 @@ Repeater {
 
             if (item.menuOpened)
                 item.menuOpened.connect(repeater.menuOpened)
+
+            //can't connect to enabledChanged in a Connections
+            item.onEnabledChanged.connect(() => {
+                if (loader.activeFocus && !item.enabled) // Loader has focus but item is not enabled
+                    recoverFocus()
+            })
         }
 
         // Connections
@@ -103,13 +109,8 @@ Repeater {
 
             enabled: loader.status === Loader.Ready
 
-            onEnabledChanged: {
-                if (activeFocus && !item.enabled) // Loader has focus but item is not enabled
-                    recoverFocus()
-            }
-
-            onVisibleChanged: {
-                if (activeFocus && !item.visible)
+            function onVisibleChanged() {
+                if (loader.activeFocus && !item.visible)
                     recoverFocus()
             }
         }
