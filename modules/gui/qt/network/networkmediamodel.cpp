@@ -20,6 +20,8 @@
 #include "mediatreelistener.hpp"
 
 #include "maininterface/mainctx.hpp"
+#include "medialibrary/mlmedia.hpp"
+#include "medialibrary/mlmediastore.hpp"
 
 #include "util/base_model_p.hpp"
 #include "util/locallistcacheloader.hpp"
@@ -52,6 +54,7 @@ struct NetworkMediaItem
     QString artwork;
     qint64 fileSize;
     QDateTime fileModified;
+    MLMedia media;
 };
 
 using NetworkMediaItemPtr = std::shared_ptr<NetworkMediaItem>;
@@ -96,6 +99,21 @@ public:
         return nullptr;
     }
 
+    void mediaUpdated(const QString &mrl, const MLMedia &media)
+    {
+        if (!m_items.contains(mrl))
+            return;
+
+        //contruct by copy, don't mutate items in m_items,
+        //we want the change to be notified
+        auto newItem = std::make_shared<NetworkMediaItem>(*m_items[mrl]);
+        newItem->media = media;
+        m_items[mrl] = newItem;
+
+        ++m_revision;
+        invalidateCache();
+    }
+
     void setIntexedState(const NetworkMediaItemPtr& item, bool indexed)
     {
         if (item->indexed == indexed)
@@ -132,6 +150,9 @@ public:
             if ( it == m_items.end() )
                 continue;
 
+            if (m_MLMedias && (*it)->media.valid())
+                m_MLMedias->remove((*it)->media.getId());
+
             m_items.erase( it );
         }
 
@@ -148,7 +169,11 @@ public:
         Q_Q(NetworkMediaModel);
 
         if (clear)
+        {
             m_items.clear();
+            if (m_MLMedias)
+                m_MLMedias->clear();
+        }
 
         std::vector<NetworkMediaItem> items;
         for (const auto& inputItem: children)
@@ -165,6 +190,10 @@ public:
 
             item->canBeIndexed = canBeIndexed( item->mainMrl , item->type );
 
+            if (m_MLMedias && (item->type == NetworkMediaModel::TYPE_FILE))
+            {
+                m_MLMedias->insert(item->uri);
+            }
 
             input_item_t* intputItemRaw = inputItem.get();
             char* str = input_item_GetArtworkURL(intputItemRaw);
@@ -427,6 +456,7 @@ public:
     std::unique_ptr<MediaTreeListener> m_listener;
     size_t m_revision = 0;
     QHash<QString, NetworkMediaItemPtr> m_items;
+    std::unique_ptr<MLMediaStore> m_MLMedias;
 };
 
 // NetworkMediaModel::ListenerCb implementation
@@ -493,6 +523,10 @@ QVariant NetworkMediaModel::data( const QModelIndex& index, int role ) const
             return item->fileSize;
         case NETWORK_FILE_MODIFIED:
             return item->fileModified;
+        case NETWORK_MEDIA:
+            return item->media.valid()
+                    ? QVariant::fromValue(item->media)
+                    : QVariant {};
         default:
             return {};
     }
@@ -510,7 +544,8 @@ QHash<int, QByteArray> NetworkMediaModel::roleNames() const
         { NETWORK_TREE, "tree" },
         { NETWORK_ARTWORK, "artwork" },
         { NETWORK_FILE_SIZE, "fileSizeRaw64" },
-        { NETWORK_FILE_MODIFIED, "fileModified" }
+        { NETWORK_FILE_MODIFIED, "fileModified" },
+        { NETWORK_MEDIA, "media" }
     };
 }
 
@@ -609,6 +644,17 @@ void NetworkMediaModel::setCtx(MainCtx* ctx)
     assert(ctx);
     m_ctx = ctx;
     d->m_mediaLib = ctx->getMediaLibrary();
+
+    d->m_MLMedias.reset();
+    if (d->m_mediaLib)
+    {
+        d->m_MLMedias.reset(new MLMediaStore(d->m_mediaLib));
+        connect(d->m_MLMedias.get(), &MLMediaStore::updated, this, [this](const QString &mrl, const MLMedia &media)
+        {
+            Q_D(NetworkMediaModel);
+            d->mediaUpdated(mrl, media);
+        });
+    }
 
     d->initializeModel();
     emit ctxChanged();
