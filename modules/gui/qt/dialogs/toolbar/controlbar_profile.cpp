@@ -45,6 +45,7 @@ decltype(ControlbarProfile::m_defaults)
                         },
                         {
                             ControlListModel::VOLUME,
+                            ControlListModel::PLAYBACK_SPEED_BUTTON,
                             ControlListModel::RENDERER_BUTTON,
                             ControlListModel::FULLSCREEN_BUTTON
                         }
