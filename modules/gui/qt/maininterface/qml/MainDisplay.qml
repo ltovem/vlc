@@ -184,7 +184,9 @@ FocusScope {
 
             model: g_mainDisplay.tabModel
 
-            plListView: playlist
+            plListView: playlistLoader.active ? playlistLoader.item
+                                              : (playlistWindowLoader.status === Loader.Ready ? playlistWindowLoader.item.playlistView
+                                                                                              : null)
 
             onItemClicked: (index) => {
                 const name = g_mainDisplay.tabModel.get(index).name
@@ -260,8 +262,8 @@ FocusScope {
                     focus: true
 
                     anchors.fill: parent
-                    anchors.rightMargin: (playlistColumn.visible && !VLCStyle.isScreenSmall)
-                                         ? playlistColumn.width
+                    anchors.rightMargin: (playlistLoader.shown && !VLCStyle.isScreenSmall)
+                                         ? playlistLoader.width
                                          : 0
                     anchors.bottomMargin: g_mainDisplay.displayMargin
 
@@ -269,14 +271,14 @@ FocusScope {
 
                     leftPadding: VLCStyle.applicationHorizontalMargin
 
-                    rightPadding: (MainCtx.playlistDocked && MainCtx.playlistVisible)
+                    rightPadding: playlistLoader.shown
                                   ? 0
                                   : VLCStyle.applicationHorizontalMargin
 
 
                     Navigation.parentItem: mainColumn
                     Navigation.upItem: sourcesBanner
-                    Navigation.rightItem: playlistColumn
+                    Navigation.rightItem: playlistLoader
                     Navigation.downItem:  miniPlayer.visible ? miniPlayer : null
                 }
 
@@ -284,7 +286,7 @@ FocusScope {
                     // overlay for smallscreens
 
                     anchors.fill: parent
-                    visible: VLCStyle.isScreenSmall && MainCtx.playlistVisible && MainCtx.playlistDocked
+                    visible: VLCStyle.isScreenSmall && playlistLoader.shown
                     color: "black"
                     opacity: 0.4
 
@@ -303,36 +305,42 @@ FocusScope {
                 }
             }
 
-            FocusScope {
-                id: playlistColumn
+            Loader {
+                id: playlistLoader
+
                 anchors {
                     top: parent.top
                     right: parent.right
                 }
-                focus: false
 
-                implicitWidth: VLCStyle.isScreenSmall
-                               ? g_mainDisplay.width * 0.8
-                               : Helpers.clamp(g_mainDisplay.width / resizeHandle.widthFactor,
-                                               playlist.minimumWidth,
-                                               g_mainDisplay.width / 2)
                 width: 0
                 height: parent.height - g_mainDisplay.displayMargin
 
                 visible: false
 
-                state: (MainCtx.playlistDocked && MainCtx.playlistVisible) ? "expanded" : ""
+                active: MainCtx.playlistDocked
+
+                state: ((status === Loader.Ready) && MainCtx.playlistVisible) ? "expanded" : ""
+
+                readonly property bool shown: (status === Loader.Ready) && item.visible
+
+                Component.onCompleted: {
+                    Qt.callLater(() => { playlistTransition.enabled = true; })
+                }
 
                 states: State {
                     name: "expanded"
                     PropertyChanges {
-                        target: playlistColumn
-                        width: Math.round(playlistColumn.implicitWidth)
+                        target: playlistLoader
+                        width: Math.round(playlistLoader.implicitWidth)
                         visible: true
                     }
                 }
 
                 transitions: Transition {
+                    id: playlistTransition
+                    enabled: false
+
                     from: ""; to: "expanded";
                     reversible: true
 
@@ -347,29 +355,18 @@ FocusScope {
                     }
                 }
 
-                Rectangle {
-                    id: playlistLeftBorder
-
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-
-                    width: VLCStyle.border
-                    color: theme.separator
-                }
-
-                PL.PlaylistListView {
+                sourceComponent: PL.PlaylistListView {
                     id: playlist
 
-                    anchors {
-                        top: parent.top
-                        bottom: parent.bottom
-                        left: playlistLeftBorder.right
-                        right: parent.right
-                    }
+                    implicitWidth: VLCStyle.isScreenSmall
+                                   ? g_mainDisplay.width * 0.8
+                                   : Helpers.clamp(g_mainDisplay.width / resizeHandle.widthFactor,
+                                                   minimumWidth,
+                                                   g_mainDisplay.width / 2)
 
                     focus: true
 
+                    leftPadding: playlistLeftBorder.width
                     rightPadding: VLCStyle.applicationHorizontalMargin
                     topPadding: VLCStyle.layoutTitle_top_padding
                     bottomPadding: VLCStyle.margin_normal + Math.max(VLCStyle.applicationVerticalMargin - g_mainDisplay.displayMargin, 0)
@@ -387,6 +384,23 @@ FocusScope {
                         stackView.forceActiveFocus()
                     }
 
+                    Rectangle {
+                        id: playlistLeftBorder
+
+                        parent: playlist
+
+                        anchors {
+                            top: parent.top
+                            bottom: parent.bottom
+                            left: parent.left
+                        }
+
+                        width: VLCStyle.border
+                        color: theme.separator
+
+                        visible: playlistLoader.shown
+                    }
+
                     Widgets.HorizontalResizeHandle {
                         id: resizeHandle
 
@@ -401,7 +415,7 @@ FocusScope {
                         }
 
                         atRight: false
-                        targetWidth: playlistColumn.width
+                        targetWidth: parent.width
                         sourceWidth: g_mainDisplay.width
 
                         onWidthFactorChanged: {

@@ -136,12 +136,8 @@ Item {
         Loader {
             id: playlistWindowLoader
             asynchronous: true
-            active: !MainCtx.playlistDocked && MainCtx.playlistVisible
+            active: !MainCtx.playlistDocked
             source: "qrc:///playlist/PlaylistDetachedWindow.qml"
-        }
-        Connections {
-            target: playlistWindowLoader.item
-            function onClosing() { MainCtx.playlistVisible = false }
         }
 
         Connections {
