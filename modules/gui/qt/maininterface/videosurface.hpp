@@ -30,9 +30,7 @@ extern "C" {
     typedef struct vlc_window vlc_window_t;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 Q_MOC_INCLUDE( "maininterface/mainctx.hpp")
-#endif
 
 class MainCtx;
 
@@ -122,13 +120,8 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void geometryChange(const QRectF &newGeometry,
                         const QRectF &oldGeometry) override;
-#else
-    void geometryChanged(const QRectF &newGeometry,
-                        const QRectF &oldGeometry) override;
-#endif
 
     Qt::CursorShape getCursorShape() const;
     void setCursorShape(Qt::CursorShape);

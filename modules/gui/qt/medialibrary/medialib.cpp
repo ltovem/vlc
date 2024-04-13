@@ -269,24 +269,6 @@ void MediaLib::reload()
     });
 }
 
-void MediaLib::mlInputItem(const QVariantList &variantList, QJSValue callback)
-{
-    if (!callback.isCallable()) // invalid argument
-    {
-        msg_Warn(m_intf, "callback is not callbable");
-        return;
-    }
-
-    QVector<MLItemId> mlIdList;
-    for (const auto& variant : variantList)
-    {
-        assert(variant.canConvert<MLItemId>());
-        mlIdList.push_back(variant.value<MLItemId>());
-    }
-
-    mlInputItem(mlIdList, callback);
-}
-
 void MediaLib::mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callback)
 {
     if (!callback.isCallable()) // invalid argument
@@ -372,7 +354,7 @@ void MediaLib::mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callb
             i++;
         }
 
-        for (auto cb : qAsConst(it.value())) // TODO: Qt 6 use const reference
+        for (const auto& cb : qAsConst(it.value()))
         {
             cb.call({jsArray});
         }
