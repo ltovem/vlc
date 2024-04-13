@@ -42,7 +42,11 @@ Rectangle {
     // Aliases
 
     property alias source: image.source
+
+    property alias cacheImage: image.cache
+
     property bool isImageReady: image.status == RoundImage.Ready
+
 
     property string fallbackImageSource
 
@@ -71,6 +75,8 @@ Rectangle {
         anchors.fill: parent
 
         radius: root.radius
+
+        cache: false
     }
 
     RoundImage {
@@ -85,6 +91,8 @@ Rectangle {
         // we only keep this image till there is no main image
         // try to release the resources otherwise
         source: !root.isImageReady ? root.fallbackImageSource : ""
+
+        cache: true
     }
 
     Loader {
