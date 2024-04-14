@@ -142,6 +142,13 @@ LN_S = cp -R
 endif
 endif
 
+ifdef HAVE_ANDROID
+# Android NDK has vulkan headers but vulkan.h from the sysroot but it is not
+# the actual vulkan version from the Android NDK, the proper one is located
+# in this third_party folder
+EXTRA_CFLAGS += -isystem$(ANDROID_NDK)/sources/third_party/vulkan/src/include
+endif
+
 ifdef HAVE_SOLARIS
 ifeq ($(ARCH),x86_64)
 EXTRA_CFLAGS += -m64
@@ -470,7 +477,7 @@ ifdef HAVE_WIN32
 CMAKE += -DCMAKE_DEBUG_POSTFIX:STRING=
 endif
 ifdef HAVE_ANDROID
-CMAKE += -DANDROID:BOOL=ON -DANDROID_NDK=$(ANDROID_NDK)
+CMAKE += -DANDROID:BOOL=ON
 endif
 ifdef MSYS_BUILD
 CMAKE = PKG_CONFIG_LIBDIR="$(PKG_CONFIG_PATH)" $(CMAKE)
@@ -695,6 +702,9 @@ ifdef HAVE_CROSS_COMPILE
 	CMAKE_TOOLCHAIN_ENV += PATH_MODE_PACKAGE="ONLY"
 endif
 ifdef HAVE_ANDROID
+	CMAKE_TOOLCHAIN_ENV += ANDROID_NDK=$(ANDROID_NDK)
+	CMAKE_TOOLCHAIN_ENV += ANDROID_ABI=$(ANDROID_ABI)
+	CMAKE_TOOLCHAIN_ENV += ANDROID_ABI=$(ANDROID_API)
 # cmake will overwrite our --sysroot with a native (host) one on Darwin
 # Set it to "" right away to short-circuit this behaviour
 	CMAKE_TOOLCHAIN_ENV += CXX_SYSROOT_FLAG=
