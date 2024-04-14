@@ -217,6 +217,7 @@ struct media_params
     bool can_pause;
     bool error;
     bool null_names;
+    vlc_tick_t pts_delay;
 
     const char *config;
 };
@@ -240,6 +241,7 @@ struct media_params
     .can_pause = true, \
     .error = false, \
     .null_names = false, \
+    .pts_delay = DEFAULT_PTS_DELAY, \
     .config = NULL, \
 }
 
@@ -783,7 +785,7 @@ create_mock_media(const char *name, const struct media_params *params)
         "sub_packetized=%d;length=%"PRId64";audio_sample_length=%"PRId64";"
         "video_frame_rate=%u;video_frame_rate_base=%u;"
         "title_count=%zu;chapter_count=%zu;"
-        "can_seek=%d;can_pause=%d;error=%d;null_names=%d;"
+        "can_seek=%d;can_pause=%d;error=%d;null_names=%d;pts_delay=%"PRId64";"
         "config=%s;attachment_count=%zu",
         params->track_count[VIDEO_ES], params->track_count[AUDIO_ES],
         params->track_count[SPU_ES], params->program_count,
@@ -792,6 +794,7 @@ create_mock_media(const char *name, const struct media_params *params)
         params->video_frame_rate, params->video_frame_rate_base,
         params->title_count, params->chapter_count,
         params->can_seek, params->can_pause, params->error, params->null_names,
+        params->pts_delay,
         params->config ? params->config : "", params->attachment_count);
     assert(ret != -1);
     input_item_t *item = input_item_New(url, name);
@@ -2633,6 +2636,7 @@ test_timers(struct ctx *ctx)
         for (size_t j = 0; j < ARRAY_SIZE(df_min_test_list); ++j)
         {
             unsigned minute = df_min_test_list[j];
+            vlc_tick_t check_duration = VLC_TICK_FROM_SEC(2);
 
             struct media_params params =
                 DEFAULT_MEDIA_PARAMS(minute * VLC_TICK_FROM_SEC(60)
@@ -2643,10 +2647,14 @@ test_timers(struct ctx *ctx)
             params.video_frame_rate = fps * 1000;
             params.video_frame_rate_base = 1001;
 
+            /* This will prevent a RESET_PCR and ensure we receive all outputs
+             * points. */
+            params.pts_delay = check_duration;
+
             player_set_current_mock_media(ctx, "media1", &params, false);
             player_set_rate(ctx, 24);
 
-            vlc_player_SetTime(player, params.length - VLC_TICK_FROM_SEC(2));
+            vlc_player_SetTime(player, params.length - check_duration);
 
             player_start(ctx);
 
