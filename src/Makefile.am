@@ -288,6 +288,7 @@ libvlccore_la_SOURCES = \
 	input/info.h \
 	input/meta.c \
 	input/attachment.c \
+	input/parse.c \
 	player/player.c \
 	player/player.h \
 	player/input.c \
@@ -316,6 +317,8 @@ libvlccore_la_SOURCES = \
 	input/resource.h \
 	input/resource.c \
 	input/services_discovery.c \
+	input/source.c \
+	input/source.h \
 	input/stats.c \
 	input/stream.c \
 	input/stream_fifo.c \
