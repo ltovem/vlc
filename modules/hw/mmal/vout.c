@@ -689,16 +689,12 @@ static int vd_control(vout_display_t *vd, int query)
         case VOUT_DISPLAY_CHANGE_DISPLAY_SIZE:
         case VOUT_DISPLAY_CHANGE_SOURCE_ASPECT:
         case VOUT_DISPLAY_CHANGE_SOURCE_CROP:
+        case VOUT_DISPLAY_CHANGE_SOURCE_PLACE:
         {
             if (configure_display(vd, vd->source) >= 0)
                 ret = VLC_SUCCESS;
             break;
         }
-
-        case VOUT_DISPLAY_CHANGE_ZOOM:
-            msg_Warn(vd, "Unsupported control query %d", query);
-            ret = VLC_SUCCESS;
-            break;
 
         default:
             msg_Warn(vd, "Unknown control query %d", query);

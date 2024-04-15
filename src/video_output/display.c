@@ -253,9 +253,19 @@ typedef struct {
     video_format_t display_fmt;
     vlc_video_context *src_vctx;
 
+    vout_display_place_t src_place;
+
     // filters to convert the vout source to fmt, NULL means no conversion is needed
     struct pooled_filter_chain *converter;
 } vout_display_priv_t;
+
+static bool PlaceVideoInDisplay(vout_display_priv_t *osys)
+{
+    struct vout_display_placement place_cfg = osys->cfg.display;
+    vout_display_place_t prev_place = osys->src_place;
+    vout_display_PlacePicture(&osys->src_place, &osys->source, &place_cfg);
+    return vout_display_PlaceEquals(&prev_place, &osys->src_place);
+}
 
 /*****************************************************************************
  * FIXME/TODO see how to have direct rendering here (interact with vout.c)
@@ -493,7 +503,16 @@ static int vout_UpdateSourceCrop(vout_display_t *vd)
     osys->source.i_visible_height = bottom - top;
     video_format_Print(VLC_OBJECT(vd), "CROPPED ", &osys->source);
 
-    return vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_CROP);
+    bool place_changed = PlaceVideoInDisplay(osys);
+
+    int res1 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_CROP);
+    if (place_changed)
+    {
+        int res2 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_PLACE);
+        if (res2 != VLC_SUCCESS)
+            res1 = res2;
+    }
+    return res1;
 }
 
 static int vout_SetSourceAspect(vout_display_t *vd,
@@ -507,11 +526,20 @@ static int vout_SetSourceAspect(vout_display_t *vd,
         osys->source.i_sar_den = sar_den;
     }
 
+    bool place_changed = PlaceVideoInDisplay(osys);
+
     err1 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_ASPECT);
 
     /* If a crop ratio is requested, recompute the parameters */
     if (osys->crop.mode != VOUT_CROP_NONE)
         err2 = vout_UpdateSourceCrop(vd);
+
+    if (place_changed)
+    {
+        int res2 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_PLACE);
+        if (res2 != VLC_SUCCESS)
+            err1 = res2;
+    }
 
     if (err1 != VLC_SUCCESS)
         return err1;
@@ -569,7 +597,19 @@ void vout_display_SetSize(vout_display_t *vd, unsigned width, unsigned height)
 
     osys->cfg.display.width  = width;
     osys->cfg.display.height = height;
-    if (vout_display_Control(vd, VOUT_DISPLAY_CHANGE_DISPLAY_SIZE) != VLC_SUCCESS)
+
+    bool place_changed = PlaceVideoInDisplay(osys);
+
+    int res1 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_DISPLAY_SIZE);
+
+    if (place_changed)
+    {
+        int res2 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_PLACE);
+        if (res2 != VLC_SUCCESS)
+            res1 = res2;
+    }
+
+    if (res1 != VLC_SUCCESS)
         vout_display_Reset(vd);
 }
 
@@ -581,8 +621,14 @@ void vout_SetDisplayFitting(vout_display_t *vd, enum vlc_video_fitting fit)
         return; /* nothing to do */
 
     osys->cfg.display.fitting = fit;
-    if (vout_display_Control(vd, VOUT_DISPLAY_CHANGE_DISPLAY_FILLED) != VLC_SUCCESS)
-        vout_display_Reset(vd);
+
+    bool place_changed = PlaceVideoInDisplay(osys);
+    if (place_changed)
+    {
+        int res2 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_PLACE);
+        if (res2 != VLC_SUCCESS)
+            vout_display_Reset(vd);
+    }
 }
 
 void vout_SetDisplayZoom(vout_display_t *vd, unsigned num, unsigned den)
@@ -598,8 +644,14 @@ void vout_SetDisplayZoom(vout_display_t *vd, unsigned num, unsigned den)
         return; /* zoom has no effects */
     if (onum * den == num * oden)
         return; /* zoom has not changed */
-    if (vout_display_Control(vd, VOUT_DISPLAY_CHANGE_ZOOM) != VLC_SUCCESS)
-        vout_display_Reset(vd);
+
+    bool place_changed = PlaceVideoInDisplay(osys);
+    if (place_changed)
+    {
+        int res2 = vout_display_Control(vd, VOUT_DISPLAY_CHANGE_SOURCE_PLACE);
+        if (res2 != VLC_SUCCESS)
+            vout_display_Reset(vd);
+    }
 }
 
 void vout_SetDisplayAspect(vout_display_t *vd, unsigned dar_num, unsigned dar_den)
@@ -738,6 +790,8 @@ vout_display_t *vout_display_New(vlc_object_t *parent,
     vd->sys = NULL;
     if (owner)
         vd->owner = *owner;
+
+    PlaceVideoInDisplay(osys);
 
     if (module == NULL || module[0] == '\0')
         module = "any";

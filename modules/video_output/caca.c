@@ -187,9 +187,8 @@ static int Control(vout_display_t *vd, int query)
         sys->dither = NULL;
         /* fall through */
     case VOUT_DISPLAY_CHANGE_DISPLAY_SIZE:
-    case VOUT_DISPLAY_CHANGE_ZOOM:
-    case VOUT_DISPLAY_CHANGE_DISPLAY_FILLED:
     case VOUT_DISPLAY_CHANGE_SOURCE_ASPECT:
+    case VOUT_DISPLAY_CHANGE_SOURCE_PLACE:
         return VLC_SUCCESS;
 
     default:

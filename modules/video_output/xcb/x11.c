@@ -222,10 +222,9 @@ static int Control(vout_display_t *vd, int query)
         xcb_configure_window(sys->conn, sys->window, mask, values);
     }
         /* fall through */
-    case VOUT_DISPLAY_CHANGE_ZOOM:
-    case VOUT_DISPLAY_CHANGE_DISPLAY_FILLED:
     case VOUT_DISPLAY_CHANGE_SOURCE_ASPECT:
     case VOUT_DISPLAY_CHANGE_SOURCE_CROP:
+    case VOUT_DISPLAY_CHANGE_SOURCE_PLACE:
     {
         vout_display_place_t place;
 
