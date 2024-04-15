@@ -31,15 +31,11 @@ LUAC_IF_NOT_CROSS += luac
 endif
 
 ifeq ($(call need_pkg,"lua >= 5.1"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-else
-ifeq ($(call need_pkg,"lua5.2"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-else
-ifeq ($(call need_pkg,"lua5.1"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-endif
-endif
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
+else ifeq ($(call need_pkg,"lua5.2"),)
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
+else ifeq ($(call need_pkg,"lua5.1"),)
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
 endif
 
 ifeq ($(shell $(HOST)-luac -v 2>/dev/null | head -1 | sed  -E 's/Lua ([0-9]+).([0-9]+).*/\1.\2/'),$(LUA_SHORTVERSION))
