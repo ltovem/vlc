@@ -438,6 +438,7 @@ query_params = {
 vlc.ml.video(query_params): Get video media list
 vlc.ml.show_episodes(query_params): Get the list of show episodes
 vlc.ml.audio(query_params): Get audio media list
+vlc.ml.movies(query_params): Get list of movies
 vlc.ml.media_thumbnail(mediaId: integer): Get media thumbnail with media id parameter
 vlc.ml.albums(query_params): Get album list
 vlc.ml.album(albumId: integer): Get album with album id

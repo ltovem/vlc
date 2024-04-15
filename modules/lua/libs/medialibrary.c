@@ -287,6 +287,16 @@ static int vlclua_ml_list_shows( lua_State *L )
     return vlclua_ml_list_show( L, list );
 }
 
+static int vlclua_ml_list_movies( lua_State *L )
+{
+    vlc_object_t *p_this = vlclua_get_this( L );
+    vlc_ml_query_params_t params;
+    vlclua_ml_assign_params( L, &params, 1 );
+    vlc_medialibrary_t* ml = vlc_ml_instance_get( p_this );
+    vlc_ml_media_list_t* list = vlc_ml_list_movie_media( ml, &params );
+    return vlclua_ml_list_media( L, list );
+}
+
 static int vlclua_ml_audio( lua_State *L )
 {
     vlc_object_t *p_this = vlclua_get_this( L );
@@ -514,6 +524,7 @@ static int vlclua_ml_reload( lua_State *L )
 
 static const luaL_Reg vlclua_ml_reg[] = {
     { "video", vlclua_ml_video },
+    { "movies", vlclua_ml_list_movies },
     { "show_episodes", vlclua_ml_list_shows },
     { "audio", vlclua_ml_audio },
     { "media_thumbnail", vlclua_ml_get_media_thumbnail },
