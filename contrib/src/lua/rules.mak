@@ -7,22 +7,17 @@ LUA_URL := http://www.lua.org/ftp/lua-$(LUA_VERSION).tar.gz
 # Reverse priority order
 LUA_TARGET := generic
 ifdef HAVE_BSD
-LUA_TARGET := bsd
-endif
-ifdef HAVE_LINUX
-LUA_TARGET := linux
-endif
-ifdef HAVE_MACOSX
-LUA_TARGET := macosx
-endif
-ifdef HAVE_IOS
-LUA_TARGET := ios
-endif
-ifdef HAVE_WIN32
-LUA_TARGET := mingw
-endif
-ifdef HAVE_SOLARIS
-LUA_TARGET := solaris
+	LUA_TARGET := bsd
+else ifdef HAVE_LINUX
+	LUA_TARGET := linux
+else ifdef HAVE_MACOSX
+	LUA_TARGET := macosx
+else ifdef HAVE_IOS
+	LUA_TARGET := ios
+else ifdef HAVE_WIN32
+	LUA_TARGET := mingw
+else ifdef HAVE_SOLARIS
+	LUA_TARGET := solaris
 endif
 
 # Feel free to add autodetection if you need to...
