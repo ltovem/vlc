@@ -20,8 +20,7 @@ endif
 
 ifeq ($(shell $(HOST)-protoc --version 2>/dev/null | head -1 | sed s/'.* '// | cut -d '.' -f -2),$(PROTOBUF_MAJVERSION))
 PKGS_FOUND += protoc
-endif
-ifeq ($(shell protoc --version 2>/dev/null | head -1 | sed s/'.* '// | cut -d '.' -f -2),$(PROTOBUF_MAJVERSION))
+else ifeq ($(shell protoc --version 2>/dev/null | head -1 | sed s/'.* '// | cut -d '.' -f -2),$(PROTOBUF_MAJVERSION))
 PKGS_FOUND += protoc
 endif
 
