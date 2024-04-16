@@ -1148,12 +1148,12 @@ shaders/shaders.cpp: shaders/shaders.qrc
 libqt_plugin_la_SOURCES += shaders/shaders.qrc $(libqt_plugin_la_SHADER)
 
 # This doesn't include vlc.qrc
-lib_qt_plugin_la_QRC =
+libqt_plugin_la_QRC =
 if HAVE_WIN32
-lib_qt_plugin_la_QRC += windows.qrc
+libqt_plugin_la_QRC += windows.qrc
 endif
 
-EXTRA_DIST += vlc.qrc $(lib_qt_plugin_la_QRC) $(libqt_plugin_la_RES) $(libqt_plugin_la_SHADER)
+EXTRA_DIST += vlc.qrc $(libqt_plugin_la_QRC) $(libqt_plugin_la_RES) $(libqt_plugin_la_SHADER)
 
 nodist_libqt_plugin_la_SOURCES += resources.cpp shaders/shaders.cpp
 
@@ -1178,11 +1178,11 @@ libqt_plugin_la_SOURCES += $(libqt_plugin_la_QML)
 qml_cache.qrc: vlc.qrc
 	$(AM_V_GEN)$(QMLCACHEGEN) --filter-resource-file -o $@ $<
 
-lib_qt_plugin_la_QRC += qml_cache.qrc
+libqt_plugin_la_QRC += qml_cache.qrc
 
 resources.cpp: $(libqt_plugin_la_RES)
-resources.cpp: $(lib_qt_plugin_la_QRC)
-	$(AM_V_GEN)$(RCC) --name qml_cache -o $@ $(lib_qt_plugin_la_QRC)
+resources.cpp: $(libqt_plugin_la_QRC)
+	$(AM_V_GEN)$(RCC) --name qml_cache -o $@ $(libqt_plugin_la_QRC)
 
 #output name matters here
 qmlcache_loader.cpp: vlc.qrc qml_cache.qrc $(libqt_plugin_la_QML)
@@ -1192,11 +1192,11 @@ else
 
 EXTRA_DIST += $(libqt_plugin_la_QML)
 
-# lib_qt_plugin_la_QRC might be empty here if windows.qrc is not added
+# libqt_plugin_la_QRC might be empty here if windows.qrc is not added
 resources.cpp: $(libqt_plugin_la_RES) $(libqt_plugin_la_QML)
-resources.cpp: $(lib_qt_plugin_la_QRC)
-	$(AM_V_GEN)if test "$(lib_qt_plugin_la_QRC)" != " "; \
-		then $(RCC) --name vlc -o $@ $(lib_qt_plugin_la_QRC); \
+resources.cpp: $(libqt_plugin_la_QRC)
+	$(AM_V_GEN)if test "$(libqt_plugin_la_QRC)" != " "; \
+		then $(RCC) --name vlc -o $@ $(libqt_plugin_la_QRC); \
 		else touch $@; fi
 
 endif
