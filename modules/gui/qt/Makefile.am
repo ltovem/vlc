@@ -356,7 +356,7 @@ libqt_plugin_la_SOURCES = \
 
 moc_verbose = $(moc_verbose_$(V))
 moc_verbose_ = $(moc_verbose__$(AM_DEFAULT_VERBOSITY))
-moc_verbose_0 = @echo "  MOC   " $@;
+moc_verbose_0 = @echo "  MOC     " $@;
 moc_verbose__0 = $(moc_verbose_0)
 
 .hpp.moc.cpp:
@@ -617,7 +617,7 @@ endif
 
 uic_verbose = $(uic_verbose_$(V))
 uic_verbose_ = $(uic_verbose__$(AM_DEFAULT_VERBOSITY))
-uic_verbose_0 = @echo "  UIC   " $@;
+uic_verbose_0 = @echo "  UIC     " $@;
 uic_verbose__0 = $(uic_verbose_0)
 
 MOC_CPPFLAGS = $(DEFS) \
