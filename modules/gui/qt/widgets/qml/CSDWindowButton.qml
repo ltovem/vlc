@@ -76,8 +76,6 @@ T.Button {
 
                     else if(MainCtx.osVersion === 11)
                         return "Segoe Fluent Icons"
-                    
-                    return VLCIcons.fontFamily
                 }
      
                 return VLCIcons.fontFamily
