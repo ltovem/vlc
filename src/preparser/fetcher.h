@@ -36,6 +36,9 @@ typedef struct input_fetcher_t input_fetcher_t;
 
 typedef struct input_fetcher_callbacks_t {
     void (*on_art_fetch_ended)(input_item_t *, bool fetched, void *userdata);
+    void (*on_attachments_added)(input_item_t *item,
+                                 input_attachment_t *const *array,
+                                 size_t count, void *userdata);
 } input_fetcher_callbacks_t;
 
 /**
