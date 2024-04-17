@@ -656,22 +656,17 @@ help:
 CMAKE_SYSTEM_NAME =
 ifdef HAVE_CROSS_COMPILE
 CMAKE_SYSTEM_NAME = $(error CMAKE_SYSTEM_NAME required for cross-compilation)
-endif
-ifdef HAVE_LINUX
+else ifdef HAVE_LINUX
 CMAKE_SYSTEM_NAME = Linux
-endif
-ifdef HAVE_WIN32
+else ifdef HAVE_WIN32
 CMAKE_SYSTEM_NAME = Windows
-ifdef HAVE_VISUALSTUDIO
+else ifdef HAVE_VISUALSTUDIO
 ifdef HAVE_WINSTORE
 CMAKE_SYSTEM_NAME = WindowsStore
 endif
-endif
-endif
-ifdef HAVE_DARWIN_OS
+else ifdef HAVE_DARWIN_OS
 CMAKE_SYSTEM_NAME = Darwin
-endif
-ifdef HAVE_EMSCRIPTEN
+else ifdef HAVE_EMSCRIPTEN
 CMAKE_SYSTEM_NAME = Emscripten
 EMCMAKE_PATH := $(shell command -v emcmake)
 EMSDK_PATH := $(dir $(EMCMAKE_PATH))
@@ -726,25 +721,17 @@ toolchain.cmake: $(SRC)/gen-cmake-toolchain.py
 MESON_SYSTEM_NAME =
 ifdef HAVE_WIN32
 	MESON_SYSTEM_NAME = windows
-else
-ifdef HAVE_DARWIN_OS
+else ifdef HAVE_DARWIN_OS
 	MESON_SYSTEM_NAME = darwin
-else
-ifdef HAVE_ANDROID
+else ifdef HAVE_ANDROID
 	MESON_SYSTEM_NAME = android
-else
-ifdef HAVE_LINUX
+else ifdef HAVE_LINUX
 	# android has also system = linux and defines HAVE_LINUX
 	MESON_SYSTEM_NAME = linux
-else
-ifdef HAVE_EMSCRIPTEN
+else ifdef HAVE_EMSCRIPTEN
 	MESON_SYSTEM_NAME = emscripten
 else
 	$(error "No meson system name known for this target")
-endif
-endif
-endif
-endif
 endif
 
 crossfile.meson: $(SRC)/gen-meson-machinefile.py

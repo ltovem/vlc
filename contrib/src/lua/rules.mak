@@ -7,22 +7,17 @@ LUA_URL := http://www.lua.org/ftp/lua-$(LUA_VERSION).tar.gz
 # Reverse priority order
 LUA_TARGET := generic
 ifdef HAVE_BSD
-LUA_TARGET := bsd
-endif
-ifdef HAVE_LINUX
-LUA_TARGET := linux
-endif
-ifdef HAVE_MACOSX
-LUA_TARGET := macosx
-endif
-ifdef HAVE_IOS
-LUA_TARGET := ios
-endif
-ifdef HAVE_WIN32
-LUA_TARGET := mingw
-endif
-ifdef HAVE_SOLARIS
-LUA_TARGET := solaris
+	LUA_TARGET := bsd
+else ifdef HAVE_LINUX
+	LUA_TARGET := linux
+else ifdef HAVE_MACOSX
+	LUA_TARGET := macosx
+else ifdef HAVE_IOS
+	LUA_TARGET := ios
+else ifdef HAVE_WIN32
+	LUA_TARGET := mingw
+else ifdef HAVE_SOLARIS
+	LUA_TARGET := solaris
 endif
 
 # Feel free to add autodetection if you need to...
@@ -38,21 +33,16 @@ LUAC_IF_NOT_CROSS += luac
 endif
 
 ifeq ($(call need_pkg,"lua >= 5.1"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-else
-ifeq ($(call need_pkg,"lua5.2"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-else
-ifeq ($(call need_pkg,"lua5.1"),)
-PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
-endif
-endif
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
+else ifeq ($(call need_pkg,"lua5.2"),)
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
+else ifeq ($(call need_pkg,"lua5.1"),)
+	PKGS_FOUND += lua $(LUAC_IF_NOT_CROSS)
 endif
 
 ifeq ($(shell $(HOST)-luac -v 2>/dev/null | head -1 | sed  -E 's/Lua ([0-9]+).([0-9]+).*/\1.\2/'),$(LUA_SHORTVERSION))
 PKGS_FOUND += luac
-endif
-ifeq ($(shell $(HOST)-luac -v 2>/dev/null | head -1 | sed  -E 's/Lua ([0-9]+).([0-9]+).*/\1.\2/'),5.2)
+else ifeq ($(shell $(HOST)-luac -v 2>/dev/null | head -1 | sed  -E 's/Lua ([0-9]+).([0-9]+).*/\1.\2/'),5.2)
 PKGS_FOUND += luac
 endif
 
