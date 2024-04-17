@@ -54,6 +54,7 @@ class QmlModuleChecker:
             )
 
         if ret.returncode != 0:
+            print(ret.stderr.strip())
             return None
 
         return json.loads(ret.stdout)
@@ -82,14 +83,22 @@ class QmlModuleChecker:
             print("qmake not found")
             return False
 
-        ret = subprocess.run(
-            [ qmake, "-qtconf", qtconf, "-query"],
-            capture_output=True,
-            encoding="utf8"
-        )
+        if qtconf:
+            ret = subprocess.run(
+                [ qmake, "-qtconf", qtconf, "-query"],
+                capture_output=True,
+                encoding="utf8"
+            )
+        else:
+            ret = subprocess.run(
+                [ qmake, "-query"],
+                capture_output=True,
+                encoding="utf8"
+            )
 
         if ret.returncode != 0:
-            return None
+            print(ret.stderr.strip())
+            return False
 
         binpath = None
         libexec = None
@@ -111,7 +120,7 @@ class QmlModuleChecker:
             self.qt5 = False
 
         if not checkQmakePath(self.qmlpath):
-            print("Qml path not found")
+            print("Qml path {} not found".format(self.qmlpath))
             return False
 
         self.qmlimportscanner = findProgram(binpath, "qmlimportscanner")
@@ -143,7 +152,7 @@ def main():
         help="native qmake path")
 
     parser.add_argument(
-        "--qtconf", type=str, required=True,
+        "--qtconf", type=str, required=False,
         help="qmake qtconf path")
 
     parser.add_argument(
