@@ -20,9 +20,9 @@ ninja-jobserver: ninja-$(NINJA_BUILD_NAME).tar.gz .sum-ninja-jobserver
 	$(MOVE)
 
 .ninja-jobserver: BUILD_DIR=$</vlc_native
-.ninja-jobserver: ninja-jobserver
+.ninja-jobserver: ninja-jobserver .python-venv
 	$(MAKEBUILDDIR)
-	cd $(BUILD_DIR); $(BUILDVARS) python3 ../configure.py --bootstrap
+	cd $(BUILD_DIR); $(BUILDVARS) $(PYTHON_VENV)/bin/python3 ../configure.py --bootstrap
 	install -d "$(BUILDBINDIR)"
 	install $(BUILD_DIR)/ninja "$(BUILDBINDIR)"
 	touch $@
