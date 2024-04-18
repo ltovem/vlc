@@ -20,9 +20,6 @@ endif
 endif
 PKGS.tools.protoc.path = $(BUILDBINDIR)/$(HOST)-protoc
 
-ifeq ($(shell $(HOST)-protoc --version 2>/dev/null | head -1 | sed s/'.* '// | cut -d '.' -f -2),$(PROTOBUF_MAJVERSION))
-PKGS_FOUND += protoc
-endif
 ifeq ($(shell protoc --version 2>/dev/null | head -1 | sed s/'.* '// | cut -d '.' -f -2),$(PROTOBUF_MAJVERSION))
 PKGS_FOUND += protoc
 endif
@@ -59,9 +56,7 @@ protoc: protoc-$(PROTOBUF_VERSION)-cpp.tar.gz .sum-protoc
 	sed -i.orig -e 's,install(DIRECTORY ,noinstall(DIRECTORY ,' $(UNPACK_DIR)/cmake/install.cmake
 	sed -i.orig -e 's,install(TARGETS ,noinstall(TARGETS ,' $(UNPACK_DIR)/cmake/install.cmake
 	sed -i.orig -e 's,noinstall(TARGETS protoc,install(TARGETS protoc,' $(UNPACK_DIR)/cmake/install.cmake
-	# set the binary prefix
-	echo "set_target_properties(protoc PROPERTIES PREFIX \"$(HOST)-\")" >> $(UNPACK_DIR)/cmake/protoc.cmake
-	# disable libprotobuf-ltie
+	# disable libprotobuf-lite
 	# sed -i.orig -e 's,libprotobuf-lite, ,' $(UNPACK_DIR)/cmake/install.cmake
 	# sed -i.orig -e 's,include(libprotobuf-lite,#include(libprotobuf-lite,' $(UNPACK_DIR)/cmake/CMakeLists.txt
 	$(MOVE)
