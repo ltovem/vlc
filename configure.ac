@@ -4048,6 +4048,12 @@ AS_IF([test "${enable_qt}" != "no"], [
       ],[
       ])
 
+      AC_PATH_PROGS(SPIRV_OPT, [spirv-opt], [no], [${CONTRIB_DIR}/../bin $PATH])
+      AS_IF([test "$SPIRV_OPT" != "no"],[
+        SPIRVOPT_PATH=$(echo $SPIRV_OPT | head -c-11)
+        AC_SUBST([SPIRVOPT_PATH])
+      ])
+
       dnl Check private headers availability
       VLC_SAVE_FLAGS
       CPPFLAGS="${CPPFLAGS} ${QT_CFLAGS}"
