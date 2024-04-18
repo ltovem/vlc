@@ -6,8 +6,11 @@ QTSHADERTOOLS_VERSION := $(QTSHADERTOOLS_VERSION_MAJOR).2
 QTSHADERTOOLS_URL := $(QT)/$(QTSHADERTOOLS_VERSION_MAJOR)/$(QTSHADERTOOLS_VERSION)/submodules/qtshadertools-everywhere-src-$(QTSHADERTOOLS_VERSION).tar.xz
 
 DEPS_qtshadertools-tools := qt-tools $(DEPS_qt-tools)
+ifdef HAVE_LINUX
+DEPS_qtshadertools-tools += spirv-tools $(DEPS_spirv-tools)
+endif
 
-DEPS_qtshadertools += qt $(DEPS_qt) spirv-tools
+DEPS_qtshadertools += qt $(DEPS_qt)
 ifdef HAVE_CROSS_COMPILE
 DEPS_qtshadertools += qtshadertools-tools $(DEPS_qtshadertools-tools)
 endif
