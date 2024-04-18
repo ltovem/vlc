@@ -10,7 +10,7 @@ ifneq ($(findstring qt,$(PKGS)),)
 # match with Qt targets
 PKGS_TOOLS += spirv-tools
 endif
-ifeq ($(call need_pkg,"SPIRV-Tools >= $(SPIRVTOOLS_VERSION).1"),)
+ifeq ($(shell spirv-opt --version >/dev/null 2>&1 || echo FAIL),)
 PKGS_FOUND += spirv-tools
 endif
 
