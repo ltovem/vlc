@@ -604,6 +604,14 @@ AS_IF([test -n "${CONTRIB_DIR}"], [
     export LD_LIBRARY_PATH="${CONTRIB_DIR}/lib:$LD_LIBRARY_PATH"
     export DYLD_LIBRARY_PATH="${CONTRIB_DIR}/lib:$DYLD_LIBRARY_PATH"
   ])
+
+  dnl Add contrib/bin to the PATH
+  CONTRIB_NATIVE_BIN_DIR="${CONTRIB_DIR}/../bin"
+  AS_IF([test -d "${CONTRIB_NATIVE_BIN_DIR}"], [
+    CONTRIB_NATIVE_BIN_DIR=`cd "${CONTRIB_NATIVE_BIN_DIR}" && pwd`
+    PATH="${CONTRIB_NATIVE_BIN_DIR}":$PATH
+    export PATH="${PATH}"
+  ])
 ], [
   AS_IF([test -n "${with_contrib}" && test "${with_contrib}" != "no"], [
     AC_MSG_ERROR([Third party libraries not found!])

@@ -12,8 +12,6 @@ VLC_TOOLS ?= $(TOPSRC)/../extras/tools/build
 
 CMAKE_GENERATOR ?= Ninja
 
-PATH :=$(abspath $(VLC_TOOLS)/bin):$(PATH)
-export PATH
 
 PKGS_ALL := $(patsubst $(SRC)/%/rules.mak,%,$(wildcard $(SRC)/*/rules.mak))
 DATE := $(shell date +%Y%m%d)
@@ -45,6 +43,9 @@ ifneq ($(HOST),$(BUILD))
 HAVE_CROSS_COMPILE = 1
 endif
 ARCH := $(shell $(SRC)/get-arch.sh $(HOST))
+
+PATH := $(BUILDBINDIR):$(abspath $(VLC_TOOLS)/bin):$(PATH)
+export PATH
 
 ifeq ($(ARCH)-$(HAVE_WIN32),x86_64-1)
 HAVE_WIN64 := 1
