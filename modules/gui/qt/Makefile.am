@@ -1120,7 +1120,9 @@ libqt_plugin_la_SHADER := shaders/FadingEdge.frag \
 if ENABLE_QT
 BUILT_SOURCES += \
     $(libqt_plugin_la_SHADER:.frag=.frag.qsb) \
-    $(libqt_plugin_la_SHADER:.vert=.vert.qsb)
+    $(libqt_plugin_la_SHADER:.vert=.vert.qsb) \
+	shaders/shaders.qrc
+endif
 
 QSB_PARAMS = --glsl="100 es,120,150" --batchable -O
 if HAVE_WIN32
@@ -1141,7 +1143,6 @@ shaders/shaders.cpp: $(srcdir)/shaders/shaders.qrc $(libqt_plugin_la_SHADER:.fra
 	$(AM_V_GEN) $(RCC) --name shaders -o $@ $(builddir)/shaders/$(notdir $(filter %.qrc, $^))
 
 libqt_plugin_la_SOURCES += shaders/shaders.qrc $(libqt_plugin_la_SHADER)
-BUILT_SOURCES += shaders/shaders.qrc
 
 lib_qt_plugin_la_QRC = vlc.qrc
 
@@ -1152,7 +1153,6 @@ endif
 EXTRA_DIST += $(lib_qt_plugin_la_QRC) $(libqt_plugin_la_RES) $(libqt_plugin_la_SHADER)
 
 nodist_libqt_plugin_la_SOURCES += resources.cpp shaders/shaders.cpp
-endif
 
 if ENABLE_VLM
 nodist_libqt_plugin_la_SOURCES += dialogs/vlm/vlm.moc.cpp
