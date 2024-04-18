@@ -490,7 +490,7 @@ CMAKE += -DCMAKE_LINK_LIBRARY_SUFFIX:STRING=.a
 endif
 
 MESONFLAGS = $(BUILD_DIR) $< --default-library static --prefix "$(PREFIX)" \
-	--backend ninja -Dlibdir=lib
+	--backend ninja -Dlibdir=lib --prefer-static
 ifndef WITH_OPTIMIZATION
 MESONFLAGS += --buildtype debug
 else
