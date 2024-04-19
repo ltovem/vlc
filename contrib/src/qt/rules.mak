@@ -54,6 +54,7 @@ qt: qtbase-everywhere-src-$(QTBASE_VERSION_FULL).tar.xz .sum-qt
 	$(APPLY) $(SRC)/qt/0001-QTypeInfo-Add-a-missing-include.patch
 	$(APPLY) $(SRC)/qt/0002-QStringTokenizer-Add-a-missing-include.patch
 	$(APPLY) $(SRC)/qt/0003-CMake-Fix-a-misplaced-in-pkg-config-files.patch
+	$(APPLY) $(SRC)/qt/0001-Set-default-compression-level-to-9-in-RCC.patch
 	$(MOVE)
 
 ifeq ($(V),1)
