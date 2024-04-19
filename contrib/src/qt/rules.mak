@@ -60,6 +60,12 @@ ifeq ($(V),1)
 QTBASE_CONFIG += -verbose
 endif
 
+ifdef HAVE_WIN32
+QTBASE_CONFIG += -no-freetype -directwrite
+else
+QTBASE_CONFIG += -system-freetype
+endif
+
 ifdef HAVE_CROSS_COMPILE
 # This is necessary to make use of qmake
 QTBASE_PLATFORM := -device-option CROSS_COMPILE=$(HOST)-
@@ -67,7 +73,7 @@ endif
 
 QTBASE_CONFIG += -static -opensource -confirm-license -opengl desktop -no-pkg-config -no-openssl \
     -no-gif -no-dbus -no-feature-zstd -no-feature-concurrent -no-feature-androiddeployqt \
-	-no-feature-sql -no-feature-testlib -system-freetype -system-harfbuzz -system-libjpeg \
+	-no-feature-sql -no-feature-testlib -system-harfbuzz -system-libjpeg \
 	-no-feature-xml -no-feature-printsupport -system-libpng -system-zlib -no-feature-network \
 	-nomake examples -prefix $(PREFIX) -qt-host-path $(BUILDPREFIX) \
 	-- -DCMAKE_TOOLCHAIN_FILE=$(abspath toolchain.cmake)
