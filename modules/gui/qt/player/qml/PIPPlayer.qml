@@ -45,12 +45,8 @@ Item {
     Connections {
         target: mouseArea.drag
         function onActiveChanged() {
-            root.anchors.left = undefined;
-            root.anchors.right = undefined
-            root.anchors.top = undefined
-            root.anchors.bottom = undefined
-            root.anchors.verticalCenter = undefined;
-            root.anchors.horizontalCenter = undefined
+            root.x = root.x
+            root.y = root.y
         }
     }
     Drag.active: mouseArea.drag.active
