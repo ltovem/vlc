@@ -1,0 +1,26 @@
+From 43dd08cf4855482e14cafc0fe6f0b3ef91786ace Mon Sep 17 00:00:00 2001
+From: Marvin Scholz <epirat07@gmail.com>
+Date: Tue, 5 Sep 2023 03:46:34 +0200
+Subject: [PATCH 2/2] build: properly remove .a suffix for .pc file
+
+Not doing this would lead to invalid .pc file entries
+like -ljpeg.a when libjpeg is a static library.
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 53ab9352..5d9398df 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -733,6 +733,7 @@ function(get_link_libraries OUT TARGET)
+ 	string(REGEX REPLACE "^.*/lib" "" LIB ${LIB}) # remove leading path and "lib" name prefix
+ 	string(REGEX REPLACE "-l" "" LIB ${LIB}) # remove leading -l
+ 	string(REGEX REPLACE "\\.so$" "" LIB ${LIB}) # remove trailing .so
++	string(REGEX REPLACE "\\.a$" "" LIB ${LIB}) # remove trailing .a
+ 	list(APPEND RESULT "-l${LIB}")
+     endforeach()
+     list(REMOVE_DUPLICATES RESULT)
+-- 
+2.39.2
+
