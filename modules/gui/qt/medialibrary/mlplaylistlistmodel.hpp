@@ -64,13 +64,13 @@ public:
 public: // Interface
     Q_INVOKABLE void create(const QString & name, const QVariantList& initialItems);
 
-    Q_INVOKABLE bool append(const MLItemId & playlistId, const QVariantList & ids);
+    Q_INVOKABLE void append(const MLItemId & playlistId, const QVariantList & ids);
 
     Q_INVOKABLE bool deletePlaylists(const QVariantList & ids);
 
     Q_INVOKABLE bool showDialogRename(const QModelIndex & index);
 
-    MLItemId getItemId(int index) const;
+    Q_INVOKABLE MLItemId getItemId(int index) const;
 
 public: // QAbstractItemModel implementation
     QHash<int, QByteArray> roleNames() const override;
