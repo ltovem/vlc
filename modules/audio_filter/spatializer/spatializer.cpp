@@ -45,6 +45,8 @@ using std::nothrow;
 #include "revmodel.hpp"
 #define SPAT_AMP 0.3
 
+#include <array>
+
 /*****************************************************************************
  * Module descriptor
  *****************************************************************************/
@@ -121,14 +123,13 @@ struct callback_s {
 
 } // namespace
 
-static const callback_s callbacks[] = {
+static const std::array<callback_s, 5> callbacks = {{
     { "spatializer-roomsize", RoomCallback,  &revmodel::setroomsize },
     { "spatializer-width",    WidthCallback, &revmodel::setwidth },
     { "spatializer-wet",      WetCallback,   &revmodel::setwet },
     { "spatializer-dry",      DryCallback,   &revmodel::setdry },
     { "spatializer-damp",     DampCallback,  &revmodel::setdamp }
-};
-enum { num_callbacks=sizeof(callbacks)/sizeof(callback_s) };
+}};
 
 static block_t *DoWork( filter_t *, block_t * );
 
@@ -141,10 +142,9 @@ static void Close( filter_t *p_filter )
     vlc_object_t *p_aout = vlc_object_parent(p_filter);
 
     /* Delete the callbacks */
-    for(unsigned i=0;i<num_callbacks;++i)
+    for (auto cb : callbacks)
     {
-        var_DelCallback( p_aout, callbacks[i].psz_name,
-                         callbacks[i].fp_callback, p_sys );
+        var_DelCallback(p_aout, cb.psz_name, cb.fp_callback, p_sys);
     }
 
     delete p_sys->p_reverbm;
@@ -177,29 +177,26 @@ static int Open( vlc_object_t *p_this )
 
     vlc_mutex_init( &p_sys->lock );
 
-    for(unsigned i=0;i<num_callbacks;++i)
+    for (auto cb : callbacks)
     {
         /* NOTE: C++ pointer-to-member function call from table lookup. */
-        (p_sys->p_reverbm->*(callbacks[i].fp_set))
-            (var_CreateGetFloatCommand(p_aout,callbacks[i].psz_name));
-        var_AddCallback( p_aout, callbacks[i].psz_name,
-                         callbacks[i].fp_callback, p_sys );
+        float value = var_CreateGetFloatCommand(p_aout, cb.psz_name);
+        (p_sys->p_reverbm->*(cb.fp_set))(value);
+        var_AddCallback(p_aout, cb.psz_name, cb.fp_callback, p_sys);
     }
 
     p_filter->fmt_in.audio.i_format = VLC_CODEC_FL32;
     aout_FormatPrepare(&p_filter->fmt_in.audio);
     p_filter->fmt_out.audio = p_filter->fmt_in.audio;
 
-    static const struct FilterOperationInitializer {
+    static const struct vlc_filter_operations filter_ops = []{
         struct vlc_filter_operations ops {};
-        FilterOperationInitializer()
-        {
-            ops.filter_audio = DoWork;
-            ops.close = Close;
-        }
-    } filter_ops;
+        ops.filter_audio = DoWork;
+        ops.close = Close;
+        return ops;
+    }();
 
-    p_filter->ops = &filter_ops.ops;
+    p_filter->ops = &filter_ops;
     return VLC_SUCCESS;
 }
 
