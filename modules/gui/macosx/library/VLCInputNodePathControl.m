@@ -28,18 +28,16 @@
 
 - (void)appendInputNodePathControlItem:(VLCInputNodePathControlItem *)inputNodePathControlItem
 {
-    NSParameterAssert(inputNodePathControlItem != nil);
-    NSParameterAssert(inputNodePathControlItem.image != nil);
-    NSParameterAssert(inputNodePathControlItem.image.name != nil);
-    NSParameterAssert(![inputNodePathControlItem.image.name isEqualToString:@""]);
+    NSString * const inputNodeMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:inputNodePathControlItem];
+    NSParameterAssert(![inputNodeMRL isEqualToString:@""]);
 
     if (_inputNodePathControlItems == nil) {
-        _inputNodePathControlItems = [NSMutableDictionary dictionary];
+        _inputNodePathControlItems = NSMutableDictionary.dictionary;
     }
 
-    [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodePathControlItem.image.name];
+    [_inputNodePathControlItems setObject:inputNodePathControlItem forKey:inputNodeMRL];
 
-    NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
+    NSMutableArray * const pathItems = self.pathItems.mutableCopy;
     [pathItems addObject:inputNodePathControlItem];
     self.pathItems = pathItems;
 }
@@ -47,44 +45,47 @@
 - (void)removeLastInputNodePathControlItem
 {
     if (self.pathItems.count == 0) {
-        _inputNodePathControlItems = [NSMutableDictionary dictionary];
+        _inputNodePathControlItems = NSMutableDictionary.dictionary;
         return;
     }
 
-    NSMutableArray *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
-    NSPathControlItem *lastItem = pathItems.lastObject;
+    NSMutableArray * const pathItems = self.pathItems.mutableCopy;
+    NSPathControlItem * const lastItem = pathItems.lastObject;
+    NSString * const lastItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:lastItem];
 
     [pathItems removeLastObject];
     self.pathItems = pathItems;
-    [_inputNodePathControlItems removeObjectForKey:lastItem.image.name];
+    [_inputNodePathControlItems removeObjectForKey:lastItemMRL];
 }
 
 - (void)clearInputNodePathControlItems
 {
-    _inputNodePathControlItems = [NSMutableDictionary dictionary];
+    _inputNodePathControlItems = NSMutableDictionary.dictionary;
     self.pathItems = @[];
 }
 
 - (void)clearPathControlItemsAheadOf:(NSPathControlItem *)item
 {
-    if ([item.image.name isEqualToString:@""]) {
+    NSString * const itemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:item];
+    if ([itemMRL isEqualToString:@""]) {
         return;
     }
 
-    NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem *searchItem, NSUInteger idx, BOOL *stop) {
-        return [searchItem.image.name isEqualToString:item.image.name];
+    NSUInteger indexOfItem = [self.pathItems indexOfObjectPassingTest:^BOOL(NSPathControlItem * const searchItem, const NSUInteger idx, BOOL * const stop) {
+        NSString * const searchItemMRL = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
+        return [searchItemMRL isEqualToString:itemMRL];
     }];
 
     if (indexOfItem == NSNotFound) {
         return;
     }
 
-    NSMutableArray<NSPathControlItem *> *pathItems = [NSMutableArray arrayWithArray:self.pathItems];
-    NSArray<NSPathControlItem *> *itemsToRemove = [pathItems subarrayWithRange:NSMakeRange(indexOfItem + 1, pathItems.count - indexOfItem - 1)];
-    NSMutableArray<NSString *> *itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
+    NSMutableArray<NSPathControlItem *> * const pathItems = self.pathItems.mutableCopy;
+    NSArray<NSPathControlItem *> * const itemsToRemove = [pathItems subarrayWithRange:NSMakeRange(indexOfItem + 1, pathItems.count - indexOfItem - 1)];
+    NSMutableArray<NSString *> * const itemMrlsToRemove = [NSMutableArray arrayWithCapacity:itemsToRemove.count];
 
-    for (NSPathControlItem *searchItem in itemsToRemove) {
-        NSString *searchItemMrl = searchItem.image.name;
+    for (NSPathControlItem * const searchItem in itemsToRemove) {
+        NSString * const searchItemMrl = [VLCInputNodePathControlItem MRLFromPathControlItem:searchItem];
         [itemMrlsToRemove addObject:searchItemMrl];
     };
 

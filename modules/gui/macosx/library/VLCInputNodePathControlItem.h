@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) VLCInputNode *inputNode;
 
++ (NSString *)MRLFromPathControlItem:(NSPathControlItem *)pathControlItem;
 - (instancetype)initWithInputNode:(VLCInputNode *)inputNode;
 
 @end
