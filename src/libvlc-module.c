@@ -1167,6 +1167,10 @@ static const char *const clock_sources_text[] = {
 #define DBUS_LONGTEXT N_("Allow other applications to control VLC " \
     "using the D-Bus MPRIS protocol.")
 
+#define SMTC_TEXT N_("Integrate with Windows SMTC")
+#define SMTC_LONGTEXT N_("Integrate VLC with the System Media Transport " \
+    "Controls to enable system-wide media control UIs and hotkeys.")
+
 /*****************************************************************************
  * Playlist
  ****************************************************************************/
@@ -2211,6 +2215,10 @@ vlc_module_begin ()
               INTERACTION_LONGTEXT )
 
     add_bool ( "stats", true, STATS_TEXT, STATS_LONGTEXT )
+
+#if defined(_WIN32) && !defined(VLC_WINSTORE_APP)
+    add_bool( "smtc", true, SMTC_TEXT, SMTC_LONGTEXT )
+#endif
 
     set_subcategory( SUBCAT_INTERFACE_MAIN )
     add_module_cat("intf", SUBCAT_INTERFACE_MAIN, NULL,
