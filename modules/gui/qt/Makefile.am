@@ -1122,7 +1122,9 @@ BUILT_SOURCES += \
     $(libqt_plugin_la_SHADER:.frag=.frag.qsb) \
     $(libqt_plugin_la_SHADER:.vert=.vert.qsb)
 
-QSB_PARAMS = --glsl="100 es,120,150" --batchable -O
+QSB_PARAMS = --glsl="100 es,120,150" --batchable
+# optimize SPIR-V output, no effect for other outputs
+QSB_PARAMS += -O
 if HAVE_WIN32
 QSB_PARAMS += --hlsl=50 -c
 endif
@@ -1131,10 +1133,10 @@ QSB_PARAMS += --msl=12
 endif
 
 %.frag.qsb: %.frag
-	$(AM_V_GEN) $(QSB) $(QSB_PARAMS) -o $@ $<
+	$(AM_V_GEN) PATH="$(SPIRVOPT_PATH):$$PATH" $(QSB) $(QSB_PARAMS) -o $@ $<
 
 %.vert.qsb: %.vert
-	$(AM_V_GEN) $(QSB) $(QSB_PARAMS) -o $@ $<
+	$(AM_V_GEN) PATH="$(SPIRVOPT_PATH):$$PATH" $(QSB) $(QSB_PARAMS) -o $@ $<
 
 shaders/shaders.cpp: $(srcdir)/shaders/shaders.qrc $(libqt_plugin_la_SHADER:.frag=.frag.qsb) $(libqt_plugin_la_SHADER:.vert=.vert.qsb)
 	$(AM_V_GEN) cp -f $(filter %.qrc, $^) $(builddir)/shaders/shaders.qrc || true
