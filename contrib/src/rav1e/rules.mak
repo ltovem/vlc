@@ -23,14 +23,16 @@ $(TARBALLS)/rav1e-$(RAV1E_VERSION).tar.gz:
 
 RAV1E_FEATURES=--features=asm
 
-rav1e: rav1e-$(RAV1E_VERSION).tar.gz .sum-rav1e .rav1e-vendor
+DEPS_rav1e = rav1e-vendor $(DEPS_rav1e-vendor)
+
+rav1e: rav1e-$(RAV1E_VERSION).tar.gz .sum-rav1e
 	$(UNPACK)
 ifdef HAVE_WIN32
 ifndef HAVE_WIN64
 	$(APPLY) $(SRC)/rav1e/unwind-resume-stub.patch
 endif
 endif
-	$(CARGO_VENDOR_SETUP)
+	$(call cargo_vendor_setup,$(UNPACK_DIR),$@)
 	$(MOVE)
 
 .rav1e: rav1e .cargo

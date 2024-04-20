@@ -3,4 +3,7 @@
 $(TARBALLS)/rav1e-$(RAV1E_VERSION)-vendor.tar.bz2:
 	$(call download_vendor,rav1e-$(RAV1E_VERSION)-vendor.tar.bz2,rav1e)
 
+.sum-rav1e-vendor: rav1e-$(RAV1E_VERSION)-vendor.tar.bz2
+	touch $@
+
 .rav1e-vendor: rav1e-$(RAV1E_VERSION)-vendor.tar.bz2
