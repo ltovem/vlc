@@ -1,0 +1,26 @@
+From 687d2f6b1e92d13eeb2e5d08b238f6821bae3ade Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Mon, 26 Jun 2023 09:50:04 +0200
+Subject: [PATCH] Fix libm detection when compiling with Android CMake
+ toolchain
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d9fd20d..f43526f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -42,7 +42,7 @@ include_directories(AFTER
+   ${PROJECT_BINARY_DIR}
+ )
+ 
+-if(UNIX AND NOT APPLE)
++if((UNIX OR ANDROID) AND NOT APPLE)
+   find_library(MATH_LIB m)
+   if(MATH_LIB)
+     set(CMAKE_REQUIRED_LIBRARIES m)
+-- 
+2.37.3.windows.1
+

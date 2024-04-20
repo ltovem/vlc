@@ -1,9 +1,64 @@
-diff -rupN libmodplug-old/libmodplug.pc.in libmodplug-new/libmodplug.pc.in
---- libmodplug-old/libmodplug.pc.in	2013-08-23 09:55:58.000000000 +1000
-+++ libmodplug-new/libmodplug.pc.in	2014-06-12 20:59:17.705886752 +1000
+From a206c5e0fa753b525cc3583e3514cd74870b13fe Mon Sep 17 00:00:00 2001
+From: Konstantinos Tsanaktsidis <kjtsanaktsidis@gmail.com>
+Date: Thu, 12 Jun 2014 15:34:46 +0200
+Subject: [PATCH] Fix libmod_plugin undefined __imp_ symbols building for win32
+
+When building current HEAD of master for x86_64-w64-mingw32 against current
+contribs, compilation fails at libmod_plugin due to undefined symbols of
+the form __imp_ModPlug_*. This patch modifies libmodplug in contribs by
+adding -DMODPLUG_STATIC to CFlags in the pkg-config file. A bug is also
+fixed in the main build system to make sure the CFLAGS are picked up from
+this pkg-config file.
+
+This problem occurs because of the following code in
+contrib/x86_64-w64-mingw32/include/libmodplug/modplug.h. This code is
+present in libmodplug obtained from running "make fetch & make" in the
+contribs directory, but not present in the prebuilt contribs obtained from
+running "make prebuilt".
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+# if defined(MODPLUG_BUILD) && defined(DLL_EXPORT)
+# define MODPLUG_EXPORT __declspec(dllexport)
+# elif defined(MODPLUG_BUILD) || defined(MODPLUG_STATIC)
+# define MODPLUG_EXPORT
+# else
+# define MODPLUG_EXPORT __declspec(dllimport)
+# endif
+
+When building for Windows, if MODPLUG_STATIC is not defined, MODPLUG_EXPORT
+is defined as "__declspec(dllimport)". On Windows, dynamic symbols are
+prefixed with "__imp_", so this causes GCC to adjust the symbol references
+to the libmodplug functions accordingly.
+
+This patch therefore adds a patch to contribs for libmodplug's pkg-config
+file. It adds -DMODPLUG_STATIC to CFlags, so that when libmod_plugin is
+building it will have the correct symbol names.
+
+However, there is also a bug in the build system that needs to be fixed for
+this to work. The configure script sets a CXXFLAGS_mod containing the
+output of pkg-config for libmodplug, but not CFLAGS_mod. Additionally, the
+Makefile.ac for libmod_plugin sets CXXFLAGS when in fact the relevant files
+(mod.c) are plain C. Autotools therefore ignores these CXXFLAGS when
+generating a makefile.
+
+The solution is to add a macro to configure.ac to set CFLAGS_mod. This then
+needs to be used in modules/demux/Makefile.am to populate
+libmod_plugin_la_CFLAGS instead of libmod_plugin_la_CXXFLAGS (which gets
+ignored).
+---
+ libmodplug.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libmodplug.pc.in b/libmodplug.pc.in
+index bbf05f9..9cc88a5 100644
+--- a/libmodplug.pc.in
++++ b/libmodplug.pc.in
 @@ -9,4 +9,4 @@ Version: @VERSION@
  Requires: 
  Libs: -L${libdir} -lmodplug 
  Libs.private: -lstdc++ -lm
 -Cflags: -I${includedir}
 +Cflags: -I${includedir} -DMODPLUG_STATIC
+-- 
+2.37.3.windows.1
+

@@ -1,0 +1,42 @@
+From 42d228e2e9d506328495c9daab45ff1e2fd46cc6 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Mon, 26 Jun 2023 09:35:09 +0200
+Subject: [PATCH 4/4] replace wsprintf with snprintf
+
+wsprintf is deprecated and not allowed in Universal Windows Platform builds.
+It can be replaced by StringCbPrintfA but it requires strsafe.h. We can
+just use snprintf() which is the C runtime equivalent.
+---
+ src/load_mod.cpp | 2 +-
+ src/sndfile.cpp  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/load_mod.cpp b/src/load_mod.cpp
+index 9ea48c8..98be525 100644
+--- a/src/load_mod.cpp
++++ b/src/load_mod.cpp
+@@ -471,7 +471,7 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
+ 	if (m_nChannels == 4)
+ 		strcpy((LPSTR)&bTab, "M.K.");
+ 	else
+-		wsprintf((LPSTR)&bTab, "%luCHN", m_nChannels);
++		snprintf(LPSTR)&bTab, sizeof(bTab), "%luCHN", m_nChannels);
+ 	fwrite(bTab, 4, 1, f);
+ 	// Writing patterns
+ 	for (UINT ipat=0; ipat<nbp; ipat++) if (Patterns[ipat])
+diff --git a/src/sndfile.cpp b/src/sndfile.cpp
+index 5a1096d..4784752 100644
+--- a/src/sndfile.cpp
++++ b/src/sndfile.cpp
+@@ -382,7 +382,7 @@ void CSoundFile::ResetMidiCfg()
+ 	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEOFF*32], "9c n 0");
+ 	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_PROGRAM*32], "Cc p");
+ 	strcpy(&m_MidiCfg.szMidiSFXExt[0], "F0F000z");
+-	for (int iz=0; iz<16; iz++) wsprintf(&m_MidiCfg.szMidiZXXExt[iz*32], "F0F001%02X", iz*8);
++	for (int iz=0; iz<16; iz++) snprintf(&m_MidiCfg.szMidiZXXExt[iz*32], sizeof(m_MidiCfg.szMidiZXXExt), "F0F001%02X", iz*8);
+ }
+ 
+ 
+-- 
+2.37.3.windows.1
+

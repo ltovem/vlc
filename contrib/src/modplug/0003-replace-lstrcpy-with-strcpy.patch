@@ -1,0 +1,64 @@
+From 5361f3db7e333b10191def8a834303a8429cd5c7 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 09:18:01 +0200
+Subject: [PATCH 3/4] replace lstrcpy with strcpy
+
+This is the define used on other platforms.
+---
+ src/load_mod.cpp |  2 +-
+ src/load_xm.cpp  |  2 +-
+ src/sndfile.cpp  | 12 ++++++------
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/src/load_mod.cpp b/src/load_mod.cpp
+index 4b64b23..9ea48c8 100644
+--- a/src/load_mod.cpp
++++ b/src/load_mod.cpp
+@@ -469,7 +469,7 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
+ 	fwrite(ord, 128, 1, f);
+ 	// Writing signature
+ 	if (m_nChannels == 4)
+-		lstrcpy((LPSTR)&bTab, "M.K.");
++		strcpy((LPSTR)&bTab, "M.K.");
+ 	else
+ 		wsprintf((LPSTR)&bTab, "%luCHN", m_nChannels);
+ 	fwrite(bTab, 4, 1, f);
+diff --git a/src/load_xm.cpp b/src/load_xm.cpp
+index 4d5a493..266ca6b 100644
+--- a/src/load_xm.cpp
++++ b/src/load_xm.cpp
+@@ -610,7 +610,7 @@ BOOL CSoundFile::SaveXM(LPCSTR lpszFileName, UINT nPacking)
+ 	fwrite("Extended Module: ", 17, 1, f);
+ 	fwrite(m_szNames[0], 20, 1, f);
+ 	s[0] = 0x1A;
+-	lstrcpy((LPSTR)&s[1], (nPacking) ? "MOD Plugin packed   " : "FastTracker v2.00   ");
++	strcpy((LPSTR)&s[1], (nPacking) ? "MOD Plugin packed   " : "FastTracker v2.00   ");
+ 	s[21] = 0x04;
+ 	s[22] = 0x01;
+ 	fwrite(s, 23, 1, f);
+diff --git a/src/sndfile.cpp b/src/sndfile.cpp
+index d24d24c..5a1096d 100644
+--- a/src/sndfile.cpp
++++ b/src/sndfile.cpp
+@@ -376,12 +376,12 @@ void CSoundFile::ResetMidiCfg()
+ //-----------------------------
+ {
+ 	memset(&m_MidiCfg, 0, sizeof(m_MidiCfg));
+-	lstrcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_START*32], "FF");
+-	lstrcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_STOP*32], "FC");
+-	lstrcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEON*32], "9c n v");
+-	lstrcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEOFF*32], "9c n 0");
+-	lstrcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_PROGRAM*32], "Cc p");
+-	lstrcpy(&m_MidiCfg.szMidiSFXExt[0], "F0F000z");
++	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_START*32], "FF");
++	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_STOP*32], "FC");
++	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEON*32], "9c n v");
++	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_NOTEOFF*32], "9c n 0");
++	strcpy(&m_MidiCfg.szMidiGlb[MIDIOUT_PROGRAM*32], "Cc p");
++	strcpy(&m_MidiCfg.szMidiSFXExt[0], "F0F000z");
+ 	for (int iz=0; iz<16; iz++) wsprintf(&m_MidiCfg.szMidiZXXExt[iz*32], "F0F001%02X", iz*8);
+ }
+ 
+-- 
+2.37.3.windows.1
+

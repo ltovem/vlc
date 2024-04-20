@@ -1,0 +1,26 @@
+From 9fd72f6f6ac9897a6ea252390ed7fd376ad50a69 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 09:15:15 +0200
+Subject: [PATCH 1/4] Fix bogus cast into potential WCHAR string
+
+It will be the case when compiling with UNICODE.
+---
+ src/load_amf.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/load_amf.cpp b/src/load_amf.cpp
+index 89876af..c826c96 100644
+--- a/src/load_amf.cpp
++++ b/src/load_amf.cpp
+@@ -171,7 +171,7 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
+ 	DWORD dwMemPos;
+ 
+ 	if ((!lpStream) || (dwMemLength < 2048)) return FALSE;
+-	if ((!strncmp((LPCTSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
++	if ((!strncmp((LPCSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
+ 	{
+ 		UINT numorders, numpats, numsamples;
+ 
+-- 
+2.37.3.windows.1
+

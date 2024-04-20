@@ -1,9 +1,24 @@
---- libmodplug-0.8.9.0/libmodplug.pc.in.old	2020-04-29 21:39:14.000000000 +0200
-+++ libmodplug-0.8.9.0/libmodplug.pc.in	2020-04-29 21:40:06.000000000 +0200
-@@ -8,5 +8,5 @@
+From 41cb3263b1d72cfa9810d9b9dde560fbcacd62b0 Mon Sep 17 00:00:00 2001
+From: David Fuhrmann <dfuhrmann@videolan.org>
+Date: Wed, 13 May 2020 19:42:15 +0200
+Subject: [PATCH] Link against libc++ on macOS
+
+libstdc++ is not available anymore in modern sdks.
+---
+ libmodplug.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libmodplug.pc.in b/libmodplug.pc.in
+index 9cc88a5..b33b415 100644
+--- a/libmodplug.pc.in
++++ b/libmodplug.pc.in
+@@ -8,5 +8,5 @@ Description: The ModPlug mod file playing library.
  Version: @VERSION@
  Requires: 
  Libs: -L${libdir} -lmodplug 
 -Libs.private: -lstdc++ -lm
 +Libs.private: -lc++ -lm
  Cflags: -I${includedir} -DMODPLUG_STATIC
+-- 
+2.37.3.windows.1
+

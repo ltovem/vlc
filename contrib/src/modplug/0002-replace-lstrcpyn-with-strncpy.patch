@@ -1,0 +1,91 @@
+From f82fc2f44bbc497f8a6b5baa62bd82e4256969f0 Mon Sep 17 00:00:00 2001
+From: Steve Lhomme <robux4@ycbcr.xyz>
+Date: Wed, 14 Jun 2023 09:17:09 +0200
+Subject: [PATCH 2/4] replace lstrcpyn with strncpy
+
+This is the define used on other platforms.
+---
+ src/libmodplug/sndfile.h | 2 +-
+ src/load_it.cpp          | 2 +-
+ src/load_med.cpp         | 4 ++--
+ src/load_ptm.cpp         | 2 +-
+ src/sndfile.cpp          | 2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/libmodplug/sndfile.h b/src/libmodplug/sndfile.h
+index 1888500..6298d40 100644
+--- a/src/libmodplug/sndfile.h
++++ b/src/libmodplug/sndfile.h
+@@ -613,7 +613,7 @@ public:
+ 	UINT GetMaxPosition() const;
+ 	void SetCurrentPos(UINT nPos);
+ 	void SetCurrentOrder(UINT nOrder);
+-	void GetTitle(LPSTR s) const { lstrcpyn(s,m_szNames[0],32); }
++	void GetTitle(LPSTR s) const { strncpy(s,m_szNames[0],32); }
+ 	LPCSTR GetTitle() const { return m_szNames[0]; }
+ 	UINT GetSampleName(UINT nSample,LPSTR s=NULL) const;
+ 	UINT GetInstrumentName(UINT nInstr,LPSTR s=NULL) const;
+diff --git a/src/load_it.cpp b/src/load_it.cpp
+index 45fa8e4..a87343b 100644
+--- a/src/load_it.cpp
++++ b/src/load_it.cpp
+@@ -624,7 +624,7 @@ BOOL CSoundFile::SaveIT(LPCSTR lpszFileName, UINT nPacking)
+ 	dwPatNamLen = 0;
+ 	dwChnNamLen = 0;
+ 	header.id = 0x4D504D49; // IMPM
+-	lstrcpyn((char *)header.songname, m_szNames[0], 27);
++	strncpy((char *)header.songname, m_szNames[0], 27);
+ 	header.reserved1 = 0x1004;
+ 	header.ordnum = 0;
+ 	while ((header.ordnum < MAX_ORDERS) && (Order[header.ordnum] < 0xFF)) header.ordnum++;
+diff --git a/src/load_med.cpp b/src/load_med.cpp
+index e5b3076..5248939 100644
+--- a/src/load_med.cpp
++++ b/src/load_med.cpp
+@@ -737,7 +737,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
+ 				if (maxnamelen > 32) maxnamelen = 32;
+ 				for (UINT i=0; i<ientries; i++) if (i < m_nSamples)
+ 				{
+-					lstrcpyn(m_szNames[i+1], psznames + i*ientrysz, maxnamelen);
++					strncpy(m_szNames[i+1], psznames + i*ientrysz, maxnamelen);
+ 					m_szNames[i+1][31] = '\0';
+ 				}
+ 			}
+@@ -768,7 +768,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
+ 					if (trknamelen > MAX_CHANNELNAME) trknamelen = MAX_CHANNELNAME;
+ 					if ((trknameofs) && (trknamelen < dwMemLength) && (trknameofs < dwMemLength - trknamelen))
+ 					{
+-						lstrcpyn(ChnSettings[i].szName, (LPCSTR)(lpStream+trknameofs), trknamelen);
++						strncpy(ChnSettings[i].szName, (LPCSTR)(lpStream+trknameofs), trknamelen);
+ 						ChnSettings[i].szName[MAX_CHANNELNAME-1] = '\0';
+ 					}
+ 				}
+diff --git a/src/load_ptm.cpp b/src/load_ptm.cpp
+index 0ace71a..fa4d300 100644
+--- a/src/load_ptm.cpp
++++ b/src/load_ptm.cpp
+@@ -109,7 +109,7 @@ BOOL CSoundFile::ReadPTM(const BYTE *lpStream, DWORD dwMemLength)
+ 		MODINSTRUMENT *pins = &Ins[ismp+1];
+ 		PTMSAMPLE *psmp = (PTMSAMPLE *)(lpStream+dwMemPos);
+ 
+-		lstrcpyn(m_szNames[ismp+1], psmp->samplename, 28);
++		strncpy(m_szNames[ismp+1], psmp->samplename, 28);
+ 		memcpy(pins->name, psmp->filename, 12);
+ 		pins->name[12] = 0;
+ 		pins->nGlobalVol = 64;
+diff --git a/src/sndfile.cpp b/src/sndfile.cpp
+index 24550de..d24d24c 100644
+--- a/src/sndfile.cpp
++++ b/src/sndfile.cpp
+@@ -1789,7 +1789,7 @@ BOOL CSoundFile::SetPatternName(UINT nPat, LPCSTR lpszName)
+ 	if (nPat >= MAX_PATTERNS) return FALSE;
+ 	if (lpszName == NULL) return(FALSE);
+ 
+-	if (lpszName) lstrcpyn(szName, lpszName, MAX_PATTERNNAME);
++	if (lpszName) strncpy(szName, lpszName, MAX_PATTERNNAME);
+ 	szName[MAX_PATTERNNAME-1] = 0;
+ 	if (!m_lpszPatternNames) m_nPatternNames = 0;
+ 	if (nPat >= m_nPatternNames)
+-- 
+2.37.3.windows.1
+
