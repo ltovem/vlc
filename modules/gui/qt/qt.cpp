@@ -266,33 +266,35 @@ static const char *const psz_raise_list_text[] =
 
 static const char *const compositor_vlc[] = {
     "auto",
-#ifdef _WIN32
-#ifdef HAVE_DCOMP_H
-    "dcomp",
-#endif
-    "win7",
-#endif
 #ifdef QT_HAS_WAYLAND_COMPOSITOR
     "wayland",
 #endif
 #ifdef QT_HAS_X11_COMPOSITOR
     "x11",
 #endif
+#if defined(_WIN32) && defined(HAVE_DCOMP_H)
+    "dcomp",
+#endif
+    "platform",
+#ifdef _WIN32
+    "win7",
+#endif
     "dummy"
 };
 static const char *const compositor_user[] = {
     N_("Automatic"),
-#ifdef _WIN32
-#ifdef HAVE_DCOMP_H
-    "Direct Composition",
-#endif
-    "Windows 7",
-#endif
 #ifdef QT_HAS_WAYLAND_COMPOSITOR
     "Wayland",
 #endif
 #ifdef QT_HAS_X11_COMPOSITOR
     N_("X11"),
+#endif
+#if defined(_WIN32) && defined(HAVE_DCOMP_H)
+    "Direct Composition",
+#endif
+    "Platform Composition",
+#ifdef _WIN32
+    "Windows 7",
 #endif
     N_("Dummy"),
 };

@@ -40,6 +40,8 @@
 #  include "compositor_x11.hpp"
 #endif
 
+#include "compositor_platform.hpp"
+
 #include <vlc_window.h>
 
 using namespace vlc;
@@ -59,17 +61,18 @@ struct {
     Compositor* (*instantiate)(qt_intf_t *p_intf);
     bool (*preInit)(qt_intf_t *p_intf);
 } static compositorList[] = {
-#ifdef _WIN32
-#ifdef HAVE_DCOMP_H
-    {"dcomp", &instanciateCompositor<CompositorDirectComposition>, &preInit<CompositorDirectComposition> },
-#endif
-    {"win7", &instanciateCompositor<CompositorWin7>, &preInit<CompositorWin7> },
-#endif
 #ifdef QT_HAS_WAYLAND_COMPOSITOR
     {"wayland", &instanciateCompositor<CompositorWayland>, &preInit<CompositorWayland> },
 #endif
 #ifdef QT_HAS_X11_COMPOSITOR
     {"x11", &instanciateCompositor<CompositorX11>, &preInit<CompositorX11> },
+#endif
+#if defined(_WIN32) && defined(HAVE_DCOMP_H)
+    {"dcomp", &instanciateCompositor<CompositorDirectComposition>, &preInit<CompositorDirectComposition> },
+#endif
+    {"platform", &instanciateCompositor<CompositorPlatform>, &preInit<CompositorPlatform>},
+#ifdef _WIN32
+    {"win7", &instanciateCompositor<CompositorWin7>, &preInit<CompositorWin7> },
 #endif
     {"dummy", &instanciateCompositor<CompositorDummy>, &preInit<CompositorDummy> }
 };
