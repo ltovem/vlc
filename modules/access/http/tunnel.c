@@ -132,7 +132,7 @@ static const struct vlc_tls_operations vlc_tls_proxy_ops =
     vlc_tls_ProxyClose,
 };
 
-vlc_tls_t *vlc_https_connect_proxy(void *ctx, vlc_tls_client_t *creds,
+vlc_tls_t *vlc_https_connect_proxy(struct vlc_logger *logger, vlc_tls_client_t *creds,
                                    const char *hostname, unsigned port,
                                    bool *restrict two, const char *proxy)
 {
@@ -184,8 +184,8 @@ vlc_tls_t *vlc_https_connect_proxy(void *ctx, vlc_tls_client_t *creds,
     psock->tls.p = NULL;
     psock->sock = sock;
 
-    struct vlc_http_conn *conn = /*ptwo ? vlc_h2_conn_create(ctx, &psock->tls)
-                               :*/ vlc_h1_conn_create(ctx, &psock->tls, false);
+    struct vlc_http_conn *conn = /*ptwo ? vlc_h2_conn_create(logger, &psock->tls)
+                               :*/ vlc_h1_conn_create(logger, &psock->tls, false);
     if (unlikely(conn == NULL))
     {
         vlc_tls_Close(&psock->tls);

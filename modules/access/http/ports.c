@@ -24,8 +24,8 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include "transport.h"
 #include <vlc_common.h>
+#include "transport.h"
 
 /* Must be in ascending order */
 static const unsigned short blocked_ports[] = {

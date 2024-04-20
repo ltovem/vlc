@@ -34,9 +34,11 @@
 
 #pragma GCC visibility push(default)
 
-void vlc_http_err(void *ctx, const char *fmt, ...)
+void vlc_http_err(struct vlc_logger *logger, const char *fmt, ...)
 {
-    struct vlc_logger *logger = ctx;
+    if (logger == NULL)
+        return;
+
     va_list ap;
 
     va_start(ap, fmt);
@@ -45,9 +47,11 @@ void vlc_http_err(void *ctx, const char *fmt, ...)
     va_end(ap);
 }
 
-void vlc_http_dbg(void *ctx, const char *fmt, ...)
+void vlc_http_dbg(struct vlc_logger *logger, const char *fmt, ...)
 {
-    struct vlc_logger *logger = ctx;
+    if (logger == NULL)
+        return;
+
     va_list ap;
 
     va_start(ap, fmt);
@@ -176,7 +180,7 @@ static struct vlc_http_msg *vlc_https_request(struct vlc_http_mgr *mgr,
     char *proxy = vlc_http_proxy_find(host, port, true);
     if (proxy != NULL)
     {
-        tls = vlc_https_connect_proxy(mgr->creds, mgr->creds,
+        tls = vlc_https_connect_proxy(mgr->logger, mgr->creds,
                                       host, port, &http2, proxy);
         free(proxy);
     }
@@ -294,7 +298,10 @@ struct vlc_http_mgr *vlc_http_mgr_create(vlc_object_t *obj,
     if (unlikely(mgr == NULL))
         return NULL;
 
-    mgr->logger = obj->logger;
+    if (var_InheritInteger(obj, "verbose") >= 4)
+        mgr->logger = obj->logger;
+    else
+        mgr->logger = NULL;
     mgr->obj = obj;
     mgr->creds = NULL;
     mgr->jar = jar;

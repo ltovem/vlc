@@ -44,7 +44,7 @@
 #include "conn.h"
 #include "message.h"
 
-#define CO(c) ((c)->opaque)
+#define CO(c) ((c)->logger)
 #define SO(s) CO((s)->conn)
 
 /** HTTP/2 connection */
@@ -52,7 +52,7 @@ struct vlc_h2_conn
 {
     struct vlc_http_conn conn;
     struct vlc_h2_output *out; /**< Send thread */
-    void *opaque;
+    struct vlc_logger *logger;
 
     struct vlc_h2_stream *streams; /**< List of open streams */
     uint32_t next_id; /**< Next free stream identifier */
@@ -94,14 +94,14 @@ struct vlc_h2_stream
 
 static int vlc_h2_conn_queue(struct vlc_h2_conn *conn, struct vlc_h2_frame *f)
 {
-    vlc_h2_frame_dump(conn->opaque, f, "out");
+    vlc_h2_frame_dump(conn->logger, f, "out");
     return vlc_h2_output_send(conn->out, f);
 }
 
 static int vlc_h2_conn_queue_prio(struct vlc_h2_conn *conn,
                                   struct vlc_h2_frame *f)
 {
-    vlc_h2_frame_dump(conn->opaque, f, "out (priority)");
+    vlc_h2_frame_dump(conn->logger, f, "out (priority)");
     return vlc_h2_output_send_prio(conn->out, f);
 }
 
@@ -871,7 +871,7 @@ static const struct vlc_http_conn_cbs vlc_h2_conn_callbacks =
     vlc_h2_conn_release,
 };
 
-struct vlc_http_conn *vlc_h2_conn_create(void *ctx, struct vlc_tls *tls)
+struct vlc_http_conn *vlc_h2_conn_create(struct vlc_logger *logger, struct vlc_tls *tls)
 {
     struct vlc_h2_conn *conn = malloc(sizeof (*conn));
     if (unlikely(conn == NULL))
@@ -880,7 +880,7 @@ struct vlc_http_conn *vlc_h2_conn_create(void *ctx, struct vlc_tls *tls)
     conn->conn.cbs = &vlc_h2_conn_callbacks;
     conn->conn.tls = tls;
     conn->out = vlc_h2_output_create(tls, true);
-    conn->opaque = ctx;
+    conn->logger = logger;
     conn->streams = NULL;
     conn->next_id = 1; /* TODO: server side */
     conn->released = false;

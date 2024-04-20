@@ -52,7 +52,7 @@ vlc_h2_frame_goaway(uint_fast32_t last_stream_id, uint_fast32_t error_code);
 struct vlc_h2_frame *
 vlc_h2_frame_window_update(uint_fast32_t stream_id, uint_fast32_t credit);
 
-void vlc_h2_frame_dump(void *, const struct vlc_h2_frame *, const char *);
+void vlc_h2_frame_dump(struct vlc_logger *, const struct vlc_h2_frame *, const char *);
 
 enum vlc_h2_error {
     VLC_H2_NO_ERROR,

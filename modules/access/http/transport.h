@@ -30,7 +30,7 @@ struct vlc_tls_client;
 struct vlc_tls *vlc_https_connect(struct vlc_tls_client *creds,
                                   const char *name, unsigned port,
                                   bool *restrict two);
-struct vlc_tls *vlc_https_connect_proxy(void *ctx,
+struct vlc_tls *vlc_https_connect_proxy(struct vlc_logger *,
                                         struct vlc_tls_client *creds,
                                         const char *name, unsigned port,
                                         bool *restrict two, const char *proxy);

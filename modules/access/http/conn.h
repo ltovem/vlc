@@ -56,14 +56,14 @@ static inline void vlc_http_conn_release(struct vlc_http_conn *conn)
     conn->cbs->release(conn);
 }
 
-void vlc_http_err(void *, const char *msg, ...) VLC_FORMAT(2, 3);
-void vlc_http_dbg(void *, const char *msg, ...) VLC_FORMAT(2, 3);
+void vlc_http_err(struct vlc_logger *, const char *msg, ...) VLC_FORMAT(2, 3);
+void vlc_http_dbg(struct vlc_logger *, const char *msg, ...) VLC_FORMAT(2, 3);
 
 /**
  * \defgroup http1 HTTP/1.x
  * @{
  */
-struct vlc_http_conn *vlc_h1_conn_create(void *ctx, struct vlc_tls *,
+struct vlc_http_conn *vlc_h1_conn_create(struct vlc_logger *, struct vlc_tls *,
                                          bool proxy);
 struct vlc_http_stream *vlc_chunked_open(struct vlc_http_stream *,
                                          struct vlc_tls *);
@@ -86,7 +86,7 @@ ssize_t vlc_https_chunked_write(struct vlc_tls *, const void *base, size_t len,
  * however be sent with the TLS False Start. This is handled by the TLS stack
  * and does not require a combined function call.
  *
- * \param ctx opaque context pointer for the HTTP connection
+ * \param logger logger pointer for the HTTP connection
  * \param hostname HTTP server or proxy hostname to connect to
  * \param port TCP port number to connect to
  * \param proxy true of the hostname and port correspond to an HTTP proxy,
@@ -101,7 +101,7 @@ ssize_t vlc_https_chunked_write(struct vlc_tls *, const void *base, size_t len,
  * \return an HTTP stream on success, NULL on error
  * \note *connp is undefined on error.
  */
-struct vlc_http_stream *vlc_h1_request(void *ctx, const char *hostname,
+struct vlc_http_stream *vlc_h1_request(struct vlc_logger *logger, const char *hostname,
                                        unsigned port, bool proxy,
                                        const struct vlc_http_msg *req,
                                        bool idempotent, bool has_data,
@@ -113,7 +113,7 @@ struct vlc_http_stream *vlc_h1_request(void *ctx, const char *hostname,
  * \defgroup h2 HTTP/2.0
  * @{
  */
-struct vlc_http_conn *vlc_h2_conn_create(void *ctx, struct vlc_tls *);
+struct vlc_http_conn *vlc_h2_conn_create(struct vlc_logger *, struct vlc_tls *);
 
 /** @} */
 

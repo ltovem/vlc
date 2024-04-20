@@ -714,7 +714,8 @@ static int Connect( stream_t *p_access )
         return -1;
     }
 
-    msg_Dbg( p_access, "sending request:\n%s", stream.ptr );
+    if (var_InheritInteger(p_access, "verbose") >= 4)
+        msg_Dbg( p_access, "sending request:\n%s", stream.ptr );
     val = vlc_tls_Write(p_sys->stream, stream.ptr, stream.length);
     free( stream.ptr );
 

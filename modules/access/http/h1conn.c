@@ -116,10 +116,10 @@ struct vlc_h1_conn
     bool active;
     bool released;
     bool proxy;
-    void *opaque;
+    struct vlc_logger *logger;
 };
 
-#define CO(conn) ((conn)->opaque)
+#define CO(conn) ((conn)->logger)
 
 static void vlc_h1_conn_destroy(struct vlc_h1_conn *conn);
 
@@ -346,7 +346,7 @@ static const struct vlc_http_conn_cbs vlc_h1_conn_callbacks =
     vlc_h1_conn_release,
 };
 
-struct vlc_http_conn *vlc_h1_conn_create(void *ctx, vlc_tls_t *tls, bool proxy)
+struct vlc_http_conn *vlc_h1_conn_create(struct vlc_logger *logger, vlc_tls_t *tls, bool proxy)
 {
     struct vlc_h1_conn *conn = malloc(sizeof (*conn));
     if (unlikely(conn == NULL))
@@ -358,12 +358,12 @@ struct vlc_http_conn *vlc_h1_conn_create(void *ctx, vlc_tls_t *tls, bool proxy)
     conn->active = false;
     conn->released = false;
     conn->proxy = proxy;
-    conn->opaque = ctx;
+    conn->logger = logger;
 
     return &conn->conn;
 }
 
-struct vlc_http_stream *vlc_h1_request(void *ctx, const char *hostname,
+struct vlc_http_stream *vlc_h1_request(struct vlc_logger *logger, const char *hostname,
                                        unsigned port, bool proxy,
                                        const struct vlc_http_msg *req,
                                        bool idempotent, bool has_data,
@@ -375,12 +375,12 @@ struct vlc_http_stream *vlc_h1_request(void *ctx, const char *hostname,
         .ai_protocol = IPPROTO_TCP,
     }, *res;
 
-    vlc_http_dbg(ctx, "resolving %s ...", hostname);
+    vlc_http_dbg(logger, "resolving %s ...", hostname);
 
     int val = vlc_getaddrinfo_i11e(hostname, port, &hints, &res);
     if (val != 0)
     {   /* TODO: C locale for gai_strerror() */
-        vlc_http_err(ctx, "cannot resolve %s: %s", hostname,
+        vlc_http_err(logger, "cannot resolve %s: %s", hostname,
                      gai_strerror(val));
         return NULL;
     }
@@ -390,11 +390,11 @@ struct vlc_http_stream *vlc_h1_request(void *ctx, const char *hostname,
         vlc_tls_t *tcp = vlc_tls_SocketOpenAddrInfo(p, idempotent);
         if (tcp == NULL)
         {
-            vlc_http_err(ctx, "socket error: %s", vlc_strerror_c(errno));
+            vlc_http_err(logger, "socket error: %s", vlc_strerror_c(errno));
             continue;
         }
 
-        struct vlc_http_conn *conn = vlc_h1_conn_create(ctx, tcp, proxy);
+        struct vlc_http_conn *conn = vlc_h1_conn_create(logger, tcp, proxy);
         if (unlikely(conn == NULL))
         {
             vlc_tls_SessionDelete(tcp);
