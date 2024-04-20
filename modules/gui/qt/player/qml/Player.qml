@@ -207,6 +207,11 @@ FocusScope {
             else
                 toolbarAutoHide.setVisible(1000)
         }
+
+        onMousePressed: {
+            if (MainCtx.pauseOnClick && !Player.isInteractive)
+                MainPlaylistController.togglePlayPause()
+        }
     }
 
     // background image
