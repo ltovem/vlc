@@ -206,5 +206,5 @@ int vlc_waitpid(pid_t pid)
     while (waitpid(pid, &status, 0) == -1)
         assert(errno != ECHILD && errno != EINVAL);
 
-    return status;
+    return WEXITSTATUS(status);
 }
