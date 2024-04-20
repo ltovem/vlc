@@ -470,6 +470,37 @@ module_config_t *config_FindConfig(const char *name)
     return (param != NULL) ? &param->item : NULL;
 }
 
+bool vlc_config_ItemIsModified(const module_config_t *item)
+{
+    bool is_modified;
+    switch (CONFIG_CLASS(item->i_type))
+    {
+        case CONFIG_ITEM_FLOAT:
+            is_modified = (item->value.f != item->orig.f);
+            break;
+        case CONFIG_ITEM_BOOL:
+        case CONFIG_ITEM_INTEGER:
+            is_modified = (item->value.i != item->orig.i);
+            break;
+        case CONFIG_ITEM_STRING:
+        {
+            bool orig_is_empty = (item->orig.psz == NULL || item->orig.psz[0] == '\0');
+            bool curr_is_empty = (item->value.psz == NULL || item->value.psz[0] == '\0');
+            if (orig_is_empty)
+                is_modified = !curr_is_empty;
+            else if (curr_is_empty)
+                is_modified = true;
+            else
+                is_modified = (strcmp(item->value.psz, item->orig.psz) != 0);
+            break;
+        }
+        default:
+            vlc_assert_unreachable();
+            break;
+    }
+    return is_modified;
+}
+
 /**
  * Destroys an array of configuration items.
  * \param tab start of array of items

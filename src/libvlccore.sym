@@ -74,6 +74,7 @@ config_GetIntChoices
 config_GetPsz
 config_GetPszChoices
 config_GetType
+vlc_config_ItemIsModified
 config_PutFloat
 config_PutInt
 config_PutPsz
