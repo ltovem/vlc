@@ -132,6 +132,11 @@ typedef unsigned short mode_t;
 # endif
 #endif
 
+#ifdef __cplusplus
+// C++ doesn't have _Static_assert, static_assert is usable without any include
+#define _Static_assert  static_assert
+#endif
+
 #if !defined (HAVE_GMTIME_R) || !defined (HAVE_LOCALTIME_R) \
  || !defined (HAVE_TIMEGM)
 # include <time.h> /* time_t */
