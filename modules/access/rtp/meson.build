@@ -9,7 +9,7 @@ if libgcrypt_dep.found()
                     files('srtp.c', 'srtp.h'),
                     dependencies: [libgcrypt_dep],
                     include_directories: [vlc_include_dirs])
-    srtp_rtp_c_args = ['-DHAVE_SRTP']
+    srtp_rtp_c_args = ['-DHAVE_SRTP', libgcrypt_dep.get_variable('cflags')]
 else
     srtp_lib = []
     srtp_rtp_c_args = []
