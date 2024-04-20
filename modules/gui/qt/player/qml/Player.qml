@@ -44,13 +44,16 @@ FocusScope {
     readonly property int positionSliderY: controlBar.y + controlBar.sliderY
 
     readonly property string coverSource: {
+        if (!MainPlaylistController.currentItem.valid)
+            return ""
+
         if (MainPlaylistController.currentItem.artwork &&
             MainPlaylistController.currentItem.artwork.toString())
-            MainPlaylistController.currentItem.artwork
+            return MainPlaylistController.currentItem.artwork
         else if (Player.hasVideoOutput)
-            VLCStyle.noArtVideoCover
+            return VLCStyle.noArtVideoCover
         else
-            VLCStyle.noArtAlbumCover
+            return VLCStyle.noArtAlbumCover
 
     }
 

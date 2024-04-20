@@ -205,7 +205,9 @@ void MediaLib::addAndPlay(const MLItemId & itemId, const QStringList &options )
             m_intf->p_mainPlaylistController->append(ctx.medias, true);
     });
 
-
+    // At this point, we can assume that the current item is going to change.
+    // Do not hold an invalid current item from this point on:
+    m_intf->p_mainPlaylistController->resetCurrentItem();
 }
 
 void MediaLib::addAndPlay(const QString& mrl, const QStringList &options)
@@ -238,6 +240,10 @@ void MediaLib::addAndPlay(const QVariantList& itemIdList, const QStringList &opt
         if (!ctx.medias.empty())
             m_intf->p_mainPlaylistController->append(ctx.medias, true);
     });
+
+    // At this point, we can assume that the current item is going to change.
+    // Do not hold an invalid current item from this point on:
+    m_intf->p_mainPlaylistController->resetCurrentItem();
 }
 
 void MediaLib::insertIntoPlaylist(const size_t index, const QVariantList &itemIdList, const QStringList &options)

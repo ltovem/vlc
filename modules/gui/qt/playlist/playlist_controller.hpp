@@ -94,7 +94,7 @@ public:
 
     Q_PROPERTY(Playlist playlist READ getPlaylist WRITE setPlaylist NOTIFY playlistChanged FINAL)
 
-    Q_PROPERTY(PlaylistItem currentItem READ getCurrentItem NOTIFY currentItemChanged FINAL)
+    Q_PROPERTY(PlaylistItem currentItem READ getCurrentItem RESET resetCurrentItem NOTIFY currentItemChanged FINAL)
 
     Q_PROPERTY(bool hasNext READ hasNext NOTIFY hasNextChanged FINAL)
     Q_PROPERTY(bool hasPrev READ hasPrev NOTIFY hasPrevChanged FINAL)
@@ -148,6 +148,7 @@ public:
 
 public slots:
     PlaylistItem getCurrentItem() const;
+    void resetCurrentItem();
 
     bool hasNext() const;
     bool hasPrev() const;
