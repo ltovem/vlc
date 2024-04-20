@@ -88,7 +88,7 @@ static session_descriptor_t *CreateSDP(vlc_object_t *obj, int fd)
         struct sockaddr_in in;
         struct sockaddr_in6 in6;
     } src, dst;
-    socklen_t srclen = sizeof (srclen), dstlen = sizeof (dst);
+    socklen_t srclen = sizeof (src), dstlen = sizeof (dst);
     char dhost[INET6_ADDRSTRLEN];
     unsigned short dport;
 
@@ -177,9 +177,9 @@ static ssize_t AccessOutWrite(sout_access_out_t *access, block_t *block)
         struct msghdr hdr = { .msg_iov = iov, .msg_iovlen = iovlen };
         ssize_t val = sendmsg(sys->fd, &hdr, 0);
 
-        if (val < 0)
+        if (val < 0 && errno != EAGAIN && errno != EINTR)
             msg_Err(access, "send error: %s", vlc_strerror_c(errno));
-        else
+        else if (val > 0)
             total += val;
 
         /* Free */
