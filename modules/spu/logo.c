@@ -29,6 +29,7 @@
 # include "config.h"
 #endif
 #include <assert.h>
+#include <limits.h>
 
 #include "common.h"
 
@@ -51,8 +52,8 @@
 #define REPEAT_TEXT N_("Animation loops")
 #define REPEAT_LONGTEXT N_("Number of loops for the logo animation. " \
         "-1 = continuous, 0 = disabled")
-#define DELAY_TEXT N_("Display time in ms")
-#define DELAY_LONGTEXT N_("Individual image display time of 0 - 60000 ms.")
+#define DELAY_TEXT N_("Display time (in ms)")
+#define DELAY_LONGTEXT N_("Individual image display time in milliseconds.")
 
 #undef POSX_LONGTEXT
 #undef POSY_LONGTEXT
@@ -82,7 +83,9 @@ vlc_module_begin ()
     add_integer( CFG_PREFIX "y", -1, POSY_TEXT, POSY_LONGTEXT )
     /* default to 1000 ms per image, continuously cycle through them */
     add_integer( CFG_PREFIX "delay", 1000, DELAY_TEXT, DELAY_LONGTEXT )
+        change_integer_range( 0, 60000 )
     add_integer( CFG_PREFIX "repeat", -1, REPEAT_TEXT, REPEAT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_integer_with_range( CFG_PREFIX "opacity", 255, 0, 255,
         OPACITY_TEXT, OPACITY_LONGTEXT )
     add_integer( CFG_PREFIX "position", -1, POS_TEXT, POS_LONGTEXT )
