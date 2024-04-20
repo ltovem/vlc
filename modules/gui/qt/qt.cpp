@@ -82,6 +82,7 @@ extern "C" char **environ;
 #include "playlist/playlist_item.hpp"
 #include "dialogs/dialogs/dialogmodel.hpp"
 #include "medialibrary/mlqmltypes.hpp"
+#include "maininterface/videosurface.hpp"
 
 #include <QVector>
 #include "playlist/playlist_item.hpp"
@@ -93,6 +94,10 @@ extern "C" char **environ;
 #include <vlc_threads.h>
 
 #include <QQuickWindow>
+
+#ifdef QPNI_HEADER
+#include QPNI_HEADER
+#endif
 
 #ifndef X_DISPLAY_MISSING
 # include <vlc_xlib.h>
@@ -949,6 +954,8 @@ static void *Thread( void *obj )
             p_intf->voutWindowType = VLC_WINDOW_TYPE_HWND;
         else if( platform == QLatin1String("cocoa") )
             p_intf->voutWindowType = VLC_WINDOW_TYPE_NSOBJECT;
+        else if( platform.startsWith( QLatin1String("eglfs_kms") ) )
+            p_intf->voutWindowType = VLC_WINDOW_TYPE_KMS;
         else
         {
             msg_Err( p_intf, "unknown Qt platform: %s", qtu(platform) );
@@ -1130,7 +1137,66 @@ static int WindowOpen( vlc_window_t *p_wnd )
                 break;
         }
 
-        bool ret = p_intf->p_compositor->setupVoutWindow( p_wnd, &WindowCloseCb );
+        bool ret = false;
+        if (p_intf->p_compositor->setupVoutWindow( p_wnd, &WindowCloseCb ))
+        {
+            ret = true;
+        }
+        else
+        {
+            // Platform specific v-out window setup when there is no custom composition:
+#ifdef QPNI_HEADER 
+            if ((p_intf->voutWindowType = VLC_WINDOW_TYPE_KMS) && (p_intf->p_compositor->type() == vlc::Compositor::DummyCompositor))
+            {
+                const auto window = static_cast<QQuickWindow*>(p_intf->p_compositor->interfaceMainWindow());
+
+                // Check if alpha buffer is granted:
+                // (We can not give it here because the window is already created)
+                if (window->format().hasAlpha())
+                {
+                    // Set background color of QQuickWindow to transparent:
+                    window->setColor(Qt::transparent);
+                }
+                else
+                {
+                    msg_Warn( p_intf, "Interface window is opaque!" );
+                }
+
+                static const vlc_window_operations ops = {
+                    [](vlc_window_t* p_wnd, const vlc_window_cfg_t * cfg) -> int {
+                        Q_UNUSED(cfg);
+                        const auto p = static_cast<qt_intf_t*>(p_wnd->sys);
+                        p->p_mi->getVideoSurfaceProvider()->setVideoEmbed(true);
+                        return VLC_SUCCESS;
+                    },
+                    [](vlc_window_t* p_wnd) {
+                        const auto p = static_cast<qt_intf_t*>(p_wnd->sys);
+                        p->p_mi->getVideoSurfaceProvider()->setVideoEmbed(false);
+                    },
+                    nullptr /* no resize support */ ,
+                    nullptr /* let Qt handle destroy */,
+                    nullptr /* no state support */,
+                    nullptr /* no optional full screen */,
+                    nullptr /* no optional full screen */,
+                    nullptr /* no set title support */
+                };
+
+                const auto surfaceProvider = new VideoSurfaceProvider(p_intf->p_mi);
+                p_intf->p_mi->setVideoSurfaceProvider(surfaceProvider);
+
+                p_wnd->sys = p_intf;
+                p_wnd->ops = &ops;
+                p_wnd->info.has_double_click = false;
+                p_wnd->type = VLC_WINDOW_TYPE_KMS;
+
+                p_wnd->handle.crtc =  (uint32_t)(qintptr)(QGuiApplication::platformNativeInterface()->nativeResourceForScreen("dri_crtcid", window->screen()));
+                p_wnd->display.drm_fd = (int)(qintptr)(QGuiApplication::platformNativeInterface()->nativeResourceForIntegration("dri_fd"));
+
+                ret = true;
+            }
+#endif
+        }
+
         if (ret)
             p_intf->refCount += 1;
         return ret ? VLC_SUCCESS : VLC_EGENERIC;
