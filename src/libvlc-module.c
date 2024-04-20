@@ -619,17 +619,17 @@ static const char *const ppsz_clock_descriptions[] =
 #define INPUT_VIDEOTRACK_TEXT N_("Video track")
 #define INPUT_VIDEOTRACK_LONGTEXT N_( \
     "Stream number of the video track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_AUDIOTRACK_TEXT N_("Audio track")
 #define INPUT_AUDIOTRACK_LONGTEXT N_( \
     "Stream number of the audio track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_SUBTRACK_TEXT N_("Subtitle track")
 #define INPUT_SUBTRACK_LONGTEXT N_( \
     "Stream number of the subtitle track to use " \
-    "(from 0 to n).")
+    "(-1 for auto).")
 
 #define INPUT_AUDIOTRACK_LANG_TEXT N_("Audio language")
 #define INPUT_AUDIOTRACK_LANG_LONGTEXT N_( \
@@ -759,7 +759,8 @@ static const char* const ppsz_restore_playback_desc[] = {
 #define INPUT_TIMESHIFT_GRANULARITY_TEXT N_("Timeshift granularity")
 #define INPUT_TIMESHIFT_GRANULARITY_LONGTEXT N_( \
     "This is the maximum size in bytes of the temporary files " \
-    "that will be used to store the timeshifted streams." )
+    "that will be used to store the timeshifted streams. " \
+    "(-1 for auto)." )
 
 #define INPUT_TITLE_FORMAT_TEXT N_( "Change title according to current media" )
 #define INPUT_TITLE_FORMAT_LONGTEXT N_( "This option allows you to set the title according to what's being played<br>"  \
@@ -1668,6 +1669,7 @@ vlc_module_begin ()
     // autohide after 1 second
     add_integer( "mouse-hide-timeout", 1000, MOUSE_HIDE_TIMEOUT_TEXT,
                  MOUSE_HIDE_TIMEOUT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     set_section( N_("Snapshot") , NULL )
     add_directory("snapshot-path", NULL, SNAP_PATH_TEXT, SNAP_PATH_LONGTEXT)
     add_string( "snapshot-prefix", "vlcsnap-", SNAP_PREFIX_TEXT,
@@ -1681,13 +1683,17 @@ vlc_module_begin ()
               SNAP_SEQUENTIAL_LONGTEXT )
     add_integer( "snapshot-width", -1, SNAP_WIDTH_TEXT,
                  SNAP_WIDTH_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_integer( "snapshot-height", -1, SNAP_HEIGHT_TEXT,
                  SNAP_HEIGHT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
 
     set_section( N_("Window properties" ), NULL )
     add_integer( "width", -1, WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "height", -1, HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
 #if defined(__APPLE__) || defined(_WIN32)
     add_integer( "video-x", 0, VIDEOX_TEXT, VIDEOX_LONGTEXT )
@@ -1806,12 +1812,15 @@ vlc_module_begin ()
         change_safe ()
     add_integer( "video-track", -1,
                  INPUT_VIDEOTRACK_TEXT, INPUT_VIDEOTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "audio-track", -1,
                  INPUT_AUDIOTRACK_TEXT, INPUT_AUDIOTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_integer( "sub-track", -1,
                  INPUT_SUBTRACK_TEXT, INPUT_SUBTRACK_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
         change_safe ()
     add_string( "audio-language", "",
                  INPUT_AUDIOTRACK_LANG_TEXT, INPUT_AUDIOTRACK_LANG_LONGTEXT )
@@ -1889,6 +1898,7 @@ vlc_module_begin ()
     set_section( N_( "Network settings" ), NULL )
 
     add_integer( "mtu", MTU_DEFAULT, MTU_TEXT, MTU_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "ipv4-timeout", 5 * 1000, TIMEOUT_TEXT,
                  TIMEOUT_LONGTEXT )
         change_integer_range( 0, INT_MAX )
@@ -1991,6 +2001,7 @@ vlc_module_begin ()
                   INPUT_TIMESHIFT_PATH_TEXT, INPUT_TIMESHIFT_PATH_LONGTEXT)
     add_integer( "input-timeshift-granularity", -1, INPUT_TIMESHIFT_GRANULARITY_TEXT,
                  INPUT_TIMESHIFT_GRANULARITY_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
 
     add_string( "input-title-format", "$Z", INPUT_TITLE_FORMAT_TEXT, INPUT_TITLE_FORMAT_LONGTEXT )
 
@@ -2051,6 +2062,7 @@ vlc_module_begin ()
     set_subcategory( SUBCAT_SOUT_ACO )
     add_obsolete_string("access_output") /* since 0.5.0 (warning since 4.0) */
     add_integer( "ttl", -1, TTL_TEXT, TTL_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_string( "miface", NULL, MIFACE_TEXT, MIFACE_LONGTEXT )
     add_integer( "dscp", 0, DSCP_TEXT, DSCP_LONGTEXT )
 
@@ -2144,12 +2156,15 @@ vlc_module_begin ()
 
     add_integer( "preparse-timeout", 5000, PREPARSE_TIMEOUT_TEXT,
                  PREPARSE_TIMEOUT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_integer( "preparse-threads", 1, PREPARSE_THREADS_TEXT,
                  PREPARSE_THREADS_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_integer( "fetch-art-threads", 1, FETCH_ART_THREADS_TEXT,
                  FETCH_ART_THREADS_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
 
     add_bool( "metadata-network-access", false, METADATA_NETWORK_TEXT, NULL )
 
