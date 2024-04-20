@@ -63,7 +63,6 @@ FocusScope {
     // default is true
     property bool reuseItems: true
 
-    property int rowX: 0
     property int horizontalSpacing: VLCStyle.column_spacing
     property int verticalSpacing: VLCStyle.column_spacing
 
@@ -177,7 +176,10 @@ FocusScope {
 
     // Events
 
-    Component.onCompleted: flickable.layout(true)
+    Component.onCompleted: {
+        if (_initialize())
+            flickable.layout(true)
+    }
 
     onHeightChanged: flickable.layout(false)
 
@@ -493,15 +495,21 @@ FocusScope {
 
     // Private
 
+    // returns true if this requires forceLayout
     function _initialize() {
         if (_isInitialised)
             return;
 
-        if (flickable.width === 0 || flickable.height === 0)
-            return;
-        if (currentIndex !== 0)
-            positionViewAtIndex(currentIndex, ItemView.Contain)
         _isInitialised = true;
+        if (flickable.width === 0 || flickable.height === 0)
+            return false;
+
+        if (currentIndex !== 0) {
+            positionViewAtIndex(currentIndex, ItemView.Contain)
+            return false; // positionViewAtIndex will cause layout
+        }
+
+        return true
     }
 
     function _calculateCurrentRange() {
@@ -559,9 +567,6 @@ FocusScope {
         item.x = x
         item.y = y
         item.z = _indexToZ(id)
-
-        // update required property (do we need this??)
-        item.selected = selectionModel.isSelected(id)
     }
 
     function _repositionItem(id, x, y) {
@@ -903,9 +908,7 @@ FocusScope {
             if (flickable.width === 0 || flickable.height === 0)
                 return
             else if (!root._isInitialised)
-                root._initialize()
-
-            root.rowX = getItemPos(0)[0]
+                return
 
             const expandItemGridId = getExpandItemGridId()
 
