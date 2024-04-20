@@ -171,6 +171,16 @@ typedef enum libvlc_teletext_key_t {
 } libvlc_teletext_key_t;
 
 /**
+ * Enumeration of Apple video renderer keys than can be passed via
+ * libvlc_media_player_set_nsobject_with_renderer ( p_mi, drawable, renderer )
+ */
+typedef enum libvlc_ns_video_renderer_t {
+    libvlc_ns_video_renderer_auto = 0,   // automatically handled by the system
+    libvlc_ns_video_renderer_gl_layer,   // OpenGL backed CALayer
+    libvlc_ns_video_renderer_gl_view,    // NSOpenGLView (macOS only)
+} libvlc_ns_video_renderer_t;
+
+/**
  * Opaque equalizer handle.
  *
  * Equalizer settings can be applied to a media player.
@@ -894,9 +904,7 @@ bool libvlc_video_set_output_callbacks( libvlc_media_player_t *mp,
                                         void* opaque );
 
 /**
- * Set the NSView handler where the media player should render its video output.
- *
- * Use the vout called "macosx".
+ * Set the view handler where the media player should render its video output.
  *
  * The drawable is an NSObject that follow the VLCVideoViewEmbedding
  * protocol:
@@ -908,15 +916,17 @@ bool libvlc_video_set_output_callbacks( libvlc_media_player_t *mp,
  * @end
  * @endcode
  *
- * Or it can be an NSView object.
+ * Or it can be an UIView/NSView object.
  *
  * If you want to use it along with Qt see the QMacCocoaViewContainer. Then
  * the following code should work:
  * @code{.mm}
  * {
  *     NSView *video = [[NSView alloc] init];
- *     QMacCocoaViewContainer *container = new QMacCocoaViewContainer(video, parent);
- *     libvlc_media_player_set_nsobject(mp, video);
+ *     QMacCocoaViewContainer *container = 
+ *         new QMacCocoaViewContainer(video, parent);
+ *     libvlc_media_player_set_nsobject_with_renderer(
+ *         mp, video, libvlc_ns_video_renderer_auto);
  *     [video release];
  * }
  * @endcode
@@ -924,16 +934,45 @@ bool libvlc_video_set_output_callbacks( libvlc_media_player_t *mp,
  * You can find a live example in VLCVideoView in VLCKit.framework.
  *
  * \param p_mi the Media Player
- * \param drawable the drawable that is either an NSView or an object following
- * the VLCVideoViewEmbedding protocol.
+ * \param drawable the drawable that is either an UIView/NSView or an object 
+ * following the VLCVideoViewEmbedding protocol.
+ * \param renderer select the renderer. Pass libvlc_ns_video_renderer_auto 
+ * to have the selection done by the system.
+ * \return false if renderer can't be selected
+ * \return true on success
  */
-LIBVLC_API void libvlc_media_player_set_nsobject ( libvlc_media_player_t *p_mi, void * drawable );
+LIBVLC_API bool libvlc_media_player_set_nsobject_with_renderer (   
+    libvlc_media_player_t *p_mi, 
+    void * drawable, 
+    libvlc_ns_video_renderer_t renderer );
 
 /**
- * Get the NSView handler previously set with libvlc_media_player_set_nsobject().
+ * Set the NSView handler where the media player should render its video output
+ * with the renderer selected automatically by the system.
+ *
+ * Same as doing
+ * @code
+ * libvlc_media_player_set_nsobject_with_renderer(
+ *         mp, video, libvlc_ns_video_renderer_auto);
+ * @endcode
+ * 
+ * @see libvlc_media_player_set_nsobject ( libvlc_media_player_t *p_mi, 
+ *                                         void * drawable,
+ *                                         libvlc_ns_video_renderer_t renderer )
  *
  * \param p_mi the Media Player
- * \return the NSView handler or 0 if none where set
+ * \param drawable the drawable that is either an UIView/NSView or an object 
+ * following the VLCVideoViewEmbedding protocol.
+ */
+LIBVLC_API void libvlc_media_player_set_nsobject ( libvlc_media_player_t *p_mi, 
+                                                   void * drawable);
+
+/**
+ * Get the view handler previously set with libvlc_media_player_set_nsobject().
+ *
+ * \param p_mi the Media Player
+ * \return the UIView/NSView/VLCVideoViewEmbedding handler
+ * \return 0 if none where set
  */
 LIBVLC_API void * libvlc_media_player_get_nsobject ( libvlc_media_player_t *p_mi );
 

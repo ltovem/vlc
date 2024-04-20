@@ -1161,21 +1161,62 @@ bool libvlc_video_set_output_callbacks(libvlc_media_player_t *mp,
 /**************************************************************************
  * set_nsobject
  **************************************************************************/
-void libvlc_media_player_set_nsobject( libvlc_media_player_t *p_mi,
-                                        void * drawable )
+static const char *
+libvlc_vout_display_name_from_value( libvlc_ns_video_renderer_t renderer )
+{
+    static const char * optlist[] =
+    {
+        [libvlc_ns_video_renderer_auto]     = "any",
+#if TARGET_IPHONE_OS
+        [libvlc_ns_video_renderer_gl_layer] = "caeagl",
+#else
+        [libvlc_ns_video_renderer_gl_layer] = "caopengllayer",
+#endif
+        [libvlc_ns_video_renderer_gl_view]  = "vout_macosx",
+    };
+    enum { num_opts = sizeof(optlist) / sizeof(*optlist) };
+
+    const char *r = renderer < num_opts ? optlist[renderer] : NULL;
+    if( !r ) {
+        libvlc_printerr( "Unknown renderer value" );
+    }
+
+    if( renderer != libvlc_ns_video_renderer_auto && !module_exists(r) ) {
+        libvlc_printerr( "Display module doesn't exist" );
+        r = NULL;
+    }
+        
+    return r;
+}
+
+bool libvlc_media_player_set_nsobject_with_renderer(
+    libvlc_media_player_t *p_mi,
+    void *drawable,
+    libvlc_ns_video_renderer_t renderer )
 {
     assert (p_mi != NULL);
 #ifdef __APPLE__
+    const char *vout = libvlc_vout_display_name_from_value(renderer);
+    if (!vout)
+        return false;
     var_SetString (p_mi, "dec-dev", "any");
-    var_SetString (p_mi, "vout", "any");
+    var_SetString (p_mi, "vout", vout);
     var_SetString (p_mi, "window", "any");
     var_SetAddress (p_mi, "drawable-nsobject", drawable);
+    return true;
 #else
     (void)drawable;
     libvlc_printerr ("can't set nsobject: APPLE build required");
     assert(false);
     var_SetString (p_mi, "window", "none");
 #endif
+}
+
+void libvlc_media_player_set_nsobject ( libvlc_media_player_t *p_mi, 
+                                        void * drawable)
+{
+    libvlc_media_player_set_nsobject_with_renderer( 
+        p_mi, drawable, libvlc_ns_video_renderer_auto );
 }
 
 /**************************************************************************
