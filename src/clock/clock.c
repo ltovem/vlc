@@ -2,6 +2,9 @@
  * clock.c: Output modules synchronisation clock
  *****************************************************************************
  * Copyright (C) 2018-2019 VLC authors, VideoLAN and Videolabs SAS
+ * Copyright (C) 2024      Videolabs
+ *
+ * Authors: Alexandre Janniaux <ajanni@videolabs.io>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -178,7 +181,7 @@ static inline void TraceRender(struct vlc_tracer *tracer, const char *type,
 static vlc_tick_t main_stream_to_system(vlc_clock_main_t *main_clock,
                                         vlc_tick_t ts)
 {
-    if (main_clock->offset == VLC_TICK_INVALID)
+    if (main_clock->last.system == VLC_TICK_INVALID)
         return VLC_TICK_INVALID;
     return ((vlc_tick_t) (ts * main_clock->coeff / main_clock->rate))
             + main_clock->offset;
@@ -216,6 +219,87 @@ static inline void vlc_clock_on_update(vlc_clock_t *clock,
                     system_now, ts, drift);
 }
 
+
+static void vlc_clock_master_update_coeff(
+    vlc_clock_t *clock, vlc_tick_t system_now, vlc_tick_t ts, double rate)
+{
+    vlc_clock_main_t *main_clock = clock->owner;
+    vlc_mutex_assert(&main_clock->lock);
+
+    if (main_clock->offset != VLC_TICK_INVALID
+     && ts != main_clock->last.stream)
+    {
+        if (rate == main_clock->rate)
+        {
+            /* We have a reference so we can update coeff */
+            vlc_tick_t system_diff = system_now - main_clock->last.system;
+            vlc_tick_t stream_diff = ts - main_clock->last.stream;
+
+            double instant_coeff = system_diff / (double) stream_diff * rate;
+
+            /* System and stream ts should be incrementing */
+            bool decreasing_ts = system_diff < 0 || stream_diff < 0;
+            /* The instant coeff should always be around 1.0 */
+            bool coefficient_unstable = instant_coeff > 1.0 + COEFF_THRESHOLD
+                || instant_coeff < 1.0 - COEFF_THRESHOLD;
+
+            if (decreasing_ts || coefficient_unstable)
+            {
+                if (main_clock->logger != NULL)
+                {
+                    if (decreasing_ts)
+                        vlc_warning(main_clock->logger, "resetting master clock: "
+                                    "decreasing ts: system: %"PRId64 ", stream: %" PRId64,
+                                    system_diff, stream_diff);
+                    else
+                        vlc_warning(main_clock->logger, "resetting master clock: "
+                                    "coefficient too unstable: %f", instant_coeff);
+                }
+
+                if (main_clock->tracer != NULL && clock->track_str_id != NULL)
+                    vlc_tracer_TraceEvent(main_clock->tracer, "RENDER",
+                                          clock->track_str_id,
+                                          "reset_bad_source");
+
+                vlc_clock_SendEvent(main_clock, discontinuity);
+
+                /* Reset and continue (calculate the offset from the
+                 * current point) */
+                vlc_clock_main_reset(main_clock);
+            }
+            else
+            {
+                AvgUpdate(&main_clock->coeff_avg, instant_coeff);
+                main_clock->coeff = AvgGet(&main_clock->coeff_avg);
+            }
+        }
+    }
+    else
+    {
+        main_clock->wait_sync_ref_priority = UINT_MAX;
+        main_clock->wait_sync_ref =
+            clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
+
+        vlc_clock_SendEvent(main_clock, discontinuity);
+    }
+
+    main_clock->offset =
+        system_now - ((vlc_tick_t) (ts * main_clock->coeff / rate));
+
+    if (main_clock->tracer != NULL && clock->track_str_id != NULL)
+        vlc_tracer_Trace(main_clock->tracer,
+                         VLC_TRACE("type", "RENDER"),
+                         VLC_TRACE("id", clock->track_str_id),
+                         VLC_TRACE_TICK_NS("offset", main_clock->offset),
+                         VLC_TRACE("coeff", main_clock->coeff),
+                         VLC_TRACE_END);
+
+    main_clock->last = clock_point_Create(system_now, ts);
+
+    main_clock->rate = rate;
+    vlc_cond_broadcast(&main_clock->cond);
+}
+
 static vlc_tick_t vlc_clock_master_update(vlc_clock_t *clock,
                                           vlc_tick_t system_now,
                                           vlc_tick_t ts, double rate,
@@ -230,80 +314,9 @@ static vlc_tick_t vlc_clock_master_update(vlc_clock_t *clock,
     /* If system_now is VLC_TICK_MAX, the update is forced, don't modify
      * anything but only notify the new clock point. */
     if (system_now != VLC_TICK_MAX)
-    {
-        if (main_clock->offset != VLC_TICK_INVALID
-         && ts != main_clock->last.stream)
-        {
-            if (rate == main_clock->rate)
-            {
-                /* We have a reference so we can update coeff */
-                vlc_tick_t system_diff = system_now - main_clock->last.system;
-                vlc_tick_t stream_diff = ts - main_clock->last.stream;
+        vlc_clock_master_update_coeff(clock, system_now, ts, rate);
 
-                double instant_coeff = system_diff / (double) stream_diff * rate;
-
-                /* System and stream ts should be incrementing */
-                bool decreasing_ts = system_diff < 0 || stream_diff < 0;
-                /* The instant coeff should always be around 1.0 */
-                bool coefficient_unstable = instant_coeff > 1.0 + COEFF_THRESHOLD
-                    || instant_coeff < 1.0 - COEFF_THRESHOLD;
-
-                if (decreasing_ts || coefficient_unstable)
-                {
-                    if (main_clock->logger != NULL)
-                    {
-                        if (decreasing_ts)
-                            vlc_warning(main_clock->logger, "resetting master clock: "
-                                        "decreasing ts: system: %"PRId64 ", stream: %" PRId64,
-                                        system_diff, stream_diff);
-                        else
-                            vlc_warning(main_clock->logger, "resetting master clock: "
-                                        "coefficient too unstable: %f", instant_coeff);
-                    }
-
-                    if (main_clock->tracer != NULL && clock->track_str_id != NULL)
-                        vlc_tracer_TraceEvent(main_clock->tracer, "RENDER",
-                                              clock->track_str_id,
-                                              "reset_bad_source");
-
-                    vlc_clock_SendEvent(main_clock, discontinuity);
-
-                    /* Reset and continue (calculate the offset from the
-                     * current point) */
-                    vlc_clock_main_reset(main_clock);
-                }
-                else
-                {
-                    AvgUpdate(&main_clock->coeff_avg, instant_coeff);
-                    main_clock->coeff = AvgGet(&main_clock->coeff_avg);
-                }
-            }
-        }
-        else
-        {
-            main_clock->wait_sync_ref_priority = UINT_MAX;
-            main_clock->wait_sync_ref =
-                clock_point_Create(VLC_TICK_INVALID, VLC_TICK_INVALID);
-
-            vlc_clock_SendEvent(main_clock, discontinuity);
-        }
-
-        main_clock->offset =
-            system_now - ((vlc_tick_t) (ts * main_clock->coeff / rate));
-
-        if (main_clock->tracer != NULL && clock->track_str_id != NULL)
-            vlc_tracer_Trace(main_clock->tracer,
-                             VLC_TRACE("type", "RENDER"),
-                             VLC_TRACE("id", clock->track_str_id),
-                             VLC_TRACE_TICK_NS("offset", main_clock->offset),
-                             VLC_TRACE("coeff", main_clock->coeff),
-                             VLC_TRACE_END);
-
-        main_clock->last = clock_point_Create(system_now, ts);
-
-        main_clock->rate = rate;
-        vlc_cond_broadcast(&main_clock->cond);
-    }
+    main_clock->last = clock_point_Create(system_now, ts);
 
     /* Fix the reported ts if both master and slaves source are delayed. This
      * happens if we apply a positive delay to the master, and then lower it. */
@@ -611,26 +624,27 @@ void vlc_clock_main_ChangePause(vlc_clock_main_t *main_clock, vlc_tick_t now,
     assert(paused == (main_clock->pause_date == VLC_TICK_INVALID));
 
     if (paused)
-        main_clock->pause_date = now;
-    else
     {
-        /**
-         * Only apply a delay if the clock has a reference point to avoid
-         * messing up the timings if the stream was paused then seeked
-         */
-        const vlc_tick_t delay = now - main_clock->pause_date;
-        if (main_clock->offset != VLC_TICK_INVALID)
-        {
-            main_clock->last.system += delay;
-            main_clock->offset += delay;
-        }
-        if (main_clock->first_pcr.system != VLC_TICK_INVALID)
-            main_clock->first_pcr.system += delay;
-        if (main_clock->wait_sync_ref.system != VLC_TICK_INVALID)
-            main_clock->wait_sync_ref.system += delay;
-        main_clock->pause_date = VLC_TICK_INVALID;
-        vlc_cond_broadcast(&main_clock->cond);
+        main_clock->pause_date = now;
+        return;
     }
+
+    /**
+     * Only apply a delay if the clock has a reference point to avoid
+     * messing up the timings if the stream was paused then seeked
+     */
+    const vlc_tick_t delay = now - main_clock->pause_date;
+    if (main_clock->last.system != VLC_TICK_INVALID)
+    {
+        main_clock->last.system += delay;
+        main_clock->offset += delay;
+    }
+    if (main_clock->first_pcr.system != VLC_TICK_INVALID)
+        main_clock->first_pcr.system += delay;
+    if (main_clock->wait_sync_ref.system != VLC_TICK_INVALID)
+        main_clock->wait_sync_ref.system += delay;
+    main_clock->pause_date = VLC_TICK_INVALID;
+    vlc_cond_broadcast(&main_clock->cond);
 }
 
 void vlc_clock_main_Delete(vlc_clock_main_t *main_clock)
