@@ -22,6 +22,7 @@ foreach vlc_test: vlc_tests
         'c_args',
         'cpp_args',
         'objc_args',
+        'include_directories',
     ]
 
     foreach key : vlc_test.keys()
@@ -45,7 +46,7 @@ foreach vlc_test: vlc_tests
                   .format(vlc_test['name'], module_name))
         endif
         test_modules_deps += vlc_plugins_targets[module_name]
-        if vlc_plugins_manifest[module_name].get('enabled', true)
+        if not vlc_plugins_manifest[module_name].get('enabled', true)
             disabled_dependencies += module_name
         endif
     endforeach
