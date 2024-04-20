@@ -190,6 +190,8 @@ libqt_plugin_la_SOURCES = \
 	maininterface/video_window_handler.hpp \
 	medialibrary/medialib.cpp \
 	medialibrary/medialib.hpp \
+	medialibrary/mlmediastore.cpp \
+	medialibrary/mlmediastore.hpp \
 	medialibrary/mlalbum.cpp \
 	medialibrary/mlalbum.hpp \
 	medialibrary/mlalbummodel.cpp \
@@ -222,6 +224,7 @@ libqt_plugin_la_SOURCES = \
 	medialibrary/mlthreadpool.cpp \
 	medialibrary/mlthreadpool.hpp \
 	medialibrary/mlqmltypes.hpp \
+	medialibrary/mlmedia.hpp \
 	medialibrary/mlqueryparams.cpp \
 	medialibrary/mlqueryparams.hpp \
 	medialibrary/mlrecentsmodel.cpp \
@@ -419,6 +422,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	maininterface/videosurface.moc.cpp \
 	maininterface/video_window_handler.moc.cpp \
 	medialibrary/medialib.moc.cpp \
+	medialibrary/mlmediastore.moc.cpp \
 	medialibrary/mlalbum.moc.cpp \
 	medialibrary/mlalbummodel.moc.cpp \
 	medialibrary/mlalbumtrack.moc.cpp \
@@ -431,6 +435,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	medialibrary/mlgenremodel.moc.cpp \
 	medialibrary/mlthreadpool.moc.cpp \
 	medialibrary/mlqmltypes.moc.cpp \
+	medialibrary/mlmedia.moc.cpp \
 	medialibrary/mlrecentsmodel.moc.cpp \
 	medialibrary/mlrecentsvideomodel.moc.cpp \
 	medialibrary/mlurlmodel.moc.cpp \

@@ -202,7 +202,7 @@ MainInterface.MainViewLoader {
             id: tableView
 
             readonly property int _nbCols: VLCStyle.gridColumnsForWidth(tableView.availableRowWidth)
-            readonly property int _nameColSpan: Math.max((_nbCols - 1) / 2, 1)
+            readonly property int _nameColSpan: Math.max((_nbCols - 2) / 2, 1)
             property Component thumbnailHeader: Widgets.IconLabel {
                 height: VLCStyle.listAlbumCover_height
                 width: VLCStyle.listAlbumCover_width
@@ -263,6 +263,18 @@ MainInterface.MainViewLoader {
 
                     showContextButton: true
                 }
+            }, {
+                size: 1,
+
+                model: {
+                    criteria: "duration",
+
+                    text: qsTr("Duration"),
+
+                    showContextButton: true,
+                    headerDelegate: tableColumns.timeHeaderDelegate,
+                    colDelegate: tableColumns.timeColDelegate
+                }
             }]
 
             dragItem: networkDragItem
@@ -302,6 +314,10 @@ MainInterface.MainViewLoader {
             }
             onRightClick: (_,_,globalMousePos) => {
                 contextMenu.popup(selectionModel.selectedIndexes, globalMousePos)
+            }
+
+            Widgets.TableColumns {
+                id: tableColumns
             }
         }
     }
