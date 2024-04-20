@@ -36,6 +36,7 @@
 #include <vlc_rand.h>
 
 #include <math.h>
+#include <limits.h>
 
 #include "visual/fft.h"
 #include "visual/window.h"
@@ -62,7 +63,9 @@ vlc_module_begin()
     set_subcategory(SUBCAT_AUDIO_VISUAL)
 
     add_integer("glspectrum-width", 400, WIDTH_TEXT, WIDTH_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
     add_integer("glspectrum-height", 300, HEIGHT_TEXT, HEIGHT_LONGTEXT)
+        change_integer_range( 0, INT_MAX )
 
     add_shortcut("glspectrum")
     set_callback(Open)

@@ -42,6 +42,7 @@
 #ifdef HAVE_XLOCALE_H
 # include <xlocale.h>
 #endif
+#include <limits.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -114,10 +115,15 @@ vlc_module_begin ()
                  MENU_FONT_TXT, MENU_FONT_LONGTXT)
 #endif
     add_integer( "projectm-width", 800, WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "projectm-height", 500, HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "projectm-meshx", 32, MESHX_TEXT, MESHX_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "projectm-meshy", 24, MESHY_TEXT, MESHY_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "projectm-texture-size", 1024, TEXTURE_TEXT, TEXTURE_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_shortcut( "projectm" )
     set_callback( Open )
 vlc_module_end ()

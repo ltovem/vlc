@@ -38,6 +38,7 @@
 #include <vlc_picture_pool.h>
 
 #include <goom/goom.h>
+#include <limits.h>
 
 /*****************************************************************************
  * Module descriptor
@@ -63,8 +64,10 @@ vlc_module_begin ()
     set_capability( "visualization", 0 )
     add_integer( "goom-width", 800,
                  WIDTH_TEXT, RES_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "goom-height", 500,
                  HEIGHT_TEXT, RES_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer_with_range( "goom-speed", 6, 1, 10,
                  SPEED_TEXT, SPEED_LONGTEXT )
     set_callback( Open )

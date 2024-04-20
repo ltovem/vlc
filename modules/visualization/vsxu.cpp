@@ -35,6 +35,8 @@
 #include <vlc_opengl.h>
 #include <vlc_filter.h>
 
+#include <limits.h>
+
 // vsxu manager include
 #include <vsx_manager.h>
 #include <logo_intro.h>
@@ -60,7 +62,9 @@ vlc_module_begin ()
     set_capability( "visualization", 0 )
     set_subcategory( SUBCAT_AUDIO_VISUAL )
     add_integer( "vsxu-width", 1280, WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_integer( "vsxu-height", 800, HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( 0, INT_MAX )
     add_shortcut( "vsxu" )
     set_callback( Open )
 vlc_module_end ()

@@ -107,11 +107,15 @@
 
 #define COLOR1_TEXT N_( "V-plane color" )
 #define COLOR1_LONGTEXT N_( \
-        "YUV-Color cube shifting across the V-plane ( 0 - 127 )." )
+        "YUV-Color cube shifting across the V-plane." )
 
 /* Default vout size */
 #define VOUT_WIDTH  800
 #define VOUT_HEIGHT 500
+
+/* Min vout size - no resolution under 400x532 */
+#define VOUT_MIN_WIDTH  532
+#define VOUT_MIN_HEIGHT 400
 
 static int  Open         ( vlc_object_t * );
 static void Close        ( filter_t * );
@@ -125,8 +129,10 @@ vlc_module_begin ()
             ELIST_TEXT, ELIST_LONGTEXT )
     add_integer("effect-width",VOUT_WIDTH,
              WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( VOUT_MIN_WIDTH, INT_MAX )
     add_integer("effect-height" , VOUT_HEIGHT ,
              HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( VOUT_MIN_HEIGHT, INT_MAX )
     add_string("effect-fft-window", "none",
             FFT_WINDOW_TEXT, FFT_WINDOW_LONGTEXT )
         change_string_list( window_list, window_list_text )
@@ -146,7 +152,7 @@ vlc_module_begin ()
              RADIUS_TEXT, RADIUS_LONGTEXT )
     add_integer_with_range("spect-sections", 3, 1, INT_MAX,
              SSECT_TEXT, SSECT_LONGTEXT )
-    add_integer("spect-color", 80,
+    add_integer_with_range("spect-color", 80, 0, 127,
              COLOR1_TEXT, COLOR1_LONGTEXT )
     add_bool("spect-show-bands", true,
              BANDS_TEXT, NULL )
@@ -160,7 +166,7 @@ vlc_module_begin ()
              PEAKS_TEXT, NULL )
     add_integer("spect-peak-width", 61,
              PEAK_WIDTH_TEXT, PEAK_WIDTH_LONGTEXT )
-    add_integer("spect-peak-height", 1,
+    add_integer_with_range("spect-peak-height", 1, 1, INT_MAX,
              PEAK_HEIGHT_TEXT, PEAK_HEIGHT_LONGTEXT )
     set_capability( "visualization", 0 )
     set_callback( Open )
@@ -209,12 +215,8 @@ static int Open( vlc_object_t *p_this )
 
     int width = var_InheritInteger( p_filter , "effect-width");
     int height = var_InheritInteger( p_filter , "effect-height");
-    /* No resolution under 400x532 and no odd dimension */
-    if( width < 532 )
-        width  = 532;
+    /* No odd dimension */
     width &= ~1;
-    if( height < 400 )
-        height = 400;
     height &= ~1;
 
     p_sys->i_effect = 0;
