@@ -549,6 +549,10 @@ enum vlc_ml_list_queries
     VLC_ML_COUNT_ARTISTS_OF,      /**< arg1: parent entity type; arg2: parent entity id; arg3(out): size_t*             */
     VLC_ML_LIST_ALBUMS_OF,        /**< arg1: parent entity type; arg2: parent entity id; arg3(out): ml_album_list_t**   */
     VLC_ML_COUNT_ALBUMS_OF,       /**< arg1: parent entity type; arg2: parent entity id; arg3(out): size_t*             */
+
+    /* Movies specific listings */
+    VLC_ML_LIST_MOVIES,           /**< arg1 (out): vlc_ml_media_list_t**                                                */
+    VLC_ML_COUNT_MOVIES,          /**< arg1 (out): size_t*                                                              */
 };
 
 enum vlc_ml_parent_type
@@ -1492,6 +1496,15 @@ static inline vlc_ml_media_list_t* vlc_ml_list_video_media( vlc_medialibrary_t* 
     vlc_assert( p_ml != NULL );
     vlc_ml_media_list_t* res;
     if ( vlc_ml_list( p_ml, VLC_ML_LIST_VIDEOS, params, &res ) != VLC_SUCCESS )
+        return NULL;
+    return res;
+}
+
+static inline vlc_ml_media_list_t* vlc_ml_list_movie_media( vlc_medialibrary_t* p_ml, const vlc_ml_query_params_t* params )
+{
+    vlc_assert( p_ml != NULL );
+    vlc_ml_media_list_t* res;
+    if ( vlc_ml_list( p_ml, VLC_ML_LIST_MOVIES, params, &res ) != VLC_SUCCESS )
         return NULL;
     return res;
 }

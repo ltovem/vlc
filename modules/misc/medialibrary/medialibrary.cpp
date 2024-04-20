@@ -881,6 +881,32 @@ int MediaLibrary::List( int listQuery, const vlc_ml_query_params_t* params, va_l
             *va_arg( args, size_t* ) = query->count();
             break;
         }
+        case VLC_ML_LIST_MOVIES:
+        {
+            medialibrary::Query<medialibrary::IMedia> query;
+            if ( psz_pattern != nullptr )
+                query = m_ml->searchMovie( psz_pattern, paramsPtr );
+            else
+                query = m_ml->movies( paramsPtr );
+            if ( query == nullptr )
+                return VLC_EGENERIC;
+            auto res = ml_convert_list<vlc_ml_media_list_t, vlc_ml_media_t>(
+                        query->items( nbItems, offset ) );
+            *va_arg( args, vlc_ml_media_list_t**) = res;
+            break;
+        }
+        case VLC_ML_COUNT_MOVIES:
+        {
+            medialibrary::Query<medialibrary::IMedia> query;
+            if ( psz_pattern != nullptr )
+                query = m_ml->searchMovie( psz_pattern, paramsPtr );
+            else
+                query = m_ml->movies( paramsPtr );
+            if ( query == nullptr )
+                return VLC_EGENERIC;
+            *va_arg( args, size_t* ) = query->count();
+            break;
+        }
         case VLC_ML_LIST_AUDIOS:
         {
             medialibrary::Query<medialibrary::IMedia> query;
