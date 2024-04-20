@@ -724,16 +724,24 @@ int vout_SetDisplayFormat(vout_display_t *vd, const video_format_t *fmt,
     if (!vd->ops->update_format)
         return VLC_EGENERIC;
 
-    int ret = vd->ops->update_format(vd, fmt, vctx);
-    if (ret != VLC_SUCCESS)
-        return ret;
-
     vout_display_priv_t *osys = container_of(vd, vout_display_priv_t, display);
 
+    video_format_t source_backup;
+    video_format_Copy(&source_backup, vd->source);
+
     /* Update source format */
-    assert(!fmt->p_palette);
     video_format_Clean(&osys->source);
-    osys->source = *fmt;
+    video_format_Copy(&osys->source, fmt);
+
+    int ret = vd->ops->update_format(vd, vctx);
+    if (ret != VLC_SUCCESS)
+    {
+        video_format_Copy(&osys->source, &source_backup);
+        video_format_Clean(&source_backup);
+        return ret;
+    }
+    video_format_Clean(&source_backup);
+
     if (vctx)
         vlc_video_context_Hold(vctx);
     if (osys->src_vctx)

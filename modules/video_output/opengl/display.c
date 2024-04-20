@@ -102,8 +102,7 @@ static int SetViewpoint(vout_display_t *vd, const vlc_viewpoint_t *vp)
 }
 
 static int
-UpdateFormat(vout_display_t *vd, const video_format_t *fmt,
-             vlc_video_context *vctx)
+UpdateFormat(vout_display_t *vd, vlc_video_context *vctx)
 {
     vout_display_sys_t *sys = vd->sys;
 
@@ -111,7 +110,7 @@ UpdateFormat(vout_display_t *vd, const video_format_t *fmt,
     if (ret != VLC_SUCCESS)
         return ret;
 
-    ret = vout_display_opengl_UpdateFormat(sys->vgl, fmt, vctx);
+    ret = vout_display_opengl_UpdateFormat(sys->vgl, vd->source, vctx);
 
     /* Force to recompute the viewport on next picture */
     sys->place_changed = true;

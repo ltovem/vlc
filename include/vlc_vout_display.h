@@ -313,16 +313,13 @@ struct vlc_display_operations
     void       (*set_icc_profile)(vout_display_t *, const vlc_icc_profile_t *prof);
 
     /**
-     * Notifies a change in the input format.
+     * Notifies a change of vd->source.
      *
-     * The format size is not expected to change.
-     *
-     * \param fmt the requested input format
-     * \param ctx the video context
+     * \param vctx the video context of the input
      * \return VLC_SUCCESS on success, another value on error
      */
-    int (*update_format)(vout_display_t *, const video_format_t *fmt,
-                         vlc_video_context *ctx);
+    int (*update_format)(vout_display_t *,
+                         vlc_video_context *vctx);
 };
 
 struct vout_display_t {
