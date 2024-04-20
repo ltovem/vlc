@@ -99,6 +99,7 @@ private:
     bool m_enqueuedGeneration = false;
 
     QUrl m_source;
+    QUrl m_oldSource;
     qreal m_radius = 0.0;
     qreal m_dpr = 1.0; // device pixel ratio
     bool m_cache = true;
