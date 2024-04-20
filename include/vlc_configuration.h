@@ -122,9 +122,6 @@ VLC_API int64_t config_GetInt(const char *name) VLC_USED;
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of integer or boolean type.
  *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
- *
  * \param name Configuration item name
  * \param val New value
  */
@@ -155,9 +152,6 @@ VLC_API float config_GetFloat(const char *name) VLC_USED;
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of floating point type.
  *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
- *
  * \param name Configuration item name
  * \param val New value
  */
@@ -179,7 +173,7 @@ VLC_API void config_PutFloat(const char *name, float val);
  *
  * \param name Configuration item name
  * \return Normally, a heap-allocated copy of the configuration item value.
- * If the value is the empty string, if the configuration does not exist,
+ * If the value is the empty string,
  * or if an error occurs, NULL is returned.
  * \bug The empty string value cannot be distinguished from an error.
  */
@@ -191,11 +185,11 @@ VLC_API char *config_GetPsz(const char *name) VLC_USED VLC_MALLOC;
  * This function changes the current value of a configuration item of
  * string type (e.g. \ref CONFIG_ITEM_STRING).
  *
+ * A copy will be made of the provided string (`strdup()`). The existing
+ * string will be deallocated.
+ *
  * \warning The behaviour is undefined if the configuration item exists but is
  * not of a string type.
- *
- * \note If no configuration item by the specified exist, the function has no
- * effects.
  *
  * \param name Configuration item name
  * \param val New value (will be copied)
