@@ -28,7 +28,6 @@
 # endif
 
 struct pollfd;
-struct iovec;
 struct sockaddr;
 struct msghdr;
 
@@ -108,10 +107,13 @@ static inline int vlc_msleep_i11e(vlc_tick_t delay)
  */
 VLC_API int vlc_poll_i11e(struct pollfd *, unsigned, int);
 
-VLC_API ssize_t vlc_readv_i11e(int fd, struct iovec *, int);
-VLC_API ssize_t vlc_writev_i11e(int fd, const struct iovec *, int);
-VLC_API ssize_t vlc_read_i11e(int fd, void *, size_t);
-VLC_API ssize_t vlc_write_i11e(int fd, const void *, size_t);
+/**
+ * Checks that a file/pipe file descriptor has data to read/write. This function
+ * sets EINTR errno upon VLC I/O interruption except on Windows.
+ *
+ * @warning This function ignores the non-blocking file flag.
+ */
+VLC_API int vlc_poll_file_i11e(int fd, unsigned int mask);
 
 VLC_API ssize_t vlc_recvmsg_i11e(int fd, struct msghdr *, int flags);
 VLC_API ssize_t vlc_sendmsg_i11e(int fd, const struct msghdr *, int flags);

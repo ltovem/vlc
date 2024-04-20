@@ -43,6 +43,9 @@
 #   include <sys/vfs.h>
 #   include <linux/magic.h>
 #endif
+#ifdef HAVE_POLL_H
+ #include <poll.h>
+#endif
 
 #if defined( _WIN32 )
 #   include <io.h>
@@ -309,7 +312,12 @@ static ssize_t Read (stream_t *p_access, void *p_buffer, size_t i_len)
     access_sys_t *p_sys = p_access->p_sys;
     int fd = p_sys->fd;
 
-    ssize_t val = vlc_read_i11e (fd, p_buffer, i_len);
+    ssize_t val;
+    if (vlc_poll_file_i11e(fd, POLLIN) < 0)
+        val = -1;
+    else
+        val = read(fd, p_buffer, i_len);
+
     if (val < 0)
     {
         switch (errno)

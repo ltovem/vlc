@@ -40,6 +40,9 @@
 # undef HAVE_VMSPLICE
 #endif
 #include <vlc_interrupt.h>
+#ifdef HAVE_POLL_H
+ #include <poll.h>
+#endif
 
 #include <signal.h>
 
@@ -196,7 +199,11 @@ static void *Thread (void *data)
 static ssize_t Read (stream_t *stream, void *buf, size_t buflen)
 {
     stream_sys_t *sys = stream->p_sys;
-    ssize_t val = vlc_read_i11e (sys->read_fd, buf, buflen);
+    ssize_t val;
+    if (vlc_poll_file_i11e(sys->read_fd, POLLIN) < 0)
+        val = -1;
+    else
+        val = read(sys->read_fd, buf, buflen);
     return (val >= 0) ? val : 0;
 }
 

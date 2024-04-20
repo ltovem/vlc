@@ -645,10 +645,7 @@ vlc_ml_folder_list_release
 vlc_ml_bookmark_release
 vlc_ml_bookmark_list_release
 vlc_poll_i11e
-vlc_read_i11e
-vlc_readv_i11e
-vlc_write_i11e
-vlc_writev_i11e
+vlc_poll_file_i11e
 vlc_recvmsg_i11e
 vlc_recvfrom_i11e
 vlc_sendmsg_i11e

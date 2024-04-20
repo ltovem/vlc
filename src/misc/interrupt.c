@@ -417,7 +417,7 @@ int vlc_poll_i11e(struct pollfd *fds, unsigned nfds, int timeout)
     return ret;
 }
 
-static int vlc_poll_file(int fd, unsigned int mask)
+int vlc_poll_file_i11e(int fd, unsigned int mask)
 {
     struct pollfd ufd;
 
@@ -428,7 +428,7 @@ static int vlc_poll_file(int fd, unsigned int mask)
 
 static int vlc_poll_sock(int sock, unsigned int mask)
 {
-    return vlc_poll_file(sock, mask);
+    return vlc_poll_file_i11e(sock, mask);
 }
 
 #else /* !_WIN32 */
@@ -485,7 +485,7 @@ int vlc_poll_i11e(struct pollfd *fds, unsigned nfds, int timeout)
     return ret;
 }
 
-static int vlc_poll_file(int fd, unsigned int mask)
+int vlc_poll_file_i11e(int fd, unsigned int mask)
 {
     (void) fd; (void) mask;
     return 1;
@@ -508,54 +508,6 @@ static int vlc_poll_sock(int sock, unsigned int mask)
  * file at the same time, there is a race condition where these functions might
  * block in spite of an interruption. This should never happen in practice.
  */
-
-/**
- * Wrapper for readv() that returns the EINTR error upon VLC I/O interruption.
- * @warning This function ignores the non-blocking file flag.
- */
-ssize_t vlc_readv_i11e(int fd, struct iovec *iov, int count)
-{
-    if (vlc_poll_file(fd, POLLIN) < 0)
-        return -1;
-    return readv(fd, iov, count);
-}
-
-/**
- * Wrapper for writev() that returns the EINTR error upon VLC I/O interruption.
- *
- * @note Like writev(), once some but not all bytes are written, the function
- * might wait for write completion, regardless of signals and interruptions.
- * @warning This function ignores the non-blocking file flag.
- */
-ssize_t vlc_writev_i11e(int fd, const struct iovec *iov, int count)
-{
-    if (vlc_poll_file(fd, POLLOUT) < 0)
-        return -1;
-    return vlc_writev(fd, iov, count);
-}
-
-/**
- * Wrapper for read() that returns the EINTR error upon VLC I/O interruption.
- * @warning This function ignores the non-blocking file flag.
- */
-ssize_t vlc_read_i11e(int fd, void *buf, size_t count)
-{
-    struct iovec iov = { .iov_base = buf, .iov_len = count };
-    return vlc_readv_i11e(fd, &iov, 1);
-}
-
-/**
- * Wrapper for write() that returns the EINTR error upon VLC I/O interruption.
- *
- * @note Like write(), once some but not all bytes are written, the function
- * might wait for write completion, regardless of signals and interruptions.
- * @warning This function ignores the non-blocking file flag.
- */
-ssize_t vlc_write_i11e(int fd, const void *buf, size_t count)
-{
-    struct iovec iov = { .iov_base = (void*)buf, .iov_len = count };
-    return vlc_writev_i11e(fd, &iov, 1);
-}
 
 ssize_t vlc_recvmsg_i11e(int fd, struct msghdr *msg, int flags)
 {
