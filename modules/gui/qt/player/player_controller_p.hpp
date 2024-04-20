@@ -79,6 +79,7 @@ public:
 
     VLCTick      m_time = 0;
     VLCTick      m_remainingTime = 0;
+    VLCTick      m_adjustedRemainingTime = 0;
     double       m_position = 0.f;
     VLCTick      m_length= 0;
 
