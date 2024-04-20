@@ -40,7 +40,11 @@ mpg123: mpg123-$(MPG123_VERSION).tar.bz2 .sum-mpg123
 	$(MOVE)
 
 .mpg123: mpg123
-	$(RECONF)
+	$(RECONF) || ( \
+		echo "Error: $^ autoreconf failed" >&2 ; \
+		echo "Make sure libltdl development files are present!" >&2 ; \
+		exit 1 \
+	)
 	$(MAKEBUILDDIR)
 	$(MAKECONFIGURE) $(MPG123CONF)
 	+$(MAKEBUILD) bin_PROGRAMS=
