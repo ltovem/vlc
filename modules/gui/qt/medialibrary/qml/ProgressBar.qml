@@ -23,6 +23,7 @@ import QtQuick.Templates as T
 import org.videolan.vlc 0.1
 import org.videolan.medialib 0.1
 
+import "qrc:///widgets/" as Widgets
 import "qrc:///style/"
 
 T.ProgressBar {
@@ -46,7 +47,7 @@ T.ProgressBar {
         colorSet: ColorContext.Window
     }
 
-    indeterminate: MediaLib.discoveryPending
+    indeterminate: MediaLib.discoveryPending || MediaLib.threadBusy
 
     background: Rectangle {
         color: theme.bg.primary
@@ -134,14 +135,18 @@ T.ProgressBar {
             }
         }
 
-        SubtitleLabel {
+        Widgets.SubtitleLabel {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            text: (MediaLib.discoveryPending) ? qsTr("Scanning %1")
-                                                .arg(MediaLib.discoveryEntryPoint)
-                                              : qsTr("Indexing Medias (%1%)")
-                                                .arg(MediaLib.parsingProgress)
+            text: {
+                if (MediaLib.discoveryPending)
+                    return qsTr("Scanning %1").arg(MediaLib.discoveryEntryPoint)
+                else if (MediaLib.threadBusy)
+                    return qsTr("Processing...")
+                else
+                    return qsTr("Indexing Medias (%1%)").arg(MediaLib.parsingProgress)
+            }
 
             elide: Text.ElideMiddle
 

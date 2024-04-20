@@ -181,7 +181,6 @@
         <file alias="ComboBoxExt.qml">widgets/qml/ComboBoxExt.qml</file>
         <file alias="SpinBoxExt.qml">widgets/qml/SpinBoxExt.qml</file>
         <file alias="ExpandGridView.qml">widgets/qml/ExpandGridView.qml</file>
-        <file alias="ScanProgressBar.qml">widgets/qml/ScanProgressBar.qml</file>
         <file alias="SearchBox.qml">widgets/qml/SearchBox.qml</file>
         <file alias="SortControl.qml">widgets/qml/SortControl.qml</file>
         <file alias="RoundButton.qml">widgets/qml/RoundButton.qml</file>
@@ -244,6 +243,7 @@
         <file alias="ServicesSources.qml">network/qml/ServicesSources.qml</file>
     </qresource>
     <qresource prefix="/medialibrary">
+        <file alias="ProgressBar.qml">medialibrary/qml/ProgressBar.qml</file>
         <file alias="MediaGroupDisplay.qml">medialibrary/qml/MediaGroupDisplay.qml</file>
         <file alias="MusicAlbums.qml">medialibrary/qml/MusicAlbums.qml</file>
         <file alias="MusicDisplay.qml">medialibrary/qml/MusicDisplay.qml</file>

@@ -49,6 +49,7 @@ public:
     Q_PROPERTY(int  parsingProgress READ parsingProgress NOTIFY parsingProgressChanged FINAL)
     Q_PROPERTY(QString discoveryEntryPoint READ discoveryEntryPoint NOTIFY discoveryEntryPointChanged FINAL)
     Q_PROPERTY(bool idle READ idle NOTIFY idleChanged FINAL)
+    Q_PROPERTY(bool threadBusy READ threadBusy NOTIFY threadBusyChanged FINAL)
 
     enum MLTaskStatus {
         ML_TASK_STATUS_SUCCEED,
@@ -79,6 +80,7 @@ public:
     inline int discoveryPending() const { return m_discoveryPending; }
     inline QString discoveryEntryPoint() const { return m_discoveryEntryPoint; }
     inline int parsingProgress() const { return m_parsingProgress; }
+    int threadBusy() const { return !m_runningTasks.isEmpty(); };
 
     vlc_ml_event_callback_t* registerEventListener(void (*callback)(void*, const vlc_ml_event_t*), void* data);
     void unregisterEventListener(vlc_ml_event_callback_t*);
@@ -187,6 +189,7 @@ signals:
     void discoveryEntryPointChanged( QString entryPoint );
     void discoveryPendingChanged( bool state );
     void idleChanged();
+    void threadBusyChanged();
 
 private:
     //use the destroy function
@@ -297,6 +300,8 @@ quint64 MediaLib::runOnMLThread(const QObject* obj,
     connect(runnable, &RunOnMLThreadBaseRunner::done, this, &MediaLib::runOnMLThreadDone);
     connect(obj, &QObject::destroyed, this, &MediaLib::runOnMLThreadTargetDestroyed);
     m_runningTasks.insert(taskId, runnable);
+    if (m_runningTasks.count() == 1)
+        emit threadBusyChanged();
     m_objectTasks.insert(obj, taskId);
     m_mlThreadPool.start(runnable, queue);
     return taskId;

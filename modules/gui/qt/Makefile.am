@@ -896,6 +896,7 @@ libqt_plugin_la_QML = \
 	maininterface/qml/MainGridView.qml \
 	maininterface/qml/MainTableView.qml \
 	maininterface/qml/NoMedialibHome.qml \
+	medialibrary/qml/ProgressBar.qml \
 	medialibrary/qml/ArtistTopBanner.qml \
 	medialibrary/qml/AudioGridItem.qml \
 	medialibrary/qml/MediaGroupDisplay.qml \
@@ -1080,7 +1081,6 @@ libqt_plugin_la_QML = \
 	widgets/qml/PlayCover.qml \
 	widgets/qml/RoundButton.qml \
 	widgets/qml/ScaledImage.qml \
-	widgets/qml/ScanProgressBar.qml \
         widgets/qml/TextAutoScroller.qml \
 	widgets/qml/SearchBox.qml \
 	widgets/qml/SliderExt.qml \

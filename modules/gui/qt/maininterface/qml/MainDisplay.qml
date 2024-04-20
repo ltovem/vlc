@@ -452,11 +452,69 @@ FocusScope {
         anchors.right: parent.right
         anchors.bottom: miniPlayer.top
 
-        active: (MainCtx.mediaLibraryAvailable && MainCtx.mediaLibrary.idle === false)
+        active: MainCtx.mediaLibraryAvailable
 
-        height: active ? implicitHeight : 0
+        property bool delayedMLThreadBusy: false
 
-        source: "qrc:///widgets/ScanProgressBar.qml"
+        Component.onCompleted: {
+            if (MainCtx.mediaLibrary.threadBusy)
+                delayedMLThreadBusy = true
+        }
+
+        Timer {
+            // The progress bar should not be shown immediately
+            // since most of the time the tasks will be completed
+            // in a short time. Wait until human moment is passed and
+            // still there are tasks ongoing, then it is time to show
+            // the progress bar to indicate that media library is busy.
+            // Note that this does not apply for media library's own
+            // idle scanning status.
+            id: timer
+            interval: VLCStyle.duration_humanMoment
+
+            onTriggered: {
+                loaderProgress.delayedMLThreadBusy = MainCtx.mediaLibraryAvailable ? true : false
+            }
+        }
+
+        Connections {
+            enabled: MainCtx.mediaLibraryAvailable
+            target: MainCtx.mediaLibrary
+
+            onThreadBusyChanged: {
+                if (MainCtx.mediaLibrary.threadBusy)
+                    timer.restart()
+                else {
+                    timer.stop()
+                    loaderProgress.delayedMLThreadBusy = false
+                }
+            }
+        }
+
+        visible: height > 0
+        height: 0
+
+        Binding on height {
+            // This delayed binding here is to prevent twitching due to
+            // fast idle status changes.
+            delayed: true
+            value: (!MainCtx.mediaLibrary.idle || loaderProgress.delayedMLThreadBusy) ? loaderProgress.implicitHeight : 0
+        }
+
+        Behavior on height {
+            enabled: false
+
+            Component.onCompleted: {
+                Qt.callLater(function() { enabled = true; })
+            }
+
+            NumberAnimation {
+                easing.type: Easing.InOutSine
+                duration: VLCStyle.duration_long
+            }
+        }
+
+        source: "qrc:///medialibrary/ProgressBar.qml"
 
         onLoaded: {
             item.background.visible = Qt.binding(function() { return !stackViewParent.layer.enabled })
