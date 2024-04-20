@@ -560,6 +560,7 @@ void VLCMenuBar::HelpMenu( QMenu *menu )
                       &DialogsProvider::updateDialog);
 #endif
     menu->addSeparator();
+	addDPStaticEntry( menu, qtr( "About &Qt" ), ":/menu/info.svg", &QApplication::aboutQt );
     addDPStaticEntry( menu, qfut( I_MENU_ABOUT ), ":/menu/info.svg",
             &DialogsProvider::aboutDialog, "Shift+F1", QAction::AboutRole );
 }
