@@ -524,7 +524,9 @@ libx265_plugin_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_x265)
 libx265_plugin_la_LDFLAGS = $(AM_LDFLAGS) $(LDFLAGS_x265) -rpath '$(codecdir)'
 libx265_plugin_la_LIBADD = $(LIBS_x265)
 EXTRA_LTLIBRARIES += libx265_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBx265)
+endif
 
 libx262_plugin_la_SOURCES = codec/x264.c
 libx262_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DPLUGIN_X262
@@ -532,7 +534,9 @@ libx262_plugin_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_x262)
 libx262_plugin_la_LDFLAGS = $(AM_LDFLAGS) $(SYMBOLIC_LDFLAGS) -rpath '$(codecdir)'
 libx262_plugin_la_LIBADD = $(LIBS_x262) $(LIBM)
 EXTRA_LTLIBRARIES += libx262_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBx262)
+endif
 
 libx264_plugin_la_SOURCES = codec/x264.c
 libx264_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) $(CPPFLAGS_x264) -DPLUGIN_X264
@@ -540,7 +544,9 @@ libx264_plugin_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_x264)
 libx264_plugin_la_LDFLAGS = $(AM_LDFLAGS) $(SYMBOLIC_LDFLAGS) -rpath '$(codecdir)'
 libx264_plugin_la_LIBADD = $(LIBS_x264) $(LIBM)
 EXTRA_LTLIBRARIES += libx264_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBx264)
+endif
 
 libx26410b_plugin_la_SOURCES = codec/x264.c
 libx26410b_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DPLUGIN_X264_10B
@@ -548,7 +554,9 @@ libx26410b_plugin_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_x26410b)
 libx26410b_plugin_la_LDFLAGS = $(AM_LDFLAGS) $(SYMBOLIC_LDFLAGS) -rpath '$(codecdir)'
 libx26410b_plugin_la_LIBADD = $(LIBS_x26410b) $(LIBM)
 EXTRA_LTLIBRARIES += libx26410b_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBx26410b)
+endif
 
 
 ### Misc encoders ###
@@ -558,13 +566,17 @@ libfdkaac_plugin_la_CFLAGS = $(AM_CFLAGS) $(FDKAAC_CFLAGS)
 libfdkaac_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(codecdir)'
 libfdkaac_plugin_la_LIBADD = $(FDKAAC_LIBS)
 EXTRA_LTLIBRARIES += libfdkaac_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBfdkaac)
+endif
 
 libshine_plugin_la_SOURCES = codec/shine.c
 libshine_plugin_la_CFLAGS = $(AM_CFLAGS) $(SHINE_CFLAGS)
 libshine_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(codecdir)' $(SHINE_LIBS)
 EXTRA_LTLIBRARIES += libshine_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBshine)
+endif
 
 libvpx_plugin_la_SOURCES = codec/vpx.c
 libvpx_plugin_la_CPPFLAGS = $(AM_CPPFLAGS)
@@ -599,7 +611,9 @@ librav1e_plugin_la_CFLAGS = $(AM_CFLAGS) $(RAV1E_CFLAGS)
 librav1e_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(codecdir)'
 librav1e_plugin_la_LIBADD = $(RAV1E_LIBS)
 EXTRA_LTLIBRARIES += librav1e_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBrav1e)
+endif
 
 libtwolame_plugin_la_SOURCES = codec/twolame.c
 libtwolame_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) -DLIBTWOLAME_STATIC
@@ -607,7 +621,9 @@ libtwolame_plugin_la_CFLAGS = $(AM_CFLAGS) $(TWOLAME_CFLAGS)
 libtwolame_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(codecdir)'
 libtwolame_plugin_la_LIBADD = $(TWOLAME_LIBS) $(LIBM)
 EXTRA_LTLIBRARIES += libtwolame_plugin.la
+if ENABLE_SOUT
 codec_LTLIBRARIES += $(LTLIBtwolame)
+endif
 
 libdav1d_plugin_la_SOURCES = codec/dav1d.c \
 	packetizer/av1_obu.c packetizer/av1_obu.h
