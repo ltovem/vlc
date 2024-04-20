@@ -1,7 +1,7 @@
 # QtDeclarative
 
-QTDECLARATIVE_VERSION_MAJOR := 6.6
-QTDECLARATIVE_VERSION := $(QTDECLARATIVE_VERSION_MAJOR).2
+QTDECLARATIVE_VERSION_MAJOR := 6.7
+QTDECLARATIVE_VERSION := $(QTDECLARATIVE_VERSION_MAJOR).0
 QTDECLARATIVE_URL := $(QT)/$(QTDECLARATIVE_VERSION_MAJOR)/$(QTDECLARATIVE_VERSION)/submodules/qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz
 
 DEPS_qtdeclarative-tools := qt-tools $(DEPS_qt-tools) qtshadertools-tools $(DEPS_qtshadertools-tools)
@@ -19,7 +19,7 @@ PKGS_TOOLS += qtdeclarative-tools
 endif
 PKGS_ALL += qtdeclarative-tools
 
-ifeq ($(call need_pkg,"Qt6Qml >= 6.6 Qt6Quick >= 6.6 Qt6QuickControls2 >= 6.6 Qt6QuickDialogs2 >= 6.6 Qt6QuickLayouts >= 6.6"),)
+ifeq ($(call need_pkg,"Qt6Qml >= $(QTDECLARATIVE_VERSION_MAJOR) Qt6Quick >= $(QTDECLARATIVE_VERSION_MAJOR) Qt6QuickControls2 >= $(QTDECLARATIVE_VERSION_MAJOR) Qt6QuickLayouts >= $(QTDECLARATIVE_VERSION_MAJOR) Qt6QmlWorkerScript >= $(QTDECLARATIVE_VERSION_MAJOR)"),)
 PKGS_FOUND += qtdeclarative
 endif
 ifndef HAVE_CROSS_COMPILE
@@ -40,6 +40,8 @@ $(TARBALLS)/qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz:
 qtdeclarative: qtdeclarative-everywhere-src-$(QTDECLARATIVE_VERSION).tar.xz .sum-qtdeclarative
 	$(UNPACK)
 	$(APPLY) $(SRC)/qtdeclarative/0001-Fix-incorrect-library-inclusion.patch
+	$(APPLY) $(SRC)/qtdeclarative/0002-Fix-build-with-no-feature-network.patch
+	$(APPLY) $(SRC)/qtdeclarative/0003-Disable-svgtoqml-tool.patch
 	$(MOVE)
 
 QT_DECLARATIVE_COMMON_CONFIG := \

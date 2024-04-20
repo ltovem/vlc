@@ -1,7 +1,7 @@
 # qtbase
 
-QTBASE_VERSION_MAJOR := 6.6
-QTBASE_VERSION := $(QTBASE_VERSION_MAJOR).2
+QTBASE_VERSION_MAJOR := 6.7
+QTBASE_VERSION := $(QTBASE_VERSION_MAJOR).0
 # Insert potential -betaX suffix here:
 QTBASE_VERSION_FULL := $(QTBASE_VERSION)
 QTBASE_URL := $(QT)/$(QTBASE_VERSION_MAJOR)/$(QTBASE_VERSION_FULL)/submodules/qtbase-everywhere-src-$(QTBASE_VERSION_FULL).tar.xz
@@ -22,7 +22,7 @@ ifdef HAVE_WIN32
 DEPS_qt += d3d12 $(DEPS_d3d12) dcomp $(DEPS_dcomp)
 endif
 
-ifeq ($(call need_pkg,"Qt6Core >= 6.6 Qt6Gui >= 6.6 Qt6Widgets >= 6.6 Qt6Network >= 6.6"),)
+ifeq ($(call need_pkg,"Qt6Core >= $(QTBASE_VERSION_MAJOR) Qt6Gui >= $(QTBASE_VERSION_MAJOR) Qt6Widgets >= $(QTBASE_VERSION_MAJOR)"),)
 PKGS_FOUND += qt
 endif
 ifndef HAVE_CROSS_COMPILE
@@ -42,14 +42,13 @@ $(TARBALLS)/qtbase-everywhere-src-$(QTBASE_VERSION_FULL).tar.xz:
 
 qt: qtbase-everywhere-src-$(QTBASE_VERSION_FULL).tar.xz .sum-qt
 	$(UNPACK)
-	$(APPLY) $(SRC)/qt/0001-CMake-Place-resources-into-static-libraries-not-obje.patch
-	$(APPLY) $(SRC)/qt/0002-Windows-Tray-Icon-Set-NOSOUND.patch
-	$(APPLY) $(SRC)/qt/0003-Try-to-generate-pkgconfig-pc-files-in-static-build.patch
-	$(APPLY) $(SRC)/qt/0004-Revert-QMutex-remove-qmutex_win.cpp.patch
-	$(APPLY) $(SRC)/qt/0005-Expose-QRhiImplementation-in-QRhi.patch
-	$(APPLY) $(SRC)/qt/0006-Do-not-include-D3D12MemAlloc.h-in-header-file.patch
-	$(APPLY) $(SRC)/qt/0007-Try-DCompositionCreateDevice3-first-if-available.patch
-	$(APPLY) $(SRC)/qt/0008-Try-to-satisfy-Windows-7-compatibility.patch
+	$(APPLY) $(SRC)/qt/0001-Windows-Tray-Icon-Set-NOSOUND.patch
+	$(APPLY) $(SRC)/qt/0002-Try-to-generate-pkgconfig-pc-files-in-static-build.patch
+	$(APPLY) $(SRC)/qt/0003-Revert-QMutex-remove-qmutex_win.cpp.patch
+	$(APPLY) $(SRC)/qt/0004-Expose-QRhiImplementation-in-QRhi.patch
+	$(APPLY) $(SRC)/qt/0005-Do-not-include-D3D12MemAlloc.h-in-header-file.patch
+	$(APPLY) $(SRC)/qt/0006-Try-DCompositionCreateDevice3-first-if-available.patch
+	$(APPLY) $(SRC)/qt/0007-Try-to-satisfy-Windows-7-compatibility.patch
 	$(APPLY) $(SRC)/qt/0001-disable-precompiled-headers-when-forcing-WINVER-inte.patch
 	$(APPLY) $(SRC)/qt/0001-QTypeInfo-Add-a-missing-include.patch
 	$(APPLY) $(SRC)/qt/0002-QStringTokenizer-Add-a-missing-include.patch

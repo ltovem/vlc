@@ -1,8 +1,8 @@
 # qtshadertools
 # required for Qt5Compat, and for qtdeclarative.
 
-QTSHADERTOOLS_VERSION_MAJOR := 6.6
-QTSHADERTOOLS_VERSION := $(QTSHADERTOOLS_VERSION_MAJOR).2
+QTSHADERTOOLS_VERSION_MAJOR := 6.7
+QTSHADERTOOLS_VERSION := $(QTSHADERTOOLS_VERSION_MAJOR).0
 QTSHADERTOOLS_URL := $(QT)/$(QTSHADERTOOLS_VERSION_MAJOR)/$(QTSHADERTOOLS_VERSION)/submodules/qtshadertools-everywhere-src-$(QTSHADERTOOLS_VERSION).tar.xz
 
 DEPS_qtshadertools-tools := qt-tools $(DEPS_qt-tools)
@@ -23,7 +23,7 @@ PKGS_TOOLS += qtshadertools-tools
 endif
 PKGS_ALL += qtshadertools-tools
 
-ifeq ($(call need_pkg,"Qt6ShaderTools >= 6.6"),)
+ifeq ($(call need_pkg,"Qt6ShaderTools >= $(QTSHADERTOOLS_VERSION_MAJOR)"),)
 PKGS_FOUND += qtshadertools
 endif
 ifndef HAVE_CROSS_COMPILE
