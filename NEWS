@@ -115,6 +115,13 @@ macOS:
 
 appleOS:
  * Improved proxy configuration handling
+
+libVLC:
+ * Add libvlc_media_get_meta_extra to read the meta extra of the media
+ * Add libvlc_media_set_meta_extra to set the meta of the media
+ * Add libvlc_media_get_meta_extra_names to read the meta extra names of the media
+ * Add libvlc_media_meta_extra_names_release to release a media meta extra names
+
 Changes between 3.0.12.1 and 3.0.13:
 ----------------------------------
 
