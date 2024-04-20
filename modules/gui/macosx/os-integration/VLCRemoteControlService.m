@@ -22,6 +22,8 @@
  *****************************************************************************/
 
 #import <MediaPlayer/MediaPlayer.h>
+#import <vlc_common.h>
+#import <vlc_configuration.h>
 
 #import "VLCRemoteControlService.h"
 #import "main/VLCMain.h"
@@ -58,6 +60,8 @@ static inline NSArray * RemoteCommandCenterCommandsToHandle()
                                 cc.previousTrackCommand,
                                 cc.skipForwardCommand,
                                 cc.skipBackwardCommand,
+                                cc.seekForwardCommand,
+                                cc.seekBackwardCommand,
                                 cc.changePlaybackPositionCommand,
                                 nil];
     return [commands copy];
@@ -201,8 +205,6 @@ static inline NSArray * RemoteCommandCenterCommandsToHandle()
     commandCenter.bookmarkCommand.enabled = NO;
     commandCenter.enableLanguageOptionCommand.enabled = NO;
     commandCenter.disableLanguageOptionCommand.enabled = NO;
-    commandCenter.seekForwardCommand.enabled = NO;
-    commandCenter.seekBackwardCommand.enabled = NO;
 
     commandCenter.skipForwardCommand.preferredIntervals = @[kVLCSettingPlaybackForwardSkipLength];
     commandCenter.skipBackwardCommand.preferredIntervals = @[kVLCSettingPlaybackBackwardSkipLength];
@@ -242,10 +244,19 @@ static inline NSArray * RemoteCommandCenterCommandsToHandle()
         return MPRemoteCommandHandlerStatusSuccess;
     }
     if (event.command == cc.nextTrackCommand) {
-        return [_playlistController playNextItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+            [_playerController jumpForwardExtraShort];
+        } else {
+            return [_playlistController playNextItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        }
     }
     if (event.command == cc.previousTrackCommand) {
-        return [_playlistController playPreviousItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+            [_playerController jumpBackwardExtraShort];
+            return MPRemoteCommandHandlerStatusSuccess;
+        } else {
+            return [_playlistController playPreviousItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        }
     }
     if (event.command == cc.skipForwardCommand) {
         [_playerController jumpForwardMedium];
@@ -253,6 +264,20 @@ static inline NSArray * RemoteCommandCenterCommandsToHandle()
     }
     if (event.command == cc.skipBackwardCommand) {
         [_playerController jumpBackwardMedium];
+        return MPRemoteCommandHandlerStatusSuccess;
+    }
+    if (event.command == cc.seekForwardCommand) {
+        MPSeekCommandEvent *sce = [event isKindOfClass: [MPSeekCommandEvent class]] ? (MPSeekCommandEvent *)event : nil;
+        if (sce && sce.type == MPSeekCommandEventTypeBeginSeeking) {
+            return [_playlistController playNextItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        }
+        return MPRemoteCommandHandlerStatusSuccess;
+    }
+    if (event.command == cc.seekBackwardCommand) {
+        MPSeekCommandEvent *sce = [event isKindOfClass: [MPSeekCommandEvent class]] ? (MPSeekCommandEvent *)event : nil;
+        if (sce && sce.type == MPSeekCommandEventTypeBeginSeeking) {
+            return [_playlistController playPreviousItem] ? MPRemoteCommandHandlerStatusSuccess : MPRemoteCommandHandlerStatusCommandFailed;
+        }
         return MPRemoteCommandHandlerStatusSuccess;
     }
     if (event.command == cc.changePlaybackPositionCommand) {

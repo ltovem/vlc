@@ -180,9 +180,17 @@
 
         if ((keyCode == NX_KEYTYPE_FAST || keyCode == NX_KEYTYPE_NEXT) && !b_mediakeyJustJumped) {
             if (keyState == 0 && keyRepeat == 0) {
-                [_playlistController playNextItem];
+                if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+                    [_playerController jumpForwardExtraShort];
+                } else {
+                    [_playlistController playNextItem];
+                }
             } else if (keyRepeat == 1) {
-                [_playerController jumpForwardShort];
+                if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+                    [_playlistController playNextItem];
+                } else {
+                    [_playerController jumpForwardShort];
+                }
                 b_mediakeyJustJumped = YES;
                 [self performSelector:@selector(resetMediaKeyJump)
                            withObject: NULL
@@ -192,9 +200,17 @@
 
         if ((keyCode == NX_KEYTYPE_REWIND || keyCode == NX_KEYTYPE_PREVIOUS) && !b_mediakeyJustJumped) {
             if (keyState == 0 && keyRepeat == 0) {
-                [_playlistController playPreviousItem];
+                if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+                    [_playerController jumpBackwardExtraShort];
+                } else {
+                    [_playlistController playPreviousItem];
+                }
             } else if (keyRepeat == 1) {
-                [_playerController jumpBackwardShort];
+                if (config_GetInt("macosx-mediakeys-extrashortjump")) {
+                    [_playlistController playPreviousItem];
+                } else {
+                    [_playerController jumpBackwardShort];
+                }
                 b_mediakeyJustJumped = YES;
                 [self performSelector:@selector(resetMediaKeyJump)
                            withObject: NULL

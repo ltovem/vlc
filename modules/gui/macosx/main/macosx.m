@@ -83,6 +83,9 @@ int  WindowOpen   (vlc_window_t *);
 #define USE_MEDIAKEYS_LONGTEXT N_("By default, VLC can be controlled using the media keys on modern Apple " \
                                   "keyboards.")
 
+#define USE_MEDIAKEYS_EXTRASHORTJUMP_TEXT N_("Use backward / forward keys for extra short jumps")
+#define USE_MEDIAKEYS_EXTRASHORTJUMP_LONGTEXT N_("Useful for transcriptions; long-press to skip tracks")
+
 #define NATIVE_FULLSCREEN_MODE_ON_LION_TEXT N_("Use the native fullscreen mode")
 #define NATIVE_FULLSCREEN_MODE_ON_LION_LONGTEXT N_("By default, VLC uses the fullscreen mode known from previous Mac OS X releases. It can also use the native fullscreen mode on Mac OS X 10.7 and later.")
 
@@ -157,6 +160,7 @@ vlc_module_begin()
         add_bool("macosx-appleremote-sysvol", false, USE_APPLE_REMOTE_VOLUME_TEXT, USE_APPLE_REMOTE_VOLUME_LONGTEXT)
         add_bool("macosx-appleremote-prevnext", false, USE_APPLE_REMOTE_PREVNEXT_TEXT, USE_APPLE_REMOTE_PREVNEXT_LONGTEXT)
         add_bool("macosx-mediakeys", true, USE_MEDIAKEYS_TEXT, USE_MEDIAKEYS_LONGTEXT)
+        add_bool("macosx-mediakeys-extrashortjump", false, USE_MEDIAKEYS_EXTRASHORTJUMP_TEXT, USE_MEDIAKEYS_EXTRASHORTJUMP_LONGTEXT)
 
     add_obsolete_bool("macosx-show-sidebar") /* since 3.0.1 */
     add_obsolete_bool("macosx-interfacestyle") /* since 4.0.0 */
