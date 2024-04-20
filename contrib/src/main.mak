@@ -719,7 +719,7 @@ ifdef HAVE_EMSCRIPTEN
 	CMAKE_TOOLCHAIN_ENV += EXTRA_INCLUDE="$(EMSDK_PATH)cmake/Modules/Platform/Emscripten.cmake"
 endif
 
-toolchain.cmake: $(SRC)/gen-cmake-toolchain.py
+toolchain.cmake: $(SRC)/gen-cmake-toolchain.py .ninja-jobserver
 	$(CMAKE_TOOLCHAIN_ENV) $(SRC)/gen-cmake-toolchain.py $@
 	cat $@
 
@@ -747,7 +747,7 @@ endif
 endif
 endif
 
-crossfile.meson: $(SRC)/gen-meson-machinefile.py
+crossfile.meson: $(SRC)/gen-meson-machinefile.py .ninja-jobserver
 	$(HOSTVARS_MESON) \
 	WINDRES="$(WINDRES)" \
 	PKG_CONFIG="$(PKG_CONFIG)" \

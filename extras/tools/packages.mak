@@ -54,9 +54,5 @@ HELP2MAN_URL=$(GNU)/help2man/help2man-$(HELP2MAN_VERSION).tar.xz
 MESON_VERSION=1.2.0
 MESON_URL=https://github.com/mesonbuild/meson/releases/download/$(MESON_VERSION)/meson-$(MESON_VERSION).tar.gz
 
-NINJA_VERSION=1.11.1
-NINJA_BUILD_NAME=$(NINJA_VERSION).g95dee.kitware.jobserver-1
-NINJA_URL=https://github.com/Kitware/ninja/archive/refs/tags/v$(NINJA_BUILD_NAME).tar.gz
-
 GPERF_VERSION=3.1
 GPERF_URL=$(GNU)/gperf/gperf-$(GPERF_VERSION).tar.gz
