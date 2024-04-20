@@ -232,7 +232,11 @@ ca_Render(audio_output_t *p_aout, uint64_t host_time,
 
         p_sys->started = true;
 
-        memcpy(data, f->p_buffer, tocopy);
+        if (p_sys->b_muted) {
+            memset(data, 0, tocopy);
+        } else {
+            memcpy(data, f->p_buffer, tocopy);
+        }
 
         data += tocopy;
         bytes -= tocopy;
