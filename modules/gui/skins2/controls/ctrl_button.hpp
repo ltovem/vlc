@@ -36,6 +36,8 @@ class CmdGeneric;
 class CtrlButton: public CtrlGeneric, public Observer<AnimBitmap>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     /// Create a button with 3 images
     CtrlButton( intf_thread_t *pIntf, const GenericBitmap &rBmpUp,
                 const GenericBitmap &rBmpOver, const GenericBitmap &rBmpDown,

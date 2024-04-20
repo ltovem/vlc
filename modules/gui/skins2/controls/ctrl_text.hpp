@@ -40,6 +40,8 @@ class VarText;
 class CtrlText: public CtrlGeneric, public Observer<VarText>
 {
 public:
+    using CtrlGeneric::onUpdate;
+
     enum Align_t
     {
         kLeft,
