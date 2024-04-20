@@ -1008,7 +1008,7 @@ static struct subpicture_region_rendered *SpuRenderRegion(spu_t *spu,
              * still exist.  */
             y_offset -= secondary_margin;
         }
-        else
+        else if (subpic->b_subtitle)
         {
             /* Use an absolute margin for secondary subpictures that have
              * already been placed but have been moved by the user */
@@ -1722,14 +1722,8 @@ static void spu_PrerenderSync(spu_private_t *sys, const subpicture_t *p_subpic)
 }
 
 static void spu_PrerenderText(spu_t *spu, subpicture_t *p_subpic,
-                              const video_format_t *fmtsrc, const video_format_t *fmtdst,
                               const vlc_fourcc_t *chroma_list)
 {
-    spu_UpdateOriginalSize(spu, p_subpic, fmtsrc);
-
-    subpicture_Update(p_subpic, fmtsrc, fmtdst,
-                      p_subpic->b_subtitle ? p_subpic->i_start : vlc_tick_now());
-
     const unsigned i_original_picture_width = p_subpic->i_original_picture_width;
     const unsigned i_original_picture_height = p_subpic->i_original_picture_height;
 
@@ -1785,8 +1779,8 @@ static void * spu_PrerenderThread(void *priv)
         }
         vlc_vector_remove(&sys->prerender.vector, i_idx);
         memcpy(chroma_list, sys->prerender.chroma_list, SPU_CHROMALIST_COUNT);
-        video_format_Copy(&fmtdst, &sys->prerender.fmtdst);
-        video_format_Copy(&fmtsrc, &sys->prerender.fmtsrc);
+        fmtdst = sys->prerender.fmtdst;
+        fmtsrc = sys->prerender.fmtsrc;
 
         if (IsSubpicInVideo(sys->prerender.p_processed, sys->prerender.spu_in_full_window))
         {
@@ -1797,11 +1791,14 @@ static void * spu_PrerenderThread(void *priv)
 
         vlc_mutex_unlock(&sys->prerender.lock);
 
-        spu_PrerenderText(spu, sys->prerender.p_processed,
-                          &fmtsrc, &fmtdst, chroma_list);
+        subpicture_t *p_subpic = sys->prerender.p_processed;
 
-        video_format_Clean(&fmtdst);
-        video_format_Clean(&fmtsrc);
+        spu_UpdateOriginalSize(spu, p_subpic, &fmtsrc);
+
+        subpicture_Update(p_subpic, &fmtsrc, &fmtdst,
+                          p_subpic->b_subtitle ? p_subpic->i_start : vlc_tick_now());
+
+        spu_PrerenderText(spu, p_subpic, chroma_list);
 
         vlc_mutex_lock(&sys->prerender.lock);
         sys->prerender.p_processed = NULL;
