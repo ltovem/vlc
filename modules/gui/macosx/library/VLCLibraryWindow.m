@@ -63,8 +63,6 @@
 #import "media-source/VLCMediaSourceBaseDataSource.h"
 #import "media-source/VLCLibraryMediaSourceViewController.h"
 
-#import "menus/renderers/VLCRendererMenuController.h"
-
 #import "views/VLCBottomBarView.h"
 #import "views/VLCCustomWindowButton.h"
 #import "views/VLCDragDropView.h"
@@ -147,21 +145,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
         self.tabbingMode = NSWindowTabbingModeDisallowed;
     }
 
-    _toolbarDelegate = [[VLCLibraryWindowToolbarDelegate alloc] initWithLibraryWindow:self];
-    self.toolbar.delegate = _toolbarDelegate;
-    self.toolbar.allowsUserCustomization = NO;
-
-    if (@available(macOS 11.0, *)) {
-        const NSInteger navSidebarToggleToolbarItemIndex = [self.toolbar.items indexOfObject:self.toggleNavSidebarToolbarItem];
-        NSAssert(navSidebarToggleToolbarItemIndex != NSNotFound, @"Could not find navigation sidebar toggle toolbar item!");
-
-        const NSInteger trackingSeparatorItemIndex = navSidebarToggleToolbarItemIndex + 1;
-        [self.toolbar insertItemWithItemIdentifier:VLCLibraryWindowTrackingSeparatorToolbarItemIdentifier
-                                           atIndex:trackingSeparatorItemIndex];
-        self.trackingSeparatorToolbarItem = [self.toolbar.items objectAtIndex:trackingSeparatorItemIndex];
-    }
-
-
     VLCMain *mainInstance = VLCMain.sharedInstance;
     _playlistController = [mainInstance playlistController];
 
@@ -179,14 +162,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     self.videoViewController.displayLibraryControls = YES;
     [self hideControlsBarImmediately];
 
-    [self.gridVsListSegmentedControl setToolTip: _NS("Grid View or List View")];
-    [self.librarySortButton setToolTip: _NS("Select Sorting Mode")];
-    [self.playQueueToggle setToolTip: _NS("Toggle Playqueue")];
-
-    [self.gridVsListSegmentedControl setHidden:NO];
-    [self.librarySortButton setHidden:NO];
-    [self.librarySearchField setEnabled:YES];
-
     NSNotificationCenter *notificationCenter = NSNotificationCenter.defaultCenter;
     [notificationCenter addObserver:self
                            selector:@selector(shouldShowController:)
@@ -200,14 +175,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
                            selector:@selector(playerStateChanged:)
                                name:VLCPlayerStateChanged
                              object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(renderersChanged:)
-                               name:VLCRendererAddedNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(renderersChanged:)
-                               name:VLCRendererRemovedNotification
-                             object:nil];
 
     _libraryHomeViewController = [[VLCLibraryHomeViewController alloc] initWithLibraryWindow:self];
     _libraryVideoViewController = [[VLCLibraryVideoViewController alloc] initWithLibraryWindow:self];
@@ -215,13 +182,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     _libraryMediaSourceViewController = [[VLCLibraryMediaSourceViewController alloc] initWithLibraryWindow:self];
 
     [self setViewForSelectedSegment];
-
-    // Hide renderers toolbar item at first. Start discoveries and wait for notifications about
-    // renderers being added or removed to keep hidden or show depending on outcome
-    [self hideToolbarItem:_renderersToolbarItem];
-    [VLCMain.sharedInstance.mainMenu.rendererMenuController startRendererDiscoveries];
-
-    [self updatePlayqueueToggleState];
 }
 
 - (void)dealloc
@@ -361,158 +321,31 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     [self setViewForSelectedSegment];
 }
 
-- (void)hideToolbarItem:(NSToolbarItem *)toolbarItem
-{
-    NSInteger toolbarItemIndex = [[self.toolbar items] indexOfObject:toolbarItem];
-    if (toolbarItemIndex != NSNotFound) {
-        [self.toolbar removeItemAtIndex:toolbarItemIndex];
-    }
-}
-
-/*
- * Try to insert the toolbar item ahead of a group of possible toolbar items.
- * "items" should contain items sorted from the trailing edge of the toolbar to leading edge.
- * "toolbarItem" will be inserted as close to the trailing edge as possible.
- *
- * If you have: | item1 | item2 | item3 | item4 |
- * and the "items" parameter is an array containing @[item6, item5, item2, item1]
- * then the "toolbarItem" provided to this function will place toolbarItem thus:
- * | item1 | item2 | toolbarItem | item3 | item4 |
-*/
-
-- (void)insertToolbarItem:(NSToolbarItem *)toolbarItem inFrontOf:(NSArray<NSToolbarItem *> *)items
-{
-    NSParameterAssert(toolbarItem != nil && items != nil && toolbarItem.itemIdentifier.length > 0);
-
-    NSInteger toolbarItemIndex = [[self.toolbar items] indexOfObject:toolbarItem];
-    if (toolbarItemIndex != NSNotFound) {
-        return;
-    }
-
-    for (NSToolbarItem *item in items) {
-        NSInteger itemIndex = [[self.toolbar items] indexOfObject:item];
-
-        if (itemIndex != NSNotFound) {
-            [self.toolbar insertItemWithItemIdentifier:toolbarItem.itemIdentifier atIndex:itemIndex + 1];
-            return;
-        }
-    }
-
-    [self.toolbar insertItemWithItemIdentifier:toolbarItem.itemIdentifier atIndex:0];
-}
-
-- (void)setForwardsBackwardsToolbarItemsVisible:(BOOL)visible
-{
-    if (!visible) {
-        [self hideToolbarItem:_forwardsToolbarItem];
-        [self hideToolbarItem:_backwardsToolbarItem];
-        return;
-    }
-
-    [self insertToolbarItem:_backwardsToolbarItem inFrontOf:@[_trackingSeparatorToolbarItem,
-                                                              _toggleNavSidebarToolbarItem]];
-    [self insertToolbarItem:_forwardsToolbarItem inFrontOf:@[_backwardsToolbarItem,
-                                                             _trackingSeparatorToolbarItem,
-                                                             _toggleNavSidebarToolbarItem]];
-}
-
-- (void)setSortOrderToolbarItemVisible:(BOOL)visible
-{
-    if (!visible) {
-        [self hideToolbarItem:_sortOrderToolbarItem];
-        return;
-    }
-
-    [self insertToolbarItem:_sortOrderToolbarItem
-                  inFrontOf:@[_libraryViewModeToolbarItem,
-                              _forwardsToolbarItem,
-                              _backwardsToolbarItem,
-                              _trackingSeparatorToolbarItem,
-                              _toggleNavSidebarToolbarItem]];
-}
-
-- (void)setLibrarySearchToolbarItemVisible:(BOOL)visible
-{
-    if (!visible) {
-        [self hideToolbarItem:_librarySearchToolbarItem];
-        [self stopSearchTimer];
-        _librarySearchField.stringValue = @"";
-        [self updateFilterString];
-        return;
-    }
-
-    // Display as far to the right as possible, but not in front of the playlist toggle button
-    NSMutableArray<NSToolbarItem *> *currentToolbarItems = [NSMutableArray arrayWithArray:self.toolbar.items];
-    if (currentToolbarItems.lastObject == _togglePlaylistToolbarItem) {
-        [currentToolbarItems removeLastObject];
-    }
-
-    NSArray *reversedCurrentToolbarItems = [[currentToolbarItems reverseObjectEnumerator] allObjects];
-    [self insertToolbarItem:_librarySearchToolbarItem inFrontOf:reversedCurrentToolbarItems];
-}
-
-- (void)setViewModeToolbarItemVisible:(BOOL)visible
-{
-    if (!visible) {
-        [self hideToolbarItem:self.libraryViewModeToolbarItem];
-        return;
-    }
-
-    [self insertToolbarItem:self.libraryViewModeToolbarItem inFrontOf:@[
-        self.toggleNavSidebarToolbarItem,
-        self.trackingSeparatorToolbarItem,
-        self.forwardsToolbarItem,
-        self.backwardsToolbarItem
-    ]];
-}
-
-- (void)updatePlayqueueToggleState
-{
-    NSView * const playlistView = self.splitViewController.playlistSidebarViewController.view;
-    _playQueueToggle.state = [self.mainSplitView isSubviewCollapsed:playlistView] ?
-        NSControlStateValueOff : NSControlStateValueOn;
-}
-
 - (void)showHomeLibrary
 {
     // Only collection view mode
-    [self setForwardsBackwardsToolbarItemsVisible:NO];
-    [self setSortOrderToolbarItemVisible:YES];
-    [self setLibrarySearchToolbarItemVisible:YES];
-    [self setViewModeToolbarItemVisible:NO];
-
+    [self.toolbarDelegate layoutForSegment:VLCLibraryHomeSegment];
     [_libraryHomeViewController presentHomeView];
 }
 
 - (void)showVideoLibrary
 {
-    [self setForwardsBackwardsToolbarItemsVisible:NO];
-    [self setSortOrderToolbarItemVisible:YES];
-    [self setLibrarySearchToolbarItemVisible:YES];
-    [self setViewModeToolbarItemVisible:YES];
-
+    [self.toolbarDelegate layoutForSegment:VLCLibraryVideoSegment];
     [_libraryVideoViewController presentVideoView];
 }
 
 - (void)showAudioLibrary
 {
-    [self setForwardsBackwardsToolbarItemsVisible:NO];
-    [self setSortOrderToolbarItemVisible:YES];
-    [self setLibrarySearchToolbarItemVisible:YES];
-    [self setViewModeToolbarItemVisible:YES];
-
+    [self.toolbarDelegate layoutForSegment:VLCLibraryMusicSegment];
     self.libraryAudioViewController.currentSegmentType = self.librarySegmentType;
 }
 
 - (void)showMediaSourceLibrary
 {
     [self.navigationStack clear];
-    [self setForwardsBackwardsToolbarItemsVisible:YES];
-    [self setSortOrderToolbarItemVisible:NO];
-    [self setLibrarySearchToolbarItemVisible:NO];
-    [self setViewModeToolbarItemVisible:YES];
 
     const VLCLibrarySegmentType segmentType = self.librarySegmentType;
+    [self.toolbarDelegate layoutForSegment:segmentType];
     if (segmentType == VLCLibraryBrowseSegment) {
         [_libraryMediaSourceViewController presentBrowseView];
     } else if (segmentType == VLCLibraryStreamsSegment) {
@@ -585,7 +418,7 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     [VLCMain.sharedInstance.libraryController filterByString:_librarySearchField.stringValue];
 }
 
-- (void)clearLibraryFilterString
+- (void)clearFilterString
 {
     [self stopSearchTimer];
     _librarySearchField.stringValue = @"";
@@ -767,18 +600,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     }
 
     [self presentVideoView];
-
-    [self.forwardsNavigationButton setHidden:YES];
-    [self.gridVsListSegmentedControl setHidden:YES];
-    [self.librarySortButton setHidden:YES];
-    [self.librarySearchField setEnabled:NO];
-    [self clearLibraryFilterString];
-
-    // Make sure the back button is visible...
-    [self insertToolbarItem:_backwardsToolbarItem inFrontOf:@[_trackingSeparatorToolbarItem, _toggleNavSidebarToolbarItem]];
-    // And repurpose it to hide the video view
-    [self.backwardsNavigationButton setEnabled:YES];
-
     [self enableVideoTitleBarMode];
     [self hideControlsBarImmediately];
     [self.videoViewController showControls];
@@ -792,19 +613,9 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     [VLCMain.sharedInstance.voutProvider updateWindowLevelForHelperWindows: NSNormalWindowLevel];
 
     // restore alpha value to 1 for the case that macosx-opaqueness is set to < 1
-    [self setAlphaValue:1.0];
+    self.alphaValue = 1.0;
     self.videoViewController.view.hidden = YES;
-
-    [self.forwardsNavigationButton setHidden:NO];
-    [self.gridVsListSegmentedControl setHidden:NO];
-    [self.librarySortButton setHidden:NO];
-    [self.librarySearchField setEnabled:YES];
-
-    // Reset the back button to navigation state
-    [self.backwardsNavigationButton setEnabled:_navigationStack.backwardsAvailable];
-
     [self setViewForSelectedSegment];
-
     [self disableVideoTitleBarMode];
     [self showControlsBarImmediately];
     self.splitViewController.playlistSidebarViewController.mainVideoModeEnabled = NO;
@@ -855,29 +666,6 @@ static void addShadow(NSImageView *__unsafe_unretained imageView)
     if (!self.videoViewController.view.hidden) {
         [self showControlsBar];
     }
-}
-
-#pragma mark -
-#pragma mark respond to renderers
-
-- (void)renderersChanged:(NSNotification *)notification
-{
-    const NSUInteger rendererCount = VLCMain.sharedInstance.mainMenu.rendererMenuController.rendererItems.count;
-    const BOOL rendererToolbarItemVisible = [self.toolbar.items containsObject:_renderersToolbarItem];
-
-    if (rendererCount > 0 && !rendererToolbarItemVisible) {
-        [self insertToolbarItem:_renderersToolbarItem
-                      inFrontOf:@[_sortOrderToolbarItem, _libraryViewModeToolbarItem, _forwardsToolbarItem, _backwardsToolbarItem]];
-    } else if (rendererCount == 0 && rendererToolbarItemVisible) {
-        [self hideToolbarItem:_renderersToolbarItem];
-    }
-}
-
-- (void)rendererControlAction:(id)sender
-{
-    [NSMenu popUpContextMenu:VLCMain.sharedInstance.mainMenu.rendererMenu
-                   withEvent:NSApp.currentEvent
-                     forView:sender];
 }
 
 @end
