@@ -102,8 +102,10 @@ vlc_module_begin ()
                  FORMAT_TEXT, FORMAT_LONGTEXT )
     add_integer( CFG_PREFIX "width", -1,
                  WIDTH_TEXT, WIDTH_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_integer( CFG_PREFIX "height", -1,
                  HEIGHT_TEXT, HEIGHT_LONGTEXT )
+        change_integer_range( -1, INT_MAX )
     add_string(  CFG_PREFIX "prefix", "scene",
                  PREFIX_TEXT, PREFIX_LONGTEXT )
     add_string(  CFG_PREFIX "path", NULL,

@@ -71,7 +71,8 @@ vlc_module_begin ()
     set_shortname( N_( "Rotate" ))
     set_subcategory( SUBCAT_VIDEO_VFILTER )
 
-    add_float( FILTER_PREFIX "angle", 30., ANGLE_TEXT, ANGLE_LONGTEXT )
+    add_float( FILTER_PREFIX "angle", 30.0, ANGLE_TEXT, ANGLE_LONGTEXT )
+        change_float_range( 0.0, 360.0 )
     add_bool( FILTER_PREFIX "use-motion", false, MOTION_TEXT,
               MOTION_LONGTEXT )
 
