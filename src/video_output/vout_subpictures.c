@@ -875,8 +875,10 @@ spu_SelectSubpictures(spu_t *spu, vlc_tick_t system_now,
 
             /* If the spu is ephemer, the stop time is invalid, but it has been converted to
                system time and used in comparisons below */
-            const bool is_stop_valid = !current->b_ephemer || render_entry->orgstop > render_entry->orgstart;
-            render_entry->is_late = is_stop_valid && current->i_stop <= render_date;
+            const bool is_stop_valid = !current->b_ephemer ||
+                (render_entry->orgstop != VLC_TICK_INVALID && render_entry->orgstop > render_entry->orgstart);
+            render_entry->is_late = is_stop_valid &&
+                (current->i_stop == VLC_TICK_INVALID || current->i_stop <= render_date);
 
             /* start_date will be used for correct automatic overlap support
              * in case picture that should not be displayed anymore (display_time)
@@ -2152,7 +2154,7 @@ void spu_PutSubpicture(spu_t *spu, subpicture_t *subpic)
 
     /* An ephemer with stop time can be ephemer,
        but a pic without stop time must be ephemer */
-    if(subpic->i_stop < subpic->i_start)
+    if(subpic->i_stop != VLC_TICK_INVALID && subpic->i_stop < subpic->i_start)
         subpic->b_ephemer = true;
 
     if (spu_channel_Push(channel, subpic, orgstart, orgstop))
