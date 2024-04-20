@@ -53,6 +53,7 @@ Widgets.StackViewExt {
     property var pagePrefix: []
 
     // optional, loaded when isLoading is true
+    // only loaded on initial load, when count is less then 1
     property Component loadingComponent: null
 
     // NOTE: Sometimes the model has no 'loading' property.
@@ -87,9 +88,10 @@ Widgets.StackViewExt {
     // NOTE: We have to use a Component here. When using a var the onCurrentComponentChanged event
     //       gets called multiple times even when the currentComponent stays the same.
     property Component currentComponent: {
-        if (isLoading) {
+        if (isLoading && count < 1) {
             if (loadingComponent)
                 return loadingComponent
+            // fall through to load 'grid' or 'list' view
         } else if (count === 0)
             return emptyLabel
 
@@ -121,7 +123,7 @@ Widgets.StackViewExt {
         _updateView()
 
         // NOTE: This call is useful to avoid a binding loop on currentComponent.
-        currentComponentChanged.connect(function() { _updateView() })
+        currentComponentChanged.connect(_updateView)
     }
 
     onModelChanged: resetFocus()
@@ -171,16 +173,17 @@ Widgets.StackViewExt {
     function _updateView() {
         // NOTE: When the currentItem is null we default to the StackView focusReason.
         if (currentItem && currentItem.activeFocus)
-            _applyView(currentItem.focusReason)
+            _loadView(currentItem.focusReason)
         else if (activeFocus)
-            _applyView(focusReason)
+            _loadView(focusReason)
         else
-            replace(null, currentComponent)
+            _loadView()
     }
 
-    function _applyView(reason) {
+    function _loadView(reason) {
         replace(null, currentComponent)
 
-        setCurrentItemFocus(reason)
+        if (typeof reason !== "undefined")
+            setCurrentItemFocus(reason)
     }
 }

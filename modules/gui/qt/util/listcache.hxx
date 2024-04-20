@@ -327,7 +327,12 @@ void ListCache<T>::invalidate()
 {
     if (m_cachedData)
     {
-        if (m_cachedData && !m_oldData)
+        // don't do a partial update if current cache is already empty
+        // since if source model has added data, queueing a load request
+        // and subsequently finished it's inital loading, that will cause
+        // unsetting of 'loading' property with no data and just after
+        // we will have data causing flickering in user interface
+        if (m_cachedData && (m_cachedData->queryCount > 0) && !m_oldData)
         {
             m_oldData = std::move(m_cachedData);
             m_partialX = 0;
