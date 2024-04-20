@@ -513,9 +513,20 @@ ssize_t vlc_stream_Read(stream_t *s, void *buf, size_t len)
 
     while (len > 0)
     {
-        ssize_t ret = vlc_stream_ReadPartial(s, buf, len);
+        size_t to_read;
+        if (unlikely(len > SSIZE_MAX))
+            to_read = SSIZE_MAX;
+        else
+            to_read = len;
+        ssize_t ret = vlc_stream_ReadPartial(s, buf, to_read);
         if (ret < 0)
-            continue;
+        {
+            if (vlc_killed())
+                break;
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+            break;
+        }
         if (ret == 0)
             break;
 
