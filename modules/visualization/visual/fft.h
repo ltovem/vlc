@@ -28,6 +28,9 @@
 
 #define FFT_BUFFER_SIZE (1 << FFT_BUFFER_SIZE_LOG)
 
+#define FFT_SCALING_FACTOR_TERM ((float)(FFT_BUFFER_SIZE / 2 * 32768))
+#define FFT_SCALING_FACTOR ((1 << 16) / (FFT_SCALING_FACTOR_TERM * FFT_SCALING_FACTOR_TERM))
+
 /* sound sample - should be an signed 16 bit value */
 typedef short int sound_sample;
 
