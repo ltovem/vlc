@@ -728,58 +728,58 @@ static void OggGetSkeletonIndex( uint8_t **pp_buffer, long *pi_size, ogg_stream_
 static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
                                    sout_input_t *p_input, sout_mux_t *p_mux )
 {
-    uint8_t *psz_header;
+    uint8_t *header;
     uint8_t *p_buffer;
-    const char *psz_value = NULL;
     ogg_stream_t *p_stream = (ogg_stream_t *) p_input->p_sys;
     struct
     {
-        char *psz_content_type;
-        char *psz_role;
-        long int i_size;
+        const char *content_type;
+        const char *role;
+        unsigned int content_type_len;
+        unsigned int role_len;
+        long int i_size; /* Complete size including tags and line breaks */
         unsigned int i_count;
-    } headers = { NULL, NULL, 0, 0 };
+    } headers = { NULL, NULL, 0, 0, 0, 0 };
     *pi_size = 0;
+
+    #define CONTENT_TYPE_TAG "Content-Type: "
+    #define ROLE_TAG "Role: "
 
     switch( p_stream->fmt.i_codec )
     {
         case VLC_CODEC_VORBIS:
-            psz_value = "audio/vorbis";
+            headers.content_type = "audio/vorbis";
             break;
         case VLC_CODEC_THEORA:
-            psz_value = "video/theora";
+            headers.content_type = "video/theora";
             break;
         case VLC_CODEC_DAALA:
-            psz_value = "video/daala";
+            headers.content_type = "video/daala";
             break;
         case VLC_CODEC_SPEEX:
-            psz_value = "audio/speex";
+            headers.content_type = "audio/speex";
             break;
         case VLC_CODEC_FLAC:
-            psz_value = "audio/flac";
+            headers.content_type = "audio/flac";
             break;
         case VLC_CODEC_CMML:
-            psz_value = "text/cmml";
+            headers.content_type = "text/cmml";
             break;
         case VLC_CODEC_KATE:
-            psz_value = "application/kate";
+            headers.content_type = "application/kate";
             break;
         case VLC_CODEC_VP8:
-            psz_value = "video/x-vp8";
+            headers.content_type = "video/x-vp8";
             break;
         default:
-            psz_value = "application/octet-stream";
+            headers.content_type = "application/octet-stream";
             msg_Warn( p_mux, "Unknown fourcc for stream %s, setting Content-Type to %s",
                   vlc_fourcc_GetDescription( p_stream->fmt.i_cat, p_stream->fmt.i_codec ),
-                  psz_value );
+                  headers.content_type );
     }
-
-    /* Content Type Header */
-    if ( asprintf( &headers.psz_content_type, "Content-Type: %s\r\n", psz_value ) != -1 )
-    {
-        headers.i_size += strlen( headers.psz_content_type );
-        headers.i_count++;
-    }
+    headers.content_type_len = strlen( headers.content_type );
+    headers.i_size = strlen(CONTENT_TYPE_TAG) + headers.content_type_len + 2; /* +2 for "\r\n" */
+    headers.i_count = 1;
 
     /* Set Role Header */
     if ( p_input->p_fmt->i_priority > ES_PRIORITY_NOT_SELECTABLE )
@@ -791,25 +791,25 @@ static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
             i_max_prio = __MAX( p_mux->pp_inputs[i]->p_fmt->i_priority, i_max_prio );
         }
 
-        psz_value = NULL;
         if ( p_input->p_fmt->i_cat == AUDIO_ES || p_input->p_fmt->i_cat == VIDEO_ES )
         {
             if ( p_input->p_fmt->i_priority == i_max_prio && i_max_prio >= ES_PRIORITY_SELECTABLE_MIN )
-                psz_value = ( p_input->p_fmt->i_cat == VIDEO_ES ) ?
-                            "video/main" : "audio/main";
+                headers.role = ( p_input->p_fmt->i_cat == VIDEO_ES ) ?
+                               "video/main" : "audio/main";
             else
-                psz_value = ( p_input->p_fmt->i_cat == VIDEO_ES ) ?
-                            "video/alternate" : "audio/alternate";
+                headers.role = ( p_input->p_fmt->i_cat == VIDEO_ES ) ?
+                               "video/alternate" : "audio/alternate";
         }
         else if ( p_input->p_fmt->i_cat == SPU_ES )
         {
-            psz_value = ( p_input->p_fmt->i_codec == VLC_CODEC_KATE ) ?
-                        "text/karaoke" : "text/subtitle";
+            headers.role = ( p_input->p_fmt->i_codec == VLC_CODEC_KATE ) ?
+                           "text/karaoke" : "text/subtitle";
         }
 
-        if ( psz_value && asprintf( &headers.psz_role, "Role: %s\r\n", psz_value ) != -1 )
+        if ( headers.role )
         {
-            headers.i_size += strlen( headers.psz_role );
+            headers.role_len = strlen( headers.role );
+            headers.i_size += 8 + headers.role_len; /* "Role: %s\r\n" */
             headers.i_count++;
         }
     }
@@ -846,18 +846,26 @@ static void OggGetSkeletonFisbone( uint8_t **pp_buffer, long *pi_size,
                                           p_input->p_fmt->i_extra,
                                           p_input->p_fmt->i_codec ) );
 
-    if ( headers.i_size > 0 )
-    {
-        psz_header = *pp_buffer + FISBONE_BASE_SIZE;
-        memcpy( psz_header, headers.psz_content_type, strlen( headers.psz_content_type ) );
-        psz_header += strlen( headers.psz_content_type );
-        if ( headers.psz_role )
-            memcpy( psz_header, headers.psz_role, strlen( headers.psz_role ) );
-    }
-    *pi_size = FISBONE_BASE_SIZE + headers.i_size;
+    header = *pp_buffer + FISBONE_BASE_SIZE;
 
-    free( headers.psz_content_type );
-    free( headers.psz_role );
+    memcpy( header, CONTENT_TYPE_TAG, strlen(CONTENT_TYPE_TAG) );
+    header += strlen(CONTENT_TYPE_TAG);
+    memcpy( header, headers.content_type, headers.content_type_len );
+    header += headers.content_type_len;
+    *header++ = '\r';
+    *header++ = '\n';
+
+    if ( headers.role )
+    {
+        memcpy( header, ROLE_TAG, strlen(ROLE_TAG) );
+        header += strlen(ROLE_TAG);
+        memcpy( header, headers.role, headers.role_len );
+        header += headers.role_len;
+        *header++ = '\r';
+        *header   = '\n';
+    }
+
+    *pi_size = FISBONE_BASE_SIZE + headers.i_size;
 }
 
 static void OggFillSkeletonFishead( uint8_t *p_buffer, sout_mux_t *p_mux )
