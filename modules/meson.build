@@ -161,6 +161,7 @@ ksuser_lib = cc.find_library('ksuser',
 
 # Helper libraries for modules
 # These are helper libraries used by some modules
+libvlc_pulse = dependency('', required: false)
 if pulse_dep.found()
     libvlc_pulse = library('vlc_pulse',
         files('audio_output/vlcpulse.c'),
